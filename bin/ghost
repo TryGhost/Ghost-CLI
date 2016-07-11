@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+'use strict';
+
+// provide a title to the process
+process.title = 'ghost';
+
+var cli = require('../lib/cli');
+
+cli(process.argv);

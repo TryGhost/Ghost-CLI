@@ -1,0 +1,32 @@
+{
+  "name": "ghost-cli",
+  "version": "0.0.1",
+  "description": "CLI for the Ghost blogging application",
+  "main": "lib/cli.js",
+  "bin": {
+    "ghost": "./bin/ghost"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acburdine/ghost-cli/"
+  },
+  "keywords": [
+    "ghost",
+    "cli"
+  ],
+  "author": "Austin Burdine <acburdine@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "3.4.1",
+    "commander": "2.9.0",
+    "core-object": "2.0.5",
+    "download": "5.0.2",
+    "inquirer": "1.1.2",
+    "lodash": "4.13.1",
+    "npm": "3.10.5",
+    "pm2": "1.1.3"
+  }
+}
