@@ -1,7 +1,7 @@
 {
   "name": "ghost-cli",
   "version": "0.0.1",
-  "description": "CLI for the Ghost blogging application",
+  "description": "Just a CLI manager (for a blogging platform)",
   "main": "lib/cli.js",
   "bin": {
     "ghost": "./bin/ghost"
@@ -27,7 +27,7 @@
     "download": "5.0.2",
     "inquirer": "1.1.2",
     "lodash": "4.13.1",
-    "npm": "3.10.5",
+    "npm": "2.15.9",
     "pm2": "1.1.3"
   },
   "devDependencies": {
@@ -37,5 +37,10 @@
     "jshint": "2.9.2",
     "mocha": "2.5.3",
     "sinon": "1.17.4"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "npm"
+    ]
   }
 }
