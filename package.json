@@ -33,7 +33,7 @@
   "devDependencies": {
     "chai": "3.5.0",
     "istanbul": "0.4.4",
-    "jscs": "3.0.6",
+    "jscs": "3.0.7",
     "jshint": "2.9.2",
     "mocha": "2.5.3",
     "sinon": "1.17.4"
