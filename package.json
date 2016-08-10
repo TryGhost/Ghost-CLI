@@ -2,6 +2,19 @@
   "name": "ghost-cli",
   "version": "0.0.1",
   "description": "Just a CLI manager (for a blogging platform)",
+  "author": "Ghost Foundation",
+  "homepage": "http://ghost.org",
+  "keywords": [
+    "ghost",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TryGhost/Ghost-CLI/"
+  },
+  "bugs": "https://github.com/TryGhost/Ghost-CLI/issues",
+  "contributors": "https://github.com/TryGhost/Ghost-CLI/graphs/contributors",
+  "license": "MIT",
   "main": "lib/cli.js",
   "bin": {
     "ghost": "./bin/ghost"
@@ -10,16 +23,9 @@
     "lint": "jshint bin lib test && jscs bin lib test",
     "test": "npm run lint && istanbul cover _mocha test/**/*.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/TryGhost/Ghost-CLI/"
+  "engines": {
+    "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
   },
-  "keywords": [
-    "ghost",
-    "cli"
-  ],
-  "author": "Austin Burdine <acburdine@gmail.com>",
-  "license": "MIT",
   "dependencies": {
     "bluebird": "3.4.1",
     "chalk": "1.1.3",
