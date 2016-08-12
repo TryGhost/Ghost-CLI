@@ -1,8 +1,7 @@
 /* jshint expr:true */
 var sinon = require('sinon'),
     expect = require('chai').expect,
-    unitTestUtils = require('./utils'),
-    BaseCommand = require('../../lib/commands/base'),
+    BaseCommand = require('../../../lib/commands/base'),
     MockCommand, mockCommander;
 
 describe('Unit: BaseCommand', function () {
@@ -11,8 +10,7 @@ describe('Unit: BaseCommand', function () {
 
         MockCommand = BaseCommand.extend({
             name: 'test',
-            description: 'a test description',
-            init: unitTestUtils.blankInit
+            description: 'a test description'
         });
 
         mockCommander = sinon.stub().returnsThis();
@@ -43,8 +41,7 @@ describe('Unit: BaseCommand', function () {
                 'arg2',
                 {name: 'arg3', optional: true},
                 {name: 'arg4', variadic: true}
-            ],
-            init: unitTestUtils.blankInit
+            ]
         });
 
         mockCommander = sinon.stub().returns({
