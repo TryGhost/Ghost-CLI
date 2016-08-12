@@ -8,6 +8,10 @@
     "ghost",
     "cli"
   ],
+  "files": [
+    "bin",
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/TryGhost/Ghost-CLI/"
