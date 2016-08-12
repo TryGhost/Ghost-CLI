@@ -16,7 +16,13 @@ matrix:
   allow_failures:
     - node_js: "6"
   fast_finish: true
+  include:
+    - node_js: "4"
+      env: TEST_SUITE=lint
 
 branches:
   except:
     - /^greenkeeper-.+$/
+
+script:
+  - if [ "TEST_SUITE" == "lint" ]; then npm run lint; else npm test; fi
