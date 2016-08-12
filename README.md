@@ -5,10 +5,6 @@
 
 > Just a CLI manager (for a blogging platform)
 
-Ghost-CLI is the official CLI tool for installing and updating a [Ghost](https://github.com/TryGhost/Ghost) instance.
-
-***NOTE: this project is still under active development. It should not be considered production-ready***
-
 ## Installing
 
 ```sh
