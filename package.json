@@ -25,7 +25,8 @@
   },
   "scripts": {
     "lint": "jshint bin lib test && jscs bin lib test",
-    "test": "istanbul cover _mocha test/**/*-spec.js"
+    "mocha": "istanbul cover _mocha test/**/*-spec.js",
+    "test": "npm run lint && npm run mocha"
   },
   "engines": {
     "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
