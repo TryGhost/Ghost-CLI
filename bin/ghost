@@ -4,6 +4,7 @@
 // provide a title to the process
 process.title = 'ghost';
 
+// Check for CLI updates
 require('../lib/utils/update-notifier');
-var cli = require('../lib/cli');
-cli(process.argv);
+
+require('../lib/cli')(process.argv);
