@@ -31,3 +31,17 @@ node_modules
 
 # Optional REPL history
 .node_repl_history
+
+# Editors
+.idea/*
+*.iml
+*.sublime-*
+
+# vim-related
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+.vimrc
+*~
