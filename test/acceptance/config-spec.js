@@ -72,5 +72,40 @@ describe('Acceptance: Config', function () {
                 expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\nFinished!\n');
             });
         });
+
+        it('does not output anything for a non-existent file', function () {
+            return run('config test').then(function afterConfig(result) {
+                expect(result.stdout, 'output exists').to.be.ok;
+                expect(chalk.stripColor(result.stdout), 'output value').to.equal('Finished!\n');
+            });
+        });
+
+        it('does not output anything for a nonexistent variable in a config file', function () {
+            fs.writeJsonSync(env.path('config/config.production.json'), {test: 'asdf'});
+
+            return run('config test2').then(function afterConfig(result) {
+                expect(result.stdout, 'output exists').to.be.ok;
+                expect(chalk.stripColor(result.stdout), 'output value').to.equal('Finished!\n');
+            });
+        });
+    });
+
+    describe('when prompted', function () {
+        it('prompts for host and saves correctly', function () {
+            return run('config', {
+                stdin: [
+                    {when: /What is your blog url\?/gi, write: 'http://cli-test.com'}
+                ]
+            }).then(function afterConfig(result) {
+                var contents;
+
+                expect(result.stdout, 'output exists').to.be.ok;
+                expect(chalk.stripColor(result.stdout), 'value').to.match(/What is your blog url\?/);
+
+                contents = fs.readJsonSync(env.path('config/config.production.json'));
+                expect(contents, 'config contents').to.be.ok;
+                expect(contents.host, 'config host').to.equal('http://cli-test.com');
+            });
+        });
     });
 });

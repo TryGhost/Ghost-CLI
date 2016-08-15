@@ -22,11 +22,17 @@ function runCli(command, options) {
 
         function onOut(outString) {
             stdout += outString;
+
+            if (options.stdin) {
+                var stdinObj = _.find(options.stdin, function (obj) {
+                    return obj.when.test(outString);
+                });
+
+                if (stdinObj) { cp.stdin.write(stdinObj.write + '\n'); }
+            }
         }
 
         cp = spawn(path.resolve(__dirname, '../../bin/ghost'), argv, options);
-
-        // TODO: figure out how to get stdin working
 
         cp.stdout.pipe(stream.getWritableStream(onOut, true));
         cp.stderr.pipe(stream.getWritableStream(onError, true));
