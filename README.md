@@ -35,6 +35,15 @@ You can run the cli one of two ways:
     - from the ghost-cli directory: `npm link`
     - anywhere on your system: `ghost <command>`
 
+#### Testing the update behavior with the demo app
+
+- Follow the installation instructions above
+- Run `ghost install 0.1.1` (without that argument it will install the latest version)
+- Make sure you choose the option to start your app
+- Visit "https://localhost:2368/" in your browser (add "/about/" to that to view the version)
+- Run `ghost update` within your ghost install directory
+- Reload the "about" page to see the new version number (and visit "/bad/" to see some new features :smile:)
+
 #### Running tests
 
 ```sh
