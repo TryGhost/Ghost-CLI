@@ -35,7 +35,7 @@
   },
   "preferGlobal": true,
   "dependencies": {
-    "bluebird": "3.4.3",
+    "bluebird": "3.4.4",
     "chalk": "1.1.3",
     "cli-cursor": "1.0.2",
     "cli-spinners": "0.2.0",
