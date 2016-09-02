@@ -104,7 +104,7 @@ describe('Acceptance: Config', function () {
 
                 contents = fs.readJsonSync(env.path('config/config.production.json'));
                 expect(contents, 'config contents').to.be.ok;
-                expect(contents.host, 'config host').to.equal('http://cli-test.com');
+                expect(contents.url, 'config host').to.equal('http://cli-test.com');
             });
         });
     });
