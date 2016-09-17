@@ -31,7 +31,7 @@
     "test": "npm run lint && npm run test:all"
   },
   "engines": {
-    "node": "~0.10.0 || ~0.12.0 || ^4.2.0"
+    "node": "~0.12.0 || ^4.2.0 || ^6.5.0"
   },
   "preferGlobal": true,
   "dependencies": {
