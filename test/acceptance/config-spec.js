@@ -20,9 +20,9 @@ describe('Acceptance: Config', function () {
         it('creates file with default environment', function () {
             return run('config test asdf').then(function afterConfig() {
                 var contents;
-                expect(env.exists('config/config.production.json'), 'production config exists').to.be.true;
+                expect(env.exists('config.production.json'), 'production config exists').to.be.true;
 
-                contents = fs.readJsonSync(env.path('config/config.production.json'));
+                contents = fs.readJsonSync(env.path('config.production.json'));
                 expect(contents, 'contents of config file').to.be.ok;
                 expect(contents.test, 'created config variable').to.equal('asdf');
             });
@@ -31,22 +31,22 @@ describe('Acceptance: Config', function () {
         it('creates file with specified environment', function () {
             return run('config test asdf --environment development').then(function afterConfig() {
                 var contents;
-                expect(env.exists('config/config.development.json'), 'development config exists').to.be.true;
+                expect(env.exists('config.development.json'), 'development config exists').to.be.true;
 
-                contents = fs.readJsonSync(env.path('config/config.development.json'));
+                contents = fs.readJsonSync(env.path('config.development.json'));
                 expect(contents, 'contents of config file').to.be.ok;
                 expect(contents.test, 'created config variable').to.equal('asdf');
             });
         });
 
         it('adds value to existing file', function () {
-            fs.writeJsonSync(env.path('config/config.production.json'), {port: 1234});
+            fs.writeJsonSync(env.path('config.production.json'), {port: 1234});
 
             return run('config test asdf').then(function afterConfig() {
                 var contents;
-                expect(env.exists('config/config.production.json'), 'production config exists').to.be.true;
+                expect(env.exists('config.production.json'), 'production config exists').to.be.true;
 
-                contents = fs.readJsonSync(env.path('config/config.production.json'));
+                contents = fs.readJsonSync(env.path('config.production.json'));
                 expect(contents, 'contents of config file').to.be.ok;
                 expect(contents.test, 'created config variable').to.equal('asdf');
                 expect(contents.port, 'existing config variable').to.equal(1234);
@@ -56,7 +56,7 @@ describe('Acceptance: Config', function () {
 
     describe('when used as a getter', function () {
         it('can get value of existing config file', function () {
-            fs.writeJsonSync(env.path('config/config.production.json'), {test: 'asdf'});
+            fs.writeJsonSync(env.path('config.production.json'), {test: 'asdf'});
 
             return run('config test').then(function afterConfig(result) {
                 expect(result.stdout, 'output exists').to.be.ok;
@@ -65,7 +65,7 @@ describe('Acceptance: Config', function () {
         });
 
         it('can get value of existing file with environment option', function () {
-            fs.writeJsonSync(env.path('config/config.development.json'), {test: 'asdf'});
+            fs.writeJsonSync(env.path('config.development.json'), {test: 'asdf'});
 
             return run('config test -e development').then(function afterConfig(result) {
                 expect(result.stdout, 'output exists').to.be.ok;
@@ -81,7 +81,7 @@ describe('Acceptance: Config', function () {
         });
 
         it('does not output anything for a nonexistent variable in a config file', function () {
-            fs.writeJsonSync(env.path('config/config.production.json'), {test: 'asdf'});
+            fs.writeJsonSync(env.path('config.production.json'), {test: 'asdf'});
 
             return run('config test2').then(function afterConfig(result) {
                 expect(result.stdout, 'output exists').to.be.ok;
@@ -102,7 +102,7 @@ describe('Acceptance: Config', function () {
                 expect(result.stdout, 'output exists').to.be.ok;
                 expect(chalk.stripColor(result.stdout), 'value').to.match(/What is your blog url\?/);
 
-                contents = fs.readJsonSync(env.path('config/config.production.json'));
+                contents = fs.readJsonSync(env.path('config.production.json'));
                 expect(contents, 'config contents').to.be.ok;
                 expect(contents.url, 'config host').to.equal('http://cli-test.com');
             });

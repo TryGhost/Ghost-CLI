@@ -29,7 +29,8 @@ setups = {
                 path: '.ghost-cli',
                 content: {
                     'cli-version': '0.0.1'
-                }
+                },
+                json: true
             }
         ]
     }
