@@ -1,6 +1,7 @@
 # Ghost-CLI
 
 [![ghost-cli npm](https://travis-ci.org/TryGhost/Ghost-CLI.svg?branch=master)](https://travis-ci.org/TryGhost/Ghost-CLI)
+[![Build status](https://ci.appveyor.com/api/projects/status/nsq2yxgbgigm0d96?svg=true)](https://ci.appveyor.com/project/acburdine/ghost-cli)
 [![ghost-cli dependencies](https://david-dm.org/TryGhost/Ghost-CLI.svg)](https://david-dm.org/TryGhost/Ghost-CLI)
 
 > Just a CLI manager (for a blogging platform)
