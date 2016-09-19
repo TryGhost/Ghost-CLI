@@ -1,0 +1,44 @@
+# Fix line endings in Windows. (runs before repo cloning)
+init:
+  - git config --global core.autocrlf true
+
+clone_depth: 1
+
+environment:
+  matrix:
+    - nodejs_version: "4.5"
+
+platform:
+  - x64
+
+cache:
+  - bower_components -> bower.json
+  - node_modules -> package.json
+  - '%APPDATA%\npm-cache'
+  - '%APPDATA%\Roaming\bower'
+
+branches:
+  only:
+    - master
+
+# Install scripts. (runs after repo cloning)
+install:
+  # Let's try to get things working
+  # Install Node 4 ---------------------------------------------------------
+  - ps: Install-Product node 4.5
+  # Typical npm stuff ------------------------------------------------------
+  - md C:\nc
+  - npm version
+  - npm config set cache C:\nc
+  # Installation, globals --------------------------------------------------
+  - npm install -g --no-color --no-progress bower
+  # Installation, deps -----------------------------------------------------
+  - npm install --no-optional --no-color --no-progress --ignore-scripts
+  - bower install
+
+test_script:
+  - npm run test:all
+
+# Set build version format here instead of in the admin panel.
+build: off
+version: "{build}"
