@@ -50,7 +50,7 @@
     "semver": "5.3.0",
     "symlink-or-copy": "1.1.6",
     "update-notifier": "1.0.2",
-    "validator": "5.6.0"
+    "validator": "5.7.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
