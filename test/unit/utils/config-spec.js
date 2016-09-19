@@ -66,6 +66,13 @@ describe('Unit: Config', function () {
             test.set({a: 'b', c: 'd'});
             expect(test.values).to.deep.equal({a: 'b', c: 'd'});
         });
+
+        it('removes value when set is passed a null value', function () {
+            test.set('a', 'b');
+            expect(test.values).to.deep.equal({a: 'b'});
+            test.set('a', null);
+            expect(test.values).to.deep.equal({});
+        });
     });
 
     describe('has()', function () {
