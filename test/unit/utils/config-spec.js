@@ -23,6 +23,11 @@ describe('Unit: Config', function () {
         fs.removeSync('config-test.json');
     });
 
+    it('loads empty value set when file does not exist', function () {
+        test = new Config('config-test.json');
+        expect(test.values).to.deep.equal({});
+    });
+
     describe('get()', function () {
         beforeEach(function () {
             fs.writeJsonSync('config-test.json', {a: 'b'});
@@ -60,6 +65,27 @@ describe('Unit: Config', function () {
         it('sets multiple values correctly', function () {
             test.set({a: 'b', c: 'd'});
             expect(test.values).to.deep.equal({a: 'b', c: 'd'});
+        });
+    });
+
+    describe('has()', function () {
+        it('returns false when value does not exist', function () {
+            test = new Config('config-test.json');
+            expect(test.has('a')).to.be.false;
+        });
+
+        it('returns true when value exists', function () {
+            fs.writeJsonSync('config-test.json', {a: 'b'});
+            test = new Config('config-test.json');
+            expect(test.has('a')).to.be.true;
+            fs.removeSync('config-test.json');
+        });
+
+        it('returns true when value exists and is false', function () {
+            fs.writeJsonSync('config-test.json', {a: false});
+            test = new Config('config-test.json');
+            expect(test.has('a')).to.be.true;
+            fs.removeSync('config-test.json');
         });
     });
 
