@@ -9,8 +9,7 @@
 ## Installing
 
 ```sh
-# Note: this will eventually become npm install -g ghost-cli
-npm install -g TryGhost/Ghost-CLI
+npm install -g ghost-cli
 ```
 
 ## Usage:
@@ -18,6 +17,14 @@ npm install -g TryGhost/Ghost-CLI
 ```sh
 ghost <command>
 ```
+
+#### NOTE: This CLI is not designed to work with any Ghost versions < 1.0.0
+
+## Commands
+
+#### `ghost install [version]`
+
+Installs a particular version of Ghost. If no version is specified, the CLI will install the latest available version.
 
 ## Developers
 
@@ -36,17 +43,12 @@ You can run the cli one of two ways:
     - from the ghost-cli directory: `npm link`
     - anywhere on your system: `ghost <command>`
 
-#### Testing the update behavior with the demo app
-
-- Follow the installation instructions above
-- Run `ghost install 0.1.1` (without that argument it will install the latest version)
-- Make sure you choose the option to start your app
-- Visit "https://localhost:2368/" in your browser (add "/about/" to that to view the version)
-- Run `ghost update` within your ghost install directory
-- Reload the "about" page to see the new version number (and visit "/bad/" to see some new features :smile:)
-
 #### Running tests
 
 ```sh
 npm test
 ```
+
+## Looking for ghost-cli <= 0.0.2?
+
+The npm version of ghost-cli <= 0.0.2 can be found [here](https://github.com/jeffdonthemic/ghost-cli). Any versions of Ghost-CLI > 1.0.0-alpha.1 are part of this project.
