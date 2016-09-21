@@ -24,8 +24,9 @@
     "ghost": "./bin/ghost"
   },
   "scripts": {
+    "coverage": "cat ./coverage/lcov.info | coveralls",
     "lint": "jshint bin lib test && jscs bin lib test",
-    "test:unit": "istanbul cover _mocha test/unit/**/*-spec.js",
+    "test:unit": "istanbul cover _mocha --report lcovonly -- test/unit/**/*-spec.js",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "npm run test:unit && npm run test:acceptance",
     "test": "npm run lint && npm run test:all"
@@ -54,10 +55,12 @@
   },
   "devDependencies": {
     "chai": "3.5.0",
+    "coveralls": "2.11.14",
     "istanbul": "0.4.5",
     "jscs": "3.0.7",
     "jshint": "2.9.3",
     "mocha": "3.0.2",
+    "mocha-lcov-reporter": "1.2.0",
     "rewire": "2.5.2",
     "sinon": "1.17.6"
   },

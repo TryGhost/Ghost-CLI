@@ -22,3 +22,6 @@ branches:
 
 script:
   - if [ "$TEST_SUITE" == "lint" ]; then npm run lint; else npm run test:all; fi
+
+after_success:
+  - if [[ "$TRAVIS_NODE_VERSION" == "4" && "$TEST_SUITE" != "lint" ]]; then npm run coverage; fi
