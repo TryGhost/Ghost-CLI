@@ -14,6 +14,8 @@
 npm install -g ghost-cli
 ```
 
+---
+
 ## Usage:
 
 ```sh
@@ -22,11 +24,19 @@ ghost <command>
 
 #### NOTE: This CLI is not designed to work with any Ghost versions < 1.0.0
 
+---
+
 ## Commands
 
 #### `ghost install [version]`
 
 Installs a particular version of Ghost. If no version is specified, the CLI will install the latest available version.
+
+###### `ghost install local`
+
+Running `ghost install local` is a quick way to set up a development version of ghost on your local environment. This can be useful for theme/adapter development.
+
+---
 
 ## Developers
 
