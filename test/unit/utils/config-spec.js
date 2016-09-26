@@ -127,4 +127,32 @@ describe('Unit: Config', function () {
             fs.removeSync('config-test.json');
         });
     });
+
+    describe('load()', function () {
+        it('returns an instance of Config', function () {
+            fs.writeJsonSync('config-test.json', {test: 'a'});
+            var result = Config.load('config-test.json');
+            expect(result).to.be.an.instanceof(Config);
+            expect(result.get('test')).to.equal('a');
+            fs.removeSync('config-test.json');
+        });
+
+        it('returns a singleton instance of Config', function () {
+            fs.writeJsonSync('config-test.json', {test: 'a'});
+            var result = Config.load('config-test.json'),
+                result2;
+
+            expect(result).to.be.an.instanceof(Config);
+            expect(result.get('test')).to.equal('a');
+
+            result2 = Config.load('config-test.json');
+            expect(result2).to.be.an.instanceof(Config);
+            expect(result2.get('test')).to.equal('a');
+
+            result2.set('test', 'b');
+            expect(result2.get('test')).to.equal('b');
+            expect(result.get('test')).to.equal('b');
+            fs.removeSync('config-test.json');
+        });
+    });
 });
