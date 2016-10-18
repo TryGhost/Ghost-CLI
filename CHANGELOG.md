@@ -1,5 +1,9 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.4
+- :art: addition of a `--force` option to `ghost update` that clears out the version to be installed if it exists
+- :sparkles: Ghost database migration support added
+
 ## 1.0.0-alpha.3
 - :art: Make `-v` the version flag instead of `-V`
 - :bug: Ghost-CLI won't install an already installed version of Ghost
