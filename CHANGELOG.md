@@ -1,5 +1,11 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.5
+- :lipstick: output blog url on start
+- :sparkles: Add `ghost run` command
+- :book: Switch from jscs/jshint to eslint for linting
+- :art: Refactor local process manager to better watch for database initialization
+
 ## 1.0.0-alpha.4
 - :art: addition of a `--force` option to `ghost update` that clears out the version to be installed if it exists
 - :sparkles: Ghost database migration support added
