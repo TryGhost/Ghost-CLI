@@ -43,7 +43,7 @@
     "commander": "2.9.0",
     "core-object": "2.0.6",
     "fkill": "3.1.0",
-    "fs-extra": "0.30.0",
+    "fs-extra": "1.0.0",
     "inquirer": "1.2.2",
     "lodash": "4.16.5",
     "log-symbols": "1.0.2",
