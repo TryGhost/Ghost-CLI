@@ -1,5 +1,10 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.6
+- :bug: Ensure correct command name is shown in error output
+- :art: Ensure logs folder is created on ghost install
+- :art: Use knex-migrator error codes to check for migration error
+
 ## 1.0.0-alpha.5
 - :lipstick: output blog url on start
 - :sparkles: Add `ghost run` command
