@@ -94,13 +94,13 @@ describe('Acceptance: Config', function () {
         it('prompts for host and saves correctly', function () {
             return run('config', {
                 stdin: [
-                    {when: /What is your blog url\?/gi, write: 'http://cli-test.com'}
+                    {when: /Enter your blog URL:/gi, write: 'http://cli-test.com'}
                 ]
             }).then(function afterConfig(result) {
                 var contents;
 
                 expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'value').to.match(/What is your blog url\?/);
+                expect(chalk.stripColor(result.stdout), 'value').to.match(/Enter your blog URL:/);
 
                 contents = fs.readJsonSync(env.path('config.production.json'));
                 expect(contents, 'config contents').to.be.ok;
