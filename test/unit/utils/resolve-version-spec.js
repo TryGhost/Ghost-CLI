@@ -62,7 +62,7 @@ describe('Unit: resolveVersion', function () {
             return resolveVersion('1.0.5').then(function () {
                 throw new Error('Version finder should not have resolved');
             }).catch(function (error) {
-                expect(error).to.equal('Invalid version specified.');
+                expect(error).to.equal('Invalid version specified: 1.0.5');
                 reset();
             });
         });
