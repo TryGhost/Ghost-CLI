@@ -94,7 +94,11 @@ describe('Acceptance: Config', function () {
         it('prompts for host and saves correctly', function () {
             return run('config', {
                 stdin: [
-                    {when: /Enter your blog URL:/gi, write: 'http://cli-test.com'}
+                    {when: /Enter your blog URL:/gi, write: 'http://cli-test.com'},
+                    {when: /MySQL hostname/gi, write: 'localhost'},
+                    {when: /MySQL username/gi, write: 'root'},
+                    {when: /MySQL password/gi, write: 'password'},
+                    {when: /Ghost database name/gi, write: ''}
                 ]
             }).then(function afterConfig(result) {
                 var contents;
