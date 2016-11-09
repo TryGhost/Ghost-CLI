@@ -1,5 +1,13 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.7
+- :art: Minor messaging improvements
+- :art: Prompt for mysql database information
+- :art: ensure leading v is stripped from provided ghost version
+- :art: Pass contentPath to ghost process via environment variable
+- :sparkles: :fire: Make ghost run wait for Ghost to finish starting
+- :art: fixes for `ghost install local`
+
 ## 1.0.0-alpha.6
 - :bug: Ensure correct command name is shown in error output
 - :art: Ensure logs folder is created on ghost install
