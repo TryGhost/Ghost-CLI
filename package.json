@@ -57,7 +57,7 @@
   "devDependencies": {
     "chai": "3.5.0",
     "coveralls": "2.11.15",
-    "eslint": "3.10.1",
+    "eslint": "3.10.2",
     "istanbul": "0.4.5",
     "mocha": "3.1.2",
     "mocha-lcov-reporter": "1.2.0",
