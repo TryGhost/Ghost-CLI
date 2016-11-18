@@ -3,13 +3,12 @@ Description=Ghost systemd service for blog: <%= name %>
 # Documentation=add documentation link here
 
 [Service]
-Type=notify
-NotifyAccess=all
+Type=simple
 WorkingDirectory=<%= dir %>
 User=<%= user %>
 Environment="NODE_ENV=<%= environment %>"
 ExecStart=<%= ghost_exec_path %> run
-Restart=on-failure
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
