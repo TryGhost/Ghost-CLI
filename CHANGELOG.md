@@ -1,5 +1,19 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.8
+- :arrow_up: bump min Ghost version to 1.0.0-alpha.9 @acburdine
+- :art: :bug: revert to simple systemd service @acburdine
+- :checkered_flag: use `npm.cmd` instead of `npm` on windows (#94) @cyhsutw
+- :sparkles: systemd process manager @acburdine
+- :art: fix setup config handling @acburdine
+- :art: :sparkles: add process manager hooks @acburdine
+- :sparkles: add ghost system stack checks to setup (#92) @acburdine
+- :art: more config improvements @acburdine
+- update inquirer to version 1.2.3 (#86) @greenkeeperio-bot
+- update lodash to version 4.17.2 (#93) @greenkeeperio-bot
+- update eslint to version 3.10.2 (#91) @greenkeeperio-bot
+- update coveralls to version 2.11.15 (#84) @greenkeeperio-bot
+
 ## 1.0.0-alpha.7
 - :art: Minor messaging improvements
 - :art: Prompt for mysql database information
