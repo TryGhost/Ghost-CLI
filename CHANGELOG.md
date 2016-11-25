@@ -1,5 +1,11 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.9
+- :sparkles: `ghost restart` command @acburdine
+- :art: switch to using sudo for systemctl commands @acburdine
+- :art: :lipstick: improve invalid password error handling in systemd service @acburdine
+- :bug: fix `ghost install local` usage @acburdine
+
 ## 1.0.0-alpha.8
 - :arrow_up: bump min Ghost version to 1.0.0-alpha.9 @acburdine
 - :art: :bug: revert to simple systemd service @acburdine
