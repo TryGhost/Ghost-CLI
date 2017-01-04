@@ -64,3 +64,7 @@ npm test
 ## Looking for ghost-cli <= 0.0.2?
 
 The npm version of ghost-cli <= 0.0.2 can be found [here](https://github.com/jeffdonthemic/ghost-cli). Any versions of Ghost-CLI > 1.0.0-alpha.1 are part of this project.
+
+# Copyright & License
+
+Copyright (c) 2016-2017 Ghost Foundation - Released under the [MIT license](LICENSE).
