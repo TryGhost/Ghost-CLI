@@ -19,7 +19,7 @@ indent_size = 2
 [*.md]
 trim_trailing_whitespace = false
 
-[*.yml]
+[*.{yml,json}]
 indent_size = 2
 
 [Makefile]
