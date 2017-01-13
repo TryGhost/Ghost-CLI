@@ -41,7 +41,7 @@
     "cli-cursor": "1.0.2",
     "cli-spinners": "0.3.0",
     "commander": "2.9.0",
-    "core-object": "2.0.6",
+    "core-object": "2.1.0",
     "fkill": "3.1.0",
     "fs-extra": "1.0.0",
     "inquirer": "1.2.3",
