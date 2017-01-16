@@ -45,7 +45,7 @@
     "fkill": "3.1.0",
     "fs-extra": "2.0.0",
     "inquirer": "2.0.0",
-    "lodash": "4.17.2",
+    "lodash": "4.17.4",
     "log-symbols": "1.0.2",
     "knex-migrator": "0.2.0",
     "npm": "2.15.11",
