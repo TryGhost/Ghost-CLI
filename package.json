@@ -45,7 +45,7 @@
     "fs-extra": "2.0.0",
     "inquirer": "2.0.0",
     "lodash": "4.17.4",
-    "knex-migrator": "2.0.2",
+    "knex-migrator": "2.0.3",
     "npm": "2.15.11",
     "ora": "0.4.0",
     "semver": "5.3.0",
