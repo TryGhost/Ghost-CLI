@@ -1669,9 +1669,9 @@ kind-of@^3.0.2:
   dependencies:
     is-buffer "^1.0.2"
 
-knex-migrator@2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.2.tgz#ce3f5abf514be976c97abb51a33b6734d7a31222"
+knex-migrator@2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.4.tgz#3b205950d331365233285b9934ab2dc2319bc95c"
   dependencies:
     bluebird "3.4.6"
     commander "2.9.0"
