@@ -10,9 +10,9 @@
 
 ## Installing
 
-```sh
-npm install -g ghost-cli
-```
+1. Install [Yarn](https://yarnpkg.com) first: [Installation Guide](https://yarnpkg.com/en/docs/install)
+
+2. `yarn global add ghost-cli`
 
 ---
 
@@ -45,20 +45,20 @@ Running `ghost install local` is a quick way to set up a development version of 
 1. Fork this repo
 2. `git clone https://github.com/<your-username>/Ghost-CLI path/to/your/workspace`
 3. `cd path/to/your/workspace`
-4. `npm install`
+4. `yarn install`
 
 You can run the cli one of two ways:
 
 - Manually:
     - from the ghost-cli directory: `./bin/ghost <command>`
-- Using `npm link`:
-    - from the ghost-cli directory: `npm link`
+- Using `yarn link`:
+    - from the ghost-cli directory: `yarn link`
     - anywhere on your system: `ghost <command>`
 
 #### Running tests
 
 ```sh
-npm test
+yarn test
 ```
 
 ## Looking for ghost-cli <= 0.0.2?
