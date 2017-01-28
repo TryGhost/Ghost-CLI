@@ -63,10 +63,6 @@
         "named": "never"
       }
     ],
-    "one-var": [
-      2,
-      "always"
-    ],
     "padded-blocks": [
       2,
       "never"
