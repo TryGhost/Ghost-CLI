@@ -4,9 +4,9 @@ const proxyquire = require('proxyquire');
 
 let resolveVersion;
 
-function stubNpm(result) {
+function stubYarn(result) {
     resolveVersion = proxyquire('../../../lib/utils/resolve-version', {
-        './npm': function () {
+        './yarn': function () {
             return Promise.resolve({stdout: result});
         }
     });
@@ -14,7 +14,7 @@ function stubNpm(result) {
 
 describe('Unit: resolveVersion', function () {
     it('rejects for versions less than 1.0.0-alpha.1', function () {
-        stubNpm('');
+        stubYarn('');
 
         return resolveVersion('0.11.0').then(function () {
             throw new Error('Version finder should not have resolved.');
@@ -25,18 +25,18 @@ describe('Unit: resolveVersion', function () {
     });
 
     it('rejects if result from npm is invalid JSON', function () {
-        stubNpm('invalid json');
+        stubYarn('invalid json');
 
         return resolveVersion().then(function () {
             throw new Error('Version finder should not have resolved.');
         }).catch(function (error) {
             expect(error).to.be.an.instanceOf(Error);
-            expect(error.message).to.equal('Ghost-CLI was unable to load versions from NPM.');
+            expect(error.message).to.equal('Ghost-CLI was unable to load versions from Yarn.');
         });
     });
 
     it('rejects if no versions are found', function () {
-        stubNpm('[]');
+        stubYarn('{"data": []}');
 
         return resolveVersion().then(function () {
             throw new Error('Version finder should not have resolved');
@@ -48,7 +48,7 @@ describe('Unit: resolveVersion', function () {
 
     describe('without existing version', function () {
         it('correctly filters out versions less than 1.0.0-alpha.1', function () {
-            stubNpm('["0.10.1", "0.11.0"]');
+            stubYarn('{"data": ["0.10.1", "0.11.0"]}');
 
             return resolveVersion().then(function () {
                 throw new Error('Version finder should not have resolved');
@@ -59,7 +59,7 @@ describe('Unit: resolveVersion', function () {
         });
 
         it('errors if specified version is not in list of valid versions', function () {
-            stubNpm('["1.0.0", "1.0.1"]');
+            stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion('1.0.5').then(function () {
                 throw new Error('Version finder should not have resolved');
@@ -70,7 +70,7 @@ describe('Unit: resolveVersion', function () {
         });
 
         it('resolves with specified version if it exists and is valid', function () {
-            stubNpm('["1.0.0", "1.0.1"]');
+            stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion('1.0.0').then(function (version) {
                 expect(version).to.equal('1.0.0');
@@ -78,7 +78,7 @@ describe('Unit: resolveVersion', function () {
         });
 
         it('resolves with latest version if no version specified', function () {
-            stubNpm('["1.0.0", "1.0.1"]');
+            stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion().then(function (version) {
                 expect(version).to.equal('1.0.1');
@@ -88,7 +88,7 @@ describe('Unit: resolveVersion', function () {
 
     describe('with existing version', function () {
         it('correctly filters out all versions greater than the specified one', function () {
-            stubNpm('["1.0.0", "1.0.1"]');
+            stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion(null, '1.0.1').then(function () {
                 throw new Error('Version finder should not have resolved');
