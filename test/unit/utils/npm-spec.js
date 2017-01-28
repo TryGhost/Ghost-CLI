@@ -1,32 +1,30 @@
-/* jshint expr:true */
-var expect = require('chai').expect,
-    rewire = require('rewire'),
-    sinon = require('sinon'),
-    Promise = require('bluebird'),
+'use strict';
+const expect = require('chai').expect;
+const proxyquire = require('proxyquire');
+const sinon = require('sinon');
 
-    npm = rewire('../../../lib/utils/npm');
+let npm;
 
 describe('Unit: npm', function () {
-    var currentEnv,
-        execa, reset;
+    let currentEnv;
+    let execa;
 
     beforeEach(function () {
         currentEnv = process.env;
         process.env = {};
 
         execa = sinon.stub().returns(new Promise((resolve) => {resolve();}));
-        reset = npm.__set__('execa', execa);
+        npm = proxyquire('../../../lib/utils/npm', {
+            execa: execa
+        });
     });
 
     afterEach(function () {
         process.env = currentEnv;
-        reset();
-
-        execa = null;
     });
 
     it('spawns npm process with no arguments correctly', function () {
-        var promise = npm();
+        let promise = npm();
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -37,7 +35,7 @@ describe('Unit: npm', function () {
     });
 
     it('spawns npm process with correct arguments', function () {
-        var promise = npm(['cache', 'clear']);
+        let promise = npm(['cache', 'clear']);
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -48,7 +46,7 @@ describe('Unit: npm', function () {
     });
 
     it('disables npm progress bar by default', function () {
-        var promise = npm();
+        let promise = npm();
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -61,7 +59,7 @@ describe('Unit: npm', function () {
     });
 
     it('passes npm config options correctly to environment variables', function () {
-        var promise = npm([], {loglevel: 'quiet', color: 'always'});
+        let promise = npm([], {loglevel: 'quiet', color: 'always'});
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -78,7 +76,7 @@ describe('Unit: npm', function () {
     });
 
     it('correctly passes through options', function () {
-        var promise = npm([], {}, {cwd: 'test'});
+        let promise = npm([], {}, {cwd: 'test'});
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;

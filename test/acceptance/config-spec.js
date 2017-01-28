@@ -29,7 +29,7 @@ describe('Acceptance: Config', function () {
         });
 
         it('creates file with specified environment', function () {
-            return run('config test asdf --environment development').then(function afterConfig() {
+            return run('config test asdf --development').then(function afterConfig() {
                 var contents;
                 expect(env.exists('config.development.json'), 'development config exists').to.be.true;
 
@@ -60,23 +60,22 @@ describe('Acceptance: Config', function () {
 
             return run('config test').then(function afterConfig(result) {
                 expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\nFinished!\n');
+                expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\n');
             });
         });
 
         it('can get value of existing file with environment option', function () {
             fs.writeJsonSync(env.path('config.development.json'), {test: 'asdf'});
 
-            return run('config test -e development').then(function afterConfig(result) {
+            return run('config test --development').then(function afterConfig(result) {
                 expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\nFinished!\n');
+                expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\n');
             });
         });
 
         it('does not output anything for a non-existent file', function () {
             return run('config test').then(function afterConfig(result) {
-                expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'output value').to.equal('Finished!\n');
+                expect(result.stdout, 'output value').to.equal('');
             });
         });
 
@@ -84,8 +83,7 @@ describe('Acceptance: Config', function () {
             fs.writeJsonSync(env.path('config.production.json'), {test: 'asdf'});
 
             return run('config test2').then(function afterConfig(result) {
-                expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'output value').to.equal('Finished!\n');
+                expect(result.stdout, 'output value').to.equal('');
             });
         });
     });
