@@ -219,7 +219,7 @@ describe('Unit: cli', function () {
 
         it('adds version', function () {
             sandbox.stub(program, 'version');
-            cli([], program);
+            cli(['node', 'ghost'], program);
 
             expect(program.version.calledWith(pkg.version)).to.be.true;
         });
