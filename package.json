@@ -10,7 +10,8 @@
   ],
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "yarn.lock"
   ],
   "repository": {
     "type": "git",
