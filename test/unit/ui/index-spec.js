@@ -1,21 +1,19 @@
-/* jshint expr:true */
-var expect = require('chai').expect,
-    chalk = require('chalk'),
-    Promise = require('bluebird'),
-
-    streamTestUtils = require('../../utils/stream'),
-    UI = require('../../../lib/ui');
+'use strict';
+const expect = require('chai').expect;
+const chalk = require('chalk');
+const streamTestUtils = require('../../utils/stream');
+const UI = require('../../../lib/ui');
 
 describe('Unit: UI', function () {
     it('can be created successfully', function () {
-        var ui = new UI();
+        let ui = new UI();
 
         expect(ui).to.be.ok;
     });
 
     describe('#log', function () {
         it('outputs message without color when no color is supplied', function (done) {
-            var stdout, ui;
+            let stdout, ui;
 
             stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
@@ -31,7 +29,7 @@ describe('Unit: UI', function () {
         });
 
         it('outputs message with color when color is supplied', function (done) {
-            var stdout, ui;
+            let stdout, ui;
 
             stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
@@ -48,7 +46,7 @@ describe('Unit: UI', function () {
     });
 
     it('#success outputs message with correct formatting', function (done) {
-        var stdout, ui;
+        let stdout, ui;
 
         stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
@@ -64,7 +62,7 @@ describe('Unit: UI', function () {
     });
 
     it('#fail outputs message with correct formatting', function (done) {
-        var stdout, ui;
+        let stdout, ui;
 
         stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
@@ -80,16 +78,16 @@ describe('Unit: UI', function () {
     });
 
     describe('#run', function () {
-        var ui;
+        let ui;
 
         before(function () {
             ui = new UI();
         });
 
         it('correctly passes through promise resolve values', function () {
-            var testFunc = new Promise(function (resolve) {
-                    resolve('a');
-                });
+            let testFunc = new Promise(function (resolve) {
+                resolve('a');
+            });
 
             return ui.run(testFunc).then(function (result) {
                 expect(result, 'run result').to.equal('a');
@@ -97,9 +95,9 @@ describe('Unit: UI', function () {
         });
 
         it('correctly passes through promise reject values', function (done) {
-            var testFunc = new Promise(function (resolve, reject) {
-                    reject(new Error('something went wrong!'));
-                });
+            let testFunc = new Promise(function (resolve, reject) {
+                reject(new Error('something went wrong!'));
+            });
 
             ui.run(testFunc).then(function () {
                 done(new Error('then should not be called'));

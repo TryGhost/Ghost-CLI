@@ -7,4 +7,5 @@ process.title = 'ghost';
 // Check for CLI updates
 require('../lib/utils/update-notifier');
 
-require('../lib/cli')(process.argv);
+const Command = require('commander').Command;
+require('../lib/cli')(process.argv, new Command());

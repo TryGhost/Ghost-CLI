@@ -28,8 +28,8 @@
     "lint": "eslint bin lib",
     "test:unit": "istanbul cover _mocha --report lcovonly -- test/unit/**/*-spec.js",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
-    "test:all": "npm run test:unit && npm run test:acceptance",
-    "test": "npm run lint && npm run test:all"
+    "test:all": "yarn run test:unit && yarn run test:acceptance",
+    "test": "yarn run lint && yarn run test:all"
   },
   "engines": {
     "node": "^4.2.0 || ^6.5.0"
@@ -39,13 +39,13 @@
     "bluebird": "3.4.7",
     "chalk": "1.1.3",
     "commander": "2.9.0",
-    "core-object": "3.0.0",
     "execa": "0.5.0",
     "fkill": "3.1.0",
     "fs-extra": "2.0.0",
     "inquirer": "2.0.0",
+    "knex-migrator": "2.0.4",
+    "listr": "0.10.0",
     "lodash": "4.17.4",
-    "knex-migrator": "0.2.0",
     "npm": "2.15.11",
     "ora": "0.4.0",
     "semver": "5.3.0",
@@ -60,6 +60,7 @@
     "istanbul": "0.4.5",
     "mocha": "3.2.0",
     "mocha-lcov-reporter": "1.2.0",
+    "proxyquire": "1.7.11",
     "rewire": "2.5.2",
     "sinon": "1.17.6"
   },
