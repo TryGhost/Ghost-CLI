@@ -1,11 +1,11 @@
-/* jshint expr:true */
-var expect = require('chai').expect,
-    fs = require('fs-extra'),
+'use strict';
+const expect = require('chai').expect;
+const fs = require('fs-extra');
 
-    Config = require('../../../lib/utils/config');
+const Config = require('../../../lib/utils/config');
 
 describe('Unit: Config', function () {
-    var test;
+    let test;
 
     it('errors when no filename is specified on creation', function () {
         try {
@@ -108,21 +108,21 @@ describe('Unit: Config', function () {
 
     describe('exists()', function () {
         it('returns false if file does not exist', function () {
-            var result = Config.exists('does-not-exist.txt');
+            let result = Config.exists('does-not-exist.txt');
 
             expect(result).to.be.false;
         });
 
         it('returns false if file contains invalid JSON', function () {
             fs.writeFileSync('config-test.json', 'invalid json');
-            var result = Config.exists('config-test.json');
+            let result = Config.exists('config-test.json');
             expect(result).to.be.false;
             fs.removeSync('config-test.json');
         });
 
         it('returns parsed contents of file if valid JSON', function () {
             fs.writeJsonSync('config-test.json', {test: 'a'});
-            var result = Config.exists('config-test.json');
+            let result = Config.exists('config-test.json');
             expect(result.test).to.equal('a');
             fs.removeSync('config-test.json');
         });
@@ -131,7 +131,7 @@ describe('Unit: Config', function () {
     describe('load()', function () {
         it('returns an instance of Config', function () {
             fs.writeJsonSync('config-test.json', {test: 'a'});
-            var result = Config.load('config-test.json');
+            let result = Config.load('config-test.json');
             expect(result).to.be.an.instanceof(Config);
             expect(result.get('test')).to.equal('a');
             fs.removeSync('config-test.json');

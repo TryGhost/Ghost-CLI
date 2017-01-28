@@ -28,8 +28,8 @@
     "lint": "eslint bin lib",
     "test:unit": "istanbul cover _mocha --report lcovonly -- test/unit/**/*-spec.js",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
-    "test:all": "npm run test:unit && npm run test:acceptance",
-    "test": "npm run lint && npm run test:all"
+    "test:all": "yarn run test:unit && yarn run test:acceptance",
+    "test": "yarn run lint && yarn run test:all"
   },
   "engines": {
     "node": "^4.2.0 || ^6.5.0"
@@ -60,6 +60,7 @@
     "istanbul": "0.4.5",
     "mocha": "3.2.0",
     "mocha-lcov-reporter": "1.2.0",
+    "proxyquire": "1.7.11",
     "rewire": "2.5.2",
     "sinon": "1.17.6"
   },
