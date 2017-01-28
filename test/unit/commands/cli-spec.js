@@ -2,8 +2,8 @@
 const sinon = require('sinon');
 const expect = require('chai').expect;
 const rewire = require('rewire');
-const cli = rewire('../../lib/cli');
-const pkg = require('../../package.json');
+const cli = rewire('../../../lib/cli');
+const pkg = require('../../../package.json');
 
 const Command = require('commander').Command;
 
