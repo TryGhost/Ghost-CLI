@@ -56,4 +56,18 @@ describe('Unit: yarn', function () {
             expect(execa.args[0][2].cwd).to.equal('test');
         });
     });
+
+    it('respects process.env overrides but doesn\'t mutate process.env', function () {
+        process.env.TESTENV = 'test';
+
+        let promise = yarn([], {env: {TESTENV: 'override'}});
+
+        return promise.then(() => {
+            expect(execa.calledOnce).to.be.true;
+            expect(execa.args[0][2]).to.be.an('object');
+            expect(execa.args[0][2].env).to.be.an('object');
+            expect(execa.args[0][2].env.TESTENV).to.equal('override');
+            expect(process.env.TESTENV).to.equal('test');
+        });
+    });
 });
