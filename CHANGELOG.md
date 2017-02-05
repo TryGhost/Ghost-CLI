@@ -1,5 +1,16 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.11
+- :art: improve port handling in config [@acburdine](https://github.com/acburdine)
+- :art: expand config handleAdvancedOptions function to allow for Promises [@acburdine](https://github.com/acburdine)
+- :bug: ensure truthy value of regex match is returned in validation [@acburdine](https://github.com/acburdine)
+- chore: update yarn.lock [@acburdine](https://github.com/acburdine)
+- update knex-migrator to version 2.0.5 @greenkeeperio-bot
+- update eslint to version 3.15.0 @greenkeeperio-bot
+- update rxjs to version 5.1.0 @greenkeeperio-bot
+- :bug: don't mutate process.env using lodash methods [@acburdine](https://github.com/acburdine)
+- include yarn.lock in npm publish [@acburdine](https://github.com/acburdine)
+
 ## 1.0.0-alpha.10
 - :fire: :sparkles: switch to using yarn over npm [@acburdine](https://github.com/acburdine)
 - :art: knex-migrator: migrate if needed [@kirrg001](https://github.com/kirrg001)
