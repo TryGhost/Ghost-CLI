@@ -28,13 +28,7 @@ ghost <command>
 
 ## Commands
 
-#### `ghost install [version]`
-
-Installs a particular version of Ghost. If no version is specified, the CLI will install the latest available version.
-
-###### `ghost install local`
-
-Running `ghost install local` is a quick way to set up a development version of ghost on your local environment. This can be useful for theme/adapter development.
+See the [Command Reference](https://github.com/TryGhost/Ghost-CLI/wiki/Command%20Reference) for more details.
 
 ---
 
