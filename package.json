@@ -47,7 +47,7 @@
     "fkill": "3.1.0",
     "fs-extra": "2.0.0",
     "inquirer": "3.0.1",
-    "knex-migrator": "2.0.5",
+    "knex-migrator": "2.0.7",
     "listr": "0.10.0",
     "lodash": "4.17.4",
     "ora": "1.1.0",
