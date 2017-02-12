@@ -1,5 +1,18 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.12
+- update knex-migrator to version 2.0.7 @greenkeeperio-bot
+- :bug: fix `ghost stop` command from failing [@acburdine](https://github.com/acburdine)
+- :sparkles: add `--all` option to ghost stop to kill all running ghost processes [@acburdine](https://github.com/acburdine)
+- :art: move registering/deregistering instance to ghost start/stop commands [@acburdine](https://github.com/acburdine)
+- :sparkles: `ghost ls` command [@acburdine](https://github.com/acburdine)
+- :lipstick: add table method to UI class via cli-table-2 [@acburdine](https://github.com/acburdine)
+- :art: wrap child process management for `ghost run` inside a class [@acburdine](https://github.com/acburdine)
+- :sparkles: add configuration utilities for the global config folder and file [@acburdine](https://github.com/acburdine)
+- :art: make `ghost buster` command use yarn utility
+- :book: update readme with link to wiki command reference [@acburdine](https://github.com/acburdine)
+- :art: :sparkles: improve process manager handling on unsupported environments [@acburdine](https://github.com/acburdine)
+
 ## 1.0.0-alpha.11
 - :art: improve port handling in config [@acburdine](https://github.com/acburdine)
 - :art: expand config handleAdvancedOptions function to allow for Promises [@acburdine](https://github.com/acburdine)
