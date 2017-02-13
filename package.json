@@ -52,7 +52,7 @@
     "lodash": "4.17.4",
     "ora": "1.1.0",
     "portfinder": "1.0.13",
-    "rxjs": "5.1.0",
+    "rxjs": "5.1.1",
     "semver": "5.3.0",
     "shasum": "1.0.2",
     "symlink-or-copy": "1.1.8",
