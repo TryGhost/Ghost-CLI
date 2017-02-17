@@ -77,6 +77,14 @@ describe('Unit: resolveVersion', function () {
             });
         });
 
+        it('allows a v in front of the version number', function () {
+            stubYarn('{"data": ["1.0.0", "1.0.1"]}');
+
+            return resolveVersion('v1.0.0').then(function (version) {
+                expect(version).to.equal('1.0.0');
+            });
+        });
+
         it('resolves with latest version if no version specified', function () {
             stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 

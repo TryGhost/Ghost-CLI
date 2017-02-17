@@ -1,6 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const fs = require('fs-extra');
+const path = require('path');
 
 const Config = require('../../../lib/utils/config');
 
@@ -139,8 +140,8 @@ describe('Unit: Config', function () {
 
         it('returns a singleton instance of Config', function () {
             fs.writeJsonSync('config-test.json', {test: 'a'});
-            var result = Config.load('config-test.json'),
-                result2;
+            let result = Config.load('config-test.json');
+            let result2;
 
             expect(result).to.be.an.instanceof(Config);
             expect(result.get('test')).to.equal('a');
@@ -153,6 +154,37 @@ describe('Unit: Config', function () {
             expect(result2.get('test')).to.equal('b');
             expect(result.get('test')).to.equal('b');
             fs.removeSync('config-test.json');
+        });
+
+        it('can load the system config', function () {
+            fs.ensureDirSync(Config.system);
+            fs.writeJsonSync(path.join(Config.system, 'config'), {system: true, a: 'b'});
+            let result = Config.load('system');
+
+            expect(result).to.be.an.instanceOf(Config);
+            expect(result.get('system')).to.be.true;
+            expect(result.get('a')).to.equal('b');
+
+            fs.removeSync(path.join(Config.system, 'config'));
+        });
+
+        it('can load a config based on the environment', function () {
+            fs.writeJsonSync('config.development.json', {foo: 'bar', channels: 'arethebomb'});
+            let result = Config.load('development');
+
+            expect(result).to.be.an.instanceOf(Config);
+            expect(result.get('foo')).to.equal('bar');
+            expect(result.environment).to.equal('development');
+            fs.removeSync('config.development.json');
+
+            fs.writeJsonSync('config.production.json', {channels: 'areseriouslythebomb'});
+            let result2 = Config.load('production');
+
+            expect(result2).to.be.an.instanceOf(Config);
+            expect(result2.get('channels')).to.equal('areseriouslythebomb');
+            expect(result2.environment).to.equal('production');
+
+            fs.removeSync('config.production.json');
         });
     });
 });
