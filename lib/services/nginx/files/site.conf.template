@@ -1,0 +1,45 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name <%= url %>;
+
+    <% if (ssl) { %>
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+    <% } else { %>
+    root <%= root %>;
+
+    location / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_pass http://127.0.0.1:<%= port %>;
+    }
+    <% } %>
+}
+
+<% if (ssl) { %>
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    # SSL Configuration snippets
+    include snippets/ssl-<%= url %>.conf;
+    include snippets/ssl-params.conf;
+
+    root <%= root %>;
+
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $http_host;
+        proxy_pass http://127.0.0.1:<%= port %>;
+    }
+}
+<% } %>
