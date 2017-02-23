@@ -57,7 +57,8 @@
     "shasum": "1.0.2",
     "symlink-or-copy": "1.1.8",
     "update-notifier": "2.1.0",
-    "validator": "6.2.1"
+    "validator": "6.2.1",
+    "yarn": "0.20.3"
   },
   "devDependencies": {
     "chai": "3.5.0",
