@@ -28,13 +28,11 @@ describe('Unit: ServiceManager', function () {
 
     describe('#load', function () {
         it('returns a ServiceManager instance', function () {
-            let config = {config: true};
             let ui = {ui: true};
 
-            let result = ServiceManager.load(config, ui);
+            let result = ServiceManager.load(ui);
 
             expect(result).to.be.an.instanceOf(ServiceManager);
-            expect(result.config).to.deep.equal(config);
             expect(result.ui).to.deep.equal(ui);
         });
 
@@ -79,7 +77,9 @@ describe('Unit: ServiceManager', function () {
             };
 
             ServiceManager.knownServices = [dummyService];
-            ServiceManager.load();
+            let sm = ServiceManager.load();
+            sm.setConfig({});
+
             expect(_loadProcess.calledOnce, 'loadProcess was called').to.be.true;
             expect(_loadService.called, 'loadService was called').to.be.false;
         });
@@ -133,13 +133,15 @@ describe('Unit: ServiceManager', function () {
 
         it('returns if process name is not the one in config', function () {
             let config = {get: () => 'right'};
-            let sm = new ServiceManager(config);
+            let sm = new ServiceManager();
+            sm.config = config;
             sm._loadProcess('wrong', class DummyProcess {});
         });
 
         it ('throws error if process does not extend BaseProcess', function () {
             let config = {get: () => 'test'};
-            let sm = new ServiceManager(config);
+            let sm = new ServiceManager();
+            sm.config = config;
 
             try {
                 sm._loadProcess('test', class DummyProcess {});
@@ -151,7 +153,8 @@ describe('Unit: ServiceManager', function () {
 
         it('throws error if process does not implement all the required methods', function () {
             let config = {get: () => 'test'};
-            let sm = new ServiceManager(config);
+            let sm = new ServiceManager();
+            sm.config = config;
 
             let reset = ServiceManager.__set__('hasRequiredFns', () => ['test']);
 
@@ -177,9 +180,11 @@ describe('Unit: ServiceManager', function () {
             });
 
             it('defaults to local if Process.willRun returns false', function () {
-                let config = {get: () => 'test', set: sinon.spy()};
                 let ui = {log: sinon.spy()};
-                let sm = new ServiceManager(config, ui);
+                let sm = new ServiceManager(ui);
+                let config = {get: () => 'test', set: sinon.spy()};
+
+                sm.config = config;
 
                 sm._loadProcess('test', class DummyProcess extends BaseProcess {
                     static willRun() { return false; }
@@ -193,7 +198,8 @@ describe('Unit: ServiceManager', function () {
 
             it('is loaded as a service', function () {
                 let config = {get: () => 'test'};
-                let sm = new ServiceManager(config);
+                let sm = new ServiceManager();
+                sm.config = config;
                 let _loadService = sandbox.stub(sm, '_loadService');
                 let dummyProcess = class DummyProcess extends BaseProcess {};
 
