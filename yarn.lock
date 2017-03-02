@@ -1236,9 +1236,9 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@2.8.2:
-  version "2.8.2"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.2.tgz#2625423fa55ad0b3a7f1462079cc7e520d1db611"
+ghost-ignition@^2.8.2:
+  version "2.8.8"
+  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-2.8.8.tgz#84b783de984a60a38d57bae9210e3a29c92a5450"
   dependencies:
     bunyan "1.8.5"
     bunyan-loggly "1.1.0"
@@ -1832,14 +1832,14 @@ kind-of@^3.0.2:
   dependencies:
     is-buffer "^1.0.2"
 
-knex-migrator@2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.7.tgz#9e58b4a9a828a4dcc16a1900eafcd6880a1da57d"
+knex-migrator@2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.8.tgz#d4cd867a4141a8dd52be441aa3aeef42ef0caa1a"
   dependencies:
     bluebird "3.4.6"
     commander "2.9.0"
     debug "2.2.0"
-    ghost-ignition "2.8.2"
+    ghost-ignition "^2.8.2"
     knex "0.12.2"
     lodash "4.16.4"
     resolve "1.1.7"
