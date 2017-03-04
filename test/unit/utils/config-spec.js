@@ -157,15 +157,15 @@ describe('Unit: Config', function () {
         });
 
         it('can load the system config', function () {
-            fs.ensureDirSync(Config.system);
-            fs.writeJsonSync(path.join(Config.system, 'config'), {system: true, a: 'b'});
+            fs.ensureDirSync(Config.systemDir);
+            fs.writeJsonSync(path.join(Config.systemDir, 'config'), {system: true, a: 'b'});
             let result = Config.load('system');
 
             expect(result).to.be.an.instanceOf(Config);
             expect(result.get('system')).to.be.true;
             expect(result.get('a')).to.equal('b');
 
-            fs.removeSync(path.join(Config.system, 'config'));
+            fs.removeSync(path.join(Config.systemDir, 'config'));
         });
 
         it('can load a config based on the environment', function () {
