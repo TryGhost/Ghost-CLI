@@ -1,5 +1,50 @@
 # Ghost-CLI Changelog
 
+## 1.0.0-alpha.13
+
+- bump minimum supported ghost alpha version to 1.0.0-alpha.15
+- ✨ Error Handling
+- 🎨 deps: debug@2.6.1
+- 📖 add .vscode dir to gitignore
+- 🎨 acceptance test improvements
+- 🎨 use os.homedir() to get the location of the system config dir
+- ⬆ deps: yarn@0.21.3
+- ⬆ deps: knex-migrator@2.0.8
+- ✨ Nginx Service
+- ✨ add ability for services to register their own commands
+- 🎨 🐎 improve `ghost run` memory usage by migrating during ghost start
+- 🎨 fix race conditions in start and stop commands
+- 🎨 cleanup process manager handling in service manager
+- 🎨 fix setup check error handling
+- 🎨 fix instance class loading on case sensitive filesystems
+- 💄 improve spinner handling in ui class
+- 🐛 fix(yarn): ensure local version of yarn is run correctly
+- chore(deps): yarn@0.20.3
+- chore: update yarn.lock
+- ⬆ chore(deps): update-notifier@2.1.0
+- ⬆ chore(deps): rxjs@5.2.0
+- ⬆ chore(deps): listr@0.11.0
+- ⬆ chore(deps): inquirer@3.0.4
+- ⬆ chore(deps): fkill@4.1.0
+- ⬆ chore(deps): execa@0.6.0
+- ⬆ bump dev dependencies and remove greenkeeper ignored deps
+- 🐛 add service to internal service list before calling init
+- 🐛 💄 add ui methods to temporarily halt spinning if necessary
+- 🐛 ensure dedupeProcessName util doesn't fail if  no running instances
+- 🎨 re-order prompts in setup to make more logical sense
+- ✨🔥 Services
+- :art: more config shortcuts - load config by environment
+- :art: run `ghost stop --all` in the same process
+- :art: setup command cleanup
+- :art: cache config objects by absolute filepath
+- :art: index running Ghost instances by process name
+- :lipstick: make `ghost start` smarter with the node environment
+- ⚙  add adminUrl option to list of configuration options
+- chore(deps): update yarn.lock
+- chore(package): update update-notifier to version 2.0.0
+- chore(package): update rxjs to version 5.1.1
+- chore(package): update coveralls to version 2.11.16
+
 ## 1.0.0-alpha.12
 - update knex-migrator to version 2.0.7 @greenkeeperio-bot
 - :bug: fix `ghost stop` command from failing [@acburdine](https://github.com/acburdine)
