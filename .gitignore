@@ -36,6 +36,7 @@ node_modules
 .idea/*
 *.iml
 *.sublime-*
+.vscode/*
 
 # vim-related
 [._]*.s[a-w][a-z]
