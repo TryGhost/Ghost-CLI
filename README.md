@@ -10,9 +10,7 @@
 
 ## Installing
 
-1. Install [Yarn](https://yarnpkg.com) first: [Installation Guide](https://yarnpkg.com/en/docs/install)
-
-2. `yarn global add ghost-cli`
+1. `npm install -g ghost-cli`
 
 ---
 
