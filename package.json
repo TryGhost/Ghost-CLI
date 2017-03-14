@@ -47,7 +47,7 @@
     "execa": "0.6.1",
     "fkill": "4.1.0",
     "fs-extra": "2.0.0",
-    "greenlock-cli": "2.2.5",
+    "greenlock-cli": "2.2.6",
     "inquirer": "3.0.6",
     "knex-migrator": "2.0.13",
     "listr": "0.11.0",
