@@ -212,7 +212,11 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@3.4.7, bluebird@^3.0.6, bluebird@^3.4.1, bluebird@^3.4.6:
+bluebird@3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
+
+bluebird@^3.0.6, bluebird@^3.4.1, bluebird@^3.4.6:
   version "3.4.7"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.4.7.tgz#f72d760be09b7f76d08ed8fae98b289a8d05fab3"
 
@@ -531,9 +535,9 @@ core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
 
-coveralls@2.11.16:
-  version "2.11.16"
-  resolved "https://registry.yarnpkg.com/coveralls/-/coveralls-2.11.16.tgz#da9061265142ddee954f68379122be97be8ab4b1"
+coveralls@2.12.0:
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/coveralls/-/coveralls-2.12.0.tgz#b3d064108e29728385b56e42fc2d119f43e0e517"
   dependencies:
     js-yaml "3.6.1"
     lcov-parse "0.0.10"
@@ -604,7 +608,13 @@ debug@2.2.0, debug@~2.2.0:
   dependencies:
     ms "0.7.1"
 
-debug@2.6.1, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0:
+debug@2.6.3, debug@^2.1.1:
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.3.tgz#0f7eb8c30965ec08c72accfa0130c8b79984141d"
+  dependencies:
+    ms "0.7.2"
+
+debug@^2.1.3, debug@^2.2.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.1.tgz#79855090ba2c4e3115cc7d8769491d58f0491351"
   dependencies:
@@ -843,9 +853,9 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint@3.16.1:
-  version "3.16.1"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.16.1.tgz#9bc31fc7341692cf772e80607508f67d711c5609"
+eslint@3.17.1:
+  version "3.17.1"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-3.17.1.tgz#b80ae12d9c406d858406fccda627afce33ea10ea"
   dependencies:
     babel-code-frame "^6.16.0"
     chalk "^1.1.3"
@@ -923,9 +933,9 @@ event-emitter@~0.3.4:
     d "~0.1.1"
     es5-ext "~0.10.7"
 
-execa@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/execa/-/execa-0.6.0.tgz#934fc9f04a9febb4d4b449d976e92cfd95ef4f6e"
+execa@0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/execa/-/execa-0.6.1.tgz#79eda42ade78c387718b0aad48e0f573b5525cde"
   dependencies:
     cross-spawn "^5.0.1"
     get-stream "^3.0.0"
@@ -1263,7 +1273,7 @@ glob-parent@^2.0.0:
   dependencies:
     is-glob "^2.0.0"
 
-glob@7.0.5:
+glob@7.0.5, glob@^7.0.0, glob@^7.0.3, glob@^7.0.5:
   version "7.0.5"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.0.5.tgz#b4202a69099bbb4d292a7c1b95b6682b67ebdc95"
   dependencies:
@@ -1291,17 +1301,6 @@ glob@^6.0.1:
     inflight "^1.0.4"
     inherits "2"
     minimatch "2 || 3"
-    once "^1.3.0"
-    path-is-absolute "^1.0.0"
-
-glob@^7.0.0, glob@^7.0.3, glob@^7.0.5:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.1.tgz#805211df04faaf1c63a3600306cdf5ade50b2ec8"
-  dependencies:
-    fs.realpath "^1.0.0"
-    inflight "^1.0.4"
-    inherits "2"
-    minimatch "^3.0.2"
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
@@ -1503,9 +1502,9 @@ ini@^1.3.0, ini@^1.3.4, ini@~1.3.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.4.tgz#0537cb79daf59b59a1a517dff706c86ec039162e"
 
-inquirer@3.0.4, inquirer@^3.0.1:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-3.0.4.tgz#ed9588020edbcc40fc94c50761ad00dcf8598ff5"
+inquirer@3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-3.0.6.tgz#e04aaa9d05b7a3cb9b0f407d04375f0447190347"
   dependencies:
     ansi-escapes "^1.1.0"
     chalk "^1.0.0"
@@ -1536,6 +1535,24 @@ inquirer@^0.12.0:
     run-async "^0.1.0"
     rx-lite "^3.1.2"
     string-width "^1.0.1"
+    strip-ansi "^3.0.0"
+    through "^2.3.6"
+
+inquirer@^3.0.1:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-3.0.4.tgz#ed9588020edbcc40fc94c50761ad00dcf8598ff5"
+  dependencies:
+    ansi-escapes "^1.1.0"
+    chalk "^1.0.0"
+    cli-cursor "^2.1.0"
+    cli-width "^2.0.0"
+    external-editor "^2.0.1"
+    figures "^2.0.0"
+    lodash "^4.3.0"
+    mute-stream "0.0.7"
+    run-async "^2.2.0"
+    rx "^4.1.0"
+    string-width "^2.0.0"
     strip-ansi "^3.0.0"
     through "^2.3.6"
 
@@ -1830,7 +1847,7 @@ kind-of@^3.0.2:
   dependencies:
     is-buffer "^1.0.2"
 
-knex-migrator@^2.0.13:
+knex-migrator@2.0.13:
   version "2.0.13"
   resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-2.0.13.tgz#0f7c11e0720bb406e79bf3f9868dbef4603ef1e8"
   dependencies:
@@ -2261,11 +2278,7 @@ mysql@^2.11.1:
     readable-stream "1.1.14"
     sqlstring "2.2.0"
 
-nan@^2.3.3:
-  version "2.3.5"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.3.5.tgz#822a0dc266290ce4cd3a12282ca3e7e364668a08"
-
-nan@~2.4.0:
+nan@^2.3.3, nan@~2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
 
