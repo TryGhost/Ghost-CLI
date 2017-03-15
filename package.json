@@ -61,7 +61,7 @@
     "strip-ansi": "3.0.1",
     "symlink-or-copy": "1.1.8",
     "update-notifier": "2.1.0",
-    "validator": "6.2.1",
+    "validator": "7.0.0",
     "yarn": "0.21.3"
   },
   "devDependencies": {
