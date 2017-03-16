@@ -1,5 +1,25 @@
 # Ghost-CLI Changelog
 
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="1.0.0-alpha.14"></a>
+# [1.0.0.alpha.14](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.13...1.0.0-alpha.14) (2017-03-16)
+
+### Bug Fixes
+
+* **doctor:** fix error handling in setup checks ([e25b810](https://github.com/TryGhost/Ghost-CLI/commit/e25b810)), closes [#174](https://github.com/TryGhost/Ghost-CLI/issues/174)
+* **install:** don't fail install if debug logs are present ([111e599](https://github.com/TryGhost/Ghost-CLI/commit/111e599)), closes [#173](https://github.com/TryGhost/Ghost-CLI/issues/173)
+* **log:** catch errors thrown from prettystream ([40e6a79](https://github.com/TryGhost/Ghost-CLI/commit/40e6a79))
+* **log:** return rejected error promise in ghost log rather than throw ([86c81ee](https://github.com/TryGhost/Ghost-CLI/commit/86c81ee))
+* **nginx:** ensure nginx doesn't run if config already exists ([3ba9bc7](https://github.com/TryGhost/Ghost-CLI/commit/3ba9bc7))
+* **update:** fix update command when install folder already exists ([da4e1d9](https://github.com/TryGhost/Ghost-CLI/commit/da4e1d9)), closes [#168](https://github.com/TryGhost/Ghost-CLI/issues/168)
+
+### Features
+
+* **config:** add logging transport configuration option ([f827ea4](https://github.com/TryGhost/Ghost-CLI/commit/f827ea4))
+* **log:** ghost log command ([7e1a29a](https://github.com/TryGhost/Ghost-CLI/commit/7e1a29a)), closes [#42](https://github.com/TryGhost/Ghost-CLI/issues/42)
+* **startup:** validate config on startup ([1f9383f](https://github.com/TryGhost/Ghost-CLI/commit/1f9383f)), closes [#26](https://github.com/TryGhost/Ghost-CLI/issues/26)
+
 ## 1.0.0-alpha.13
 
 - bump minimum supported ghost alpha version to 1.0.0-alpha.15
