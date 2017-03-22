@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-alpha.15"></a>
+# [1.0.0-alpha.15](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.14...1.0.0-alpha.15) (2017-03-22)
+
+
+### Bug Fixes
+
+* **process-error:** ensure stdout exists before trying to log it ([a9bced6](https://github.com/TryGhost/Ghost-CLI/commit/a9bced6))
+* **ssl:** bump minimum supported node version to 4.5 ([833d8d0](https://github.com/TryGhost/Ghost-CLI/commit/833d8d0)), closes [#176](https://github.com/TryGhost/Ghost-CLI/issues/176)
+
+
+### Features
+
+* **config:** add auth advanced config option ([ebc8315](https://github.com/TryGhost/Ghost-CLI/commit/ebc8315)), closes [#175](https://github.com/TryGhost/Ghost-CLI/issues/175)
+* **ls:** show stopped ghost instances as well as running ones ([ee85403](https://github.com/TryGhost/Ghost-CLI/commit/ee85403)), closes [#178](https://github.com/TryGhost/Ghost-CLI/issues/178)
+
+
+### BREAKING CHANGES
+
+* **ssl:** drop support for node 4 < 4.5
+
 <a name="1.0.0-alpha.14"></a>
 # [1.0.0.alpha.14](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.13...1.0.0-alpha.14) (2017-03-16)
 
