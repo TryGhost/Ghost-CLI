@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-alpha.16"></a>
+# [1.0.0-alpha.16](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.15...1.0.0-alpha.16) (2017-03-23)
+
+### Bug Fixes
+* **ls:** store running environment in system config ([99be519](https://github.com/TryGhost/Ghost-CLI/commit/99be519))
+
 <a name="1.0.0-alpha.15"></a>
 # [1.0.0-alpha.15](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.14...1.0.0-alpha.15) (2017-03-22)
 
