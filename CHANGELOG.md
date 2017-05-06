@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-alpha.17"></a>
+# [1.0.0-alpha.17](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.16...1.0.0-alpha.17) (2017-05-06)
+
+### Bug Fixes
+
+* **ls:** don't allow dots in process name ([59fb3d2](https://github.com/TryGhost/Ghost-CLI/commit/59fb3d2)), closes [#184](https://github.com/TryGhost/Ghost-CLI/issues/184)
+* **run:** make command descriptions clearer ([f0af011](https://github.com/TryGhost/Ghost-CLI/commit/f0af011)), closes [#185](https://github.com/TryGhost/Ghost-CLI/issues/185)
+* **nginx:** add server_name directive to nginx ssl block ([22be390](https://github.com/TryGhost/Ghost-CLI/commit/22be390a57f0be725121e9294b93a995eba3eb27)), closes [#186](https://github.com/TryGhost/Ghost-CLI/issues/186)
+
+### Features
+
+* **ui:** support an error of "false" that exits without logging ([a98995d](https://github.com/TryGhost/Ghost-CLI/commit/a98995d))
+* **uninstall:** add `ghost uninstall` command ([f15a6a6](https://github.com/TryGhost/Ghost-CLI/commit/f15a6a6)), closes [#187](https://github.com/TryGhost/Ghost-CLI/issues/187)
+
 <a name="1.0.0-alpha.16"></a>
 # [1.0.0-alpha.16](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.15...1.0.0-alpha.16) (2017-03-23)
 
