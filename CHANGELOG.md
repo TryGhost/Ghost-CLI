@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-alpha.18"></a>
+# [1.0.0-alpha.18](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.17...1.0.0-alpha.18) (2017-06-13)
+
+### Bug Fixes
+
+* **config:** ip address not configured when specified as option (#209) ([201dbbf](https://github.com/TryGhost/Ghost-CLI/commit/201dbbf))
+* **local:** allow limited customization of local installation ([cf21285](https://github.com/TryGhost/Ghost-CLI/commit/cf21285)), closes [#206](https://github.com/TryGhost/Ghost-CLI/issues/206)
+* **uninstall:** remove instance from global config on `ghost uninstall` ([5f7f18a](https://github.com/TryGhost/Ghost-CLI/commit/5f7f18a)), closes [#205](https://github.com/TryGhost/Ghost-CLI/issues/205)
+* **yarn:** update execa path handling and observer error catching ([5e10fd0](https://github.com/TryGhost/Ghost-CLI/commit/5e10fd0))
+
+### Features
+
+* **ssl:** allow SSL email to be provided via option, skip prompts (#195) ([8eef01e](https://github.com/TryGhost/Ghost-CLI/commit/8eef01e))
+
 <a name="1.0.0-alpha.17"></a>
 # [1.0.0-alpha.17](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.16...1.0.0-alpha.17) (2017-05-06)
 
