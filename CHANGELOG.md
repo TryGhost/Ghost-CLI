@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-alpha.19"></a>
+# [1.0.0-alpha.19](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.18...1.0.0-alpha.19) (2017-06-23)
+
+### Bug Fixes
+
+* **local-process:** don't throw an error if .ghostpid doesn't exist ([d437e86](https://github.com/TryGhost/Ghost-CLI/commit/d437e86)), closes [#208](https://github.com/TryGhost/Ghost-CLI/issues/208)
+* **uninstall:** actually fix uninstall this time ([5d89600](https://github.com/TryGhost/Ghost-CLI/commit/5d89600))
+* **uninstall:** don't screw up global instance config on uninstall ([169f561](https://github.com/TryGhost/Ghost-CLI/commit/169f561)), closes [#220](https://github.com/TryGhost/Ghost-CLI/issues/220)
+
+### Features
+
+* **casper:** update casper version during ghost update ([008c393](https://github.com/TryGhost/Ghost-CLI/commit/008c393))
+* **ui:** show sudo command before it is run ([9f92199](https://github.com/TryGhost/Ghost-CLI/commit/9f92199)), closes [#164](https://github.com/TryGhost/Ghost-CLI/issues/164)
+
 <a name="1.0.0-alpha.18"></a>
 # [1.0.0-alpha.18](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.17...1.0.0-alpha.18) (2017-06-13)
 
