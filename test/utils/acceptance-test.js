@@ -41,28 +41,7 @@ module.exports = class AcceptanceTest {
     }
 
     setup(type) {
-        if (type && env[type]) {
-            if (env[type].dirs) {
-                // create directories first
-                each(env[type].dirs, (dir) => {
-                    fs.ensureDirSync(path.join(this.dir, dir));
-                });
-            }
-
-            if (env[type].links) {
-                // create symlinks
-                each(env[type].links, (link) => {
-                    fs.ensureSymlinkSync(path.join(this.dir, link[0]), path.join(this.dir, link[1]));
-                });
-            }
-
-            if (env[type].files) {
-                // then create files
-                each(env[type].files, (file) => {
-                    fs[(file.json ? 'writeJsonSync' : 'writeFileSync')](path.join(this.dir, file.path), file.content);
-                });
-            }
-        }
+        this.cleanupDir = env(type, this.dir).cleanup;
     }
 
     path(file) {
