@@ -7,5 +7,6 @@ process.title = 'ghost';
 // Check for CLI updates
 require('../lib/utils/update-notifier');
 
-const Command = require('commander').Command;
-require('../lib/cli')(process.argv, new Command());
+const yargs = require('yargs');
+const bootstrap = require('../lib/bootstrap');
+bootstrap.run(process.argv.slice(2), yargs);

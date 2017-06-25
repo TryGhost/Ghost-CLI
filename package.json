@@ -20,14 +20,14 @@
   "bugs": "https://github.com/TryGhost/Ghost-CLI/issues",
   "contributors": "https://github.com/TryGhost/Ghost-CLI/graphs/contributors",
   "license": "MIT",
-  "main": "lib/cli.js",
+  "main": "lib/index.js",
   "bin": {
     "ghost": "./bin/ghost"
   },
   "scripts": {
     "coverage": "cat ./coverage/lcov.info | coveralls",
     "lint": "eslint bin lib",
-    "test:unit": "istanbul cover _mocha --report lcovonly -- test/unit/**/*-spec.js",
+    "test:unit": "istanbul cover _mocha --report lcovonly -- test/unit/**",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
@@ -37,10 +37,10 @@
   },
   "preferGlobal": true,
   "dependencies": {
+    "abbrev": "^1.1.0",
     "bluebird": "3.5.0",
     "chalk": "1.1.3",
     "cli-table2": "0.2.0",
-    "commander": "2.9.0",
     "debug": "2.6.8",
     "decompress": "4.2.0",
     "download": "6.2.3",
@@ -64,6 +64,7 @@
     "symlink-or-copy": "1.1.8",
     "update-notifier": "2.2.0",
     "validator": "7.1.0",
+    "yargs": "8.0.2",
     "yarn": "0.24.5"
   },
   "devDependencies": {
