@@ -46,3 +46,6 @@ Session.vim
 .netrwhist
 .vimrc
 *~
+
+# Temp folder - useful for manual testing!
+tmp
