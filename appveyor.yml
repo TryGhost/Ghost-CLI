@@ -6,15 +6,13 @@ clone_depth: 1
 
 environment:
   matrix:
-    - nodejs_version: "4.5"
+    - nodejs_version: "4.8"
 
 platform:
   - x64
 
 cache:
-  - node_modules -> package.json
-  - '%APPDATA%\npm-cache'
-  - '%APPDATA%\Roaming\bower'
+ - "%LOCALAPPDATA%\\Yarn"
 
 branches:
   only:
@@ -24,16 +22,15 @@ branches:
 install:
   # Let's try to get things working
   # Install Node 4 ---------------------------------------------------------
-  - ps: Install-Product node 4.5
-  # Typical npm stuff ------------------------------------------------------
-  - md C:\nc
-  - npm version
-  - npm config set cache C:\nc
+  - ps: Install-Product node 4.8
   # Installation, deps -----------------------------------------------------
-  - npm install --no-optional --no-color --no-progress --ignore-scripts
+  - yarn install --no-progress --no-emojis
+  - yarn link
 
 test_script:
-  - npm run test:all
+  - md C:\clitest
+  - cd C:\clitest
+  - ghost install local
 
 # Set build version format here instead of in the admin panel.
 build: off
