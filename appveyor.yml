@@ -25,7 +25,7 @@ install:
   - ps: Install-Product node 4.8
   # Installation, deps -----------------------------------------------------
   - yarn install --no-progress --no-emojis
-  - yarn link
+  - npm link # yarn link doesn't seem to work
 
 test_script:
   - md C:\clitest
