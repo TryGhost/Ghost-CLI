@@ -45,6 +45,7 @@
     "decompress": "4.2.0",
     "download": "6.2.3",
     "execa": "0.7.0",
+    "find-plugins": "1.0.2",
     "fkill": "5.0.0",
     "fs-extra": "3.0.1",
     "ghost-ignition": "2.8.11",
