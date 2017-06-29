@@ -43,7 +43,7 @@
     "cli-table2": "0.2.0",
     "debug": "2.6.8",
     "decompress": "4.2.0",
-    "download": "6.2.3",
+    "download": "6.2.5",
     "execa": "0.7.0",
     "find-plugins": "1.0.2",
     "fkill": "5.0.0",
@@ -65,20 +65,20 @@
     "strip-ansi": "4.0.0",
     "symlink-or-copy": "1.1.8",
     "update-notifier": "2.2.0",
-    "validator": "7.1.0",
+    "validator": "7.2.0",
     "yargs": "8.0.2",
     "yarn": "0.24.5"
   },
   "devDependencies": {
     "chai": "4.0.2",
     "coveralls": "2.13.1",
-    "eslint": "4.0.0",
+    "eslint": "4.1.1",
     "istanbul": "0.4.5",
     "mocha": "3.4.2",
     "mocha-lcov-reporter": "1.3.0",
     "proxyquire": "1.8.0",
     "rewire": "2.5.2",
-    "sinon": "2.3.5",
+    "sinon": "2.3.6",
     "tmp": "0.0.31"
   }
 }
