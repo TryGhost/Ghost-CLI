@@ -1,0 +1,15 @@
+{
+  "name": "ghost-cli-systemd",
+  "version": "0.0.0",
+  "keywords": [
+    "ghost-cli-extension"
+  ],
+  "main": "index.js",
+
+  "ghost-cli": {
+    "after": "ghost-cli-user",
+    "process-managers": {
+      "systemd": "systemd.js"
+    }
+  }
+}
