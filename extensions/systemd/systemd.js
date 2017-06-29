@@ -18,6 +18,21 @@ class SystemdProcessManager extends cli.ProcessManager {
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
+    isRunning() {
+        try {
+            execa.shellSync(`systemctl is-active ${this.systemdName}`);
+            return true;
+        } catch (e) {
+            // systemctl is-active returns exit code 3 when a service isn't active,
+            // so throw if we don't have that.
+            if (e.code !== 3) {
+                throw e;
+            }
+
+            return false;
+        }
+    }
+
     static willRun() {
         try {
             execa.shellSync('which systemctl', {stdio: 'ignore'});
