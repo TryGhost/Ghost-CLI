@@ -1,0 +1,29 @@
+{
+  "name": "ghost-cli-nginx",
+  "version": "0.0.0",
+  "description": "nginx integration support for Ghost-CLI",
+  "main": "index.js",
+  "keywords": [
+    "ghost-cli-extension"
+  ],
+  "ghost-cli": {
+    "name": "nginx",
+    "after": "ghost-cli-user",
+
+    "options": {
+      "setup": {
+        "sslemail": {
+          "description": "Email to use when setting up SSL",
+          "type": "string",
+          "group": "Nginx Options:"
+        },
+
+        "sslstaging": {
+          "description": "Use the LetsEncrypt staging server (useful for testing purposes)",
+          "type": "boolean",
+          "group": "Nginx Options:"
+        }
+      }
+    }
+  }
+}

@@ -12,4 +12,4 @@ add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; prelo
 add_header X-Frame-Options SAMEORIGIN;
 add_header X-Content-Type-Options nosniff;
 
-ssl_dhparam /etc/ssl/certs/dhparam.pem;
+ssl_dhparam <%= dhparam %>;
