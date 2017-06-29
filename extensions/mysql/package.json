@@ -1,0 +1,8 @@
+{
+  "name": "ghost-cli-config-mysql",
+  "version": "0.0.0",
+  "description": "MySQL configuration handling for Ghost-CLI",
+  "keywords": [
+    "ghost-cli-extension"
+  ]
+}
