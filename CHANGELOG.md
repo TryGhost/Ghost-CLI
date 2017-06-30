@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-beta.1"></a>
+# [1.0.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.19...1.0.0-beta.1) (2017-06-30)
+
+### Bug Fixes
+
+* **config:** make configPath correct for ip option ([9b96937](https://github.com/TryGhost/Ghost-CLI/commit/9b96937))
+* **config:** save config files with 2-space indentation ([cf7bc54](https://github.com/TryGhost/Ghost-CLI/commit/cf7bc54)), closes [#229](https://github.com/TryGhost/Ghost-CLI/issues/229)
+* **debug:** normalize debug file path ([e4bfc7c](https://github.com/TryGhost/Ghost-CLI/commit/e4bfc7c))
+* **help:** 🎨 improve options output (#246) ([4fb1a5c](https://github.com/TryGhost/Ghost-CLI/commit/4fb1a5c))
+* **restart:** make restart command be less stupid ([77cb8d9](https://github.com/TryGhost/Ghost-CLI/commit/77cb8d9))
+* **system:** don't use Array.includes b/c node 4 doesn't have it ([9023971](https://github.com/TryGhost/Ghost-CLI/commit/9023971))
+* **ui:** extract database migrations into a task ([f052df6](https://github.com/TryGhost/Ghost-CLI/commit/f052df6))
+* **ui:** improve custom renderer cleanup ([da3bac6](https://github.com/TryGhost/Ghost-CLI/commit/da3bac6))
+* **ui:** make the log method work better with spinners ([15443b1](https://github.com/TryGhost/Ghost-CLI/commit/15443b1))
+* **valid-install:** fix error message when CLI is run inside a ghost clone ([bfbf0ae](https://github.com/TryGhost/Ghost-CLI/commit/bfbf0ae))
+
+### Features
+
+* **cli:** swap out commander for yargs parsing ([793715b](https://github.com/TryGhost/Ghost-CLI/commit/793715b)), closes [#179](https://github.com/TryGhost/Ghost-CLI/issues/179)
+* **config:** accept mail configuration options (#244) ([19c905b](https://github.com/TryGhost/Ghost-CLI/commit/19c905b))
+* **extensions:** services are dead, long live extensions ([85819ae](https://github.com/TryGhost/Ghost-CLI/commit/85819ae)), closes [#146](https://github.com/TryGhost/Ghost-CLI/issues/146)
+* **process:** update running check to call process manager ([2f01ad0](https://github.com/TryGhost/Ghost-CLI/commit/2f01ad0)), closes [#207](https://github.com/TryGhost/Ghost-CLI/issues/207)
+* **stop:** allow ghost instance to be stopped by name ([ed4320f](https://github.com/TryGhost/Ghost-CLI/commit/ed4320f)), closes [#217](https://github.com/TryGhost/Ghost-CLI/issues/217)
+* **system:** system & interface api ([0f703c3](https://github.com/TryGhost/Ghost-CLI/commit/0f703c3)), closes [#219](https://github.com/TryGhost/Ghost-CLI/issues/219) [#203](https://github.com/TryGhost/Ghost-CLI/issues/203) [#170](https://github.com/TryGhost/Ghost-CLI/issues/170)
+* **template:** add template method to instance class ([23e24bf](https://github.com/TryGhost/Ghost-CLI/commit/23e24bf))
+* **ui:** add ability to output to stderr ([86a9eeb](https://github.com/TryGhost/Ghost-CLI/commit/86a9eeb)), closes [#218](https://github.com/TryGhost/Ghost-CLI/issues/218)
+* **ui:** add command line arg to disable prompts ([e7c6c6a](https://github.com/TryGhost/Ghost-CLI/commit/e7c6c6a))
+* **ui:** add confirm shorthand method ([bbb7945](https://github.com/TryGhost/Ghost-CLI/commit/bbb7945))
+* **ui:** add custom listr renderer and move listr to ui class ([47be79b](https://github.com/TryGhost/Ghost-CLI/commit/47be79b)), closes [#181](https://github.com/TryGhost/Ghost-CLI/issues/181)
+* **version:** add custom version command ([8d96035](https://github.com/TryGhost/Ghost-CLI/commit/8d96035))
+
 <a name="1.0.0-alpha.19"></a>
 # [1.0.0-alpha.19](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.18...1.0.0-alpha.19) (2017-06-23)
 
