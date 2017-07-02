@@ -18,6 +18,11 @@ class SystemdProcessManager extends cli.ProcessManager {
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
+    restart() {
+        return this.ui.sudo(`systemctl restart ${this.systemdName}`)
+            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+    }
+
     isRunning() {
         try {
             execa.shellSync(`systemctl is-active ${this.systemdName}`);
