@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-beta.2"></a>
+# [1.0.0-beta.2](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.1...1.0.0-beta.2) (2017-07-02)
+
+### Bug Fixes
+
+* **extensions:** return base extension class instance if no subclass is found ([af27274](https://github.com/TryGhost/Ghost-CLI/commit/af27274))
+* **extensions:** use correct option to search npm root for extensions ([df049e0](https://github.com/TryGhost/Ghost-CLI/commit/df049e0))
+* **instance:** save cliConfig if running is found to be false ([96a3536](https://github.com/TryGhost/Ghost-CLI/commit/96a3536))
+
+### Features
+
+* **ssl:** use Mozilla SSL cipher suite (#252) ([c5091df](https://github.com/TryGhost/Ghost-CLI/commit/c5091df)), closes [#230](https://github.com/TryGhost/Ghost-CLI/issues/230)
+
 <a name="1.0.0-beta.1"></a>
 # [1.0.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-alpha.19...1.0.0-beta.1) (2017-06-30)
 
