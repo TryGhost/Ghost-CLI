@@ -11,6 +11,7 @@
   "files": [
     "bin",
     "lib",
+    "extensions",
     "yarn.lock"
   ],
   "repository": {
