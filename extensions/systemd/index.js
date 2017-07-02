@@ -20,25 +20,22 @@ class SystemdExtension extends cli.Extension {
         }
     }
 
-    _setup() {
+    _setup(argv, ctx) {
         let service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
         let serviceFilename = `${this.systemdName}.service`;
-        let instance = this.system.getInstance();
 
-        return instance.template(service({
-            name: instance.name,
+        return ctx.instance.template(service({
+            name: ctx.instance.name,
             dir: process.cwd(),
             user: process.getuid(),
             environment: this.system.environment,
             ghost_exec_path: process.argv.slice(0,2).join(' ')
         }), 'systemd service file', serviceFilename, '/lib/systemd/system').then(() => {
-            instance.cliConfig.set('extension.systemd', true).save();
+            ctx.instance.cliConfig.set('extension.systemd', true).save();
         });
     }
 
-    uninstall() {
-        let instance = this.system.getInstance();
-
+    uninstall(instance) {
         if (!instance.cliConfig.get('extension.systemd', false)) {
             return;
         }

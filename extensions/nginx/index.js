@@ -29,8 +29,6 @@ class NginxExtension extends cli.Extension {
             return;
         }
 
-        this.instance = this.system.getInstance();
-
         cmd.addStage('nginx', this.setupNginx.bind(this));
         cmd.addStage('ssl', this.setupSSL.bind(this));
     }
@@ -65,16 +63,16 @@ class NginxExtension extends cli.Extension {
             http._add('listen', '[::]:80');
             http._add('server_name', this.parsedUrl.hostname);
 
-            let rootPath = path.resolve(this.instance.dir, 'system', 'nginx-root');
+            let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
             fs.ensureDirSync(rootPath);
             http._add('root', rootPath);
 
             http._add('location', '/');
-            this._addProxyBlock(http.location);
+            this._addProxyBlock(http.location, ctx.instance.config.get('server.port'));
 
             let confFile = `${this.parsedUrl.hostname}.conf`;
 
-            return this.instance.template(
+            return ctx.instance.template(
                 conf.toString(),
                 'nginx config',
                 confFile,
@@ -85,7 +83,7 @@ class NginxExtension extends cli.Extension {
                     return;
                 }
 
-                this.instance.cliConfig.set('extension.nginx', true).save();
+                ctx.instance.cliConfig.set('extension.nginx', true).save();
 
                 return this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
                     .then(() => this.restartNginx());
@@ -100,7 +98,7 @@ class NginxExtension extends cli.Extension {
         }
 
         let confFile = `${this.parsedUrl.hostname}.conf`;
-        let nginxConfPath = path.join(this.instance.dir, 'system', 'files', confFile);
+        let nginxConfPath = path.join(ctx.instance.dir, 'system', 'files', confFile);
 
         if (!fs.existsSync(nginxConfPath)) {
             if (ctx.single) {
@@ -110,7 +108,7 @@ class NginxExtension extends cli.Extension {
             return task && task.skip();
         }
 
-        let rootPath = path.resolve(this.instance.dir, 'system', 'nginx-root');
+        let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
 
         return this.ui.listr([{
             title: 'Preparing nginx for SSL configuration',
@@ -139,7 +137,7 @@ class NginxExtension extends cli.Extension {
         }, {
             title: 'Getting SSL Certificate',
             task: () => {
-                let letsencryptFolder = path.join(this.instance.dir, 'system', 'letsencrypt');
+                let letsencryptFolder = path.join(ctx.instance.dir, 'system', 'letsencrypt');
                 let sslGenArgs = `certonly --agree-tos --email ${argv.sslemail} --webroot --webroot-path ${rootPath}` +
                     ` --config-dir ${letsencryptFolder} --domains ${this.parsedUrl.hostname} --server ${argv.sslStaging ? STAGING_URL : LIVE_URL}`;
 
@@ -152,7 +150,7 @@ class NginxExtension extends cli.Extension {
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             task: (ctx) => {
-                ctx.ssl.dhparamOutFile = path.join(this.instance.dir, 'system', 'files', 'dhparam.pem');
+                ctx.ssl.dhparamOutFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
                 return execa.shell(`openssl dhparam -out ${ctx.ssl.dhparamOutFile} 2048`)
                     .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
@@ -160,7 +158,7 @@ class NginxExtension extends cli.Extension {
             title: 'Writing SSL parameters',
             task: (ctx) => {
                 let sslParamsTemplate = template(fs.readFileSync(path.join(__dirname, 'ssl-params.conf.template'), 'utf8'));
-                return this.instance.template(sslParamsTemplate({
+                return ctx.instance.template(sslParamsTemplate({
                     dhparam: ctx.ssl.dhparamOutFile
                 }), 'ssl parameters', 'ssl-params.conf');
             }
@@ -183,23 +181,23 @@ class NginxExtension extends cli.Extension {
                 https._add('listen', '[::]:443 ssl http2');
                 https._add('server_name', this.parsedUrl.hostname);
 
-                let letsencryptPath = path.join(this.instance.dir, 'system', 'letsencrypt', 'live');
+                let letsencryptPath = path.join(ctx.instance.dir, 'system', 'letsencrypt', 'live');
 
                 // add ssl cert directives
                 https._add('ssl_certificate', path.join(letsencryptPath, this.parsedUrl.hostname, 'fullchain.pem'));
                 https._add('ssl_certificate_key', path.join(letsencryptPath, this.parsedUrl.hostname, 'privkey.pem'));
                 // add ssl-params snippet
-                https._add('include', path.join(this.instance.dir, 'system', 'files', 'ssl-params.conf'));
+                https._add('include', path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'));
                 // add root directive
                 https._add('root', rootPath);
 
                 https._add('location', '/');
-                this._addProxyBlock(https.location);
+                this._addProxyBlock(https.location, ctx.instance.config.get('server.port'));
 
                 https._add('location', '~ /.well-known');
                 https.location[1]._add('allow', 'all');
 
-                this.instance.cliConfig.set('extension.ssl', true)
+                ctx.instance.cliConfig.set('extension.ssl', true)
                     .set('extension.sslemail', argv.sslemail).save();
             }
         }, {
@@ -208,18 +206,16 @@ class NginxExtension extends cli.Extension {
         }], false);
     }
 
-    _addProxyBlock(location) {
+    _addProxyBlock(location, port) {
         location._add('proxy_set_header', 'X-Forwarded-For $proxy_add_x_forwarded_for');
         location._add('proxy_set_header', 'X-Forwarded-Proto $scheme');
         location._add('proxy_set_header', 'X-Real-IP $remote_addr');
         location._add('proxy_set_header', 'Host $http_host');
-        location._add('proxy_pass', `http://127.0.0.1:${this.instance.config.get('server.port')}`);
+        location._add('proxy_pass', `http://127.0.0.1:${port}`);
     }
 
-    uninstall() {
-        this.instance = this.system.getInstance();
-
-        if (!this.instance.cliConfig.get('extension.nginx', false)) {
+    uninstall(instance) {
+        if (!instance.cliConfig.get('extension.nginx', false)) {
             return;
         }
 
