@@ -30,7 +30,6 @@ class NginxExtension extends cli.Extension {
         }
 
         this.instance = this.system.getInstance();
-        this.instance.loadConfig();
 
         cmd.addStage('nginx', this.setupNginx.bind(this));
         cmd.addStage('ssl', this.setupSSL.bind(this));
@@ -219,7 +218,6 @@ class NginxExtension extends cli.Extension {
 
     uninstall() {
         this.instance = this.system.getInstance();
-        this.instance.loadConfig();
 
         if (!this.instance.cliConfig.get('extension.nginx', false)) {
             return;
