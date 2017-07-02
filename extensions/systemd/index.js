@@ -14,7 +14,6 @@ class SystemdExtension extends cli.Extension {
 
     setup(cmd, argv) {
         let instance = this.system.getInstance();
-        instance.loadConfig();
 
         if (!argv.local && instance.config.get('process') === 'systemd') {
             cmd.addStage('systemd', this._setup.bind(this));
