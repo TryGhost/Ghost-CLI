@@ -42,6 +42,7 @@
     "bluebird": "3.5.0",
     "chalk": "1.1.3",
     "cli-table2": "0.2.0",
+    "crontab": "1.1.3",
     "debug": "2.6.8",
     "decompress": "4.2.0",
     "download": "6.2.5",
