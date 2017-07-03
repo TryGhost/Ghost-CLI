@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-beta.3"></a>
+# [1.0.0-beta.3](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.2...1.0.0-beta.3) (2017-07-03)
+
+### Bug Fixes
+
+* **extensions:** remove unecessary getters from systemd and nginx extensions ([f5f6e05](https://github.com/TryGhost/Ghost-CLI/commit/f5f6e05))
+* **instance:** clean up config usage around application (#254) ([22c804c](https://github.com/TryGhost/Ghost-CLI/commit/22c804c))
+* **setup:** reset setup default to true ([7c4cdf3](https://github.com/TryGhost/Ghost-CLI/commit/7c4cdf3))
+* **systemd:** fix is-enabled error handling in systemd process manager ([ff6cfba](https://github.com/TryGhost/Ghost-CLI/commit/ff6cfba))
+
+### Features
+
+* **nginx:** check dns entry exists before attempting ssl setup ([049f351](https://github.com/TryGhost/Ghost-CLI/commit/049f351))
+* **nginx:** move letsencrypt to its own file, add ssl renew command ([b4eb57a](https://github.com/TryGhost/Ghost-CLI/commit/b4eb57a))
+* **nginx:** setup ssl renew cron script ([c60cc75](https://github.com/TryGhost/Ghost-CLI/commit/c60cc75))
+* **process:** add enable/disable support ([1ef28bf](https://github.com/TryGhost/Ghost-CLI/commit/1ef28bf)), closes [#248](https://github.com/TryGhost/Ghost-CLI/issues/248)
+* **process:** improve restart flow ([3e17cfe](https://github.com/TryGhost/Ghost-CLI/commit/3e17cfe))
+
 <a name="1.0.0-beta.2"></a>
 # [1.0.0-beta.2](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.1...1.0.0-beta.2) (2017-07-02)
 
