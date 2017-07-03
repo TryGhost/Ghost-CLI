@@ -23,6 +23,29 @@ class SystemdProcessManager extends cli.ProcessManager {
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
+    isEnabled() {
+        try {
+            execa.shellSync(`systemctl is-enabled ${this.systemdName}`);
+            return true;
+        } catch (e) {
+            if (!e.message.match(/disabled/)) {
+                throw e;
+            }
+
+            return false;
+        }
+    }
+
+    enable() {
+        return this.ui.sudo(`systemctl enable ${this.systemdName} --quiet`)
+            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+    }
+
+    disable() {
+        return this.ui.sudo(`systemctl disable ${this.systemdName} --quiet`)
+            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+    }
+
     isRunning() {
         try {
             execa.shellSync(`systemctl is-active ${this.systemdName}`);
