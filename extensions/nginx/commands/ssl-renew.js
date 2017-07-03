@@ -5,6 +5,7 @@ const letsencrypt = require('../letsencrypt');
 class SslRenewCommand extends cli.Command {
     run() {
         let instance = this.system.getInstance();
+        instance.checkEnvironment();
 
         if (!instance.cliConfig.has('extension.sslemail')) {
             return Promise.reject(new cli.errors.SystemError('No saved email found, skipping automatic letsencrypt renewal'));

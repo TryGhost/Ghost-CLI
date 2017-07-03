@@ -21,6 +21,7 @@ class NginxExtension extends cli.Extension {
 
         cmd.addStage('nginx', this.setupNginx.bind(this));
         cmd.addStage('ssl', this.setupSSL.bind(this));
+        cmd.addStage('ssl-renew', this.setupRenew.bind(this), 'automatic ssl renewal');
     }
 
     setupNginx(argv, ctx, task) {
@@ -215,6 +216,15 @@ class NginxExtension extends cli.Extension {
         }], false);
     }
 
+    setupRenew(argv, ctx) {
+        return this._cron((cron) => {
+            // Ensure any crontab with the same instance name is removed
+            cron.remove({comment: ctx.instance.name});
+            let cmd = `cd ${ctx.instance.dir} && ${process.argv.slice(0, 2).join(' ')} ssl-renew`;
+            cron.create(cmd, '@monthly', ctx.instance.name);
+        });
+    }
+
     _addProxyBlock(location, port) {
         location._add('proxy_set_header', 'X-Forwarded-For $proxy_add_x_forwarded_for');
         location._add('proxy_set_header', 'X-Forwarded-Proto $scheme');
@@ -231,11 +241,30 @@ class NginxExtension extends cli.Extension {
         let parsedUrl = url.parse(instance.config.get('url'));
         let confFile = `${parsedUrl.hostname}.conf`;
 
+        let promises = [
+            this._cron(cron => cron.remove({comment: instance.name}))
+        ];
+
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
-            return this.ui.sudo(`rm /etc/nginx/sites-available/${confFile}`).then(() => {
-                return this.ui.sudo(`rm /etc/nginx/sites-enabled/${confFile}`);
-            }).catch(() => Promise.reject(new cli.errors.SystemError('Nginx config file link could not be removed, you will need to do this manually.')));
+            promises.push(
+                this.ui.sudo(`rm /etc/nginx/sites-available/${confFile}`).then(() => {
+                    return this.ui.sudo(`rm /etc/nginx/sites-enabled/${confFile}`);
+                }).catch(
+                    () => Promise.reject(new cli.errors.SystemError('Nginx config file link could not be removed, you will need to do this manually.'))
+                )
+            );
         }
+
+        return Promise.all(promises);
+    }
+
+    _cron(fn) {
+        const crontab = require('crontab');
+
+        return Promise.fromCallback(cb => crontab.load(cb)).then((cron) => {
+            fn(cron);
+            return Promise.fromCallback(cb => cron.save(cb));
+        });
     }
 
     restartNginx() {
