@@ -15,14 +15,6 @@ const LIVE_URL = 'https://acme-v01.api.letsencrypt.org/directory';
 const STAGING_URL = 'https://acme-staging.api.letsencrypt.org/directory';
 
 class NginxExtension extends cli.Extension {
-    get parsedUrl() {
-        if (!this._parsedUrl) {
-            this._parsedUrl = url.parse(this.instance.config.get('url'));
-        }
-
-        return this._parsedUrl;
-    }
-
     setup(cmd, argv) {
         // ghost setup --local, skip
         if (argv.local) {
@@ -39,17 +31,19 @@ class NginxExtension extends cli.Extension {
             return task && task.skip();
         }
 
-        if (this.parsedUrl.port) {
+        let parsedUrl = url.parse(ctx.instance.config.get('url'));
+
+        if (parsedUrl.port) {
             this.ui.log('Your url contains a port. Skipping nginx setup.', 'yellow');
             return task && task.skip();
         }
 
-        if (this.parsedUrl.pathname !== '/') {
+        if (parsedUrl.pathname !== '/') {
             this.ui.log('The Nginx service does not support subdirectory configurations yet. Skipping nginx setup.', 'yellow');
             return task && task.skip();
         }
 
-        if (fs.existsSync(`/etc/nginx/sites-available/${this.parsedUrl.hostname}.conf`)) {
+        if (fs.existsSync(`/etc/nginx/sites-available/${parsedUrl.hostname}.conf`)) {
             this.ui.log('Nginx configuration already found for this url. Skipping nginx configuration.', 'yellow');
             return task && task.skip();
         }
@@ -61,7 +55,7 @@ class NginxExtension extends cli.Extension {
 
             http._add('listen', '80');
             http._add('listen', '[::]:80');
-            http._add('server_name', this.parsedUrl.hostname);
+            http._add('server_name', parsedUrl.hostname);
 
             let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
             fs.ensureDirSync(rootPath);
@@ -70,7 +64,7 @@ class NginxExtension extends cli.Extension {
             http._add('location', '/');
             this._addProxyBlock(http.location, ctx.instance.config.get('server.port'));
 
-            let confFile = `${this.parsedUrl.hostname}.conf`;
+            let confFile = `${parsedUrl.hostname}.conf`;
 
             return ctx.instance.template(
                 conf.toString(),
@@ -97,7 +91,9 @@ class NginxExtension extends cli.Extension {
             return task && task.skip();
         }
 
-        let confFile = `${this.parsedUrl.hostname}.conf`;
+        let parsedUrl = url.parse(ctx.instance.config.get('url'));
+
+        let confFile = `${parsedUrl.hostname}.conf`;
         let nginxConfPath = path.join(ctx.instance.dir, 'system', 'files', confFile);
 
         if (!fs.existsSync(nginxConfPath)) {
@@ -139,7 +135,7 @@ class NginxExtension extends cli.Extension {
             task: () => {
                 let letsencryptFolder = path.join(ctx.instance.dir, 'system', 'letsencrypt');
                 let sslGenArgs = `certonly --agree-tos --email ${argv.sslemail} --webroot --webroot-path ${rootPath}` +
-                    ` --config-dir ${letsencryptFolder} --domains ${this.parsedUrl.hostname} --server ${argv.sslStaging ? STAGING_URL : LIVE_URL}`;
+                    ` --config-dir ${letsencryptFolder} --domains ${parsedUrl.hostname} --server ${argv.sslStaging ? STAGING_URL : LIVE_URL}`;
 
                 return execa('greenlock', sslGenArgs.split(' '), {
                     stdio: 'ignore',
@@ -179,13 +175,13 @@ class NginxExtension extends cli.Extension {
                 // add listen directives
                 https._add('listen', '443 ssl http2');
                 https._add('listen', '[::]:443 ssl http2');
-                https._add('server_name', this.parsedUrl.hostname);
+                https._add('server_name', parsedUrl.hostname);
 
                 let letsencryptPath = path.join(ctx.instance.dir, 'system', 'letsencrypt', 'live');
 
                 // add ssl cert directives
-                https._add('ssl_certificate', path.join(letsencryptPath, this.parsedUrl.hostname, 'fullchain.pem'));
-                https._add('ssl_certificate_key', path.join(letsencryptPath, this.parsedUrl.hostname, 'privkey.pem'));
+                https._add('ssl_certificate', path.join(letsencryptPath, parsedUrl.hostname, 'fullchain.pem'));
+                https._add('ssl_certificate_key', path.join(letsencryptPath, parsedUrl.hostname, 'privkey.pem'));
                 // add ssl-params snippet
                 https._add('include', path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'));
                 // add root directive
@@ -219,7 +215,8 @@ class NginxExtension extends cli.Extension {
             return;
         }
 
-        let confFile = `${this.parsedUrl.hostname}.conf`;
+        let parsedUrl = url.parse(instance.config.get('url'));
+        let confFile = `${parsedUrl.hostname}.conf`;
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             return this.ui.sudo(`rm /etc/nginx/sites-available/${confFile}`).then(() => {

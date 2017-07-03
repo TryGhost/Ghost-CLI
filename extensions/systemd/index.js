@@ -7,11 +7,6 @@ const template = require('lodash/template');
 const cli = require('../../lib');
 
 class SystemdExtension extends cli.Extension {
-    get systemdName() {
-        let instance = this.system.getInstance();
-        return `ghost_${instance.name}`;
-    }
-
     setup(cmd, argv) {
         let instance = this.system.getInstance();
 
@@ -22,7 +17,7 @@ class SystemdExtension extends cli.Extension {
 
     _setup(argv, ctx) {
         let service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
-        let serviceFilename = `${this.systemdName}.service`;
+        let serviceFilename = `ghost_${ctx.instance.name}.service`;
 
         return ctx.instance.template(service({
             name: ctx.instance.name,
@@ -40,7 +35,7 @@ class SystemdExtension extends cli.Extension {
             return;
         }
 
-        let serviceFilename = `/lib/systemd/system/${this.systemdName}.service`;
+        let serviceFilename = `/lib/systemd/system/ghost_${instance.name}.service`;
 
         if (fs.existsSync(serviceFilename)) {
             return this.ui.sudo(`rm ${serviceFilename}`).catch(
