@@ -28,6 +28,7 @@ class SystemdProcessManager extends cli.ProcessManager {
             execa.shellSync(`systemctl is-enabled ${this.systemdName}`);
             return true;
         } catch (e) {
+            // Systemd prints out "disabled" if service isn't enabled
             if (!e.message.match(/disabled/)) {
                 throw e;
             }
@@ -51,9 +52,8 @@ class SystemdProcessManager extends cli.ProcessManager {
             execa.shellSync(`systemctl is-active ${this.systemdName}`);
             return true;
         } catch (e) {
-            // systemctl is-active returns exit code 3 when a service isn't active,
-            // so throw if we don't have that.
-            if (e.code !== 3) {
+            // Systemd prints out "inactive" if service isn't running
+            if (!e.message.match(/inactive/)) {
                 throw e;
             }
 
