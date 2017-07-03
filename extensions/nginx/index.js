@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs-extra');
+const dns = require('dns');
 const url = require('url');
 const path = require('path');
 const execa = require('execa');
@@ -107,6 +108,27 @@ class NginxExtension extends cli.Extension {
         let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
 
         return this.ui.listr([{
+            title: 'Checking DNS resolution',
+            task: () => {
+                return Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
+                    if (error.code !== 'ENOTFOUND') {
+                        // Some other error
+                        return Promise.reject(error);
+                    }
+
+                    // DNS entry has not populated yet, log an error and skip rest of the
+                    // ssl configuration
+                    let text = [
+                        'Uh-oh! It looks like your domain isn\'t set up correctly yet.',
+                        'Because of this, SSL setup won\'t work correctly. Once you\'ve set up your domain',
+                        'and pointed it at this server\'s IP, try running `ghost setup ssl` again.'
+                    ];
+
+                    this.ui.log(text.join(' '), 'yellow');
+                    return task.skip();
+                });
+            }
+        }, {
             title: 'Preparing nginx for SSL configuration',
             task: (ctx) => {
                 return argv.sslemail ? Promise.resolve({email: argv.sslemail}) : this.ui.prompt({
