@@ -12,9 +12,6 @@ const NginxConfFile = require('nginx-conf').NginxConfFile;
 
 const cli = require('../../lib');
 
-const LIVE_URL = 'https://acme-v01.api.letsencrypt.org/directory';
-const STAGING_URL = 'https://acme-staging.api.letsencrypt.org/directory';
-
 class NginxExtension extends cli.Extension {
     setup(cmd, argv) {
         // ghost setup --local, skip
@@ -106,6 +103,7 @@ class NginxExtension extends cli.Extension {
         }
 
         let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
+        const letsencrypt = require('./letsencrypt');
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
@@ -155,15 +153,8 @@ class NginxExtension extends cli.Extension {
         }, {
             title: 'Getting SSL Certificate',
             task: () => {
-                let letsencryptFolder = path.join(ctx.instance.dir, 'system', 'letsencrypt');
-                let sslGenArgs = `certonly --agree-tos --email ${argv.sslemail} --webroot --webroot-path ${rootPath}` +
-                    ` --config-dir ${letsencryptFolder} --domains ${parsedUrl.hostname} --server ${argv.sslStaging ? STAGING_URL : LIVE_URL}`;
-
-                return execa('greenlock', sslGenArgs.split(' '), {
-                    stdio: 'ignore',
-                    preferLocal: true,
-                    localDir: __dirname
-                }).catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+                return letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging)
+                    .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
