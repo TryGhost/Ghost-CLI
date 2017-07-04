@@ -102,6 +102,7 @@ describe('Acceptance: Config', function () {
             test.setup('full');
 
             return test.spawn({
+                environment: 'production',
                 failOnStdErr: true,
                 checkOutput: () => false,
                 stdin: [

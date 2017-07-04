@@ -23,11 +23,9 @@
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 'use strict';
-const fs = require('fs-extra');
 const cp = require('child_process');
 const tmp = require('tmp');
 const find = require('lodash/find');
-const each = require('lodash/each');
 const path = require('path');
 const env = require('./env');
 
@@ -104,7 +102,7 @@ module.exports = class AcceptanceTest {
         return new Promise((resolve, reject) => {
             this.spawnedCommand = cp.spawn(this.cliPath, this.command.split(' '), {
                 env: Object.assign({}, process.env, {
-                    NODE_ENV: this.environment
+                    NODE_ENV: options.environment || 'production'
                 }, options.env || {}),
                 cwd: this.dir,
                 stdio: 'pipe'

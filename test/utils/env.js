@@ -6,7 +6,7 @@ const isObject = require('lodash/isObject');
 
 const builtin = {
     full: {
-        dirs: ['versions/1.0.0', 'config', 'content'],
+        dirs: ['versions/1.0.0', 'content'],
         links: [
             ['versions/1.0.0', 'current'],
             ['content', 'current/content']
