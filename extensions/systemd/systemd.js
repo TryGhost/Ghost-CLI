@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const execa = require('execa');
 const cli = require('../../lib');
 
@@ -9,16 +10,34 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     start() {
+        if (!this._precheck()) {
+            return Promise.reject(
+                new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.')
+            );
+        }
+
         return this.ui.sudo(`systemctl start ${this.systemdName}`)
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
     stop() {
+        if (!this._precheck()) {
+            return Promise.reject(
+                new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.')
+            );
+        }
+
         return this.ui.sudo(`systemctl stop ${this.systemdName}`)
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
     restart() {
+        if (!this._precheck()) {
+            return Promise.reject(
+                new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.')
+            );
+        }
+
         return this.ui.sudo(`systemctl restart ${this.systemdName}`)
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
@@ -59,6 +78,20 @@ class SystemdProcessManager extends cli.ProcessManager {
 
             return false;
         }
+    }
+
+    _precheck() {
+        if (this.instance.cliConfig.get('extension.systemd', false)) {
+            return true;
+        }
+
+        // service file exists but for some reason the right property in cliConfig hasn't been set
+        if (fs.existsSync(`/lib/systemd/system/${this.systemdName}.service`)) {
+            this.instance.cliConfig.set('extension.systemd', true);
+            return true;
+        }
+
+        return false;
     }
 
     static willRun() {
