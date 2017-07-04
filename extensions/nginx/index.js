@@ -63,6 +63,8 @@ class NginxExtension extends cli.Extension {
             http._add('location', '/');
             this._addProxyBlock(http.location, ctx.instance.config.get('server.port'));
 
+            http._add('client_max_body_size', '50m');
+
             let confFile = `${parsedUrl.hostname}.conf`;
 
             return ctx.instance.template(
@@ -203,6 +205,8 @@ class NginxExtension extends cli.Extension {
 
                 https._add('location', '/');
                 this._addProxyBlock(https.location, ctx.instance.config.get('server.port'));
+
+                https._add('client_max_body_size', '50m');
 
                 https._add('location', '~ /.well-known');
                 https.location[1]._add('allow', 'all');
