@@ -367,7 +367,7 @@ describe('Unit: Instance', function () {
     describe('template', function () {
         it('resolves with false if the choice is to skip', function () {
             let promptStub = sandbox.stub().resolves({ choice: 'skip' });
-            let testInstance = new Instance({ prompt: promptStub }, {}, '');
+            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true }, {}, '');
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(promptStub.calledOnce).to.be.true;
@@ -377,7 +377,7 @@ describe('Unit: Instance', function () {
 
         it('generates template if the choice is to proceeed', function () {
             let promptStub = sandbox.stub().resolves({choice: 'write'});
-            let testInstance = new Instance({ prompt: promptStub }, {} , '');
+            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true }, {} , '');
             let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
@@ -393,7 +393,7 @@ describe('Unit: Instance', function () {
             promptStub.onCall(0).resolves({choice: 'view'});
             promptStub.onCall(1).resolves({choice: 'skip'});
             let logStub = sandbox.stub();
-            let testInstance = new Instance({ log: logStub, prompt: promptStub }, {}, '');
+            let testInstance = new Instance({ log: logStub, prompt: promptStub, allowPrompt: true }, {}, '');
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.false;
@@ -407,7 +407,7 @@ describe('Unit: Instance', function () {
             let promptStub = sandbox.stub();
             promptStub.onCall(0).resolves({choice: 'edit'});
             promptStub.onCall(1).resolves({contents: 'some edited contents'});
-            let testInstance = new Instance({ prompt: promptStub }, {}, '');
+            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true }, {}, '');
             let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
@@ -415,6 +415,22 @@ describe('Unit: Instance', function () {
                 expect(promptStub.calledTwice).to.be.true;
                 expect(generateStub.calledOnce).to.be.true;
                 expect(generateStub.args[0][0]).to.equal('some edited contents');
+            });
+        });
+
+        it('immediately calls _generateTemplate if ui.allowPrompt is false', function () {
+            let promptStub = sandbox.stub().resolves();
+            let testInstance = new Instance({
+                prompt: promptStub,
+                allowPrompt: false
+            }, {}, '');
+            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+
+            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
+                expect(result).to.be.true;
+                expect(promptStub.called).to.be.false;
+                expect(generateStub.calledOnce).to.be.true;
+                expect(generateStub.args[0][0]).to.equal('some contents');
             });
         });
     });
