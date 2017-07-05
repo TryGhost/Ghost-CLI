@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-beta.4"></a>
+# [1.0.0-beta.4](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.3...1.0.0-beta.4) (2017-07-05)
+
+### Bug Fixes
+
+* **config:** fix config environment handling ([0a75eb7](https://github.com/TryGhost/Ghost-CLI/commit/0a75eb7)), closes [#265](https://github.com/TryGhost/Ghost-CLI/issues/265)
+* **doctor:** actually fix stack check errors ([1f5b631](https://github.com/TryGhost/Ghost-CLI/commit/1f5b631)), closes [#260](https://github.com/TryGhost/Ghost-CLI/issues/260)
+* **doctor:** improve error handling in system stack checks ([3f508a0](https://github.com/TryGhost/Ghost-CLI/commit/3f508a0)), closes [#260](https://github.com/TryGhost/Ghost-CLI/issues/260)
+* **instance:** don't prompt for templates if prompts are disabled ([3c64dd5](https://github.com/TryGhost/Ghost-CLI/commit/3c64dd5))
+* **log:** output as many lines as possible if n > file lines ([3c56f2e](https://github.com/TryGhost/Ghost-CLI/commit/3c56f2e)), closes [#221](https://github.com/TryGhost/Ghost-CLI/issues/221)
+* **setup:** ensure we only skip tasks that should be skipped ([caa440e](https://github.com/TryGhost/Ghost-CLI/commit/caa440e))
+* **systemd:** ensure systemd service file is created before starting ([19d79e7](https://github.com/TryGhost/Ghost-CLI/commit/19d79e7)), closes [#262](https://github.com/TryGhost/Ghost-CLI/issues/262)
+* **tests:** fix config acceptance tests & config command ([1958d63](https://github.com/TryGhost/Ghost-CLI/commit/1958d63))
+* **ui:** log LTS warning when `config.js` file is found (#273) ([3e54db0](https://github.com/TryGhost/Ghost-CLI/commit/3e54db0))
+
+### Features
+
+* **nginx:** add `client_max_body_size` to nginx def. config (#272) ([b04e7db](https://github.com/TryGhost/Ghost-CLI/commit/b04e7db)), closes [#231](https://github.com/TryGhost/Ghost-CLI/issues/231)
+* **setup:** allow running of multiple stages ([dbe7263](https://github.com/TryGhost/Ghost-CLI/commit/dbe7263))
+* **setup:** allow setup stages to depend on other setup stages having run ([57587a6](https://github.com/TryGhost/Ghost-CLI/commit/57587a6)), closes [#261](https://github.com/TryGhost/Ghost-CLI/issues/261)
+* **ui:** add troubleshooting link to errors (#275) ([f5bbff7](https://github.com/TryGhost/Ghost-CLI/commit/f5bbff7))
+
 <a name="1.0.0-beta.3"></a>
 # [1.0.0-beta.3](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.2...1.0.0-beta.3) (2017-07-03)
 
