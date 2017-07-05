@@ -51,25 +51,25 @@ class MySQLExtension extends cli.Extension {
             .catch((err) => {
                 this.ui.log('MySQL: connection error.', 'yellow');
 
-		if (err.code === 'ER_ACCESS_DENIED_ERROR') {
+                if (err.code === 'ER_ACCESS_DENIED_ERROR') {
                     throw new cli.errors.ConfigError({
-			message: err.message,
-			configs: {
-			    'database.connection.user': this.databaseConfig.connection.user,
-			    'database.connection.password': this.databaseConfig.connection.password
-			},
-			environment: ctx.instance.system.environment,
-			help: 'You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.'
+                        message: err.message,
+                        configs: {
+                            'database.connection.user': this.databaseConfig.connection.user,
+                            'database.connection.password': this.databaseConfig.connection.password
+                        },
+                        environment: ctx.instance.system.environment,
+                        help: 'You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.'
                     });
-		}
-		
+                }
+
                 throw new cli.errors.ConfigError({
                     message: err.message,
-		    configs: {
-			'database.connection.host': this.databaseConfig.connection.host,
-			'database.connection.port': this.databaseConfig.connection.port || '3306'
-		    },
-		    environment: ctx.instance.system.environment,
+                    configs: {
+                        'database.connection.host': this.databaseConfig.connection.host,
+                        'database.connection.port': this.databaseConfig.connection.port || '3306'
+                    },
+                    environment: ctx.instance.system.environment,
                     help: 'Please ensure that MySQL is installed and reachable. You can always re-run `ghost setup` and try it again.'
                 });
             });
@@ -79,11 +79,11 @@ class MySQLExtension extends cli.Extension {
         let randomPassword = crypto.randomBytes(10).toString('hex');
         let host = this.databaseConfig.connection.host;
 
-	// IMPORTANT: we generate random MySQL usernames
-	// e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to be able to
-	// e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
-	// the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
-	// disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
+        // IMPORTANT: we generate random MySQL usernames
+        // e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to be able to
+        // e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
+        // the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
+        // disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
         let username = 'ghost-' + Math.floor(Math.random() * 1000);
 
         return this._query('CREATE USER \'' + username + '\'@\'' + host + '\' IDENTIFIED BY \'' + randomPassword + '\';')
@@ -111,7 +111,7 @@ class MySQLExtension extends cli.Extension {
     grantPermissions(options) {
         let host = this.databaseConfig.connection.host;
         let database = this.databaseConfig.connection.database;
-	let username = options.username;
+        let username = options.username;
 
         return this._query('GRANT ALL PRIVILEGES ON ' + database + '.* TO \'' + username + '\'@\'' + host + '\';')
             .then(() => {
