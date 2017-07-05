@@ -54,7 +54,7 @@ class MySQLExtension extends cli.Extension {
                 if (err.code === 'ER_ACCESS_DENIED_ERROR') {
                     throw new cli.errors.ConfigError({
                         message: err.message,
-                        configs: {
+                        config: {
                             'database.connection.user': this.databaseConfig.connection.user,
                             'database.connection.password': this.databaseConfig.connection.password
                         },
@@ -65,7 +65,7 @@ class MySQLExtension extends cli.Extension {
 
                 throw new cli.errors.ConfigError({
                     message: err.message,
-                    configs: {
+                    config: {
                         'database.connection.host': this.databaseConfig.connection.host,
                         'database.connection.port': this.databaseConfig.connection.port || '3306'
                     },
