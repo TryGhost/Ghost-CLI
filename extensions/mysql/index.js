@@ -23,7 +23,7 @@ class MySQLExtension extends cli.Extension {
     setupMySQL(argv, ctx, task) {
         this.databaseConfig = ctx.instance.config.get('database');
 
-        return this.canConnect()
+        return this.canConnect(ctx)
             .then(() => {
                 if (this.databaseConfig.connection.user === 'root') {
                     return this.ui.confirm('Your MySQL user is root. Would you like to create a custom Ghost MySQL user?', true)
@@ -41,7 +41,7 @@ class MySQLExtension extends cli.Extension {
             });
     }
 
-    canConnect() {
+    canConnect(ctx) {
         this.connection = mysql.createConnection(omit(this.databaseConfig.connection, 'database'));
 
         return Promise.fromCallback(cb => this.connection.connect(cb))
@@ -78,37 +78,44 @@ class MySQLExtension extends cli.Extension {
     createMySQLUser(ctx) {
         let randomPassword = crypto.randomBytes(10).toString('hex');
         let host = this.databaseConfig.connection.host;
-        let username = 'ghost-';
 
-        return this._query('CREATE USER \'ghost\'@\'' + host + '\' IDENTIFIED BY \'' + randomPassword + '\';')
+	// IMPORTANT: we generate random MySQL usernames
+	// e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to be able to
+	// e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
+	// the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
+	// disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
+        let username = 'ghost-' + Math.floor(Math.random() * 1000);
+
+        return this._query('CREATE USER \'' + username + '\'@\'' + host + '\' IDENTIFIED BY \'' + randomPassword + '\';')
             .then(() => {
-                this.ui.log('MySQL: successfully created `ghost` user.', 'green');
+                this.ui.log('MySQL: successfully created `' + username + '`.', 'green');
 
-                return this.grantPermissions()
+                return this.grantPermissions({username: username})
                     .then(() => {
-                        ctx.instance.config.set('database.connection.user', 'ghost');
+                        ctx.instance.config.set('database.connection.user', username);
                         ctx.instance.config.set('database.connection.password', randomPassword);
                     });
             })
             .catch((err) => {
                 // CASE: user exists, we are not able to figure out the original password, skip mysql setup
                 if (err.errno === 1396) {
-                    this.ui.log('MySQL: `ghost` user exists. Skipping.', 'yellow');
+                    this.ui.log('MySQL: `' + username + '` user exists. Skipping.', 'yellow');
                     return Promise.resolve();
                 }
 
-                this.ui.log('MySQL: unable to create `ghost` user.', 'yellow');
+                this.ui.log('MySQL: unable to create custom Ghost user.', 'yellow');
                 throw new cli.errors.SystemError(err.message);
             });
     }
 
-    grantPermissions() {
+    grantPermissions(options) {
         let host = this.databaseConfig.connection.host;
         let database = this.databaseConfig.connection.database;
+	let username = options.username;
 
-        return this._query('GRANT ALL PRIVILEGES ON ' + database + '.* TO \'ghost\'@\'' + host + '\';')
+        return this._query('GRANT ALL PRIVILEGES ON ' + database + '.* TO \'' + username + '\'@\'' + host + '\';')
             .then(() => {
-                this.ui.log('MySQL: successfully granted permissions for `ghost` user.', 'green');
+                this.ui.log('MySQL: successfully granted permissions for `' + username + '` user.', 'green');
 
                 return this._query('FLUSH PRIVILEGES;')
                     .then(() => {
@@ -120,7 +127,7 @@ class MySQLExtension extends cli.Extension {
                     });
             })
             .catch((err) => {
-                this.ui.log('MySQL: unable to grant permissions for `ghost` user.', 'yellow');
+                this.ui.log('MySQL: unable to grant permissions for `' + username + '` user.', 'yellow');
                 throw new cli.errors.SystemError(err.message);
             });
     }
