@@ -132,17 +132,23 @@ class NginxExtension extends cli.Extension {
         }, {
             title: 'Preparing nginx for SSL configuration',
             task: (ctx) => {
-                return argv.sslemail ? Promise.resolve({email: argv.sslemail}) : this.ui.prompt({
-                    name: 'email',
-                    type: 'input',
-                    message: 'Enter your email (used for SSL certificate generation)',
-                    validate: value => Boolean(value) || 'You must supply an email'
-                }).then((answer) => {
-                    argv.sslemail = answer.email;
+                let promise;
 
-                    ctx.ssl = {};
+                if (argv.sslemail) {
+                    promise = Promise.resolve(argv.sslemail);
+                } else {
+                    promise = this.ui.prompt({
+                        name: 'email',
+                        type: 'input',
+                        message: 'Enter your email (used for SSL certificate generation)',
+                        validate: value => Boolean(value) || 'You must supply an email'
+                    }).then(answer => { argv.sslemail = answer.email; });
+                }
 
-                    return Promise.fromNode((cb) => NginxConfFile.create(nginxConfPath, cb)).then((conf) => {
+                return promise.then(() => {
+                    return Promise.fromCallback((cb) => NginxConfFile.create(nginxConfPath, cb)).then((conf) => {
+                        ctx.ssl = {};
+
                         ctx.ssl.conf = conf;
                         ctx.ssl.http = conf.nginx.server;
                         ctx.ssl.http._add('location', '~ /.well-known');
