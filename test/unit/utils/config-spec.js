@@ -1,7 +1,6 @@
 'use strict';
 const expect = require('chai').expect;
 const fs = require('fs-extra');
-const path = require('path');
 
 const Config = require('../../../lib/utils/config');
 
@@ -108,16 +107,18 @@ describe('Unit: Config', function () {
     });
 
     describe('exists()', function () {
-        it('returns false if file does not exist', function () {
+        it('returns error if file does not exist', function () {
             let result = Config.exists('does-not-exist.txt');
 
-            expect(result).to.be.false;
+            expect(result).to.have.property('options');
+            expect(result.options).to.have.property('message');
         });
 
-        it('returns false if file contains invalid JSON', function () {
+        it('returns error if file contains invalid JSON', function () {
             fs.writeFileSync('config-test.json', 'invalid json');
             let result = Config.exists('config-test.json');
-            expect(result).to.be.false;
+            expect(result).to.have.property('options');
+            expect(result.options).to.have.property('message');
             fs.removeSync('config-test.json');
         });
 
