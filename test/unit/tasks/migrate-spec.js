@@ -129,9 +129,12 @@ describe('Unit: Tasks > Migrate', function () {
             }
         });
 
-        return migrate({ instance: { config: {
-            get: getStub, set: setStub, save: saveStub
-        } } }).then(() => {
+        return migrate({ instance: {
+            config: {
+                get: getStub, set: setStub, save: saveStub
+            },
+            system: { environment: 'testing' }
+        } }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
@@ -155,9 +158,12 @@ describe('Unit: Tasks > Migrate', function () {
             }
         });
 
-        return migrate({ instance: { config: {
-            get: getStub, set: setStub, save: saveStub
-        } } }).then(() => {
+        return migrate({ instance: {
+            config: {
+                get: getStub, set: setStub, save: saveStub
+            },
+            system: { environment: 'testing' }
+        } }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);

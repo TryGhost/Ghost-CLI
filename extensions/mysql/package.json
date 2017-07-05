@@ -5,5 +5,8 @@
   "keywords": [
     "ghost-cli-extension"
   ],
-  "main": "index.js"
+  "main": "index.js",
+  "ghost-cli": {
+    "before": "ghost-cli-linux"
+  }
 }
