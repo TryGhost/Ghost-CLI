@@ -7,6 +7,10 @@ const omit = require('lodash/omit');
 const cli = require('../../lib');
 
 class MySQLExtension extends cli.Extension {
+    _query(queryString) {
+	return Promise.fromCallback(cb => this.connection.query(queryString, cb));
+    }
+    
     setup(cmd, argv) {
         // ghost setup --local, skip
         if (argv.local) {
@@ -17,100 +21,89 @@ class MySQLExtension extends cli.Extension {
     }
 
     setupMySQL(argv, ctx, task) {
-        let self = this;
         this.databaseConfig = ctx.instance.config.get('database');
 
         return this.canConnect()
-            .then(function () {
-                if (self.databaseConfig.connection.user === 'root') {
-                    return self.ui.confirm('Your MySQL user is root. Would you like to create a `ghost` MySQL user?', true)
-                        .then(function (res) {
+            .then(() => {
+                if (this.databaseConfig.connection.user === 'root') {
+                    return this.ui.confirm('Your MySQL user is root. Would you like to create a `ghost` MySQL user?', true)
+                        .then((res) => {
                             if (res.yes) {
-                                return self.createMySQLUser(ctx);
+                                return this.createMySQLUser(ctx);
                             }
                         });
                 }
 
-                self.ui.log('MySQL: Your user is: ' + self.databaseConfig.connection.user, 'green');
+                self.ui.log('MySQL: Your user is: ' + this.databaseConfig.connection.user, 'green');
             })
-            .finally(function () {
-                self.connection.end();
+            .finally(() => {
+                this.connection.end();
             });
     }
 
     canConnect() {
-        let self = this;
-        this.connection = mysql.createConnection(omit(self.databaseConfig.connection, 'database'));
+        this.connection = mysql.createConnection(omit(this.databaseConfig.connection, 'database'));
 
-        return new Promise(function (resolve, reject) {
-            self.connection.connect(function (err) {
-                if (err) {
-                    self.ui.log('MySQL: connection error.', 'yellow');
-                    return reject(new cli.errors.SystemError(err.message));
-                }
-
-                self.ui.log('MySQL: connection successful.', 'green');
-                resolve();
-            });
-        });
+	return Promise.fromCallback(cb => this.connection.connect(cb))
+	    .then(() => {
+                this.ui.log('MySQL: connection successful.', 'green');
+	    })
+	    .catch((err) => {
+                this.ui.log('MySQL: connection error.', 'yellow');
+                throw new cli.errors.SystemError(err.message);
+	    });
     }
 
     createMySQLUser(ctx) {
-        let self = this;
         let randomPassword = crypto.randomBytes(10).toString('hex');
         let host = self.databaseConfig.connection.host;
 
-        return new Promise(function (resolve, reject) {
-            self.connection.query('CREATE USER \'ghost\'@\'' + host + '\' IDENTIFIED BY \'' + randomPassword + '\';', function (err) {
-                if (err) {
-                    // CASE: user exists, we are not able to figure out the original password, skip mysql setup
-                    if (err.errno === 1396) {
-                        self.ui.log('MySQL: `ghost` user exists. Skipping.', 'yellow');
-                        return resolve();
-                    }
-
-                    self.ui.log('MySQL: unable to create `ghost` user.', 'yellow');
-                    return reject(new cli.errors.SystemError(err.message));
-                }
-
-                self.ui.log('MySQL: successfully created `ghost` user.', 'green');
-
-                self.grantPermissions()
-                    .then(function () {
+	return this._query('CREATE USER \'ghost\'@\'' + host + '\' IDENTIFIED BY \'' + randomPassword + '\';')
+	    .then(() => {
+		this.ui.log('MySQL: successfully created `ghost` user.', 'green');
+		
+                return this.grantPermissions()
+                    .then(() => {
                         ctx.instance.config.set('database.connection.user', 'ghost');
                         ctx.instance.config.set('database.connection.password', randomPassword);
-                        resolve();
-                    })
-                    .catch(reject);
-            });
+                    });
+	    })
+	    .catch((err) => {
+		// CASE: user exists, we are not able to figure out the original password, skip mysql setup
+                if (err.errno === 1396) {
+                    this.ui.log('MySQL: `ghost` user exists. Skipping.', 'yellow');
+                    return Promise.resolve();
+                }
+		
+                this.ui.log('MySQL: unable to create `ghost` user.', 'yellow');
+                throw new cli.errors.SystemError(err.message);
+	    });
         });
     }
 
     grantPermissions() {
-        let self = this;
         let host = self.databaseConfig.connection.host;
         let database = self.databaseConfig.connection.database;
 
-        return new Promise(function (resolve, reject) {
-            self.connection.query('GRANT ALL PRIVILEGES ON ' + database + '.* TO \'ghost\'@\'' + host + '\';', function (err) {
-                if (err) {
-                    self.ui.log('MySQL: unable to grant permissions for `ghost` user.', 'yellow');
-                    return reject(new cli.errors.SystemError(err.message));
-                }
+	return this._query('GRANT ALL PRIVILEGES ON ' + database + '.* TO \'ghost\'@\'' + host + '\';')
+	    .then(() => {		
+                this.ui.log('MySQL: successfully granted permissions for `ghost` user.', 'green');
 
-                self.ui.log('MySQL: successfully granted permissions for `ghost` user.', 'green');
-
-                self.connection.query('FLUSH PRIVILEGES;', function (err) {
-                    if (err) {
-                        self.ui.log('MySQL: unable to flush privileges.', 'yellow');
-                        return reject(new cli.errors.SystemError(err.message));
-                    }
-
-                    self.ui.log('MySQL: flushed privileges', 'green');
-
-                    resolve();
+                this._query('FLUSH PRIVILEGES;')
+		    .then(() => {
+			this.ui.log('MySQL: flushed privileges', 'green');
+		    })
+		    .catch((err) => {
+			this.ui.log('MySQL: unable to flush privileges.', 'yellow');
+                        throw new cli.errors.SystemError(err.message);
+		    });
                 });
-            });
+
+	    })
+	    .catch((err) => {
+		this.ui.log('MySQL: unable to grant permissions for `ghost` user.', 'yellow');
+                throw new cli.errors.SystemError(err.message);
+	    });
         });
     }
 }
