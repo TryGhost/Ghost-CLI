@@ -1,6 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const chalk = require('chalk');
+const sinon = require('sinon');
 const streamTestUtils = require('../../utils/stream');
 const UI = require('../../../lib/ui');
 
@@ -42,6 +43,25 @@ describe('Unit: UI', function () {
 
             ui = new UI({stdout: stdout});
             ui.log('test', 'green');
+        });
+    });
+
+    describe('#logVerbose', function () {
+        it('passes through options to log method when verbose is set', function () {
+            let ui = new UI({verbose: true});
+            let logStub = sinon.stub(ui, 'log');
+
+            ui.logVerbose('foo', 'green', true);
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.args[0]).to.deep.equal(['foo', 'green', true]);
+        });
+
+        it('does not call log when verbose is false', function () {
+            let ui = new UI({verbose: false});
+            let logStub = sinon.stub(ui, 'log');
+
+            ui.logVerbose('foo', 'green', false);
+            expect(logStub.called).to.be.false;
         });
     });
 
