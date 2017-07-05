@@ -135,7 +135,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
-            expect(error.options.configKey).to.equal('database.connection.host');
+            expect(error.options.config).to.have.key('database.connection.host');
             expect(dbOkStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
             expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
@@ -161,7 +161,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
-            expect(error.options.configKey).to.equal('database.connection.user');
+            expect(error.options.config).to.have.all.keys('database.connection.user', 'database.connection.password');
             expect(dbOkStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
             expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
