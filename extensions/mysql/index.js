@@ -50,10 +50,27 @@ class MySQLExtension extends cli.Extension {
             })
             .catch((err) => {
                 this.ui.log('MySQL: connection error.', 'yellow');
-                throw new cli.errors.SystemError({
+
+		if (err.code === 'ER_ACCESS_DENIED_ERROR') {
+                    throw new cli.errors.ConfigError({
+			message: err.message,
+			configs: {
+			    'database.connection.user': this.databaseConfig.connection.user,
+			    'database.connection.password': this.databaseConfig.connection.password
+			},
+			environment: ctx.instance.system.environment,
+			help: 'You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.'
+                    });
+		}
+		
+                throw new cli.errors.ConfigError({
                     message: err.message,
-                    context: 'Either MySQL is not installed or the entered MySQL host ' + this.databaseConfig.connection.host + ':' + (this.databaseConfig.connection.port || '3306') + ' is unreachable.',
-                    help: 'Please run `ghost config` and then `ghost setup mysql` again.'
+		    configs: {
+			'database.connection.host': this.databaseConfig.connection.host,
+			'database.connection.port': this.databaseConfig.connection.port || '3306'
+		    },
+		    environment: ctx.instance.system.environment,
+                    help: 'Please ensure that MySQL is installed and reachable. You can always re-run `ghost setup` and try it again.'
                 });
             });
     }
