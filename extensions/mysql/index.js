@@ -34,7 +34,7 @@ class MySQLExtension extends cli.Extension {
                         });
                 }
 
-                self.ui.log('MySQL: Your user is: ' + this.databaseConfig.connection.user, 'green');
+                this.ui.log('MySQL: Your user is: ' + this.databaseConfig.connection.user, 'green');
             })
             .finally(() => {
                 this.connection.end();
@@ -60,7 +60,7 @@ class MySQLExtension extends cli.Extension {
 
     createMySQLUser(ctx) {
         let randomPassword = crypto.randomBytes(10).toString('hex');
-        let host = self.databaseConfig.connection.host;
+        let host = this.databaseConfig.connection.host;
         let username = 'ghost-';
 
         return this._query('CREATE USER \'ghost\'@\'' + host + '\' IDENTIFIED BY \'' + randomPassword + '\';')
@@ -86,8 +86,8 @@ class MySQLExtension extends cli.Extension {
     }
 
     grantPermissions() {
-        let host = self.databaseConfig.connection.host;
-        let database = self.databaseConfig.connection.database;
+        let host = this.databaseConfig.connection.host;
+        let database = this.databaseConfig.connection.database;
 
         return this._query('GRANT ALL PRIVILEGES ON ' + database + '.* TO \'ghost\'@\'' + host + '\';')
             .then(() => {
