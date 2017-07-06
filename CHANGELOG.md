@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-beta.5"></a>
+# [1.0.0-beta.5](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.4...1.0.0-beta.5) (2017-07-06)
+
+### Bug Fixes
+
+* **config-error:** cleanup config error and add error help property ([16c8203](https://github.com/TryGhost/Ghost-CLI/commit/16c8203))
+* **linux:** ensure directory permissions are still changed if ghost user exists ([b0407da](https://github.com/TryGhost/Ghost-CLI/commit/b0407da))
+* **log:** only load running environment if ghost is running ([81c1b87](https://github.com/TryGhost/Ghost-CLI/commit/81c1b87))
+* **migrations:** don't log to any file during migrations ([85d40c6](https://github.com/TryGhost/Ghost-CLI/commit/85d40c6))
+* **mysql:** cleanup promise structure of mysql extension ([860cf18](https://github.com/TryGhost/Ghost-CLI/commit/860cf18)), closes [#191](https://github.com/TryGhost/Ghost-CLI/issues/191)
+* **prompt:** respect `--no-prompt` option in other areas ([fb7e4f7](https://github.com/TryGhost/Ghost-CLI/commit/fb7e4f7)), closes [#276](https://github.com/TryGhost/Ghost-CLI/issues/276) [#280](https://github.com/TryGhost/Ghost-CLI/issues/280)
+* **ssl:** ensure acme is executable by anyone on the system ([1064731](https://github.com/TryGhost/Ghost-CLI/commit/1064731))
+* **ssl:** ensure ssl setup works using the --sslemail flag ([c51ca5b](https://github.com/TryGhost/Ghost-CLI/commit/c51ca5b)), closes [#283](https://github.com/TryGhost/Ghost-CLI/issues/283)
+* **systemd:** ensure isRunning accounts for activating status as well ([0f20c6f](https://github.com/TryGhost/Ghost-CLI/commit/0f20c6f))
+
+### Features
+
+* **linux:** add linux user extension ([5f3b0b8](https://github.com/TryGhost/Ghost-CLI/commit/5f3b0b8)), closes [#189](https://github.com/TryGhost/Ghost-CLI/issues/189)
+* **mysql:** mysql user creation extension (#269) ([78f8439](https://github.com/TryGhost/Ghost-CLI/commit/78f8439))
+* **ssl:** refactor ssl setup to use acme.sh rather than greenlock ([52cdcab](https://github.com/TryGhost/Ghost-CLI/commit/52cdcab))
+* **ui:** add mail config message after installation (#278) ([8aac988](https://github.com/TryGhost/Ghost-CLI/commit/8aac988))
+* **ui:** add new ui logVerbose method ([09ec161](https://github.com/TryGhost/Ghost-CLI/commit/09ec161))
+
 <a name="1.0.0-beta.4"></a>
 # [1.0.0-beta.4](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.3...1.0.0-beta.4) (2017-07-05)
 
