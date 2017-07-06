@@ -72,7 +72,8 @@ class SystemdProcessManager extends cli.ProcessManager {
             return true;
         } catch (e) {
             // Systemd prints out "inactive" if service isn't running
-            if (!e.message.match(/inactive/)) {
+            // or "activating" if service hasn't completely started yet
+            if (!e.message.match(/inactive|activating/)) {
                 throw e;
             }
 
