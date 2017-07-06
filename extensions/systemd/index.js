@@ -39,8 +39,14 @@ class SystemdExtension extends cli.Extension {
             user: uid,
             environment: this.system.environment,
             ghost_exec_path: process.argv.slice(0,2).join(' ')
-        }), 'systemd service file', serviceFilename, '/lib/systemd/system').then(() => {
+        }), 'systemd service file', serviceFilename, '/lib/systemd/system').then((generated) => {
+            if (!generated) {
+                this.ui.log('Systemd unit file not generated', 'yellow');
+                return;
+            }
+
             ctx.instance.cliConfig.set('extension.systemd', true).save();
+            return this.ui.sudo('systemctl daemon-reload');
         });
     }
 
