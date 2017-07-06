@@ -37,6 +37,9 @@ class LinuxExtension extends cli.Extension {
             task: () => this.ui.sudo('useradd --system --user-group ghost')
         }, {
             title: 'Changing directory permissions',
+            task: () => this.ui.sudo(`chmod -R 775 ${ctx.instance.dir}`)
+        },  {
+            title: 'Changing directory ownership',
             task: () => this.ui.sudo(`chown -R ghost:ghost ${ctx.instance.dir}`)
         }, {
             title: 'Adding current user to ghost group',
