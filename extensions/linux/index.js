@@ -41,6 +41,16 @@ class LinuxExtension extends cli.Extension {
             task: () => this.ui.sudo(`chown -R ghost:ghost ${path.join(ctx.instance.dir, 'content')}`)
         }], false);
     }
+
+    uninstall(instance) {
+        if (os.platform() !== 'linux') {
+            return Promise.resolve();
+        }
+
+        // because we have changed the ownership of the ghost content folder,
+        // we need to remove it manually here via sudo
+        return this.ui.sudo(`rm -rf ${path.join(instance.dir, 'content')}`);
+    }
 }
 
 module.exports = LinuxExtension;
