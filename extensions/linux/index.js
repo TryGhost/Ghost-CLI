@@ -37,9 +37,6 @@ class LinuxExtension extends cli.Extension {
             skip: () => userExists,
             task: () => this.ui.sudo('useradd --system --user-group ghost')
         }, {
-            title: 'Changing versions directory permissions',
-            task: () => this.ui.sudo(`chown -R ghost:ghost ${path.join(ctx.instance.dir, 'versions')}`)
-        }, {
             title: 'Changing content directory permissions',
             task: () => this.ui.sudo(`chown -R ghost:ghost ${path.join(ctx.instance.dir, 'content')}`)
         }], false);
