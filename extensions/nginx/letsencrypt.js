@@ -43,7 +43,7 @@ module.exports = function letsencrypt(instance, email, staging, renew) {
 
         // This is an execa error
         if (error.stdout.match(/Skip/)) {
-            this.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
+            instance.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
             return;
         }
 
