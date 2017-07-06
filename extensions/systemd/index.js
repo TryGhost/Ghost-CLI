@@ -2,10 +2,10 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const execa = require('execa');
 const template = require('lodash/template');
 
 const cli = require('../../lib');
+const getUid = require('./get-uid');
 
 class SystemdExtension extends cli.Extension {
     setup(cmd, argv) {
@@ -17,15 +17,9 @@ class SystemdExtension extends cli.Extension {
     }
 
     _setup(argv, ctx, task) {
-        let uid;
+        let uid = getUid(ctx.instance.dir);
 
-        try {
-            uid = execa.shellSync('id -u ghost').stdout;
-        } catch (e) {
-            if (!e.message.match(/no such user/)) {
-                return Promise.reject(e);
-            }
-
+        if (!uid) {
             this.ui.log('Ghost user has not been set up, please run `ghost setup linux-user` first', 'yellow');
             return task.skip();
         }
