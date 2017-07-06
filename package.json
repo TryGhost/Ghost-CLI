@@ -51,7 +51,6 @@
     "fkill": "5.0.0",
     "fs-extra": "3.0.1",
     "ghost-ignition": "2.8.11",
-    "greenlock-cli": "2.2.9",
     "inquirer": "3.1.1",
     "is-running": "2.1.0",
     "knex-migrator": "2.0.16",

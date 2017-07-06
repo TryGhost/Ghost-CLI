@@ -199,11 +199,11 @@ class NginxExtension extends cli.Extension {
                 https._add('listen', '[::]:443 ssl http2');
                 https._add('server_name', parsedUrl.hostname);
 
-                let letsencryptPath = path.join(ctx.instance.dir, 'system', 'letsencrypt', 'live');
+                let letsencryptPath = path.join(ctx.instance.dir, 'system', 'letsencrypt');
 
                 // add ssl cert directives
-                https._add('ssl_certificate', path.join(letsencryptPath, parsedUrl.hostname, 'fullchain.pem'));
-                https._add('ssl_certificate_key', path.join(letsencryptPath, parsedUrl.hostname, 'privkey.pem'));
+                https._add('ssl_certificate', path.join(letsencryptPath, 'fullchain.pem'));
+                https._add('ssl_certificate_key', path.join(letsencryptPath, 'privkey.pem'));
                 // add ssl-params snippet
                 https._add('include', path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'));
                 // add root directive

@@ -12,8 +12,15 @@ class SslRenewCommand extends cli.Command {
         }
 
         let email = instance.cliConfig.get('extension.sslemail');
-        return this.ui.run(letsencrypt(instance, email, false), 'Renewing SSL certificate')
-            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+        return this.ui.run(letsencrypt(instance, email, false, true), 'Renewing SSL certificate')
+            .catch((error) => {
+                if (error.stdout.match(/Skip/)) {
+                    this.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
+                    return;
+                }
+
+                return Promise.reject(new cli.errors.ProcessError(error));
+            });
     }
 }
 
