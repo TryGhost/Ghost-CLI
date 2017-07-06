@@ -36,7 +36,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(dbOkStub.calledOnce).to.be.true;
             expect(getStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
-            expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(setStub.args[0]).to.deep.equal(['logging.transports', []]);
             expect(setStub.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
             expect(saveStub.calledTwice).to.be.true;
         });
@@ -62,7 +62,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(dbOkStub.calledOnce).to.be.true;
             expect(initStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
-            expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(setStub.args[0]).to.deep.equal(['logging.transports', []]);
             expect(setStub.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
@@ -87,7 +87,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(dbOkStub.calledOnce).to.be.true;
             expect(initStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
-            expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(setStub.args[0]).to.deep.equal(['logging.transports', []]);
             expect(setStub.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
@@ -112,7 +112,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(dbOkStub.calledOnce).to.be.true;
             expect(migrateStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
-            expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(setStub.args[0]).to.deep.equal(['logging.transports', []]);
             expect(setStub.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
@@ -141,7 +141,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(error.options.config).to.have.key('database.connection.host');
             expect(dbOkStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
-            expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(setStub.args[0]).to.deep.equal(['logging.transports', []]);
             expect(setStub.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
@@ -170,7 +170,7 @@ describe('Unit: Tasks > Migrate', function () {
             expect(error.options.config).to.have.all.keys('database.connection.user', 'database.connection.password');
             expect(dbOkStub.calledOnce).to.be.true;
             expect(setStub.calledTwice).to.be.true;
-            expect(setStub.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(setStub.args[0]).to.deep.equal(['logging.transports', []]);
             expect(setStub.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
