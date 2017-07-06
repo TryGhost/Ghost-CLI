@@ -5,12 +5,14 @@ const path = require('path');
 const execa = require('execa');
 const download = require('download');
 
+const errors = require('../../lib').errors;
+
 // This is how we will do version control for acme.sh
 const ACME_VERSION = '2.7.2';
 
 module.exports = function letsencrypt(instance, email, staging, renew) {
     let downloadPromise;
-    let acmePath = path.join(__dirname, 'acme.sh');
+    let acmePath = path.join(instance.dir, 'system', 'acme.sh');
 
     if (fs.existsSync(acmePath)) {
         downloadPromise = Promise.resolve();
@@ -33,5 +35,18 @@ module.exports = function letsencrypt(instance, email, staging, renew) {
             `--accountemail ${email} --key-file ${privkey} --fullchain-file ${fullchain}${staging ? ' --staging' : ''}`;
 
         return execa.shell(cmd);
-    });
+    }).catch((error) => {
+        if (!error.cmd) {
+            // if cmd not set, we got an error from `download`
+            return Promise.reject(new errors.SystemError(error.message));
+        }
+
+        // This is an execa error
+        if (error.stdout.match(/Skip/)) {
+            this.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
+            return;
+        }
+
+        return Promise.reject(new errors.ProcessError(error));
+    });;
 };
