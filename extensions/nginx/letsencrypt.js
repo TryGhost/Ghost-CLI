@@ -16,7 +16,7 @@ module.exports = function letsencrypt(instance, email, staging, renew) {
         downloadPromise = Promise.resolve();
     } else {
         let acmeUrl = `https://raw.githubusercontent.com/Neilpang/acme.sh/${ACME_VERSION}/acme.sh`;
-        downloadPromise = download(acmeUrl).then(data => fs.writeFile(acmePath, data, {mode: 0o774}));
+        downloadPromise = download(acmeUrl).then(data => fs.writeFile(acmePath, data, {mode: 0o755}));
     }
 
     return downloadPromise.then(() => {
