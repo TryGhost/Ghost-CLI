@@ -2,6 +2,7 @@
 
 const os = require('os');
 const execa = require('execa');
+const path = require('path');
 
 const cli = require('../../lib');
 
@@ -36,17 +37,11 @@ class LinuxExtension extends cli.Extension {
             skip: () => userExists,
             task: () => this.ui.sudo('useradd --system --user-group ghost')
         }, {
-            title: 'Changing directory permissions',
-            task: () => this.ui.sudo(`chown -R ghost:ghost ${ctx.instance.dir}`)
+            title: 'Changing versions directory permissions',
+            task: () => this.ui.sudo(`chown -R ghost:ghost ${path.join(ctx.instance.dir, 'versions')}`)
         }, {
-            title: 'Adding current user to ghost group',
-            skip: () => userExists,
-            task: (ctx) => {
-                return execa.shell('id -un').then((result) => {
-                    ctx.currentuser = result.stdout;
-                    return this.ui.sudo(`gpasswd --add ${ctx.currentuser} ghost`);
-                });
-            }
+            title: 'Changing content directory permissions',
+            task: () => this.ui.sudo(`chown -R ghost:ghost ${path.join(ctx.instance.dir, 'content')}`)
         }], false);
     }
 }
