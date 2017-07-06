@@ -20,10 +20,11 @@ class LinuxExtension extends cli.Extension {
             return task.skip();
         }
 
+        let userExists = false;
+
         try {
             execa.shellSync('id ghost');
-            this.ui.log('Ghost user already exists', 'cyan');
-            return task.skip();
+            userExists = true;
         } catch (e) {
             if (!e.message.match(/no such user/)) {
                 return Promise.reject(e);
@@ -32,12 +33,14 @@ class LinuxExtension extends cli.Extension {
 
         return this.ui.listr([{
             title: 'Creating ghost system user',
+            skip: () => userExists,
             task: () => this.ui.sudo('useradd --system --user-group ghost')
         }, {
             title: 'Changing directory permissions',
             task: () => this.ui.sudo(`chown -R ghost:ghost ${ctx.instance.dir}`)
         }, {
             title: 'Adding current user to ghost group',
+            skip: () => userExists,
             task: (ctx) => {
                 return execa.shell('id -un').then((result) => {
                     ctx.currentuser = result.stdout;
