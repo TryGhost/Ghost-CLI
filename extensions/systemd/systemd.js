@@ -3,6 +3,7 @@
 const fs = require('fs');
 const execa = require('execa');
 const cli = require('../../lib');
+const getUid = require('./get-uid');
 
 class SystemdProcessManager extends cli.ProcessManager {
     get systemdName() {
@@ -10,33 +11,21 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     start() {
-        if (!this._precheck()) {
-            return Promise.reject(
-                new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.')
-            );
-        }
+        this._precheck();
 
         return this.ui.sudo(`systemctl start ${this.systemdName}`)
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
     stop() {
-        if (!this._precheck()) {
-            return Promise.reject(
-                new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.')
-            );
-        }
+        this._precheck();
 
         return this.ui.sudo(`systemctl stop ${this.systemdName}`)
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
     restart() {
-        if (!this._precheck()) {
-            return Promise.reject(
-                new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.')
-            );
-        }
+        this._precheck();
 
         return this.ui.sudo(`systemctl restart ${this.systemdName}`)
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
@@ -82,17 +71,23 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     _precheck() {
+        let uid = getUid(this.instance.dir);
+
+        if (!uid) {
+            throw new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup linux-user systemd` and try again.')
+        }
+
         if (this.instance.cliConfig.get('extension.systemd', false)) {
-            return true;
+            return;
         }
 
         // service file exists but for some reason the right property in cliConfig hasn't been set
         if (fs.existsSync(`/lib/systemd/system/${this.systemdName}.service`)) {
             this.instance.cliConfig.set('extension.systemd', true);
-            return true;
+            return;
         }
 
-        return false;
+        throw new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.');
     }
 
     static willRun() {
