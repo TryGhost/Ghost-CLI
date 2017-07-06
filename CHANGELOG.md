@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-beta.6"></a>
+# [1.0.0-beta.6](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.5...1.0.0-beta.6) (2017-07-06)
+
+### Bug Fixes
+
+* **linux:** fix ghost user setup permissions (#296) ([ba54099](https://github.com/TryGhost/Ghost-CLI/commit/ba54099)), closes [#296](https://github.com/TryGhost/Ghost-CLI/issues/296) [#290](https://github.com/TryGhost/Ghost-CLI/issues/290)
+* **nginx:** reference correct ui instance ([0803a3b](https://github.com/TryGhost/Ghost-CLI/commit/0803a3b))
+* **nginx:** restart nginx on instance uninstall ([0020872](https://github.com/TryGhost/Ghost-CLI/commit/0020872))
+* **ssl:** fix acme.sh location and cleanup error handling ([61f1ed0](https://github.com/TryGhost/Ghost-CLI/commit/61f1ed0))
+* **systemd:** ensure systemd daemon is reloaded ([e850926](https://github.com/TryGhost/Ghost-CLI/commit/e850926)), closes [#293](https://github.com/TryGhost/Ghost-CLI/issues/293)
+* **systemd:** improve setup checks of extension and process manager ([0259312](https://github.com/TryGhost/Ghost-CLI/commit/0259312)), closes [#291](https://github.com/TryGhost/Ghost-CLI/issues/291)
+* **uninstall:** ensure uninstall succeeds if using ghost user ([f6a34a8](https://github.com/TryGhost/Ghost-CLI/commit/f6a34a8))
+
 <a name="1.0.0-beta.5"></a>
 # [1.0.0-beta.5](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.4...1.0.0-beta.5) (2017-07-06)
 
