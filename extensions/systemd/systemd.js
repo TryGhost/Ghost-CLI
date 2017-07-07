@@ -37,7 +37,8 @@ class SystemdProcessManager extends cli.ProcessManager {
             return true;
         } catch (e) {
             // Systemd prints out "disabled" if service isn't enabled
-            if (!e.message.match(/disabled/)) {
+            // or "failed to get unit file state" if something else goes wrong
+            if (!e.message.match(/disabled|Failed to get unit file state/)) {
                 throw e;
             }
 
