@@ -1,5 +1,6 @@
 'use strict';
 const fs = require('fs-extra');
+const os = require('os');
 const url = require('url');
 const path = require('path');
 const execa = require('execa');
@@ -21,15 +22,15 @@ module.exports = function letsencrypt(instance, email, staging, renew) {
         downloadPromise = download(acmeUrl).then(data => fs.writeFile(acmePath, data, {mode: 0o755}));
     }
 
+    let hostname = url.parse(instance.config.get('url')).hostname;
+    let letsencryptFolder = path.join(instance.dir, 'system', 'letsencrypt');
+    let fullchain = path.join(letsencryptFolder, 'fullchain.pem');
+    let privkey = path.join(letsencryptFolder, 'privkey.pem');
+
     return downloadPromise.then(() => {
-        let hostname = url.parse(instance.config.get('url')).hostname;
         let rootPath = path.resolve(instance.dir, 'system', 'nginx-root');
-        let letsencryptFolder = path.join(instance.dir, 'system', 'letsencrypt');
 
         fs.ensureDirSync(letsencryptFolder);
-
-        let fullchain = path.join(letsencryptFolder, 'fullchain.pem');
-        let privkey = path.join(letsencryptFolder, 'privkey.pem');
 
         let cmd = `${acmePath} --${renew ? 'renew' : 'issue'} --domain ${hostname} --webroot ${rootPath} ` +
             `--accountemail ${email} --key-file ${privkey} --fullchain-file ${fullchain}${staging ? ' --staging' : ''}`;
@@ -43,10 +44,21 @@ module.exports = function letsencrypt(instance, email, staging, renew) {
 
         // This is an execa error
         if (error.stdout.match(/Skip/)) {
-            instance.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
-            return;
+            // Certificate already exists
+            if (renew) {
+                instance.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
+                return;
+            }
+
+            // We're setting up a new instance, we want to re-use the certs
+            let acmeScriptDir = path.join(os.homedir(), '.acme.sh', hostname);
+
+            return Promise.all([
+                fs.copy(path.join(acmeScriptDir, 'fullchain.cer'), fullchain),
+                fs.copy(path.join(acmeScriptDir, `${hostname}.key`), privkey)
+            ]);
         }
 
         return Promise.reject(new errors.ProcessError(error));
-    });;
+    });
 };

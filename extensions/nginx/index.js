@@ -161,9 +161,7 @@ class NginxExtension extends cli.Extension {
             task: () => this.restartNginx()
         }, {
             title: 'Getting SSL Certificate',
-            task: () => {
-                return letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging);
-            }
+            task: () => letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging)
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             task: (ctx) => {
