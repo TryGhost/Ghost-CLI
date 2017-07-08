@@ -27,24 +27,24 @@ class NginxExtension extends cli.Extension {
     setupNginx(argv, ctx, task) {
         if (!this.isSupported()) {
             this.ui.log('Nginx is not installed. Skipping Nginx setup.', 'yellow');
-            return task && task.skip();
+            return task.skip();
         }
 
         let parsedUrl = url.parse(ctx.instance.config.get('url'));
 
         if (parsedUrl.port) {
             this.ui.log('Your url contains a port. Skipping Nginx setup.', 'yellow');
-            return task && task.skip();
+            return task.skip();
         }
 
         if (parsedUrl.pathname !== '/') {
             this.ui.log('The Nginx service does not support subdirectory configurations yet. Skipping Nginx setup.', 'yellow');
-            return task && task.skip();
+            return task.skip();
         }
 
         if (fs.existsSync(`/etc/nginx/sites-available/${parsedUrl.hostname}.conf`)) {
             this.ui.log('Nginx configuration already found for this url. Skipping Nginx setup.', 'yellow');
-            return task && task.skip();
+            return task.skip();
         }
 
         return Promise.fromNode((cb) => NginxConfFile.createFromSource('', cb)).then((conf) => {
@@ -87,9 +87,14 @@ class NginxExtension extends cli.Extension {
     }
 
     setupSSL(argv, ctx, task) {
+        if (ctx.instance.cliConfig.get('extension.ssl', false)) {
+            this.ui.log('SSL has already been set up, skipping', 'yellow');
+            return task.skip();
+        }
+
         if (!argv.prompt && !argv.sslemail) {
             this.ui.log('SSL email must be provided via the --sslemail option, skipping SSL setup', 'yellow');
-            return task && task.skip();
+            return task.skip();
         }
 
         let parsedUrl = url.parse(ctx.instance.config.get('url'));
@@ -102,7 +107,7 @@ class NginxExtension extends cli.Extension {
                 this.ui.log('Nginx config file does not exist, skipping SSL setup', 'yellow');
             }
 
-            return task && task.skip();
+            return task.skip();
         }
 
         let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
@@ -151,8 +156,12 @@ class NginxExtension extends cli.Extension {
 
                         ctx.ssl.conf = conf;
                         ctx.ssl.http = conf.nginx.server;
-                        ctx.ssl.http._add('location', '~ /.well-known');
-                        ctx.ssl.http.location[1]._add('allow', 'all');
+
+                        // Don't add well-known block if it already exists
+                        if (ctx.ssl.http.location.length === 1) {
+                            ctx.ssl.http._add('location', '~ /.well-known');
+                            ctx.ssl.http.location[1]._add('allow', 'all');
+                        }
                     });
                 });
             }
@@ -161,7 +170,17 @@ class NginxExtension extends cli.Extension {
             task: () => this.restartNginx()
         }, {
             title: 'Getting SSL Certificate',
-            task: () => letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging)
+            task: () => {
+                return letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging).catch((error) => {
+                    if (!(error instanceof cli.errors.ProcessError)) {
+                        return Promise.reject(error);
+                    }
+
+                    // Ensure ~/.well-known location gets cleaned up
+                    ctx.ssl.http._remove('location', 1);
+                    return Promise.reject(error);
+                });
+            }
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             task: (ctx) => {

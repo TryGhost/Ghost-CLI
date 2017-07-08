@@ -46,7 +46,7 @@ module.exports = function letsencrypt(instance, email, staging, renew) {
         if (error.stdout.match(/Skip/)) {
             // Certificate already exists
             if (renew) {
-                instance.ui.log('Certificate not due for renewal yet, skipping', 'yellow');
+                instance.ui.log('SSL certificate not due for renewal yet, skipping', 'yellow');
                 return;
             }
 
