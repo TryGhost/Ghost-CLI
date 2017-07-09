@@ -8,7 +8,7 @@ class SslRenewCommand extends cli.Command {
         instance.checkEnvironment();
 
         if (!instance.cliConfig.has('extension.sslemail')) {
-            return Promise.reject(new cli.errors.SystemError('No saved email found, skipping automatic letsencrypt renewal'));
+            return Promise.reject(new cli.errors.SystemError('No saved email found, skipping automatic letsencrypt SSL renewal'));
         }
 
         let email = instance.cliConfig.get('extension.sslemail');

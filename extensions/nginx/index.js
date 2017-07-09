@@ -21,29 +21,29 @@ class NginxExtension extends cli.Extension {
 
         cmd.addStage('nginx', this.setupNginx.bind(this));
         cmd.addStage('ssl', this.setupSSL.bind(this), 'nginx');
-        cmd.addStage('ssl-renew', this.setupRenew.bind(this), 'ssl', 'automatic ssl renewal');
+        cmd.addStage('ssl-renew', this.setupRenew.bind(this), 'ssl', 'automatic SSL renewal');
     }
 
     setupNginx(argv, ctx, task) {
         if (!this.isSupported()) {
-            this.ui.log('Nginx is not installed. Skipping nginx setup.', 'yellow');
+            this.ui.log('Nginx is not installed. Skipping Nginx setup.', 'yellow');
             return task && task.skip();
         }
 
         let parsedUrl = url.parse(ctx.instance.config.get('url'));
 
         if (parsedUrl.port) {
-            this.ui.log('Your url contains a port. Skipping nginx setup.', 'yellow');
+            this.ui.log('Your url contains a port. Skipping Nginx setup.', 'yellow');
             return task && task.skip();
         }
 
         if (parsedUrl.pathname !== '/') {
-            this.ui.log('The Nginx service does not support subdirectory configurations yet. Skipping nginx setup.', 'yellow');
+            this.ui.log('The Nginx service does not support subdirectory configurations yet. Skipping Nginx setup.', 'yellow');
             return task && task.skip();
         }
 
         if (fs.existsSync(`/etc/nginx/sites-available/${parsedUrl.hostname}.conf`)) {
-            this.ui.log('Nginx configuration already found for this url. Skipping nginx configuration.', 'yellow');
+            this.ui.log('Nginx configuration already found for this url. Skipping Nginx setup.', 'yellow');
             return task && task.skip();
         }
 
@@ -88,7 +88,7 @@ class NginxExtension extends cli.Extension {
 
     setupSSL(argv, ctx, task) {
         if (!argv.prompt && !argv.sslemail) {
-            this.ui.log('SSL email must be provided via the --sslemail option, skipping ssl configuration', 'yellow');
+            this.ui.log('SSL email must be provided via the --sslemail option, skipping SSL setup', 'yellow');
             return task && task.skip();
         }
 
@@ -130,7 +130,7 @@ class NginxExtension extends cli.Extension {
                 });
             }
         }, {
-            title: 'Preparing nginx for SSL configuration',
+            title: 'Preparing Nginx for Let\'s Encrypt SSL certificate creation',
             task: (ctx) => {
                 let promise;
 
@@ -140,7 +140,7 @@ class NginxExtension extends cli.Extension {
                     promise = this.ui.prompt({
                         name: 'email',
                         type: 'input',
-                        message: 'Enter your email (used for SSL certificate generation)',
+                        message: 'Enter your email (used for Let\'s Encrypt notifications)',
                         validate: value => Boolean(value) || 'You must supply an email'
                     }).then(answer => { argv.sslemail = answer.email; });
                 }
@@ -180,7 +180,7 @@ class NginxExtension extends cli.Extension {
                 }), 'ssl parameters', 'ssl-params.conf');
             }
         }, {
-            title: 'Finising nginx configuration',
+            title: 'Updating Nginx with SSL config',
             task: (ctx) => {
                 // remove proxy && well-known location from port 80 server block
                 ctx.ssl.http._remove('location');

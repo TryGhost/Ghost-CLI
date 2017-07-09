@@ -13,14 +13,14 @@ class MySQLExtension extends cli.Extension {
             return;
         }
 
-        cmd.addStage('mysql', this.setupMySQL.bind(this), [], 'a ghost mysql user');
+        cmd.addStage('mysql', this.setupMySQL.bind(this), [], 'a "ghost" mysql user');
     }
 
     setupMySQL(argv, ctx, task) {
         let dbconfig = ctx.instance.config.get('database.connection');
 
         if (dbconfig.user !== 'root') {
-            this.ui.log('MySQL user is not root, skipping additional user setup', 'yellow');
+            this.ui.log('MySQL user is not "root", skipping additional user setup', 'yellow');
             return task.skip();
         }
 
@@ -34,7 +34,7 @@ class MySQLExtension extends cli.Extension {
             title: 'Granting new user permissions',
             task: () => this.grantPermissions(ctx, dbconfig)
         }, {
-            title: 'Finishing up',
+            title: 'Saving new config',
             task: () => {
                 ctx.instance.config.set('database.connection.user', ctx.mysql.username)
                     .set('database.connection.password', ctx.mysql.password).save();
@@ -106,7 +106,7 @@ class MySQLExtension extends cli.Extension {
 
     grantPermissions(ctx, dbconfig) {
         return this._query(`GRANT ALL PRIVILEGES ON ${dbconfig.database}.* TO '${ctx.mysql.username}'@'${dbconfig.host}';`).then(() => {
-            this.ui.logVerbose(`MySQL: Successfully granted privileges for user ${ctx.mysql.username}`, 'green');
+            this.ui.logVerbose(`MySQL: Successfully granted privileges for user "${ctx.mysql.username}"`, 'green');
             return this._query('FLUSH PRIVILEGES;');
         }).then(() => {
             this.ui.logVerbose('MySQL: flushed privileges', 'green');
