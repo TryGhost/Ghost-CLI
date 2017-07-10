@@ -2,6 +2,7 @@
 const expect = require('chai').expect;
 const chalk = require('chalk');
 const sinon = require('sinon');
+const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
 const UI = require('../../../lib/ui');
 
@@ -65,13 +66,12 @@ describe('Unit: UI', function () {
         });
     });
 
-    it('#success outputs message with correct formatting', function (done) {
+    it('#success outputs message with correct symbols', function (done) {
         let stdout, ui;
 
         stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
-            expect(chalk.hasColor(output), 'output has color').to.be.true;
-            expect(output, 'output value').to.equal(chalk.green('test') + '\n');
+            expect(output, 'output value').to.equal(`${logSymbols.success} test\n`);
 
             done();
         });
@@ -86,8 +86,7 @@ describe('Unit: UI', function () {
 
         stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
-            expect(chalk.hasColor(output), 'output has color').to.be.true;
-            expect(output, 'output value').to.equal(chalk.red('test') + '\n');
+            expect(output, 'output value').to.equal(`${logSymbols.error} test\n`);
 
             done();
         });
