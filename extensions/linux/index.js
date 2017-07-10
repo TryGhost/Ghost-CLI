@@ -12,7 +12,7 @@ class LinuxExtension extends cli.Extension {
             return;
         }
 
-        cmd.addStage('linux-user', this.addGhostUser.bind(this), null, 'a "ghost" system user');
+        cmd.addStage('linux-user', this.addGhostUser.bind(this), [], '"ghost" system user');
     }
 
     addGhostUser(argv, ctx, task) {
