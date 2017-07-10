@@ -20,7 +20,7 @@ class SystemdExtension extends cli.Extension {
         let uid = getUid(ctx.instance.dir);
 
         if (!uid) {
-            this.ui.log('Ghost user has not been set up, please run `ghost setup linux-user` first', 'yellow');
+            this.ui.log('The "ghost" user has not been created, please run `ghost setup linux-user` first', 'yellow');
             return task.skip();
         }
 
@@ -53,7 +53,7 @@ class SystemdExtension extends cli.Extension {
 
         if (fs.existsSync(serviceFilename)) {
             return this.ui.sudo(`rm ${serviceFilename}`).catch(
-                () => Promise.reject(new cli.errors.SystemError('Ghost systemd service file could not be removed, you will need to do it manually.'))
+                () => Promise.reject(new cli.errors.SystemError('Systemd service file link could not be removed, you will need to do this manually.'))
             );
         }
     }

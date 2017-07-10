@@ -12,12 +12,12 @@ class LinuxExtension extends cli.Extension {
             return;
         }
 
-        cmd.addStage('linux-user', this.addGhostUser.bind(this), null, 'a ghost system user');
+        cmd.addStage('linux-user', this.addGhostUser.bind(this), null, 'a "ghost" system user');
     }
 
     addGhostUser(argv, ctx, task) {
         if (os.platform() !== 'linux') {
-            this.ui.log('Platform is not linux', 'yellow');
+            this.ui.log('Operating system is not Linux', 'yellow');
             return task.skip();
         }
 
@@ -33,11 +33,11 @@ class LinuxExtension extends cli.Extension {
         }
 
         return this.ui.listr([{
-            title: 'Creating ghost system user',
+            title: 'Creating "ghost" system user',
             skip: () => userExists,
             task: () => this.ui.sudo('useradd --system --user-group ghost')
         }, {
-            title: 'Changing content directory permissions',
+            title: 'Giving "ghost" user ownership of the /content/ directory',
             task: () => this.ui.sudo(`chown -R ghost:ghost ${path.join(ctx.instance.dir, 'content')}`)
         }], false);
     }
