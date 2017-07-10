@@ -12,7 +12,7 @@ class SystemdExtension extends cli.Extension {
         let instance = this.system.getInstance();
 
         if (!argv.local && instance.config.get('process') === 'systemd') {
-            cmd.addStage('systemd', this._setup.bind(this), 'linux-user', 'Systemd');
+            cmd.addStage('systemd', this._setup.bind(this), [], 'Systemd');
         }
     }
 

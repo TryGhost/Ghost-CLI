@@ -1,9 +1,0 @@
-{
-  "name": "ghost-cli-linux",
-  "description": "general linux user configuration for Ghost",
-  "version": "0.0.0",
-  "main": "index.js",
-  "keywords":[
-    "ghost-cli-extension"
-  ]
-}
