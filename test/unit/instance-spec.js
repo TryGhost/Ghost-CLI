@@ -365,64 +365,12 @@ describe('Unit: Instance', function () {
     });
 
     describe('template', function () {
-        it('resolves with false if the choice is to skip', function () {
-            let promptStub = sandbox.stub().resolves({ choice: 'skip' });
-            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true }, {}, '');
-
-            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(promptStub.calledOnce).to.be.true;
-                expect(result).to.be.false;
-            });
-        });
-
-        it('generates template if the choice is to proceeed', function () {
-            let promptStub = sandbox.stub().resolves({choice: 'write'});
-            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true }, {} , '');
-            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
-
-            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(promptStub.calledOnce).to.be.true;
-                expect(generateStub.args[0]).to.deep.equal(['some contents', 'file.txt', '/some/dir']);
-            });
-        });
-
-        it('logs and calls template method again if choice is view', function () {
-            let promptStub = sandbox.stub();
-            promptStub.onCall(0).resolves({choice: 'view'});
-            promptStub.onCall(1).resolves({choice: 'skip'});
-            let logStub = sandbox.stub();
-            let testInstance = new Instance({ log: logStub, prompt: promptStub, allowPrompt: true }, {}, '');
-
-            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.false;
-                expect(promptStub.calledTwice).to.be.true;
-                expect(logStub.calledOnce).to.be.true;
-                expect(logStub.args[0][0]).to.equal('some contents');
-            });
-        });
-
-        it('opens editor and generates template with contents if choice is edit', function () {
-            let promptStub = sandbox.stub();
-            promptStub.onCall(0).resolves({choice: 'edit'});
-            promptStub.onCall(1).resolves({contents: 'some edited contents'});
-            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true }, {}, '');
-            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
-
-            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.calledTwice).to.be.true;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(generateStub.args[0][0]).to.equal('some edited contents');
-            });
-        });
-
         it('immediately calls _generateTemplate if ui.allowPrompt is false', function () {
             let promptStub = sandbox.stub().resolves();
             let testInstance = new Instance({
                 prompt: promptStub,
-                allowPrompt: false
+                allowPrompt: false,
+                verbose: true
             }, {}, '');
             let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
 
@@ -433,33 +381,118 @@ describe('Unit: Instance', function () {
                 expect(generateStub.args[0][0]).to.equal('some contents');
             });
         });
+
+        it('immediately calls _generateTemplate if ui.verbose is false', function () {
+            let promptStub = sandbox.stub().resolves();
+            let testInstance = new Instance({
+                prompt: promptStub,
+                allowPrompt: true,
+                verbose: false
+            }, {}, '');
+            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+
+            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
+                expect(result).to.be.true;
+                expect(promptStub.called).to.be.false;
+                expect(generateStub.calledOnce).to.be.true;
+                expect(generateStub.args[0][0]).to.equal('some contents');
+            });
+        });
+
+        it('immediately calls _generateTemplate if ui.allowPrompt and ui.verbose is false', function () {
+            let promptStub = sandbox.stub().resolves();
+            let testInstance = new Instance({
+                prompt: promptStub,
+                allowPrompt: true,
+                verbose: false
+            }, {}, '');
+            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+
+            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
+                expect(result).to.be.true;
+                expect(promptStub.called).to.be.false;
+                expect(generateStub.calledOnce).to.be.true;
+                expect(generateStub.args[0][0]).to.equal('some contents');
+            });
+        });
+
+        it('generates template if the choice is to continue (with --verbose)', function () {
+            let promptStub = sandbox.stub().resolves({choice: 'continue'});
+            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true, verbose: true }, {} , '');
+            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+
+            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
+                expect(result).to.be.true;
+                expect(generateStub.calledOnce).to.be.true;
+                expect(promptStub.calledOnce).to.be.true;
+                expect(generateStub.args[0]).to.deep.equal(['some contents', 'a file', 'file.txt', '/some/dir']);
+            });
+        });
+
+        it('logs and calls template method again if choice is view (with --verbose)', function () {
+            let promptStub = sandbox.stub();
+            promptStub.onCall(0).resolves({choice: 'view'});
+            promptStub.onCall(1).resolves({choice: 'continue'});
+            let logStub = sandbox.stub();
+            let testInstance = new Instance({ log: logStub, prompt: promptStub, allowPrompt: true, verbose: true }, {}, '');
+            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+
+            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
+                expect(result).to.be.true;
+                expect(promptStub.calledTwice).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.equal('some contents');
+                expect(generateStub.calledOnce).to.be.true;
+                expect(generateStub.args[0]).to.deep.equal(['some contents', 'a file', 'file.txt', '/some/dir']);
+            });
+        });
+
+        it('opens editor and generates template with contents if choice is edit (with --verbose)', function () {
+            let promptStub = sandbox.stub();
+            promptStub.onCall(0).resolves({choice: 'edit'});
+            promptStub.onCall(1).resolves({contents: 'some edited contents'});
+            let testInstance = new Instance({ prompt: promptStub, allowPrompt: true, verbose: true }, {}, '');
+            let generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+
+            return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
+                expect(result).to.be.true;
+                expect(promptStub.calledTwice).to.be.true;
+                expect(generateStub.calledOnce).to.be.true;
+                expect(generateStub.args[0][0]).to.equal('some edited contents');
+            });
+        });
     });
 
     describe('_generateTemplate', function () {
         it('writes out template to correct directory but doesn\'t link if no dir is passed', function () {
             let dir = tmp.dirSync({unsafeCleanup: true}).name;
-            let testInstance = new Instance({}, {}, dir);
+            let successStub = sandbox.stub();
+            let testInstance = new Instance({success: successStub}, {}, dir);
 
-            return testInstance._generateTemplate('some contents', 'file.txt').then((result) => {
+            return testInstance._generateTemplate('some contents', 'a file', 'file.txt').then((result) => {
                 expect(result).to.be.true;
                 let fpath = path.join(dir, 'system', 'files', 'file.txt');
                 expect(fs.existsSync(fpath)).to.be.true;
                 expect(fs.readFileSync(fpath, 'utf8')).to.equal('some contents');
+                expect(successStub.called).to.be.false;
             });
         });
 
         it('writes out template and links it correctly if dir is passed', function () {
             let dir = tmp.dirSync({unsafeCleanup: true}).name;
             let sudoStub = sandbox.stub().resolves();
-            let testInstance = new Instance({ sudo: sudoStub }, {}, dir);
+            let successStub = sandbox.stub();
+            let testInstance = new Instance({ sudo: sudoStub, success: successStub }, {}, dir);
 
-            return testInstance._generateTemplate('some contents', 'file.txt', '/another/dir').then((result) => {
+            return testInstance._generateTemplate('some contents', 'a file', 'file.txt', '/another/dir').then((result) => {
                 expect(result).to.be.true;
                 let fpath = path.join(dir, 'system', 'files', 'file.txt');
                 expect(fs.existsSync(fpath)).to.be.true;
                 expect(fs.readFileSync(fpath, 'utf8')).to.equal('some contents');
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(sudoStub.args[0][0]).to.equal(`ln -sf ${fpath} /another/dir/file.txt`);
+                expect(successStub.calledOnce).to.be.true;
+                expect(successStub.firstCall.args[0]).to.match(/^Creating a file file at/);
             });
         });
     });
