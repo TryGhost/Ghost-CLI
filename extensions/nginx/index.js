@@ -19,8 +19,8 @@ class NginxExtension extends cli.Extension {
             return;
         }
 
-        cmd.addStage('nginx', this.setupNginx.bind(this));
-        cmd.addStage('ssl', this.setupSSL.bind(this), 'nginx');
+        cmd.addStage('nginx', this.setupNginx.bind(this), null, 'Nginx');
+        cmd.addStage('ssl', this.setupSSL.bind(this), 'nginx', 'SSL');
         cmd.addStage('ssl-renew', this.setupRenew.bind(this), 'ssl', 'automatic SSL renewal');
     }
 

@@ -18,7 +18,7 @@ class MySQLExtension extends cli.Extension {
             return;
         }
 
-        cmd.addStage('mysql', this.setupMySQL.bind(this), [], 'a "ghost" mysql user');
+        cmd.addStage('mysql', this.setupMySQL.bind(this), [], '"ghost" mysql user');
     }
 
     setupMySQL(argv, ctx, task) {
