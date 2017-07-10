@@ -182,13 +182,6 @@ class NginxExtension extends cli.Extension {
         }, {
             title: 'Updating Nginx with SSL config',
             task: (ctx) => {
-                // remove proxy && well-known location from port 80 server block
-                ctx.ssl.http._remove('location');
-                // remove root path
-                ctx.ssl.http._remove('root');
-                // add 'location /' block with 301 redirect to ssl
-                ctx.ssl.http._add('return', '301 https://$server_name$request_uri');
-
                 // add ssl server block
                 ctx.ssl.conf.nginx._add('server');
                 let https = ctx.ssl.conf.nginx.server[1];
