@@ -115,7 +115,7 @@ class NginxExtension extends cli.Extension {
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
-            task: () => {
+            task: (ctx) => {
                 return Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
                     if (error.code !== 'ENOTFOUND') {
                         // Some other error
@@ -131,11 +131,12 @@ class NginxExtension extends cli.Extension {
                     ];
 
                     this.ui.log(text.join(' '), 'yellow');
-                    return task.skip();
+                    ctx.dnsfail = true;
                 });
             }
         }, {
             title: 'Preparing Nginx for Let\'s Encrypt SSL certificate creation',
+            skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
                 let promise;
 
@@ -167,9 +168,11 @@ class NginxExtension extends cli.Extension {
             }
         }, {
             title: 'Restarting Nginx',
+            skip: (ctx) => ctx.dnsfail,
             task: () => this.restartNginx()
         }, {
             title: 'Getting SSL Certificate',
+            skip: (ctx) => ctx.dnsfail,
             task: () => {
                 return letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging).catch((error) => {
                     if (!(error instanceof cli.errors.ProcessError)) {
@@ -183,6 +186,7 @@ class NginxExtension extends cli.Extension {
             }
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
+            skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
                 ctx.ssl.dhparamOutFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
                 return execa.shell(`openssl dhparam -out ${ctx.ssl.dhparamOutFile} 2048`)
@@ -190,6 +194,7 @@ class NginxExtension extends cli.Extension {
             }
         }, {
             title: 'Writing SSL parameters',
+            skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
                 let sslParamsTemplate = template(fs.readFileSync(path.join(__dirname, 'ssl-params.conf.template'), 'utf8'));
                 return ctx.instance.template(sslParamsTemplate({
@@ -198,6 +203,7 @@ class NginxExtension extends cli.Extension {
             }
         }, {
             title: 'Updating Nginx with SSL config',
+            skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
                 // add ssl server block
                 ctx.ssl.conf.nginx._add('server');
@@ -231,6 +237,7 @@ class NginxExtension extends cli.Extension {
             }
         }, {
             title: 'Restarting Nginx',
+            skip: (ctx) => ctx.dnsfail,
             task: () => this.restartNginx()
         }], false);
     }
