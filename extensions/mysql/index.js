@@ -13,6 +13,11 @@ class MySQLExtension extends cli.Extension {
             return;
         }
 
+        // We don't want to prompt for mysql setup if user specifies sqlite as the db
+        if (argv.db === 'sqlite3') {
+            return;
+        }
+
         cmd.addStage('mysql', this.setupMySQL.bind(this), [], 'a "ghost" mysql user');
     }
 
