@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-rc.1"></a>
+# [1.0.0-rc.1](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.6...1.0.0-rc.1) (2017-07-11)
+
+### Bug Fixes
+
+* **config:** better config prompt handling ([8cdbad4](https://github.com/TryGhost/Ghost-CLI/commit/8cdbad4)), closes [#280](https://github.com/TryGhost/Ghost-CLI/issues/280) [#268](https://github.com/TryGhost/Ghost-CLI/issues/268) [#317](https://github.com/TryGhost/Ghost-CLI/issues/317)
+* **config:** don't set a default value for db arg, as it breaks local installs ([0bdd464](https://github.com/TryGhost/Ghost-CLI/commit/0bdd464)), closes [#323](https://github.com/TryGhost/Ghost-CLI/issues/323)
+* **log:** don't error out if the log file doesn't exist ([f5a9111](https://github.com/TryGhost/Ghost-CLI/commit/f5a9111)), closes [#303](https://github.com/TryGhost/Ghost-CLI/issues/303)
+* **mysql:** don't prompt for mysql extension if user specifies sqlite ([eccaa12](https://github.com/TryGhost/Ghost-CLI/commit/eccaa12)), closes [#304](https://github.com/TryGhost/Ghost-CLI/issues/304)
+* **run:** better handling of ghost run with linux user ([7e0191e](https://github.com/TryGhost/Ghost-CLI/commit/7e0191e))
+* **run:** set content path in config rather than in environment ([1b7bf97](https://github.com/TryGhost/Ghost-CLI/commit/1b7bf97)), closes [#307](https://github.com/TryGhost/Ghost-CLI/issues/307)
+* **setup:** remove boolean constraint from start flag ([8fffc1f](https://github.com/TryGhost/Ghost-CLI/commit/8fffc1f))
+* **ssl:** actually skip ssl generation tasks if dns check fails ([f7da9dc](https://github.com/TryGhost/Ghost-CLI/commit/f7da9dc)), closes [#331](https://github.com/TryGhost/Ghost-CLI/issues/331)
+* **ssl:** cleanup after failure, don't allow re-running ([5352793](https://github.com/TryGhost/Ghost-CLI/commit/5352793)), closes [#302](https://github.com/TryGhost/Ghost-CLI/issues/302)
+* **ssl:** copy acme certificates from home location if they exist ([45be251](https://github.com/TryGhost/Ghost-CLI/commit/45be251)), closes [#309](https://github.com/TryGhost/Ghost-CLI/issues/309)
+* **ssl:** ensure well-known block actually gets created ([08597c9](https://github.com/TryGhost/Ghost-CLI/commit/08597c9))
+* **ssl:** remove special SSL handling (#326) ([a4da2a4](https://github.com/TryGhost/Ghost-CLI/commit/a4da2a4))
+* **systemd:** update is-enabled error handling to be better ([d2b374e](https://github.com/TryGhost/Ghost-CLI/commit/d2b374e)), closes [#293](https://github.com/TryGhost/Ghost-CLI/issues/293)
+* **template:** log successful created template in all cases ([5ad363d](https://github.com/TryGhost/Ghost-CLI/commit/5ad363d))
+* invalid boolean logic *facepalm* ([2200408](https://github.com/TryGhost/Ghost-CLI/commit/2200408))
+* **ui:** 🎨  fixup start & enable flag logic ([d0ff7fe](https://github.com/TryGhost/Ghost-CLI/commit/d0ff7fe))
+* **ui:** 🎨  reimplement --quiet flag ([9dd4da8](https://github.com/TryGhost/Ghost-CLI/commit/9dd4da8)), closes [#335](https://github.com/TryGhost/Ghost-CLI/issues/335)
+* **ui:** 🎨 template prompt adjustments ([6cee3a3](https://github.com/TryGhost/Ghost-CLI/commit/6cee3a3))
+* **ui:** 💄 🐷  various text-only tweaks (#324) ([f7d6915](https://github.com/TryGhost/Ghost-CLI/commit/f7d6915))
+* **ui:** make fail and success methods output symbols (#339) ([14a8271](https://github.com/TryGhost/Ghost-CLI/commit/14a8271))
+* **update:** fix typo in stop error handling (#306) ([e9e53f9](https://github.com/TryGhost/Ghost-CLI/commit/e9e53f9)), closes [#306](https://github.com/TryGhost/Ghost-CLI/issues/306)
+* **yarn:** trim newline from end of yarn output ([43ceff1](https://github.com/TryGhost/Ghost-CLI/commit/43ceff1))
+
+### Features
+
+* **doctor:** ghost install/setup doctor check improvements ([0faa5f6](https://github.com/TryGhost/Ghost-CLI/commit/0faa5f6)), closes [#312](https://github.com/TryGhost/Ghost-CLI/issues/312) [#314](https://github.com/TryGhost/Ghost-CLI/issues/314)
+
 <a name="1.0.0-beta.6"></a>
 # [1.0.0-beta.6](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-beta.5...1.0.0-beta.6) (2017-07-06)
 
