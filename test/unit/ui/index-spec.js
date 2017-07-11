@@ -1,6 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const chalk = require('chalk');
+const hasAnsi = require('has-ansi');
 const sinon = require('sinon');
 const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
@@ -19,7 +20,7 @@ describe('Unit: UI', function () {
 
             stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
-                expect(chalk.hasColor(output), 'output has color').to.be.false;
+                expect(hasAnsi(output), 'output has color').to.be.false;
                 expect(output, 'output value').to.equal('test\n');
 
                 done();
@@ -35,7 +36,7 @@ describe('Unit: UI', function () {
 
             stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
-                expect(chalk.hasColor(output), 'output has color').to.be.true;
+                expect(hasAnsi(output), 'output has color').to.be.true;
                 expect(output, 'output value').to.equal(chalk.green('test') + '\n');
 
                 done();
