@@ -1,6 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const chalk = require('chalk');
+const stripAnsi = require('strip-ansi')
 const fs  = require('fs-extra');
 
 const AcceptanceTest = require('../utils/acceptance-test');
@@ -59,7 +60,7 @@ describe('Acceptance: Config', function () {
 
             return test.run({failOnStdErr: true}).then((result) => {
                 expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\n');
+                expect(stripAnsi(result.stdout), 'output value').to.equal('asdf\n');
             });
         });
 
@@ -71,7 +72,7 @@ describe('Acceptance: Config', function () {
 
             return test.run({failOnStdErr: true}).then((result) => {
                 expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'output value').to.equal('asdf\n');
+                expect(stripAnsi(result.stdout), 'output value').to.equal('asdf\n');
             });
         });
 
@@ -114,7 +115,7 @@ describe('Acceptance: Config', function () {
                 ]
             }).then((result) => {
                 expect(result.stdout, 'output exists').to.be.ok;
-                expect(chalk.stripColor(result.stdout), 'value').to.match(/Enter your blog URL:/);
+                expect(stripAnsi(result.stdout), 'value').to.match(/Enter your blog URL:/);
 
                 let contents = fs.readJsonSync(test.path('config.production.json'));
                 expect(contents, 'config contents').to.be.ok;
