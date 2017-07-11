@@ -158,8 +158,10 @@ class NginxExtension extends cli.Extension {
                         ctx.ssl.conf = conf;
                         ctx.ssl.http = conf.nginx.server;
 
+                        let location = ctx.ssl.http.location;
+
                         // Don't add well-known block if it already exists
-                        if (ctx.ssl.http.location.length === 1) {
+                        if (!Array.isArray(location) || location.length === 1) {
                             ctx.ssl.http._add('location', '~ /.well-known');
                             ctx.ssl.http.location[1]._add('allow', 'all');
                         }
