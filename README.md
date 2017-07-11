@@ -8,29 +8,21 @@
 
 > Just a CLI manager (for a blogging platform)
 
-## Installing
+## Basic Setup
 
-1. `npm install -g ghost-cli`
-
----
-
-## Usage:
-
-```sh
-ghost <command>
-```
+- `npm install -g ghost-cli@latest`
+- `ghost install` (for an production linux setup, including Nginx, SSL, and Systemd)
+- `ghost install local` (for a local setup, useful for theme development/testing)
 
 #### NOTE: This CLI is not designed to work with any Ghost versions < 1.0.0
 
----
+## Documentation
 
-## Commands
+- [Complete Setup Guide](https://docs.ghost.org/docs/installing-ghost-via-the-cli)
+- [Command Reference](https://docs.ghost.org/v1.0.0/docs/overview)
+- [Troubleshooting Guide](https://docs.ghost.org/v1.0.0/docs/troubleshooting-guide#section-cli-errors)
 
-See the [Command Reference](https://github.com/TryGhost/Ghost-CLI/wiki/Command%20Reference) for more details.
-
----
-
-## Developers
+## Developer Setup (for contributing)
 
 *Note: you must have [Git](https://git-scm.com/) installed*
 
@@ -39,13 +31,10 @@ See the [Command Reference](https://github.com/TryGhost/Ghost-CLI/wiki/Command%2
 3. `cd path/to/your/workspace`
 4. `yarn install`
 
-You can run the cli one of two ways:
+To run the CLI for testing:
 
-- Manually:
-    - from the ghost-cli directory: `./bin/ghost <command>`
-- Using `yarn link`:
-    - from the ghost-cli directory: `yarn link`
-    - anywhere on your system: `ghost <command>`
+- `yarn link`
+- `ghost <command>` (can run anywhere on the system)
 
 #### Running tests
 
