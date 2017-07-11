@@ -474,7 +474,7 @@ describe('Unit: Instance', function () {
                 let fpath = path.join(dir, 'system', 'files', 'file.txt');
                 expect(fs.existsSync(fpath)).to.be.true;
                 expect(fs.readFileSync(fpath, 'utf8')).to.equal('some contents');
-                expect(successStub.called).to.be.false;
+                expect(successStub.calledOnce).to.be.true;
             });
         });
 
