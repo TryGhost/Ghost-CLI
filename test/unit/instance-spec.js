@@ -253,7 +253,14 @@ describe('Unit: Instance', function () {
         it('doesn\'t do anything if config.development.json doesn\'t exist', function () {
             let logStub = sandbox.stub();
             let environmentStub = sandbox.stub();
-            let existsStub = sandbox.stub(Config, 'exists').withArgs('/path/config.development.json').returns(false);
+            let existsStub = sandbox.stub(Config, 'exists');
+            existsStub.withArgs('/path/config.development.json').returns(
+                {
+                    options: {
+                        message: 'file does not exist'
+                    }
+                });
+            existsStub.withArgs('/path/config.production.json').returns(true);
             let testInstance = new Instance({ log: logStub }, {
                 setEnvironment: environmentStub,
                 production: true,
@@ -263,7 +270,7 @@ describe('Unit: Instance', function () {
             testInstance.checkEnvironment();
             expect(logStub.called).to.be.false;
             expect(environmentStub.called).to.be.false;
-            expect(existsStub.calledOnce).to.be.true;
+            expect(existsStub.calledTwice).to.be.true;
         });
 
         it('logs and sets environment if not production, config.dev exists, and config.production doesn\'t exist', function () {
@@ -271,7 +278,12 @@ describe('Unit: Instance', function () {
             let environmentStub = sandbox.stub();
             let existsStub = sandbox.stub(Config, 'exists');
             existsStub.withArgs('/path/config.development.json').returns(true);
-            existsStub.withArgs('/path/config.production.json').returns(false);
+            existsStub.withArgs('/path/config.production.json').returns(
+                {
+                    options: {
+                        message: 'file does not exist'
+                    }
+                });
             let testInstance = new Instance({ log: logStub }, {
                 setEnvironment: environmentStub,
                 production: true,
@@ -279,9 +291,9 @@ describe('Unit: Instance', function () {
             }, '/path');
 
             testInstance.checkEnvironment();
-
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/Found a development config/);
+            expect(logStub.calledTwice).to.be.true;
+            expect(logStub.args[0][0]).to.match(/The production config is either invalid or missing, running in development mode instead/);
+            expect(logStub.args[1][0]).to.match(/file does not exist/);
             expect(environmentStub.calledOnce).to.be.true;
             expect(environmentStub.args[0]).to.deep.equal([true, true]);
             expect(existsStub.calledTwice).to.be.true;
