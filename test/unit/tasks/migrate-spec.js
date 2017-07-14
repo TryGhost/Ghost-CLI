@@ -7,14 +7,6 @@ const errors = require('../../../lib/errors');
 
 const migratePath = '../../../lib/tasks/migrate';
 
-// Used for testing
-class TestError extends Error {
-    constructor(code) {
-        super('an error');
-        this.code = code;
-    }
-}
-
 function getConfigStub(noContentPath) {
     let config = {
         get: sinon.stub(),
@@ -28,105 +20,52 @@ function getConfigStub(noContentPath) {
 }
 
 describe('Unit: Tasks > Migrate', function () {
-    it('sets content path if it does not exist', function () {
+    it('runs direct command if useGhostUser returns false', function () {
         let config = getConfigStub(true);
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        let execaStub = sinon.stub().resolves();
+        let useGhostUserStub = sinon.stub().returns(false);
+
         let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return Promise.resolve() }
-            }
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
         });
 
-        migrate({ instance: { config: config, dir: '/test/' } }).then(() => {
+        let sudoStub = sinon.stub().resolves();
+
+        return migrate({ instance: { config: config, dir: '/some-dir' }, ui: { sudo: sudoStub } }).then(() => {
+            expect(useGhostUserStub.calledOnce).to.be.true;
+            expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
+            expect(execaStub.calledOnce).to.be.true;
+            expect(sudoStub.called).to.be.false;
             expect(config.has.calledOnce).to.be.true;
-            expect(config.set.called).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['paths.contentPath', '/test/content']);
+            expect(config.set.calledThrice).to.be.true;
+            expect(config.set.args[0]).to.deep.equal(['paths.contentPath', '/some-dir/content']);
+            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['file']]);
+            expect(config.set.args[2]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
             expect(config.save.called).to.be.true;
         });
     });
 
-    it('disables stdout log in config and re-enables it after completion', function () {
+    it('runs sudo command if useGhostUser returns true', function () {
         let config = getConfigStub();
         config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
-        let dbOkStub = sinon.stub().resolves();
+        let execaStub = sinon.stub().resolves();
+        let useGhostUserStub = sinon.stub().returns(true);
 
         let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return dbOkStub(); }
-            }
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
         });
 
-        return migrate({ instance: { config: config } }).then(() => {
-            expect(dbOkStub.calledOnce).to.be.true;
-            expect(config.get.calledOnce).to.be.true;
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['logging.transports', []]);
-            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
-            expect(config.save.calledTwice).to.be.true;
-        });
-    });
+        let sudoStub = sinon.stub().resolves();
 
-    it('runs init if database is not initialized', function () {
-        let config = getConfigStub();
-        config.get.withArgs('logging.transports', null).returns(['stdout', 'file'])
-        let dbOkStub = sinon.stub().returns(Promise.reject(new TestError('DB_NOT_INITIALISED')));
-        let initStub = sinon.stub().resolves();
-
-        let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return dbOkStub() }
-                init() { return initStub() }
-            }
-        });
-
-        return migrate({ instance: { config: config } }).then(() => {
-            expect(dbOkStub.calledOnce).to.be.true;
-            expect(initStub.calledOnce).to.be.true;
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['logging.transports', []]);
-            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
-        });
-    });
-
-    it('runs init if migration table is missing', function () {
-        let config = getConfigStub();
-        config.get.withArgs('logging.transports', null).returns(['stdout', 'file'])
-        let dbOkStub = sinon.stub().returns(Promise.reject(new TestError('MIGRATION_TABLE_IS_MISSING')));
-        let initStub = sinon.stub().resolves();
-
-        let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return dbOkStub() }
-                init() { return initStub() }
-            }
-        });
-
-        return migrate({ instance: { config: config } }).then(() => {
-            expect(dbOkStub.calledOnce).to.be.true;
-            expect(initStub.calledOnce).to.be.true;
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['logging.transports', []]);
-            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
-        });
-    });
-
-    it('runs migrate if db needs migration', function () {
-        let config = getConfigStub();
-        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
-        let dbOkStub = sinon.stub().returns(Promise.reject(new TestError('DB_NEEDS_MIGRATION')));
-        let migrateStub = sinon.stub().resolves();
-
-        let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return dbOkStub() }
-                migrate() { return migrateStub() }
-            }
-        });
-
-        return migrate({ instance: { config: config } }).then(() => {
-            expect(dbOkStub.calledOnce).to.be.true;
-            expect(migrateStub.calledOnce).to.be.true;
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['logging.transports', []]);
+        return migrate({ instance: { config: config, dir: '/some-dir' }, ui: { sudo: sudoStub } }).then(() => {
+            expect(useGhostUserStub.calledOnce).to.be.true;
+            expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
+            expect(execaStub.calledOnce).to.be.false;
+            expect(sudoStub.called).to.be.true;
+            expect(config.set.args[0]).to.deep.equal(['logging.transports', ['file']]);
             expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
@@ -134,51 +73,43 @@ describe('Unit: Tasks > Migrate', function () {
     it('throws config error with db host if database not found', function () {
         let config = getConfigStub();
         config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
-        let dbOkStub = sinon.stub().returns(Promise.reject(new TestError('ENOTFOUND')));
+        let execaStub = sinon.stub().returns(Promise.reject({stderr: 'CODE: ENOTFOUND'}));
+        let useGhostUserStub = sinon.stub().returns(false);
 
         let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return dbOkStub() }
-            }
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
         });
 
-        return migrate({ instance: {
-            config: config,
-            system: { environment: 'testing' }
-        } }).then(() => {
+        return migrate({ instance: { config: config, dir: '/some-dir', system: { environment: 'testing' } } }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
             expect(error.options.config).to.have.key('database.connection.host');
-            expect(dbOkStub.calledOnce).to.be.true;
             expect(config.set.calledTwice).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['logging.transports', []]);
+            expect(config.set.args[0]).to.deep.equal(['logging.transports', ['file']]);
             expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
 
     it('throws config error with db user if access denied error', function () {
         let config = getConfigStub();
-        config.get.withArgs('logging.transports', null).returns(['stdout', 'file'])
-        let dbOkStub = sinon.stub().returns(Promise.reject(new TestError('ER_ACCESS_DENIED_ERROR')));
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        let execaStub = sinon.stub().returns(Promise.reject({stderr: 'CODE: ER_ACCESS_DENIED_ERROR' }));
+        let useGhostUserStub = sinon.stub().returns(false);
 
         let migrate = proxyquire(migratePath, {
-            'knex-migrator': class KnexMigrator {
-                isDatabaseOK() { return dbOkStub() }
-            }
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
         });
 
-        return migrate({ instance: {
-            config: config,
-            system: { environment: 'testing' }
-        } }).then(() => {
+        return migrate({ instance: { config: config, dir: '/some-dir', system: { environment: 'testing' } } }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
             expect(error.options.config).to.have.all.keys('database.connection.user', 'database.connection.password');
-            expect(dbOkStub.calledOnce).to.be.true;
             expect(config.set.calledTwice).to.be.true;
-            expect(config.set.args[0]).to.deep.equal(['logging.transports', []]);
+            expect(config.set.args[0]).to.deep.equal(['logging.transports', ['file']]);
             expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
