@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-rc.3"></a>
+# [1.0.0-rc.3](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-rc.2...1.0.0-rc.3) (2017-07-18)
+
+### Bug Fixes
+
+* **config:** add default dbpath when db is sqlite ([778aafa](https://github.com/TryGhost/Ghost-CLI/commit/778aafa))
+* **doctor:** better directory permissions checks ([aa5b047](https://github.com/TryGhost/Ghost-CLI/commit/aa5b047)), closes [#355](https://github.com/TryGhost/Ghost-CLI/issues/355)
+* **migrate:** re-work migrate step to run knex-migrator in a subprocess ([e8d4f31](https://github.com/TryGhost/Ghost-CLI/commit/e8d4f31)), closes [#349](https://github.com/TryGhost/Ghost-CLI/issues/349)
+* **run:** extract use-ghost-user into a util ([13f442c](https://github.com/TryGhost/Ghost-CLI/commit/13f442c))
+* **setup:** fix setup when `linux-user` is passed as a stage ([9408737](https://github.com/TryGhost/Ghost-CLI/commit/9408737))
+* **windows:** fix local process manager on windows ([1655806](https://github.com/TryGhost/Ghost-CLI/commit/1655806)), closes [#228](https://github.com/TryGhost/Ghost-CLI/issues/228)
+
 <a name="1.0.0-rc.2"></a>
 # [1.0.0-rc.2](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-rc.1...1.0.0-rc.2) (2017-07-11)
 
