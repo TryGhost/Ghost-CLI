@@ -89,18 +89,22 @@ describe('Unit: Command', function () {
             let TestCommand = class extends Command {}
             TestCommand.longDescription = 'a long description here';
             let usageStub = sinon.stub();
+            let epilogueStub = sinon.stub();
 
-            TestCommand.configureOptions('test', { usage: usageStub });
+            TestCommand.configureOptions('test', { usage: usageStub, epilogue: epilogueStub });
             expect(usageStub.calledOnce).to.be.true;
+            expect(epilogueStub.calledOnce).to.be.true;
             expect(usageStub.args[0][0]).to.equal('a long description here');
         });
 
         it('doesn\'t add options if no options defined', function () {
             let TestCommand = class extends Command {}
             let optionStub = sinon.stub();
+            let epilogueStub = sinon.stub();
 
-            TestCommand.configureOptions('test', { option: optionStub });
+            TestCommand.configureOptions('test', { option: optionStub, epilogue: epilogueStub });
             expect(optionStub.called).to.be.false;
+            expect(epilogueStub.calledOnce).to.be.true;
         });
 
         it('calls option once for each option defined', function () {
@@ -117,10 +121,13 @@ describe('Unit: Command', function () {
             };
             let yargsStub = {};
             let optionStub = sinon.stub().returns(yargsStub);
+            let epilogueStub = sinon.stub();
             yargsStub.option = optionStub;
+            yargsStub.epilogue = epilogueStub;
 
             let result = TestCommand.configureOptions('test', yargsStub);
 
+            expect(epilogueStub.calledOnce).to.be.true;
             expect(optionStub.calledTwice).to.be.true;
             expect(optionStub.args[0][0]).to.equal('flag');
             expect(optionStub.args[0][1]).to.deep.equal({alias: 'f', description: 'a flag'});
