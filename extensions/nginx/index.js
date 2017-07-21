@@ -1,14 +1,13 @@
 'use strict';
 
 const fs = require('fs-extra');
+const os = require('os');
 const dns = require('dns');
 const url = require('url');
 const path = require('path');
 const execa = require('execa');
-const template = require('lodash/template');
-
 const Promise = require('bluebird');
-const NginxConfFile = require('nginx-conf').NginxConfFile;
+const template = require('lodash/template');
 
 const cli = require('../../lib');
 
@@ -21,7 +20,6 @@ class NginxExtension extends cli.Extension {
 
         cmd.addStage('nginx', this.setupNginx.bind(this), null, 'Nginx');
         cmd.addStage('ssl', this.setupSSL.bind(this), 'nginx', 'SSL');
-        cmd.addStage('ssl-renew', this.setupRenew.bind(this), 'ssl', 'automatic SSL renewal');
     }
 
     setupNginx(argv, ctx, task) {
@@ -37,57 +35,39 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        if (parsedUrl.pathname !== '/') {
-            this.ui.log('The Nginx service does not support subdirectory configurations yet. Skipping Nginx setup.', 'yellow');
-            return task.skip();
-        }
+        let confFile = `${parsedUrl.hostname}.conf`;
 
-        if (fs.existsSync(`/etc/nginx/sites-available/${parsedUrl.hostname}.conf`)) {
+        if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('Nginx configuration already found for this url. Skipping Nginx setup.', 'yellow');
             return task.skip();
         }
 
-        return Promise.fromNode((cb) => NginxConfFile.createFromSource('', cb)).then((conf) => {
-            conf.nginx._add('server');
+        let conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
 
-            let http = conf.nginx.server;
+        let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
 
-            http._add('listen', '80');
-            http._add('listen', '[::]:80');
-            http._add('server_name', parsedUrl.hostname);
-
-            let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
-            fs.ensureDirSync(rootPath);
-            http._add('root', rootPath);
-
-            http._add('location', '/');
-            this._addProxyBlock(http.location, ctx.instance.config.get('server.port'));
-
-            http._add('client_max_body_size', '50m');
-
-            let confFile = `${parsedUrl.hostname}.conf`;
-
-            return ctx.instance.template(
-                conf.toString(),
-                'nginx config',
-                confFile,
-                '/etc/nginx/sites-available'
-            ).then((generated) => {
-                if (!generated) {
-                    this.ui.log('Nginx config not generated', 'yellow');
-                    return;
-                }
-
-                ctx.instance.cliConfig.set('extension.nginx', true).save();
-
-                return this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
-                    .then(() => this.restartNginx());
-            });
+        let generatedConfig = conf({
+            url: parsedUrl.hostname,
+            webroot: rootPath,
+            location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
+            port: ctx.instance.config.get('server.port')
         });
+
+        return ctx.instance.template(
+            generatedConfig,
+            'nginx config',
+            confFile,
+            '/etc/nginx/sites-available'
+        ).then(() => {
+            return this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`);
+        }).then(() => this.restartNginx());
     }
 
     setupSSL(argv, ctx, task) {
-        if (ctx.instance.cliConfig.get('extension.ssl', false)) {
+        let parsedUrl = url.parse(ctx.instance.config.get('url'));
+        let confFile = `${parsedUrl.hostname}-ssl.conf`;
+
+        if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('SSL has already been set up, skipping', 'yellow');
             return task.skip();
         }
@@ -97,12 +77,7 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        let parsedUrl = url.parse(ctx.instance.config.get('url'));
-
-        let confFile = `${parsedUrl.hostname}.conf`;
-        let nginxConfPath = path.join(ctx.instance.dir, 'system', 'files', confFile);
-
-        if (!fs.existsSync(nginxConfPath)) {
+        if (!fs.existsSync(`/etc/nginx/sites-available/${parsedUrl.hostname}.conf`)) {
             if (ctx.single) {
                 this.ui.log('Nginx config file does not exist, skipping SSL setup', 'yellow');
             }
@@ -111,7 +86,7 @@ class NginxExtension extends cli.Extension {
         }
 
         let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
-        const letsencrypt = require('./letsencrypt');
+        let dhparamFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
@@ -135,9 +110,9 @@ class NginxExtension extends cli.Extension {
                 });
             }
         }, {
-            title: 'Preparing Nginx for Let\'s Encrypt SSL certificate creation',
+            title: 'Getting additional configuration',
             skip: (ctx) => ctx.dnsfail,
-            task: (ctx) => {
+            task: () => {
                 let promise;
 
                 if (argv.sslemail) {
@@ -151,91 +126,68 @@ class NginxExtension extends cli.Extension {
                     }).then(answer => { argv.sslemail = answer.email; });
                 }
 
-                return promise.then(() => {
-                    return Promise.fromCallback((cb) => NginxConfFile.create(nginxConfPath, cb)).then((conf) => {
-                        ctx.ssl = {};
-
-                        ctx.ssl.conf = conf;
-                        ctx.ssl.http = conf.nginx.server;
-
-                        let location = ctx.ssl.http.location;
-
-                        // Don't add well-known block if it already exists
-                        if (!Array.isArray(location) || location.length === 1) {
-                            ctx.ssl.http._add('location', '~ /.well-known');
-                            ctx.ssl.http.location[1]._add('allow', 'all');
-                        }
-                    });
-                });
+                return promise;
             }
         }, {
-            title: 'Restarting Nginx',
-            skip: (ctx) => ctx.dnsfail,
-            task: () => this.restartNginx()
-        }, {
-            title: 'Getting SSL Certificate',
+            title: 'Getting SSL Certificate from Let\'s Encrypt',
             skip: (ctx) => ctx.dnsfail,
             task: () => {
-                return letsencrypt(ctx.instance, argv.sslemail, argv.sslstaging).catch((error) => {
-                    if (!(error instanceof cli.errors.ProcessError)) {
-                        return Promise.reject(error);
-                    }
+                return execa.shell('curl https://get.acme.sh | sh').then(() => {
+                    let acmeScriptPath = path.join(os.homedir(), '.acme.sh', 'acme.sh');
 
-                    // Ensure ~/.well-known location gets cleaned up
-                    ctx.ssl.http._remove('location', 1);
-                    return Promise.reject(error);
+                    let cmd = `${acmeScriptPath} --issue --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
+                        `--accountemail ${argv.sslemail}${argv.sslstaging ? ' --staging' : ''}`;
+
+                    return execa.shell(cmd);
+                }).catch((error) => {
+                    // Certs have been generated before, skip
+                    if (!error.stdout.match(/Skip/)) {
+                        return Promise.reject(new cli.errors.ProcessError(error));
+                    }
                 });
             }
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: (ctx) => ctx.dnsfail,
-            task: (ctx) => {
-                ctx.ssl.dhparamOutFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
-                return execa.shell(`openssl dhparam -out ${ctx.ssl.dhparamOutFile} 2048`)
+            task: () => {
+                return execa.shell(`openssl dhparam -out ${dhparamFile} 2048`)
                     .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
-            title: 'Writing SSL parameters',
+            title: 'Generating SSL security headers',
             skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
-                let sslParamsTemplate = template(fs.readFileSync(path.join(__dirname, 'ssl-params.conf.template'), 'utf8'));
-                return ctx.instance.template(sslParamsTemplate({
-                    dhparam: ctx.ssl.dhparamOutFile
-                }), 'ssl parameters', 'ssl-params.conf');
+                let sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
+                return ctx.instance.template(
+                    sslParamsConf({ dhparam: dhparamFile }),
+                    'ssl security parameters',
+                    'ssl-params.conf'
+                );
             }
         }, {
-            title: 'Updating Nginx with SSL config',
+            title: 'Generating SSL configuration',
             skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
-                // add ssl server block
-                ctx.ssl.conf.nginx._add('server');
-                let https = ctx.ssl.conf.nginx.server[1];
+                let acmeFolder = path.join(os.homedir(), '.acme.sh', parsedUrl.hostname);
+                let sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
+                let generatedSslConfig = sslConf({
+                    url: parsedUrl.hostname,
+                    webroot: rootPath,
+                    fullchain: path.join(acmeFolder, 'fullchain.cer'),
+                    privkey: path.join(acmeFolder, `${parsedUrl.hostname}.key`),
+                    sslparams: path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'),
+                    location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
+                    port: ctx.instance.config.get('server.port')
+                });
 
-                // add listen directives
-                https._add('listen', '443 ssl http2');
-                https._add('listen', '[::]:443 ssl http2');
-                https._add('server_name', parsedUrl.hostname);
-
-                let letsencryptPath = path.join(ctx.instance.dir, 'system', 'letsencrypt');
-
-                // add ssl cert directives
-                https._add('ssl_certificate', path.join(letsencryptPath, 'fullchain.pem'));
-                https._add('ssl_certificate_key', path.join(letsencryptPath, 'privkey.pem'));
-                // add ssl-params snippet
-                https._add('include', path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'));
-                // add root directive
-                https._add('root', rootPath);
-
-                https._add('location', '/');
-                this._addProxyBlock(https.location, ctx.instance.config.get('server.port'));
-
-                https._add('client_max_body_size', '50m');
-
-                https._add('location', '~ /.well-known');
-                https.location[1]._add('allow', 'all');
-
-                ctx.instance.cliConfig.set('extension.ssl', true)
-                    .set('extension.sslemail', argv.sslemail).save();
+                return ctx.instance.template(
+                    generatedSslConfig,
+                    'ssl config',
+                    confFile,
+                    '/etc/nginx/sites-available'
+                ).then(
+                    () => this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
+                );
             }
         }, {
             title: 'Restarting Nginx',
@@ -244,55 +196,38 @@ class NginxExtension extends cli.Extension {
         }], false);
     }
 
-    setupRenew(argv, ctx) {
-        return this._cron((cron) => {
-            // Ensure any crontab with the same instance name is removed
-            cron.remove({comment: ctx.instance.name});
-            let cmd = `cd ${ctx.instance.dir} && ${process.argv.slice(0, 2).join(' ')} ssl-renew`;
-            cron.create(cmd, '@monthly', ctx.instance.name);
-        });
-    }
-
-    _addProxyBlock(location, port) {
-        location._add('proxy_set_header', 'X-Forwarded-For $proxy_add_x_forwarded_for');
-        location._add('proxy_set_header', 'X-Forwarded-Proto $scheme');
-        location._add('proxy_set_header', 'X-Real-IP $remote_addr');
-        location._add('proxy_set_header', 'Host $http_host');
-        location._add('proxy_pass', `http://127.0.0.1:${port}`);
-    }
-
     uninstall(instance) {
-        if (!instance.cliConfig.get('extension.nginx', false)) {
-            return;
-        }
-
         let parsedUrl = url.parse(instance.config.get('url'));
         let confFile = `${parsedUrl.hostname}.conf`;
+        let sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
 
-        let promises = [
-            this._cron(cron => cron.remove({comment: instance.name}))
-        ];
+        let promises = [];
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
+            // Nginx config exists, remove it
             promises.push(
-                this.ui.sudo(`rm /etc/nginx/sites-available/${confFile}`).then(() => {
-                    return this.ui.sudo(`rm /etc/nginx/sites-enabled/${confFile}`);
-                }).catch(
+                Promise.all([
+                    this.ui.sudo(`rm -f /etc/nginx/sites-available/${confFile}`),
+                    this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${confFile}`)
+                ]).catch(
                     () => Promise.reject(new cli.errors.SystemError('Nginx config file link could not be removed, you will need to do this manually.'))
                 )
             );
         }
 
+        if (fs.existsSync(`/etc/nginx/sites-available/${sslConfFile}`)) {
+            // SSL config exists, remove it
+            promises.push(
+                Promise.all([
+                    this.ui.sudo(`rm -f /etc/nginx/sites-available/${sslConfFile}`),
+                    this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${sslConfFile}`)
+                ]).catch(
+                    () => Promise.reject(new cli.errors.SystemError('SSL config file link could not be removed, you will need to do this manually.'))
+                )
+            );
+        }
+
         return Promise.all(promises).then(() => this.restartNginx());
-    }
-
-    _cron(fn) {
-        const crontab = require('crontab');
-
-        return Promise.fromCallback(cb => crontab.load(cb)).then((cron) => {
-            fn(cron);
-            return Promise.fromCallback(cb => cron.save(cb));
-        });
     }
 
     restartNginx() {
