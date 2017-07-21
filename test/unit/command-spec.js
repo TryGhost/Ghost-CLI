@@ -135,6 +135,31 @@ describe('Unit: Command', function () {
             expect(optionStub.args[1][1]).to.deep.equal({alias: 'c', description: 'test kebab-case'});
             expect(result).to.deep.equal(yargsStub);
         });
+
+        it('skips adding epilogue and usage if onlyOptions is true', function () {
+            let TestCommand = class extends Command {}
+            TestCommand.options = {
+                flag: {
+                    alias: 'f',
+                    description: 'a flag'
+                }
+            };
+            TestCommand.longDescription = 'LONG DESCRIPTION';
+            let yargsStub = {};
+            let optionStub = sinon.stub().returns(yargsStub);
+            let epilogueStub = sinon.stub();
+            let usageStub = sinon.stub();
+            yargsStub.option = optionStub;
+            yargsStub.epilogue = epilogueStub;
+
+            let result = TestCommand.configureOptions('test', yargsStub, [], true);
+
+            expect(epilogueStub.called).to.be.false;
+            expect(usageStub.called).to.be.false;
+            expect(optionStub.calledOnce).to.be.true;
+            expect(optionStub.args[0]).to.deep.equal(['flag', {alias: 'f', description: 'a flag'}]);
+            expect(result).to.deep.equal(yargsStub);
+        });
     });
 
     describe('_run', function () {
