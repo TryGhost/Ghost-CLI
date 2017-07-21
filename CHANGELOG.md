@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0-rc.4"></a>
+# [1.0.0-rc.4](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-rc.3...1.0.0-rc.4) (2017-07-21)
+
+### Bug Fixes
+
+* **command:** Tweak valid install check output ([2e7c64f](https://github.com/TryGhost/Ghost-CLI/commit/2e7c64f))
+* **help:** add onlyOptions argument to configureOptions ([1f77407](https://github.com/TryGhost/Ghost-CLI/commit/1f77407))
+* **help:** explicit setup stages ([c3df8cb](https://github.com/TryGhost/Ghost-CLI/commit/c3df8cb))
+* **help:** update descriptions to be more helpful ([debfa6b](https://github.com/TryGhost/Ghost-CLI/commit/debfa6b)), closes [#321](https://github.com/TryGhost/Ghost-CLI/issues/321)
+* **local:** only force kill on Windows ([be95343](https://github.com/TryGhost/Ghost-CLI/commit/be95343)), closes [#368](https://github.com/TryGhost/Ghost-CLI/issues/368)
+* **log:** check environment if instance is not running ([bc845de](https://github.com/TryGhost/Ghost-CLI/commit/bc845de))
+* **nginx:** don't try to restart nginx when nginx isn't a thing ([61fc7c0](https://github.com/TryGhost/Ghost-CLI/commit/61fc7c0))
+
+### Features
+
+* **help:** add epilogue with docs link ([f8a37c8](https://github.com/TryGhost/Ghost-CLI/commit/f8a37c8))
+* **help:** custom aliases ([44db436](https://github.com/TryGhost/Ghost-CLI/commit/44db436))
+* **update:** add pre-stable warning message with docs link ([72b461f](https://github.com/TryGhost/Ghost-CLI/commit/72b461f)), closes [#364](https://github.com/TryGhost/Ghost-CLI/issues/364)
+
 <a name="1.0.0-rc.3"></a>
 # [1.0.0-rc.3](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-rc.2...1.0.0-rc.3) (2017-07-18)
 
