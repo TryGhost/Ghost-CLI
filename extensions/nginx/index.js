@@ -227,6 +227,10 @@ class NginxExtension extends cli.Extension {
             );
         }
 
+        if (!promises.length) {
+            return Promise.resolve();
+        }
+
         return Promise.all(promises).then(() => this.restartNginx());
     }
 
