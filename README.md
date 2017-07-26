@@ -18,9 +18,9 @@
 
 ## Documentation
 
-- [Complete Setup Guide](https://docs.ghost.org/docs/installing-ghost-via-the-cli)
-- [Command Reference](https://docs.ghost.org/v1.0.0/docs/overview)
-- [Troubleshooting Guide](https://docs.ghost.org/v1.0.0/docs/troubleshooting-guide#section-cli-errors)
+- [Complete Setup Guide](https://docs.ghost.org/docs/install)
+- [Command Reference](https://docs.ghost.org/v1.0.0/docs/ghost-cli)
+- [Troubleshooting Guide](https://docs.ghost.org/v1.0.0/docs/troubleshooting#section-cli-errors)
 
 ## Developer Setup (for contributing)
 
