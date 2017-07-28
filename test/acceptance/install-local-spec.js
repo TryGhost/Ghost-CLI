@@ -5,7 +5,7 @@ const fs  = require('fs-extra');
 
 const AcceptanceTest = require('../utils/acceptance-test');
 
-describe.only('Acceptance: Install Local (~35second test)', function () {
+describe('Acceptance: Install Local (~35second test)', function () {
     it('can do a local install, anywhere!', function () {
         const timeout = 100000;
 
