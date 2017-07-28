@@ -19,6 +19,10 @@ cache:
   directories:
     - node_modules
 
+install:
+  - yarn
+  - yarn add --force sqlite3 # fix sqlite caching issues
+
 script:
   - if [ "$TEST_SUITE" == "lint" ]; then npm run lint; else npm run test:all; fi
 
