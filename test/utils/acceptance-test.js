@@ -29,6 +29,8 @@ const find = require('lodash/find');
 const path = require('path');
 const env = require('./env');
 
+global.Promise = require('bluebird');
+
 module.exports = class AcceptanceTest {
     constructor(command, options) {
         options = options || {};
