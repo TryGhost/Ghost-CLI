@@ -36,6 +36,8 @@ const builtin = {
 };
 
 module.exports = function setupEnv(typeOrDefinition, dir) {
+    typeOrDefinition = typeOrDefinition || {}; // default to empty object
+
     let setup = isObject(typeOrDefinition) ? typeOrDefinition : builtin[typeOrDefinition];
 
     if (!setup) {
