@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.1"></a>
+## [1.0.1](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0...1.0.1) (2017-07-29)
+
+### Bug Fixes
+
+* **config:** Allow all wellknown mail services ([3cc07b9](https://github.com/TryGhost/Ghost-CLI/commit/3cc07b9)), closes [#383](https://github.com/TryGhost/Ghost-CLI/issues/383)
+* **config:** transform urls to lowercase ([185334e](https://github.com/TryGhost/Ghost-CLI/commit/185334e)), closes [#399](https://github.com/TryGhost/Ghost-CLI/issues/399)
+* **migration:** don't hide migration errors ([42a9832](https://github.com/TryGhost/Ghost-CLI/commit/42a9832)), closes [#378](https://github.com/TryGhost/Ghost-CLI/issues/378)
+* **run:** disable update check on `ghost run` ([7abe68b](https://github.com/TryGhost/Ghost-CLI/commit/7abe68b)), closes [#356](https://github.com/TryGhost/Ghost-CLI/issues/356)
+* **setup:** re-add ability for linux-user step to be skipped with flag ([605dd02](https://github.com/TryGhost/Ghost-CLI/commit/605dd02)), closes [#385](https://github.com/TryGhost/Ghost-CLI/issues/385)
+* **ui:** fix typo in error output (#398) ([b44937f](https://github.com/TryGhost/Ghost-CLI/commit/b44937f)), closes [#398](https://github.com/TryGhost/Ghost-CLI/issues/398)
+
+### Features
+
+* **help:** add status as an alias for 'ls' (#380) ([0877523](https://github.com/TryGhost/Ghost-CLI/commit/0877523))
+
 <a name="1.0.0"></a>
 # [1.0.0](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0-rc.4...v1.0.0) (2017-07-22)
 
