@@ -85,5 +85,10 @@
     "rewire": "2.5.2",
     "sinon": "2.3.8",
     "tmp": "0.0.31"
+  },
+  "standard-version": {
+    "skip": {
+      "tag": true
+    }
   }
 }
