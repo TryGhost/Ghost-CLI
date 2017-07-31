@@ -113,4 +113,26 @@ describe('Unit: Tasks > Migrate', function () {
             expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
+
+    it('throws system error if sqlite3 error is thrown by knex', function () {
+        let config = getConfigStub();
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        let execaStub = sinon.stub().returns(Promise.reject({stdout: 'Knex: run\n$ npm install sqlite3 --save\nError:'}));
+        let useGhostUserStub = sinon.stub().returns(false);
+
+        let migrate = proxyquire(migratePath, {
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
+        });
+
+        return migrate({ instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.match(/sqlite3 did not install properly/);
+            expect(config.set.calledTwice).to.be.true;
+            expect(config.set.args[0]).to.deep.equal(['logging.transports', ['file']]);
+            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
+        });
+    });
 });
