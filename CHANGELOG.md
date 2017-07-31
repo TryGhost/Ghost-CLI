@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.2"></a>
+## [1.0.2](https://github.com/TryGhost/Ghost-CLI/compare/1.0.1...1.0.2) (2017-07-31)
+
+### Bug Fixes
+
+* **config:** only prompt if args aren't provided ([b8d6f67](https://github.com/TryGhost/Ghost-CLI/commit/b8d6f67))
+* **doctor:** fix prompting and error handling with --no-prompt ([1641676](https://github.com/TryGhost/Ghost-CLI/commit/1641676)), closes [#410](https://github.com/TryGhost/Ghost-CLI/issues/410)
+* **doctor:** skip parent folder perm check if linux user is skipped ([6eec35c](https://github.com/TryGhost/Ghost-CLI/commit/6eec35c)), closes [#405](https://github.com/TryGhost/Ghost-CLI/issues/405)
+* **migrate:** improve error handling with sqlite install failure ([9c07274](https://github.com/TryGhost/Ghost-CLI/commit/9c07274))
+
 <a name="1.0.1"></a>
 ## [1.0.1](https://github.com/TryGhost/Ghost-CLI/compare/1.0.0...1.0.1) (2017-07-29)
 
