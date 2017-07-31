@@ -210,6 +210,22 @@ describe('Unit: Doctor Checks > Install', function () {
             });
         });
 
+        it('skips checking parent folder permissions if --no-setup-linux-user is passed', function () {
+            let accessStub = sinon.stub().resolves();
+            let platformStub = sinon.stub().returns('linux');
+            const tasks = proxyquire(modulePath, {
+                'fs-extra': {access: accessStub},
+                os: {platform: platformStub}
+            }).tasks;
+            let checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.folderPermissions({argv: {'setup-linux-user': false}}).then(() => {
+                expect(accessStub.calledOnce).to.be.true;
+                expect(platformStub.calledOnce).to.be.true;
+                expect(checkDirectoryAndAbove.called).to.be.false;
+            });
+        });
+
         it('runs checkParentAndAbove if local not set and platform is linux', function () {
             let accessStub = sinon.stub().resolves();
             let platformStub = sinon.stub().returns('linux');
