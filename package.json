@@ -28,7 +28,7 @@
   "scripts": {
     "coverage": "cat ./coverage/lcov.info | coveralls",
     "lint": "eslint bin lib",
-    "test:unit": "istanbul cover _mocha -- test/unit/**",
+    "test:unit": "istanbul cover _mocha -- --recursive test/unit",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
