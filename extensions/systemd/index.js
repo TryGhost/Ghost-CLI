@@ -24,8 +24,14 @@ class SystemdExtension extends cli.Extension {
             return task.skip();
         }
 
-        let service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
         let serviceFilename = `ghost_${ctx.instance.name}.service`;
+
+        if (ctx.instance.cliConfig.get('extension.systemd', false) || fs.existsSync(path.join('/lib/systemd/system', serviceFilename))) {
+            this.ui.log('Systemd service has already been set up. Skipping Systemd setup');
+            return task.skip();
+        }
+
+        let service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
 
         return ctx.instance.template(service({
             name: ctx.instance.name,
@@ -39,16 +45,11 @@ class SystemdExtension extends cli.Extension {
                 return;
             }
 
-            ctx.instance.cliConfig.set('extension.systemd', true).save();
             return this.ui.sudo('systemctl daemon-reload');
         });
     }
 
     uninstall(instance) {
-        if (!instance.cliConfig.get('extension.systemd', false)) {
-            return;
-        }
-
         let serviceFilename = `/lib/systemd/system/ghost_${instance.name}.service`;
 
         if (fs.existsSync(serviceFilename)) {

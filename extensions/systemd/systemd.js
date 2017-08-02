@@ -78,13 +78,7 @@ class SystemdProcessManager extends cli.ProcessManager {
             throw new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup linux-user systemd` and try again.')
         }
 
-        if (this.instance.cliConfig.get('extension.systemd', false)) {
-            return;
-        }
-
-        // service file exists but for some reason the right property in cliConfig hasn't been set
         if (fs.existsSync(`/lib/systemd/system/${this.systemdName}.service`)) {
-            this.instance.cliConfig.set('extension.systemd', true);
             return;
         }
 
