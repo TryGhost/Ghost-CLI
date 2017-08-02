@@ -1,12 +1,14 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const Promise = require('bluebird');
 const proxyquire = require('proxyquire').noCallThru();
 
 const Config = require('../../../lib/utils/config');
 const errors = require('../../../lib/errors');
 
 const modulePath = '../../../lib/commands/config';
+const advancedModulePath = '../../../lib/commands/config/advanced';
 
 describe('Unit: Command > Config', function () {
     it('constructs instance', function () {
@@ -352,5 +354,100 @@ describe('Unit: Command > Config', function () {
                 expect(handleAdvancedOptionsStub.args[0][0]).to.deep.equal({ prompt: true, db: 'mysql', dbhost: 'localhost' });
             });
         });
+    });
+
+    describe('advanced options', function () {
+        it('url', function () {
+            let advancedOptions = require(advancedModulePath);
+            expect(advancedOptions.url).to.exist;
+
+            // Check validate function
+            expect(advancedOptions.url.validate('http://localhost:2368')).to.be.true;
+            expect(advancedOptions.url.validate('localhost:2368')).to.match(/Invalid URL/);
+            expect(advancedOptions.url.validate('not even remotely a URL')).to.match(/Invalid URL/);
+
+            // Check transform function
+            expect(advancedOptions.url.transform('http://MyUpperCaseUrl.com')).to.equal('http://myuppercaseurl.com');
+        });
+
+        it('adminUrl', function () {
+            let advancedOptions = require(advancedModulePath);
+            expect(advancedOptions.adminUrl).to.exist;
+
+            // Check validate function
+            expect(advancedOptions.adminUrl.validate('http://localhost:2368')).to.be.true;
+            expect(advancedOptions.adminUrl.validate('localhost:2368')).to.match(/Invalid URL/);
+            expect(advancedOptions.adminUrl.validate('not even remotely a URL')).to.match(/Invalid URL/);
+
+            // Check transform function
+            expect(advancedOptions.adminUrl.transform('http://MyUpperCaseUrl.com')).to.equal('http://myuppercaseurl.com');
+        });
+
+        it('port', function () {
+            let portPromiseStub = sinon.stub().resolves('2367');
+            let advancedOptions = proxyquire(advancedModulePath, { portfinder: { getPortPromise: portPromiseStub }});
+
+            expect(advancedOptions.port).to.exist;
+
+            // Check validate
+            expect(advancedOptions.port.validate('not an int')).to.match(/must be an integer/);
+
+            return Promise.props({
+                validateExpectsTrue: advancedOptions.port.validate('2367'),
+                validateExpectsMessage: advancedOptions.port.validate('2366'),
+                defaultCalledWithUrlPort: advancedOptions.port.defaultValue({ get: () => 'http://localhost:2369' }),
+                defaultCalledWithNoUrlPort: advancedOptions.port.defaultValue({ get: () => 'http://example.com' })
+            }).then((results) => {
+                expect(results.validateExpectsTrue).to.be.true;
+                expect(results.validateExpectsMessage).to.match(/'2366' is in use/);
+
+                expect(portPromiseStub.calledWithExactly({ port: '2366' })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: '2367' })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: '2368' })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: '2369' })).to.be.true;
+            });
+        });
+    });
+
+    it('db', function () {
+        let advancedOptions = require(advancedModulePath);
+
+        expect(advancedOptions.db).to.exist;
+        expect(advancedOptions.db.validate('mysql')).to.be.true;
+        expect(advancedOptions.db.validate('sqlite3')).to.be.true;
+        expect(advancedOptions.db.validate('pg')).to.match(/Invalid database type/);
+    });
+
+    it('dbpath', function () {
+        let advancedOptions = require(advancedModulePath);
+
+        expect(advancedOptions.dbpath).to.exist;
+        expect(advancedOptions.dbpath.defaultValue({ get: () => 'mysql'})).to.be.null;
+        expect(advancedOptions.dbpath.defaultValue({ get: () => 'sqlite3'}, 'development')).to.equal('./content/data/ghost-dev.db');
+        expect(advancedOptions.dbpath.defaultValue({ get: () => 'sqlite3'}, 'production')).to.equal('./content/data/ghost.db');
+    });
+
+    it('mail', function () {
+        let advancedOptions = require(advancedModulePath);
+
+        expect(advancedOptions.mail).to.exist;
+        expect(advancedOptions.mail.validate('Sendmail')).to.be.true;
+        expect(advancedOptions.mail.validate('SMS')).to.match(/Invalid mail transport/);
+    });
+
+    it('mailservice', function () {
+        let advancedOptions = require(advancedModulePath);
+
+        expect(advancedOptions.mailservice).to.exist;
+        expect(advancedOptions.mailservice.validate('Mailgun')).to.be.true;
+        expect(advancedOptions.mailservice.validate('CaspersFriendlyEmailService')).to.match(/Invalid mail service/);
+    });
+
+    it('process', function () {
+        let advancedOptions = require(advancedModulePath);
+
+        expect(advancedOptions.process).to.exist;
+        expect(advancedOptions.process.defaultValue({}, 'production')).to.equal('systemd');
+        expect(advancedOptions.process.defaultValue({}, 'development')).to.equal('local');
     });
 });
