@@ -39,14 +39,9 @@ class SystemdExtension extends cli.Extension {
             user: uid,
             environment: this.system.environment,
             ghost_exec_path: process.argv.slice(0,2).join(' ')
-        }), 'systemd service', serviceFilename, '/lib/systemd/system').then((generated) => {
-            if (!generated) {
-                this.ui.log('Systemd unit file not generated', 'yellow');
-                return;
-            }
-
-            return this.ui.sudo('systemctl daemon-reload');
-        });
+        }), 'systemd service', serviceFilename, '/lib/systemd/system').then(
+            () => this.ui.sudo('systemctl daemon-reload')
+        );
     }
 
     uninstall(instance) {
@@ -57,6 +52,8 @@ class SystemdExtension extends cli.Extension {
                 () => Promise.reject(new cli.errors.SystemError('Systemd service file link could not be removed, you will need to do this manually.'))
             );
         }
+
+        return Promise.resolve();
     }
 }
 

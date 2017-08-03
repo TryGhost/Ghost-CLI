@@ -22,7 +22,7 @@ module.exports = function getUid(dir) {
 
         return uid;
     } catch (e) {
-        if (!e.message.match(/no such user/)) {
+        if (!e.message.match(/no such user/i)) {
             throw e;
         }
 
