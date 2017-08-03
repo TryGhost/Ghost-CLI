@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const stripAnsi = require('strip-ansi');
 const proxyquire = require('proxyquire').noCallThru();
+const path = require('path');
 
 const modulePath = '../../../../lib/commands/doctor/checks/install';
 const errors = require('../../../../lib/errors');
@@ -34,47 +35,38 @@ describe('Unit: Doctor Checks > Install', function () {
     });
 
     describe('node version check', function () {
-        it('doesn\'t do anything if GHOST_NODE_VERSION_CHECK is false', function () {
-            let originalEnv = process.env;
-            let cliPackage = {
-                engines: {
-                    node: '0.10.0'
-                }
-            };
-            process.env = { GHOST_NODE_VERSION_CHECK: 'false' };
+        it('rejects if global bin is different than the one ghost is running from', function () {
+            let execaStub = sinon.stub().returns({stdout: '/usr/local/bin'});
+            let originalArgv = process.argv;
+            process.argv = ['node', '/home/ghost/.nvm/versions/6.11.1/bin'];
 
             const task = proxyquire(modulePath, {
-                '../../../../package': cliPackage
+                execa: {shellSync: execaStub}
             }).tasks.nodeVersion;
 
             return task().then(() => {
-                process.env = originalEnv;
+                expect(false, 'error should be thrown').to.be.true;
+                process.argv = originalArgv;
+            }).catch((error) => {
+                process.argv = originalArgv;
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(/version of Ghost-CLI you are running was not installed with this version of Node./);
+                expect(execaStub.calledOnce).to.be.true;
+                expect(execaStub.calledWithExactly('npm bin -g')).to.be.true;
             });
         });
 
-        it('doesn\'t do anything if node version is in range', function () {
-            let cliPackage = {
-                engines: {
-                    node: process.versions.node // this future-proofs the test
-                }
-            };
-
-            const task = proxyquire(modulePath, {
-                '../../../../package': cliPackage
-            }).tasks.nodeVersion;
-
-            return task();
-        });
-
-        it('throws error if node version is not in range', function () {
+        it('rejects if node version is not in range', function () {
             let cliPackage = {
                 engines: {
                     node: '0.10.0'
                 }
             };
+            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
 
             const task = proxyquire(modulePath, {
-                '../../../../package': cliPackage
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub}
             }).tasks.nodeVersion;
 
             return task().then(() => {
@@ -85,6 +77,140 @@ describe('Unit: Doctor Checks > Install', function () {
 
                 expect(message).to.match(/Supported: 0.10.0/);
                 expect(message).to.match(new RegExp(`Installed: ${process.versions.node}`));
+                expect(execaStub.calledOnce).to.be.true;
+            });
+        });
+
+        it('doesn\'t reject if bin is the local ghost bin file from the install (and local is true)', function () {
+            let cliPackage = {
+                engines: {
+                    node: process.versions.node // this future-proofs the test
+                }
+            };
+            let execaStub = sinon.stub().returns({stdout: '/usr/local/bin'});
+            let originalArgv = process.argv;
+            process.argv = ['node', path.join(__dirname, '../../../../bin/ghost')];
+
+            const tasks = proxyquire(modulePath, {
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub}
+            }).tasks;
+            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.nodeVersion({local: true}).then(() => {
+                process.argv = originalArgv;
+                expect(execaStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.called).to.be.false;
+            });
+        });
+
+        it('doesn\'t do anything if GHOST_NODE_VERSION_CHECK is false and local is true', function () {
+            let originalEnv = process.env;
+            let cliPackage = {
+                engines: {
+                    node: '0.10.0'
+                }
+            };
+            process.env = { GHOST_NODE_VERSION_CHECK: 'false' };
+            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+
+            const tasks = proxyquire(modulePath, {
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub}
+            }).tasks;
+            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.nodeVersion({local: true}).then(() => {
+                process.env = originalEnv;
+                expect(execaStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.called).to.be.false;
+            });
+        });
+
+        it('doesn\'t do anything if node version is in range and local is true', function () {
+            let cliPackage = {
+                engines: {
+                    node: process.versions.node // this future-proofs the test
+                }
+            };
+            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+
+            const tasks = proxyquire(modulePath, {
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub}
+            }).tasks;
+            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.nodeVersion({local: true}).then(() => {
+                expect(execaStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.called).to.be.false;
+            });
+        });
+
+        it('doesn\'t call checkDirectoryAndAbove if os is not linux', function () {
+            let cliPackage = {
+                engines: {
+                    node: process.versions.node // this future-proofs the test
+                }
+            };
+            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            let platformStub = sinon.stub().returns('darwin');
+
+            const tasks = proxyquire(modulePath, {
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub},
+                os: {platform: platformStub}
+            }).tasks;
+            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.nodeVersion({local: false}).then(() => {
+                expect(execaStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.called).to.be.false;
+            });
+        });
+
+        it('doesn\'t call checkDirectoryAndAbove if no-setup-linux-user is passed', function () {
+            let cliPackage = {
+                engines: {
+                    node: process.versions.node // this future-proofs the test
+                }
+            };
+            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            let platformStub = sinon.stub().returns('linux');
+
+            const tasks = proxyquire(modulePath, {
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub},
+                os: {platform: platformStub}
+            }).tasks;
+            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.nodeVersion({local: false, argv: {'setup-linux-user': false}}).then(() => {
+                expect(execaStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.called).to.be.false;
+            });
+        });
+
+        it('calls checkDirectoryAndAbove if none of the three conditions are true', function () {
+            let cliPackage = {
+                engines: {
+                    node: process.versions.node // this future-proofs the test
+                }
+            };
+            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            let platformStub = sinon.stub().returns('linux');
+
+            const tasks = proxyquire(modulePath, {
+                '../../../../package': cliPackage,
+                execa: {shellSync: execaStub},
+                os: {platform: platformStub}
+            }).tasks;
+            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+
+            return tasks.nodeVersion({local: false, argv: {'setup-linux-user': true}}).then(() => {
+                expect(execaStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.calledOnce).to.be.true;
+                expect(checkDirectoryStub.calledWith(process.argv[0])).to.be.true;
             });
         });
     });
