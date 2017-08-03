@@ -52,6 +52,20 @@ describe('Unit: Utils > useGhostUser', function () {
         expect(execaStub.calledOnce).to.be.true;
     });
 
+    it('returns false if "no such error" error is thrown (this time, with caps)', function () {
+        let platformStub = sinon.stub().returns('linux');
+        let execaStub = sinon.stub().throws(new Error('No such user'));
+        let useGhostUser = proxyquire(modulePath, {
+            os: { platform: platformStub },
+            execa: { shellSync: execaStub }
+        });
+
+        let result = useGhostUser();
+        expect(result).to.be.false;
+        expect(platformStub.calledOnce).to.be.true;
+        expect(execaStub.calledOnce).to.be.true;
+    });
+
     it('returns false if the ghost owner/group is not the owner of the content folder', function () {
         let platformStub = sinon.stub().returns('linux');
         let execaStub = sinon.stub().returns({stdout: '50'});
