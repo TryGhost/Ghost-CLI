@@ -52,7 +52,7 @@ describe('Unit: Doctor Checks > Install', function () {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.match(/version of Ghost-CLI you are running was not installed with this version of Node./);
                 expect(execaStub.calledOnce).to.be.true;
-                expect(execaStub.calledWithExactly('npm bin -g')).to.be.true;
+                expect(execaStub.calledWithExactly('npm bin -g', {preferLocal: false})).to.be.true;
             });
         });
 
