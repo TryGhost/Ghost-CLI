@@ -8,13 +8,10 @@ const cli = require('../../lib');
 
 class MySQLExtension extends cli.Extension {
     setup(cmd, argv) {
-        // ghost setup --local, skip
-        if (argv.local) {
-            return;
-        }
-
-        // We don't want to prompt for mysql setup if user specifies sqlite as the db
-        if (argv.db === 'sqlite3') {
+        // Case 1: ghost install local OR ghost setup --local
+        // Case 2: ghost install --db sqlite3
+        // Skip in both cases
+        if (argv.local || argv.db === 'sqlite3') {
             return;
         }
 
@@ -89,8 +86,16 @@ class MySQLExtension extends cli.Extension {
         // disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
         let username = 'ghost-' + Math.floor(Math.random() * 1000);
 
-        return this._query(`CREATE USER '${username}'@'${dbconfig.host}' IDENTIFIED BY '${randomPassword}';`).then(() => {
+        return this._query(`CREATE USER '${username}'@'${dbconfig.host}' IDENTIFIED WITH mysql_native_password;`).then(() => {
             this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
+
+            return this._query('SET old_passwords = 0;');
+        }).then(() => {
+            this.ui.logVerbose('MySQL: successfully disabled old_password', 'green');
+
+            return this._query(`SET PASSWORD FOR '${username}'@'${dbconfig.host}' = PASSWORD('${randomPassword}');`);
+        }).then(() => {
+            this.ui.logVerbose(`MySQL: successfully created password for user ${username}`, 'green');
 
             ctx.mysql = {
                 username: username,
