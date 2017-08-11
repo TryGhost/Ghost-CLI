@@ -87,73 +87,6 @@ describe('Unit: Instance', function () {
         });
     });
 
-    describe('running getter', function () {
-        it('returns false if running property not set in config', function () {
-            let hasStub = sandbox.stub().withArgs('running').returns(false);
-            class TestInstance extends Instance {
-                get cliConfig() { return { has: hasStub } };
-            }
-            let testInstance = new TestInstance({}, {}, '');
-
-            let running = testInstance.running;
-            expect(running).to.be.false;
-            expect(hasStub.calledOnce).to.be.true;
-        });
-
-        it('loads running environment and checks if process manager returns false', function () {
-            let hasStub = sandbox.stub().withArgs('running').returns(true);
-            let isRunningStub = sandbox.stub().returns(true);
-            class TestInstance extends Instance {
-                get cliConfig() { return { has: hasStub }; }
-                get process() { return { isRunning: isRunningStub } }
-            };
-            let testInstance = new TestInstance({}, {}, '');
-            let loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
-
-            let running = testInstance.running;
-            expect(running).to.be.true;
-            expect(hasStub.calledOnce).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(loadRunEnvStub.calledOnce).to.be.true;
-        });
-
-        it('sets running to null in cliConfig if process manager\'s isRunning method returns false', function () {
-            let hasStub = sandbox.stub().withArgs('running').returns(true);
-            let setStub = sandbox.stub().withArgs('running', null).returnsThis();
-            let saveStub = sandbox.stub().returnsThis();
-            let isRunningStub = sandbox.stub().returns(false);
-            class TestInstance extends Instance {
-                get cliConfig() { return { has: hasStub, set: setStub, save: saveStub }; }
-                get process() { return { isRunning: isRunningStub }; }
-            }
-            let testInstance = new TestInstance({}, {}, '');
-            let loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
-
-            let running = testInstance.running;
-            expect(running).to.be.false;
-            expect(hasStub.calledOnce).to.be.true;
-            expect(setStub.calledOnce).to.be.true;
-            expect(saveStub.calledOnce).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(loadRunEnvStub.calledOnce).to.be.true;
-        });
-    });
-
-    describe('running setter', function () {
-        it('sets running property in cliConfig', function () {
-            let setStub = sandbox.stub().withArgs('running', 'testing').returnsThis();
-            let saveStub = sandbox.stub();
-            class TestInstance extends Instance {
-                get cliConfig() { return { set: setStub, save: saveStub }; }
-            }
-            let testInstance = new TestInstance({}, {}, '');
-            testInstance.running = 'testing';
-
-            expect(setStub.calledOnce).to.be.true;
-            expect(saveStub.calledOnce).to.be.true;
-        });
-    });
-
     describe('config getter', function () {
         it('returns cached instance if it exists and environment hasn\'t changed', function () {
             let testInstance = new Instance({}, { environment: 'testing' }, '');
@@ -233,6 +166,71 @@ describe('Unit: Instance', function () {
         expect(testInstance.ui).to.deep.equal({ui: true});
         expect(testInstance.system).to.deep.equal({system: true});
         expect(testInstance.dir).to.equal('some_test_dir');
+    });
+
+    describe('running', function () {
+        it('sets running property in cliConfig', function () {
+            let setStub = sandbox.stub().withArgs('running', 'testing').returnsThis();
+            let saveStub = sandbox.stub();
+            class TestInstance extends Instance {
+                get cliConfig() { return { set: setStub, save: saveStub }; }
+            }
+            let testInstance = new TestInstance({}, {}, '');
+            testInstance.running('testing');
+
+            expect(setStub.calledOnce).to.be.true;
+            expect(saveStub.calledOnce).to.be.true;
+        });
+
+        it('returns false if running property not set in config', function () {
+            let hasStub = sandbox.stub().withArgs('running').returns(false);
+            class TestInstance extends Instance {
+                get cliConfig() { return { has: hasStub } };
+            }
+            let testInstance = new TestInstance({}, {}, '');
+
+            let running = testInstance.running();
+            expect(running).to.be.false;
+            expect(hasStub.calledOnce).to.be.true;
+        });
+
+        it('loads running environment and checks if process manager returns false', function () {
+            let hasStub = sandbox.stub().withArgs('running').returns(true);
+            let isRunningStub = sandbox.stub().returns(true);
+            class TestInstance extends Instance {
+                get cliConfig() { return { has: hasStub }; }
+                get process() { return { isRunning: isRunningStub } }
+            };
+            let testInstance = new TestInstance({}, {}, '');
+            let loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
+
+            let running = testInstance.running();
+            expect(running).to.be.true;
+            expect(hasStub.calledOnce).to.be.true;
+            expect(isRunningStub.calledOnce).to.be.true;
+            expect(loadRunEnvStub.calledOnce).to.be.true;
+        });
+
+        it('sets running to null in cliConfig if process manager\'s isRunning method returns false', function () {
+            let hasStub = sandbox.stub().withArgs('running').returns(true);
+            let setStub = sandbox.stub().withArgs('running', null).returnsThis();
+            let saveStub = sandbox.stub().returnsThis();
+            let isRunningStub = sandbox.stub().returns(false);
+            class TestInstance extends Instance {
+                get cliConfig() { return { has: hasStub, set: setStub, save: saveStub }; }
+                get process() { return { isRunning: isRunningStub }; }
+            }
+            let testInstance = new TestInstance({}, {}, '');
+            let loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
+
+            let running = testInstance.running();
+            expect(running).to.be.false;
+            expect(hasStub.calledOnce).to.be.true;
+            expect(setStub.calledOnce).to.be.true;
+            expect(saveStub.calledOnce).to.be.true;
+            expect(isRunningStub.calledOnce).to.be.true;
+            expect(loadRunEnvStub.calledOnce).to.be.true;
+        });
     });
 
     describe('checkEnvironment', function () {
@@ -326,9 +324,9 @@ describe('Unit: Instance', function () {
         it('returns shortened object if running is false', function () {
             let getStub = sandbox.stub().withArgs('active-version').returns('1.0.0');
             class TestInstance extends Instance {
-                get running() { return false; }
                 get name() { return 'testing'; }
                 get cliConfig() { return { get: getStub }; }
+                running() { return false; }
             }
             let testInstance = new TestInstance({}, {}, '');
             let result = testInstance.summary();
@@ -347,10 +345,10 @@ describe('Unit: Instance', function () {
 
             class TestInstance extends Instance {
                 get name() { return 'testing'; }
-                get running() { return true; }
                 get cliConfig() { return { get: cliGetStub}; }
                 get config() { return { get: getStub}; }
                 get process() { return { name: 'local' }; }
+                running() { return true; }
             }
             let testInstance = new TestInstance({}, {environment: 'testing'}, '');
             let loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');

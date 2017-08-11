@@ -8,7 +8,7 @@ const Instance = require('../../../lib/instance');
 describe('Unit: Command > Restart', function () {
     it('throws error if instance is not running', function () {
         class TestInstance extends Instance {
-            get running() { return false; }
+            running() { return false; }
         }
         let testInstance = new TestInstance();
 
@@ -26,8 +26,8 @@ describe('Unit: Command > Restart', function () {
     it('calls process restart method if instance is running', function () {
         let restartStub = sinon.stub().resolves();
         class TestInstance extends Instance {
-            get running() { return true; }
             get process() { return { restart: restartStub }; }
+            running() { return true; }
         }
         let testInstance = new TestInstance();
         let loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
