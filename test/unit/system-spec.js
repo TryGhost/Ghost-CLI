@@ -233,14 +233,15 @@ describe('Unit: System', function () {
             let systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
             let getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            getInstanceStub.withArgs('testa').returns({running: true, cwd: '/dir/a', name: 'testa'});
-            getInstanceStub.withArgs('testb').returns({running: false, cwd: '/dir/b', name: 'testb'});
+            let instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
+            let instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
+
+            getInstanceStub.withArgs('testa').returns(instanceA);
+            getInstanceStub.withArgs('testb').returns(instanceB);
 
             let result = systemInstance.getAllInstances(true);
 
-            expect(result).to.deep.equal([
-                {running: true, cwd: '/dir/a', name: 'testa'}
-            ]);
+            expect(result).to.deep.equal([instanceA]);
             expect(fsStub.calledThrice).to.be.true;
             expect(getInstanceStub.calledTwice).to.be.true;
             expect(setStub.calledOnce).to.be.true;
@@ -270,15 +271,15 @@ describe('Unit: System', function () {
             let systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
             let getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            getInstanceStub.withArgs('testa').returns({running: true, cwd: '/dir/a', name: 'testa'});
-            getInstanceStub.withArgs('testb').returns({running: false, cwd: '/dir/b', name: 'testb'});
+            let instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
+            let instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
+
+            getInstanceStub.withArgs('testa').returns(instanceA);
+            getInstanceStub.withArgs('testb').returns(instanceB);
 
             let result = systemInstance.getAllInstances(false);
 
-            expect(result).to.deep.equal([
-                {running: true, cwd: '/dir/a', name: 'testa'},
-                {running: false, cwd: '/dir/b', name: 'testb'}
-            ]);
+            expect(result).to.deep.equal([instanceA, instanceB]);
             expect(fsStub.calledTwice).to.be.true;
             expect(getInstanceStub.calledTwice).to.be.true;
             expect(setStub.called).to.be.false;
