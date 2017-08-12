@@ -158,6 +158,7 @@ describe('Unit: Commands > Update', function () {
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
             const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
+            const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
 
             return cmdInstance.run({version: '1.1.0', rollback: false, force: false}).then(() => {
                 cwdStub.restore();
@@ -172,10 +173,11 @@ describe('Unit: Commands > Update', function () {
                 expect(linkStub.calledOnce).to.be.true;
                 expect(migrateStub.calledOnce).to.be.true;
                 expect(restartStub.calledOnce).to.be.true;
+                expect(removeOldVersionsStub.calledOnce).to.be.true;
             });
         })
 
-        it('skips download and migrate if rollback is true', function () {
+        it('skips download, migrate, and removeOldVersion tasks if rollback is true', function () {
             const migrateStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrate': migrateStub
@@ -210,6 +212,7 @@ describe('Unit: Commands > Update', function () {
             sinon.stub(cmdInstance, 'link').resolves();
             const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
+            const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
 
             return cmdInstance.run({rollback: true, force: false}).then(() => {
                 cwdStub.restore();
@@ -230,6 +233,7 @@ describe('Unit: Commands > Update', function () {
 
                 expect(downloadStub.called).to.be.false;
                 expect(migrateStub.called).to.be.false;
+                expect(removeOldVersionsStub.called).to.be.false;
             });
         });
 
@@ -268,6 +272,7 @@ describe('Unit: Commands > Update', function () {
             sinon.stub(cmdInstance, 'link').resolves();
             const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             sinon.stub(cmdInstance, 'downloadAndUpdate');
+            sinon.stub(cmdInstance, 'removeOldVersions');
 
             return cmdInstance.run({rollback: true, force: false}).then(() => {
                 cwdStub.restore();
@@ -428,6 +433,80 @@ describe('Unit: Commands > Update', function () {
             expect(runCommandStub.calledOnce).to.be.true;
             expect(runCommandStub.args[0][0]).to.deep.equal({StartCommand: true});
             expect(runCommandStub.args[0][1]).to.deep.equal({quiet: true});
+        });
+    });
+
+    describe('removeOldVersions', function () {
+        it('skips if there are 5 or fewer versions installed', function () {
+            const dirs = [
+                'versions/1.4.0',
+                'versions/1.5.0',
+                'versions/1.5.1',
+                'versions/1.5.2'
+            ];
+            const env = setupEnv({dirs: dirs});
+            const UpdateCommand = require(modulePath);
+            const instance = new UpdateCommand({}, {});
+            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            const skipStub = sinon.stub();
+
+            return instance.removeOldVersions({}, {skip: skipStub}).then(() => {
+                cwdStub.restore();
+                expect(skipStub.calledOnce).to.be.true;
+
+                dirs.forEach((version) => {
+                    expect(fs.existsSync(path.join(env.dir, version))).to.be.true;
+                });
+
+                env.cleanup();
+            });
+        });
+
+        it('keeps only the 5 most recent versions', function () {
+            const envCfg = {
+                dirs: [
+                    'versions/1.0.0-beta.2',
+                    'versions/1.0.0-RC.1',
+                    'versions/1.0.0',
+                    'versions/1.0.2',
+                    'versions/1.1.0',
+                    'versions/1.2.0',
+                    'versions/1.3.0',
+                    'versions/1.4.0',
+                    'versions/1.5.0'
+                ]
+            };
+            const env = setupEnv(envCfg);
+            const UpdateCommand = require(modulePath);
+            const instance = new UpdateCommand({}, {});
+            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            const keptVersions = [
+                '1.1.0',
+                '1.2.0',
+                '1.3.0',
+                '1.4.0',
+                '1.5.0'
+            ];
+            const removedVersions = [
+                '1.0.0-beta.2',
+                '1.0.0-RC.1',
+                '1.0.0',
+                '1.0.2'
+            ];
+
+            return instance.removeOldVersions().then(() => {
+                cwdStub.restore();
+
+                keptVersions.forEach((version) => {
+                    expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.true;
+                });
+
+                removedVersions.forEach((version) => {
+                    expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.false;
+                });
+
+                env.cleanup();
+            });
         });
     });
 
