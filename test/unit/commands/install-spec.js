@@ -2,6 +2,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
+const Promise = require('bluebird');
 const path = require('path');
 
 const modulePath = '../../../lib/commands/install';
@@ -116,7 +117,7 @@ describe('Unit: Commands > Install', function () {
             });
             let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
 
-            return testInstance.run({version: 'local'}).then(() => {
+            return testInstance.run({version: 'local', zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
@@ -127,12 +128,13 @@ describe('Unit: Commands > Install', function () {
                 ]);
                 expect(listrStub.args[0][1]).to.deep.equal({
                     ui: {listr: listrStub},
-                    argv: {version: 'local'},
+                    argv: {version: 'local', zip: ''},
                     local: true
                 });
                 expect(listrStub.args[1][1]).to.deep.equal({
                     version: null,
-                    cliVersion: '1.0.0'
+                    cliVersion: '1.0.0',
+                    zip: ''
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
@@ -152,7 +154,7 @@ describe('Unit: Commands > Install', function () {
             });
             let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
 
-            return testInstance.run({version: '1.5.0', local: true}).then(() => {
+            return testInstance.run({version: '1.5.0', local: true, zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
@@ -163,31 +165,47 @@ describe('Unit: Commands > Install', function () {
                 ]);
                 expect(listrStub.args[0][1]).to.deep.equal({
                     ui: {listr: listrStub},
-                    argv: {version: '1.5.0', local: true},
+                    argv: {version: '1.5.0', local: true, zip: ''},
                     local: true
                 });
                 expect(listrStub.args[1][1]).to.deep.equal({
                     version: '1.5.0',
-                    cliVersion: '1.0.0'
+                    cliVersion: '1.0.0',
+                    zip: ''
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             });
         });
 
-        it('returns after tasks run if --no-setup is passed', function () {
-            let readdirStub = sandbox.stub().returns([]);
-            let listrStub = sandbox.stub().resolves();
+        it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
+            const readdirStub = sandbox.stub().returns([]);
+            const yarnInstallStub = sandbox.stub().resolves();
+            const ensureStructureStub = sandbox.stub().resolves();
+            const listrStub = sandbox.stub().callsFake((tasks, ctx) => {
+                return Promise.each(tasks, task => task.task(ctx, {}));
+            });
 
             const InstallCommand = proxyquire(modulePath, {
-                'fs-extra': {readdirSync: readdirStub}
+                'fs-extra': {readdirSync: readdirStub},
+                '../tasks/yarn-install': yarnInstallStub,
+                '../tasks/ensure-structure': ensureStructureStub,
+                './doctor/checks/install': []
             });
-            let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0'});
-            let runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0'});
+            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const versionStub = sandbox.stub(testInstance, 'version').resolves();
+            const linkStub = sinon.stub(testInstance, 'link').resolves();
+            const casperStub = sinon.stub(testInstance, 'casper').resolves();
 
             return testInstance.run({version: '1.0.0', setup: false}).then(() => {
                 expect(readdirStub.calledOnce).to.be.true;
-                expect(listrStub.calledTwice).to.be.true;
+                expect(listrStub.calledThrice).to.be.true;
+                expect(yarnInstallStub.calledOnce).to.be.true;
+                expect(ensureStructureStub.calledOnce).to.be.true;
+                expect(versionStub.calledOnce).to.be.true;
+                expect(linkStub.calledOnce).to.be.true;
+                expect(casperStub.calledOnce).to.be.true;
                 expect(runCommandStub.called).to.be.false;
             });
         });
@@ -204,7 +222,7 @@ describe('Unit: Commands > Install', function () {
             let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             let runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: 'local', setup: true}).then(() => {
+            return testInstance.run({version: 'local', setup: true, zip: ''}).then(() => {
                 expect(readdirStub.calledOnce).to.be.true;
                 expect(listrStub.calledTwice).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -212,7 +230,7 @@ describe('Unit: Commands > Install', function () {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(runCommandStub.calledWithExactly(
                     {SetupCommand: true},
-                    {version: 'local', local: true}
+                    {version: 'local', local: true, zip: ''}
                 ));
             });
         });
@@ -220,18 +238,38 @@ describe('Unit: Commands > Install', function () {
 
     describe('tasks > version', function () {
         it('calls resolveVersion, sets version and install path', function () {
-            let resolveVersionStub = sinon.stub().resolves('1.5.0');
+            const resolveVersionStub = sinon.stub().resolves('1.5.0');
             const InstallCommand = proxyquire(modulePath, {
                 '../utils/resolve-version': resolveVersionStub
             });
 
-            let testInstance = new InstallCommand({}, {});
-            let context = {version: '1.0.0'};
+            const testInstance = new InstallCommand({}, {});
+            const context = {version: '1.0.0'};
 
             return testInstance.version(context).then(() => {
                 expect(resolveVersionStub.calledOnce).to.be.true;
                 expect(context.version).to.equal('1.5.0');
                 expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
+            });
+        });
+
+        it('calls versionFromZip if zip file is passed in context', function () {
+            const resolveVersionStub = sinon.stub().resolves('1.5.0');
+            const zipVersionStub = sinon.stub().resolves('1.5.2');
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/resolve-version': resolveVersionStub,
+                '../utils/version-from-zip': zipVersionStub
+            });
+
+            const testInstance = new InstallCommand({}, {});
+            const context = {version: '1.0.0', zip: '/some/zip/file.zip'};
+
+            return testInstance.version(context).then(() => {
+                expect(resolveVersionStub.called).to.be.false;
+                expect(zipVersionStub.calledOnce).to.be.true;
+                expect(zipVersionStub.calledWith('/some/zip/file.zip')).to.be.true;
+                expect(context.version).to.equal('1.5.2');
+                expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.2'));
             });
         });
     });
