@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.0"></a>
+# [1.1.0](https://github.com/TryGhost/Ghost-CLI/compare/1.0.3...1.1.0) (2017-08-14)
+
+### Bug Fixes
+
+* **config:** 🐛  don't enforce case for mail config ([d0225f8](https://github.com/TryGhost/Ghost-CLI/commit/d0225f8)), closes [#421](https://github.com/TryGhost/Ghost-CLI/issues/421)
+* **doctor:** add install checks for various nvm edge cases ([2a8de70](https://github.com/TryGhost/Ghost-CLI/commit/2a8de70)), closes [#281](https://github.com/TryGhost/Ghost-CLI/issues/281)
+* **doctor:** ensure `ghost doctor startup` works on its own ([a41855d](https://github.com/TryGhost/Ghost-CLI/commit/a41855d)), closes [#436](https://github.com/TryGhost/Ghost-CLI/issues/436)
+* **instance:** make running a function rather than a get/set ([0cef275](https://github.com/TryGhost/Ghost-CLI/commit/0cef275))
+* **linux:** make ghost user regex check case insensitive ([2f1fcc6](https://github.com/TryGhost/Ghost-CLI/commit/2f1fcc6)), closes [#400](https://github.com/TryGhost/Ghost-CLI/issues/400)
+* **mysql:** improve reliability of user creation queries ([8992681](https://github.com/TryGhost/Ghost-CLI/commit/8992681)), closes [#396](https://github.com/TryGhost/Ghost-CLI/issues/396)
+* **nvm:** don't use local npm version when getting the bin ([ea30015](https://github.com/TryGhost/Ghost-CLI/commit/ea30015))
+* **systemd:** use filename to determine previous setup ([10f8722](https://github.com/TryGhost/Ghost-CLI/commit/10f8722))
+
+### Features
+
+* **install:** add option to install/update using zip file ([cff1ed2](https://github.com/TryGhost/Ghost-CLI/commit/cff1ed2)), closes [#59](https://github.com/TryGhost/Ghost-CLI/issues/59)
+* **install:** allow local installs to specify version ([cb6062f](https://github.com/TryGhost/Ghost-CLI/commit/cb6062f)), closes [#423](https://github.com/TryGhost/Ghost-CLI/issues/423)
+* **update:** remove old ghost versions on ghost update ([46e454d](https://github.com/TryGhost/Ghost-CLI/commit/46e454d)), closes [#201](https://github.com/TryGhost/Ghost-CLI/issues/201)
+
+### Performance Improvements
+
+* lazily require modules in commands ([3f6d8cc](https://github.com/TryGhost/Ghost-CLI/commit/3f6d8cc))
+
 <a name="1.0.3"></a>
 ## [1.0.3](https://github.com/TryGhost/Ghost-CLI/compare/1.0.2...1.0.3) (2017-08-01)
 
