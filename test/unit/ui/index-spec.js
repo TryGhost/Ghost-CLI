@@ -9,16 +9,14 @@ const UI = require('../../../lib/ui');
 
 describe('Unit: UI', function () {
     it('can be created successfully', function () {
-        let ui = new UI();
+        const ui = new UI();
 
         expect(ui).to.be.ok;
     });
 
     describe('#log', function () {
         it('outputs message without color when no color is supplied', function (done) {
-            let stdout, ui;
-
-            stdout = streamTestUtils.getWritableStream(function (output) {
+            const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
                 expect(hasAnsi(output), 'output has color').to.be.false;
                 expect(output, 'output value').to.equal('test\n');
@@ -27,14 +25,12 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
-            ui = new UI({stdout: stdout});
+            const ui = new UI({stdout: stdout});
             ui.log('test');
         });
 
         it('outputs message with color when color is supplied', function (done) {
-            let stdout, ui;
-
-            stdout = streamTestUtils.getWritableStream(function (output) {
+            const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
                 expect(hasAnsi(output), 'output has color').to.be.true;
                 expect(output, 'output value').to.equal(chalk.green('test') + '\n');
@@ -43,15 +39,15 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
-            ui = new UI({stdout: stdout});
+            const ui = new UI({stdout: stdout});
             ui.log('test', 'green');
         });
     });
 
     describe('#logVerbose', function () {
         it('passes through options to log method when verbose is set', function () {
-            let ui = new UI({verbose: true});
-            let logStub = sinon.stub(ui, 'log');
+            const ui = new UI({verbose: true});
+            const logStub = sinon.stub(ui, 'log');
 
             ui.logVerbose('foo', 'green', true);
             expect(logStub.calledOnce).to.be.true;
@@ -59,8 +55,8 @@ describe('Unit: UI', function () {
         });
 
         it('does not call log when verbose is false', function () {
-            let ui = new UI({verbose: false});
-            let logStub = sinon.stub(ui, 'log');
+            const ui = new UI({verbose: false});
+            const logStub = sinon.stub(ui, 'log');
 
             ui.logVerbose('foo', 'green', false);
             expect(logStub.called).to.be.false;
@@ -68,9 +64,7 @@ describe('Unit: UI', function () {
     });
 
     it('#success outputs message with correct symbols', function (done) {
-        let stdout, ui;
-
-        stdout = streamTestUtils.getWritableStream(function (output) {
+        const stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
             expect(output, 'output value').to.equal(`${logSymbols.success} test\n`);
 
@@ -78,14 +72,12 @@ describe('Unit: UI', function () {
         });
         stdout.on('error', done);
 
-        ui = new UI({stdout: stdout});
+        const ui = new UI({stdout: stdout});
         ui.success('test');
     });
 
     it('#fail outputs message with correct formatting', function (done) {
-        let stdout, ui;
-
-        stdout = streamTestUtils.getWritableStream(function (output) {
+        const stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
             expect(output, 'output value').to.equal(`${logSymbols.error} test\n`);
 
@@ -93,7 +85,7 @@ describe('Unit: UI', function () {
         });
         stdout.on('error', done);
 
-        ui = new UI({stdout: stdout});
+        const ui = new UI({stdout: stdout});
         ui.fail('test');
     });
 
@@ -105,7 +97,7 @@ describe('Unit: UI', function () {
         });
 
         it('correctly passes through promise resolve values', function () {
-            let testFunc = new Promise(function (resolve) {
+            const testFunc = new Promise(function (resolve) {
                 resolve('a');
             });
 
@@ -115,7 +107,7 @@ describe('Unit: UI', function () {
         });
 
         it('correctly passes through promise reject values', function (done) {
-            let testFunc = new Promise(function (resolve, reject) {
+            const testFunc = new Promise(function (resolve, reject) {
                 reject(new Error('something went wrong!'));
             });
 

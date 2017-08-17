@@ -24,7 +24,7 @@ describe('Unit: yarn', function () {
     });
 
     it('spawns yarn process with no arguments correctly', function () {
-        let promise = yarn();
+        const promise = yarn();
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -35,7 +35,7 @@ describe('Unit: yarn', function () {
     });
 
     it('spawns yarn process with correct arguments', function () {
-        let promise = yarn(['cache', 'clear']);
+        const promise = yarn(['cache', 'clear']);
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -46,7 +46,7 @@ describe('Unit: yarn', function () {
     });
 
     it('correctly passes through options', function () {
-        let promise = yarn([], {cwd: 'test'});
+        const promise = yarn([], {cwd: 'test'});
 
         return promise.then(function () {
             expect(execa.calledOnce).to.be.true;
@@ -60,7 +60,7 @@ describe('Unit: yarn', function () {
     it('respects process.env overrides but doesn\'t mutate process.env', function () {
         process.env.TESTENV = 'test';
 
-        let promise = yarn([], {env: {TESTENV: 'override'}});
+        const promise = yarn([], {env: {TESTENV: 'override'}});
 
         return promise.then(() => {
             expect(execa.calledOnce).to.be.true;

@@ -1,6 +1,7 @@
-var stream = require('stream'),
-    isString = require('lodash/isString'),
-    streamUtils;
+/* eslint-disable new-cap */
+'use strict';
+const stream = require('stream');
+const isString = require('lodash/isString');
 
 function noopRead(stream) {
     return function () {
@@ -25,16 +26,16 @@ function writeWrap(writeFunc) {
     };
 }
 
-streamUtils = {
+const streamUtils = {
     getReadableStream: function getReadableStream(_read) {
-        var readStream = stream.Readable();
+        const readStream = stream.Readable();
 
         readStream._read = _read || noopRead(readStream);
         return readStream;
     },
 
     getWritableStream: function getWritableStream(_write, wrap) {
-        var writeStream = stream.Writable({decodeStrings: false});
+        const writeStream = stream.Writable({decodeStrings: false});
 
         writeStream._write = _write ? (wrap ? writeWrap(_write) : _write) : noopWrite;
 
@@ -42,11 +43,9 @@ streamUtils = {
     },
 
     mockStandardStreams: function mockStandardStreams(streamCallbacks, errorCallback) {
-        var streams;
-
         streamCallbacks = streamCallbacks || {};
 
-        streams = {
+        const streams = {
             stdin: streamUtils.getReadableStream(streamCallbacks.stdin),
             stdout: streamUtils.getWritableStream(streamCallbacks.stdout),
             stderr: streamUtils.getWritableStream(streamCallbacks.stderr || streamCallbacks.stdout)

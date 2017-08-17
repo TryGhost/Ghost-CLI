@@ -2,7 +2,6 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const path = require('path');
 
 const errors = require('../../../../lib/errors');
 const setupEnv = require('../../../utils/env');
@@ -44,7 +43,7 @@ describe('Unit: Commands > Startup Checks', function () {
     });
 
     it('rejects if environment is passed and the config file is not valid json', function () {
-        const env = setupEnv({files: [{path: 'config.testing.json', contents: 'not json' }]});
+        const env = setupEnv({files: [{path: 'config.testing.json', contents: 'not json'}]});
         const cwdStub = sandbox.stub(process, 'cwd').returns(env.dir);
         const startupChecks = require(modulePath);
 

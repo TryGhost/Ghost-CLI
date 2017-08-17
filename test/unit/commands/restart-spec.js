@@ -10,9 +10,9 @@ describe('Unit: Command > Restart', function () {
         class TestInstance extends Instance {
             running() { return false; }
         }
-        let testInstance = new TestInstance();
+        const testInstance = new TestInstance();
 
-        let command = new RestartCommand({}, {
+        const command = new RestartCommand({}, {
             getInstance: () => testInstance
         });
 
@@ -24,16 +24,16 @@ describe('Unit: Command > Restart', function () {
     });
 
     it('calls process restart method if instance is running', function () {
-        let restartStub = sinon.stub().resolves();
+        const restartStub = sinon.stub().resolves();
         class TestInstance extends Instance {
-            get process() { return { restart: restartStub }; }
+            get process() { return {restart: restartStub}; }
             running() { return true; }
         }
-        let testInstance = new TestInstance();
-        let loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
-        let runStub = sinon.stub().resolves();
+        const testInstance = new TestInstance();
+        const loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
+        const runStub = sinon.stub().resolves();
 
-        let command = new RestartCommand({
+        const command = new RestartCommand({
             run: runStub
         }, {
             environment: 'testing',

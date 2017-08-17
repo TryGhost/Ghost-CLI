@@ -27,7 +27,7 @@
   },
   "scripts": {
     "coverage": "cat ./coverage/lcov.info | coveralls",
-    "lint": "eslint bin lib",
+    "lint": "eslint bin lib test",
     "test:unit": "istanbul cover _mocha -- --recursive test/unit extensions/**/test",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
