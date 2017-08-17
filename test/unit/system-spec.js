@@ -21,7 +21,7 @@ function stubGlobalConfig(SystemClass, configDefinition, ui, extensions) {
 describe('Unit: System', function () {
     it('cliVersion getter caches', function () {
         let counter = 0;
-        let System = proxyquire(modulePath, {
+        const System = proxyquire(modulePath, {
             '../package.json': {
                 get version() {
                     counter += 1;
@@ -29,7 +29,7 @@ describe('Unit: System', function () {
                 }
             }
         });
-        let systemInstance = new System({}, []);
+        const systemInstance = new System({}, []);
 
         expect(systemInstance.cliVersion).to.equal('1.0.0');
         expect(counter).to.equal(1);
@@ -39,29 +39,29 @@ describe('Unit: System', function () {
     });
 
     it('globalConfig getter caches', function () {
-        let ensureDirStub = sinon.stub();
+        const ensureDirStub = sinon.stub();
 
-        let System = proxyquire(modulePath, {
-            'fs-extra': { ensureDirSync: ensureDirStub }
+        const System = proxyquire(modulePath, {
+            'fs-extra': {ensureDirSync: ensureDirStub}
         });
         System.globalDir = '/home/user/.ghost';
-        let systemInstance = new System({}, []);
+        const systemInstance = new System({}, []);
 
-        let config = systemInstance.globalConfig;
+        const config = systemInstance.globalConfig;
         expect(config).to.be.an.instanceof(Config);
         expect(ensureDirStub.calledOnce).to.be.true;
         expect(ensureDirStub.calledWithExactly('/home/user/.ghost')).to.be.true;
 
-        let configTwo = systemInstance.globalConfig;
+        const configTwo = systemInstance.globalConfig;
         expect(configTwo).to.be.an.instanceof(Config);
         expect(config).to.equal(configTwo);
     });
 
     describe('setEnvironment', function () {
         it('sets things correctly in development', function () {
-            let System = require(modulePath);
-            let systemInstance = new System({}, []);
-            let currentNodeEnv = process.env.NODE_ENV;
+            const System = require(modulePath);
+            const systemInstance = new System({}, []);
+            const currentNodeEnv = process.env.NODE_ENV;
 
             process.env.NODE_ENV = 'testing';
 
@@ -76,9 +76,9 @@ describe('Unit: System', function () {
         });
 
         it('sets things correctly in production', function () {
-            let System = require(modulePath);
-            let systemInstance = new System({}, []);
-            let currentNodeEnv = process.env.NODE_ENV;
+            const System = require(modulePath);
+            const systemInstance = new System({}, []);
+            const currentNodeEnv = process.env.NODE_ENV;
 
             process.env.NODE_ENV = 'testing';
 
@@ -93,9 +93,9 @@ describe('Unit: System', function () {
         });
 
         it('sets NODE_ENV', function () {
-            let System = require(modulePath);
-            let systemInstance = new System({}, []);
-            let currentNodeEnv = process.env.NODE_ENV;
+            const System = require(modulePath);
+            const systemInstance = new System({}, []);
+            const currentNodeEnv = process.env.NODE_ENV;
 
             process.env.NODE_ENV = 'testing';
 
@@ -112,48 +112,48 @@ describe('Unit: System', function () {
 
     describe('getInstance', function () {
         it('fetches instance by cwd if name not passed', function () {
-            let System = require(modulePath);
-            let systemInstance = new System({}, []);
-            let cachedInstanceStub = sinon.stub(systemInstance, 'cachedInstance').returns({
+            const System = require(modulePath);
+            const systemInstance = new System({}, []);
+            const cachedInstanceStub = sinon.stub(systemInstance, 'cachedInstance').returns({
                 instance: true
             });
 
-            expect(systemInstance.getInstance()).to.deep.equal({ instance: true });
+            expect(systemInstance.getInstance()).to.deep.equal({instance: true});
             expect(cachedInstanceStub.calledOnce).to.be.true;
             expect(cachedInstanceStub.calledWithExactly(process.cwd())).to.be.true;
         });
 
         it('returns null if instance is not in the global config', function () {
-            let System = require(modulePath);
-            let systemInstance = stubGlobalConfig(System, { get: () => null });
-            let cachedInstanceStub = sinon.stub(systemInstance, 'cachedInstance');
+            const System = require(modulePath);
+            const systemInstance = stubGlobalConfig(System, {get: () => null});
+            const cachedInstanceStub = sinon.stub(systemInstance, 'cachedInstance');
 
             expect(systemInstance.getInstance('test')).to.be.null;
             expect(cachedInstanceStub.called).to.be.false;
         });
 
         it('fetches instance by instance name', function () {
-            let System = require(modulePath);
-            let systemInstance = stubGlobalConfig(System, { get: () => ({ cwd: '/var/www/ghost' }) });
-            let cachedInstanceStub = sinon.stub(systemInstance, 'cachedInstance').returns({
+            const System = require(modulePath);
+            const systemInstance = stubGlobalConfig(System, {get: () => ({cwd: '/var/www/ghost'})});
+            const cachedInstanceStub = sinon.stub(systemInstance, 'cachedInstance').returns({
                 instance: true
             });
 
-            expect(systemInstance.getInstance('test')).to.deep.equal({ instance: true });
+            expect(systemInstance.getInstance('test')).to.deep.equal({instance: true});
             expect(cachedInstanceStub.calledOnce).to.be.true;
             expect(cachedInstanceStub.calledWithExactly('/var/www/ghost')).to.be.true;
         });
     });
 
     describe('addInstance', function () {
-        let System = require(modulePath);
+        const System = require(modulePath);
 
         it('sets instance name to name of existing instance if cwd matches', function () {
-            let saveStub = sinon.stub();
-            let setStub = sinon.stub().returns({ save: saveStub });
-            let instances = {test: {cwd: '/some/dir'}};
-            let systemInstance = stubGlobalConfig(System, { get: () => instances, set: setStub, save: saveStub });
-            let instance = { name: 'test2', dir: '/some/dir' };
+            const saveStub = sinon.stub();
+            const setStub = sinon.stub().returns({save: saveStub});
+            const instances = {test: {cwd: '/some/dir'}};
+            const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub, save: saveStub});
+            const instance = {name: 'test2', dir: '/some/dir'};
             systemInstance.addInstance(instance);
 
             expect(setStub.called).to.be.false;
@@ -163,13 +163,13 @@ describe('Unit: System', function () {
         });
 
         it('uniqueifies the instance name', function () {
-            let saveStub = sinon.stub();
-            let setStub = sinon.stub().returns({ save: saveStub });
-            let instances = {test: {cwd: '/dir/a'}, 'test-1': {cwd: '/dir/b'}};
-            let systemInstance = stubGlobalConfig(System, { get: () => instances, set: setStub });
+            const saveStub = sinon.stub();
+            const setStub = sinon.stub().returns({save: saveStub});
+            const instances = {test: {cwd: '/dir/a'}, 'test-1': {cwd: '/dir/b'}};
+            const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
 
-            let instanceOne = { name: 'test', dir: '/dir/c' };
-            let instanceTwo = { name: 'foo', dir: '/dir/d' };
+            const instanceOne = {name: 'test', dir: '/dir/c'};
+            const instanceTwo = {name: 'foo', dir: '/dir/d'};
 
             systemInstance.addInstance(instanceOne);
 
@@ -187,11 +187,11 @@ describe('Unit: System', function () {
     });
 
     it('removeInstance removes instance correctly', function () {
-        let System = require(modulePath);
-        let saveStub = sinon.stub();
-        let setStub = sinon.stub().returns({ save: saveStub });
-        let instances = {test: {cwd: '/dir/a'}, test2: {cwd: '/dir/b'}};
-        let systemInstance = stubGlobalConfig(System, { get: () => instances, set: setStub });
+        const System = require(modulePath);
+        const saveStub = sinon.stub();
+        const setStub = sinon.stub().returns({save: saveStub});
+        const instances = {test: {cwd: '/dir/a'}, test2: {cwd: '/dir/b'}};
+        const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
         systemInstance.removeInstance({name: 'test2', dir: '/dir/b'});
 
         expect(setStub.calledOnce).to.be.true;
@@ -202,44 +202,44 @@ describe('Unit: System', function () {
     });
 
     it('cachedInstance loads instance and caches it', function () {
-        let System = require(modulePath);
-        let systemInstance = new System({ui: true}, []);
-        let instance = systemInstance.cachedInstance('/dir/a');
+        const System = require(modulePath);
+        const systemInstance = new System({ui: true}, []);
+        const instance = systemInstance.cachedInstance('/dir/a');
         expect(instance).to.be.an.instanceof(Instance);
         expect(instance.dir).to.equal('/dir/a');
 
-        let instanceTwo = systemInstance.cachedInstance('/dir/a');
+        const instanceTwo = systemInstance.cachedInstance('/dir/a');
         expect(instanceTwo).to.equal(instance);
         expect(instanceTwo.dir).to.equal('/dir/a');
     });
 
     describe('getAllInstances', function () {
         it('loads all running instances and removes nonexistent ones', function () {
-            let fsStub = sinon.stub();
-            let saveStub = sinon.stub();
-            let setStub = sinon.stub().returns({save: saveStub});
+            const fsStub = sinon.stub();
+            const saveStub = sinon.stub();
+            const setStub = sinon.stub().returns({save: saveStub});
             fsStub.withArgs('/dir/a/.ghost-cli').returns(true);
             fsStub.withArgs('/dir/b/.ghost-cli').returns(true);
             fsStub.withArgs('/dir/c/.ghost-cli').returns(false);
 
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 'fs-extra': {existsSync: fsStub}
             });
-            let instances = {
+            const instances = {
                 testa: {cwd: '/dir/a'},
                 testb: {cwd: '/dir/b'},
                 testc: {cwd: '/dir/c'}
             };
-            let systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
-            let getInstanceStub = sinon.stub(systemInstance, 'getInstance');
+            const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
+            const getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            let instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
-            let instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
+            const instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
+            const instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
 
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
 
-            let result = systemInstance.getAllInstances(true);
+            const result = systemInstance.getAllInstances(true);
 
             expect(result).to.deep.equal([instanceA]);
             expect(fsStub.calledThrice).to.be.true;
@@ -255,29 +255,29 @@ describe('Unit: System', function () {
         });
 
         it('loads all instances with running false', function () {
-            let fsStub = sinon.stub();
-            let saveStub = sinon.stub();
-            let setStub = sinon.stub().returns({save: saveStub});
+            const fsStub = sinon.stub();
+            const saveStub = sinon.stub();
+            const setStub = sinon.stub().returns({save: saveStub});
             fsStub.withArgs('/dir/a/.ghost-cli').returns(true);
             fsStub.withArgs('/dir/b/.ghost-cli').returns(true);
 
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 'fs-extra': {existsSync: fsStub}
             });
-            let instances = {
+            const instances = {
                 testa: {cwd: '/dir/a'},
                 testb: {cwd: '/dir/b'}
             };
-            let systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
-            let getInstanceStub = sinon.stub(systemInstance, 'getInstance');
+            const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
+            const getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            let instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
-            let instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
+            const instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
+            const instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
 
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
 
-            let result = systemInstance.getAllInstances(false);
+            const result = systemInstance.getAllInstances(false);
 
             expect(result).to.deep.equal([instanceA, instanceB]);
             expect(fsStub.calledTwice).to.be.true;
@@ -288,8 +288,8 @@ describe('Unit: System', function () {
 
     describe('hook', function () {
         it('errors if hook name not provided', function () {
-            let System = require(modulePath);
-            let systemInstance = new System({}, []);
+            const System = require(modulePath);
+            const systemInstance = new System({}, []);
 
             return systemInstance.hook().then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -300,18 +300,18 @@ describe('Unit: System', function () {
         });
 
         it('calls extensions with promises and passes args correctly', function () {
-            let getInstanceStub = sinon.spy((ui, system, ext) => ext);
-            let System = proxyquire(modulePath, {
+            const getInstanceStub = sinon.spy((ui, system, ext) => ext);
+            const System = proxyquire(modulePath, {
                 './extension': {getInstance: getInstanceStub}
             });
 
-            let setupHookStub = sinon.stub().resolves();
+            const setupHookStub = sinon.stub().resolves();
 
-            let extensionOne = {setup: setupHookStub};
-            let extensionTwo = {};
-            let extensions = [extensionOne, extensionTwo];
+            const extensionOne = {setup: setupHookStub};
+            const extensionTwo = {};
+            const extensions = [extensionOne, extensionTwo];
 
-            let systemInstance = new System({}, extensions);
+            const systemInstance = new System({}, extensions);
 
             return systemInstance.hook('setup', {arg1: true}, {arg2: true}).then(() => {
                 expect(getInstanceStub.calledTwice).to.be.true;
@@ -323,61 +323,61 @@ describe('Unit: System', function () {
 
     describe('getProcessManager', function () {
         it('returns local process manager if name is not defined', function () {
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true}
             });
-            let systemInstance = new System({}, []);
+            const systemInstance = new System({}, []);
 
-            let processManager = systemInstance.getProcessManager();
+            const processManager = systemInstance.getProcessManager();
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
             expect(processManager.name).to.equal('local');
         });
 
         it('returns local process manager if name is local', function () {
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true}
             });
-            let systemInstance = new System({}, []);
+            const systemInstance = new System({}, []);
 
-            let processManager = systemInstance.getProcessManager('local');
+            const processManager = systemInstance.getProcessManager('local');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
             expect(processManager.name).to.equal('local');
         });
 
         it('returns local process manager process manager does not exist', function () {
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true}
             });
-            let logStub = sinon.stub();
-            let systemInstance = new System({log: logStub}, []);
-            let availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
+            const logStub = sinon.stub();
+            const systemInstance = new System({log: logStub}, []);
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
                     systemd: '../extensions/systemd/systemd.js'
                 });
 
-            let processManager = systemInstance.getProcessManager('pm2');
+            const processManager = systemInstance.getProcessManager('pm2');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
             expect(processManager.name).to.equal('local');
             expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/\'pm2\' does not exist/);
+            expect(logStub.args[0][0]).to.match(/'pm2' does not exist/);
             expect(availableStub.calledOnce).to.be.true;
         });
 
         it('returns local process manager if discovered process manager does not inherit from process', function () {
             class TestProcess {}
 
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true},
                 './test-process': TestProcess
             });
-            let logStub = sinon.stub();
-            let systemInstance = new System({log: logStub}, []);
-            let availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
+            const logStub = sinon.stub();
+            const systemInstance = new System({log: logStub}, []);
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
                     test: './test-process'
                 });
 
-            let processManager = systemInstance.getProcessManager('test');
+            const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
             expect(processManager.name).to.equal('local');
             expect(logStub.calledOnce).to.be.true;
@@ -388,18 +388,18 @@ describe('Unit: System', function () {
         it('returns local process manager if discovered process manager is missing methods', function () {
             class TestProcess extends Process {}
 
-            let System = proxyquire(modulePath, {
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true},
                 './test-process': TestProcess
             });
-            let logStub = sinon.stub();
-            let systemInstance = new System({log: logStub}, []);
-            let availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
+            const logStub = sinon.stub();
+            const systemInstance = new System({log: logStub}, []);
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
                     test: './test-process'
                 });
 
-            let processManager = systemInstance.getProcessManager('test');
+            const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
             expect(processManager.name).to.equal('local');
             expect(logStub.calledOnce).to.be.true;
@@ -414,20 +414,20 @@ describe('Unit: System', function () {
                 }
             }
 
-            let isValidStub = sinon.stub().returns(true);
-            let System = proxyquire(modulePath, {
+            const isValidStub = sinon.stub().returns(true);
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true},
                 './test-process': TestProcess,
                 './process-manager': {isValid: isValidStub}
             });
-            let logStub = sinon.stub();
-            let systemInstance = new System({log: logStub}, []);
-            let availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
+            const logStub = sinon.stub();
+            const systemInstance = new System({log: logStub}, []);
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
                     test: './test-process'
                 });
 
-            let processManager = systemInstance.getProcessManager('test');
+            const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
             expect(processManager.name).to.equal('local');
             expect(logStub.calledOnce).to.be.true;
@@ -443,20 +443,20 @@ describe('Unit: System', function () {
                 }
             }
 
-            let isValidStub = sinon.stub().returns(true);
-            let System = proxyquire(modulePath, {
+            const isValidStub = sinon.stub().returns(true);
+            const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true},
                 './test-process': TestProcess,
                 './process-manager': {isValid: isValidStub}
             });
-            let logStub = sinon.stub();
-            let systemInstance = new System({log: logStub}, []);
-            let availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
+            const logStub = sinon.stub();
+            const systemInstance = new System({log: logStub}, []);
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
                     test: './test-process'
                 });
 
-            let processManager = systemInstance.getProcessManager('test');
+            const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.equal(TestProcess);
             expect(processManager.name).to.equal('test');
             expect(logStub.called).to.be.false;
@@ -466,9 +466,9 @@ describe('Unit: System', function () {
     });
 
     it('_getAvailableProcessManagers works', function () {
-        let getInstanceStub = sinon.spy((ui, system, ext) => ext);
-        let existsSyncStub = sinon.stub();
-        let System = proxyquire(modulePath, {
+        const getInstanceStub = sinon.spy((ui, system, ext) => ext);
+        const existsSyncStub = sinon.stub();
+        const System = proxyquire(modulePath, {
             './extension': {getInstance: getInstanceStub},
             'fs-extra': {existsSync: existsSyncStub}
         });
@@ -477,11 +477,11 @@ describe('Unit: System', function () {
         existsSyncStub.withArgs('./bar').returns(false);
         existsSyncStub.withArgs('./systemd').returns(true);
 
-        let extensions = [
+        const extensions = [
             {processManagers: {foo: './foo', bar: './bar'}},
             {processManagers: {systemd: './systemd'}}
         ];
-        let systemInstance = new System({}, extensions);
+        const systemInstance = new System({}, extensions);
 
         expect(systemInstance._getAvailableProcessManagers()).to.deep.equal({
             foo: './foo',
@@ -491,14 +491,14 @@ describe('Unit: System', function () {
     });
 
     it('writeErrorLog works', function () {
-        let ensureDirStub = sinon.stub();
-        let writeFileStub = sinon.stub();
+        const ensureDirStub = sinon.stub();
+        const writeFileStub = sinon.stub();
 
-        let System = proxyquire(modulePath, {
+        const System = proxyquire(modulePath, {
             'fs-extra': {ensureDirSync: ensureDirStub, writeFileSync: writeFileStub}
         });
         System.globalDir = '/global/dir';
-        let systemInstance = new System({}, []);
+        const systemInstance = new System({}, []);
 
         systemInstance.writeErrorLog('heres an error');
         expect(ensureDirStub.calledOnce).to.be.true;

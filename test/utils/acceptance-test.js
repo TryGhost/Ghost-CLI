@@ -111,17 +111,17 @@ module.exports = class AcceptanceTest {
             });
 
             // Cleanup spawned processes if our process is killed
-            let cleanup = this.cleanup.bind(this);
+            const cleanup = this.cleanup.bind(this);
             process.on('exit', cleanup.bind(this));
 
             // Buffer up the output so the polling timer can check it
             let stdoutBuffer = '';
             let stderrBuffer = '';
             this.spawnedCommand.stdout.on('data', (d) => {
-                let chunk = d.toString();
+                const chunk = d.toString();
 
                 if (options.stdin) {
-                    let stdin = find(options.stdin, (obj) => obj.when.test(chunk));
+                    const stdin = find(options.stdin, (obj) => obj.when.test(chunk));
 
                     if (stdin) {
                         this.spawnedCommand.stdin.write(`${stdin.write}\n`);
@@ -143,7 +143,7 @@ module.exports = class AcceptanceTest {
                 this.cleanup();
 
                 if (options.rejectOnExit) {
-                    let message = `Command 'ghost ${this.command}' exited before matching the checkOutput function.\n` +
+                    const message = `Command 'ghost ${this.command}' exited before matching the checkOutput function.\n` +
                         `stdout: ${stdoutBuffer} \nstderr: ${stderrBuffer}`;
                     reject(new Error(message));
                     return;
@@ -161,11 +161,11 @@ module.exports = class AcceptanceTest {
                 if (stderrBuffer.length > 0 && options.failOnStderr) {
                     process.removeListener('exit', cleanup);
                     this.cleanup();
-                    let error = new Error(`'${this.command}' printed to stderr with failOnStderr enabled:\n`);
+                    const error = new Error(`'${this.command}' printed to stderr with failOnStderr enabled:\n`);
                     error.message += `cwd: ${this.dir} \nstdout: ${stdoutBuffer} \nstderr: ${stderrBuffer};`
                     reject(error);
                 }
-                let passed = options.checkOutput(stdoutBuffer, stderrBuffer, this.dir);
+                const passed = options.checkOutput(stdoutBuffer, stderrBuffer, this.dir);
                 if (passed) {
                     process.removeListener('exit', cleanup);
                     this.cleanup();
@@ -174,7 +174,7 @@ module.exports = class AcceptanceTest {
             }, options.pollInterval || 50);
 
             // Ensure the test fails if we don't pass the test after a while
-            let timeout = options.timeout || (process.env.CI ? 5 * 60000 : 3 * 60000);
+            const timeout = options.timeout || (process.env.CI ? 5 * 60000 : 3 * 60000);
 
             this.fallbackTimeout = setTimeout(() => {
                 process.removeListener('exit', cleanup);

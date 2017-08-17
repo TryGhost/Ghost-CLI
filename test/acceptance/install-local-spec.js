@@ -11,17 +11,17 @@ describe('Acceptance: Install Local (~35second test)', function () {
 
         // This command is slow
         this.timeout(timeout);
-        let testInstall = new AcceptanceTest('install local');
+        const testInstall = new AcceptanceTest('install local');
         testInstall.setup();
 
-        return testInstall.run({ failOnStdErr: true }).then((result) => {
+        return testInstall.run({failOnStdErr: true}).then((result) => {
             expect(result.stdout, 'output exists').to.be.ok;
             // Very simple output check to verify we got something we expected, port number can change!
             expect(result.stdout, 'output').to.match(/http:\/\/localhost:23/);
 
             expect(fs.existsSync(testInstall.path('config.development.json')), 'development config exists').to.be.true;
 
-            let contents = fs.readJsonSync(testInstall.path('config.development.json'));
+            const contents = fs.readJsonSync(testInstall.path('config.development.json'));
 
             expect(contents, 'contents of config file').to.be.ok;
 
@@ -32,7 +32,7 @@ describe('Acceptance: Install Local (~35second test)', function () {
             expect(contents.logging.transports, 'config logging transport').to.eql(['file', 'stdout']);
             expect(contents.process, 'config process').to.equal('local');
 
-            let testStop = new AcceptanceTest('stop', { dir: testInstall.dir });
+            const testStop = new AcceptanceTest('stop', {dir: testInstall.dir});
             return testStop.run();
         }).finally(() => {
             testInstall.cleanupDir();

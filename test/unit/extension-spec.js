@@ -2,29 +2,28 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const path = require('path');
 
 const modulePath = '../../lib/extension';
 
 describe('Unit: Extension', function () {
     describe('processManagers getter', function () {
         it('returns nothing if process managers package section does not exist', function () {
-            let Extension = require(modulePath);
-            let extensionInstance = new Extension({}, {}, {}, '/some/dir');
+            const Extension = require(modulePath);
+            const extensionInstance = new Extension({}, {}, {}, '/some/dir');
 
             expect(extensionInstance.processManagers).to.deep.equal({});
         });
 
         it('returns nothing if ghost-cli section defined, but no process-manager section', function () {
-            let Extension = require(modulePath);
-            let extensionInstance = new Extension({}, {}, {'ghost-cli': {}}, '/some/dir');
+            const Extension = require(modulePath);
+            const extensionInstance = new Extension({}, {}, {'ghost-cli': {}}, '/some/dir');
 
             expect(extensionInstance.processManagers).to.deep.equal({});
         });
 
         it('returns process managers mapped by name to filepath', function () {
-            let Extension = require(modulePath);
-            let extensionInstance = new Extension({}, {}, {
+            const Extension = require(modulePath);
+            const extensionInstance = new Extension({}, {}, {
                 'ghost-cli': {
                     'process-managers': {
                         testa: './testa',
@@ -42,9 +41,9 @@ describe('Unit: Extension', function () {
 
     describe('getInstance', function () {
         it('returns instance of base class if no main class is defined', function () {
-            let Extension = require(modulePath);
+            const Extension = require(modulePath);
 
-            let extensionInstance = Extension.getInstance({uiInstance: true}, {systemInstance: true}, {
+            const extensionInstance = Extension.getInstance({uiInstance: true}, {systemInstance: true}, {
                 pkg: {
                     name: 'ghost-cli-test-extension'
                 },
@@ -62,13 +61,13 @@ describe('Unit: Extension', function () {
     });
 
     it('returns nothing if main file does not exist', function () {
-        let existsSyncStub = sinon.stub().returns(false);
-        let Extension = proxyquire(modulePath, {
+        const existsSyncStub = sinon.stub().returns(false);
+        const Extension = proxyquire(modulePath, {
             'fs-extra': {existsSync: existsSyncStub}
         });
-        let logStub = sinon.stub();
+        const logStub = sinon.stub();
 
-        let extensionInstance = Extension.getInstance({log: logStub}, {}, {
+        const extensionInstance = Extension.getInstance({log: logStub}, {}, {
             pkg: {
                 name: 'ghost-cli-test-extension',
                 main: 'index.js'
@@ -84,14 +83,14 @@ describe('Unit: Extension', function () {
     });
 
     it('returns nothing if main file exists but exports nothing', function () {
-        let existsSyncStub = sinon.stub().returns(true);
-        let Extension = proxyquire(modulePath, {
+        const existsSyncStub = sinon.stub().returns(true);
+        const Extension = proxyquire(modulePath, {
             'fs-extra': {existsSync: existsSyncStub},
             '/some/dir/index': {}
         });
-        let logStub = sinon.stub();
+        const logStub = sinon.stub();
 
-        let extensionInstance = Extension.getInstance({log: logStub}, {}, {
+        const extensionInstance = Extension.getInstance({log: logStub}, {}, {
             pkg: {
                 name: 'ghost-cli-test-extension',
                 main: 'index.js'
@@ -107,14 +106,14 @@ describe('Unit: Extension', function () {
     });
 
     it('returns nothing if main file exists but is not an extension subclass', function () {
-        let existsSyncStub = sinon.stub().returns(true);
-        let Extension = proxyquire(modulePath, {
+        const existsSyncStub = sinon.stub().returns(true);
+        const Extension = proxyquire(modulePath, {
             'fs-extra': {existsSync: existsSyncStub},
             '/some/dir/index': class NotAnExtension {}
         });
-        let logStub = sinon.stub();
+        const logStub = sinon.stub();
 
-        let extensionInstance = Extension.getInstance({log: logStub}, {}, {
+        const extensionInstance = Extension.getInstance({log: logStub}, {}, {
             pkg: {
                 name: 'ghost-cli-test-extension',
                 main: 'index.js'

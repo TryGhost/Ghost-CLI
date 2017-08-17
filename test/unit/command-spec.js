@@ -11,7 +11,7 @@ describe('Unit: Command', function () {
         const Command = require(modulePath);
 
         it('throws if command class doesn\'t have a description', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
 
             try {
                 TestCommand.configure('test', [], {});
@@ -22,13 +22,13 @@ describe('Unit: Command', function () {
         });
 
         it('adds params to command name if params exist', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.params = '<arg1> [arg2]';
             TestCommand.description = 'a command';
-            let commandStub = sinon.stub();
-            TestCommand.configure('test', ['t', 'te', 'tes'], { command: commandStub });
+            const commandStub = sinon.stub();
+            TestCommand.configure('test', ['t', 'te', 'tes'], {command: commandStub});
 
-            let commandCall = commandStub.args[0][0];
+            const commandCall = commandStub.args[0][0];
 
             expect(commandCall.command).to.equal('test <arg1> [arg2]');
             expect(commandCall.describe).to.equal('a command');
@@ -36,16 +36,16 @@ describe('Unit: Command', function () {
         });
 
         it('sets up command builder correctly', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.configureOptions = sinon.stub().returns({c: 'd'});
             TestCommand.description = 'a command';
-            let commandStub = sinon.stub();
-            TestCommand.configure('test', [], { command: commandStub });
+            const commandStub = sinon.stub();
+            TestCommand.configure('test', [], {command: commandStub});
 
-            let commandCall = commandStub.args[0][0];
+            const commandCall = commandStub.args[0][0];
             expect(commandCall.builder).to.exist;
 
-            let result = commandCall.builder({a: 'b'});
+            const result = commandCall.builder({a: 'b'});
             expect(TestCommand.configureOptions.calledOnce).to.be.true;
             expect(TestCommand.configureOptions.args[0][0]).to.equal('test');
             expect(TestCommand.configureOptions.args[0][1]).to.deep.equal({a: 'b'});
@@ -53,14 +53,14 @@ describe('Unit: Command', function () {
         });
 
         it('calls configureSubcommands if it exists', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.configureOptions = sinon.stub().returns({a: 'b'});
             TestCommand.configureSubcommands = sinon.stub();
             TestCommand.description = 'a command';
-            let commandStub = sinon.stub();
-            TestCommand.configure('test', [], { command: commandStub });
+            const commandStub = sinon.stub();
+            TestCommand.configure('test', [], {command: commandStub});
 
-            let commandCall = commandStub.args[0][0];
+            const commandCall = commandStub.args[0][0];
             expect(commandCall.builder).to.exist;
 
             commandCall.builder();
@@ -71,13 +71,13 @@ describe('Unit: Command', function () {
         });
 
         it('creates a handler map to the _run method', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.description = 'a command';
             TestCommand._run = sinon.stub();
-            let commandStub = sinon.stub();
-            TestCommand.configure('test', [], { command: commandStub });
+            const commandStub = sinon.stub();
+            TestCommand.configure('test', [], {command: commandStub});
 
-            let commandCall = commandStub.args[0][0];
+            const commandCall = commandStub.args[0][0];
             expect(commandCall.handler).to.exist;
 
             commandCall.handler({a: 'b'});
@@ -91,29 +91,29 @@ describe('Unit: Command', function () {
         const Command = require(modulePath);
 
         it('adds usage if a longDescription exists', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.longDescription = 'a long description here';
-            let usageStub = sinon.stub();
-            let epilogueStub = sinon.stub();
+            const usageStub = sinon.stub();
+            const epilogueStub = sinon.stub();
 
-            TestCommand.configureOptions('test', { usage: usageStub, epilogue: epilogueStub });
+            TestCommand.configureOptions('test', {usage: usageStub, epilogue: epilogueStub});
             expect(usageStub.calledOnce).to.be.true;
             expect(epilogueStub.calledOnce).to.be.true;
             expect(usageStub.args[0][0]).to.equal('a long description here');
         });
 
         it('doesn\'t add options if no options defined', function () {
-            let TestCommand = class extends Command {}
-            let optionStub = sinon.stub();
-            let epilogueStub = sinon.stub();
+            const TestCommand = class extends Command {}
+            const optionStub = sinon.stub();
+            const epilogueStub = sinon.stub();
 
-            TestCommand.configureOptions('test', { option: optionStub, epilogue: epilogueStub });
+            TestCommand.configureOptions('test', {option: optionStub, epilogue: epilogueStub});
             expect(optionStub.called).to.be.false;
             expect(epilogueStub.calledOnce).to.be.true;
         });
 
         it('calls option once for each option defined', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.options = {
                 flag: {
                     alias: 'f',
@@ -124,13 +124,13 @@ describe('Unit: Command', function () {
                     description: 'test kebab-case'
                 }
             };
-            let yargsStub = {};
-            let optionStub = sinon.stub().returns(yargsStub);
-            let epilogueStub = sinon.stub();
+            const yargsStub = {};
+            const optionStub = sinon.stub().returns(yargsStub);
+            const epilogueStub = sinon.stub();
             yargsStub.option = optionStub;
             yargsStub.epilogue = epilogueStub;
 
-            let result = TestCommand.configureOptions('test', yargsStub);
+            const result = TestCommand.configureOptions('test', yargsStub);
 
             expect(epilogueStub.calledOnce).to.be.true;
             expect(optionStub.calledTwice).to.be.true;
@@ -142,7 +142,7 @@ describe('Unit: Command', function () {
         });
 
         it('skips adding epilogue and usage if onlyOptions is true', function () {
-            let TestCommand = class extends Command {}
+            const TestCommand = class extends Command {}
             TestCommand.options = {
                 flag: {
                     alias: 'f',
@@ -150,14 +150,14 @@ describe('Unit: Command', function () {
                 }
             };
             TestCommand.longDescription = 'LONG DESCRIPTION';
-            let yargsStub = {};
-            let optionStub = sinon.stub().returns(yargsStub);
-            let epilogueStub = sinon.stub();
-            let usageStub = sinon.stub();
+            const yargsStub = {};
+            const optionStub = sinon.stub().returns(yargsStub);
+            const epilogueStub = sinon.stub();
+            const usageStub = sinon.stub();
             yargsStub.option = optionStub;
             yargsStub.epilogue = epilogueStub;
 
-            let result = TestCommand.configureOptions('test', yargsStub, [], true);
+            const result = TestCommand.configureOptions('test', yargsStub, [], true);
 
             expect(epilogueStub.called).to.be.false;
             expect(usageStub.called).to.be.false;
@@ -168,18 +168,18 @@ describe('Unit: Command', function () {
     });
 
     describe('_run', function () {
-        let sandbox = sinon.sandbox.create();
+        const sandbox = sinon.sandbox.create();
 
         afterEach(function () {
             sandbox.restore();
         });
 
         it('calls checkValidInstall when global option is not set', function () {
-            let checkValidInstall = sandbox.stub();
+            const checkValidInstall = sandbox.stub();
             const Command = rewire(modulePath);
             Command.__set__('checkValidInstall', checkValidInstall);
 
-            let TestCommand = class extends Command {};
+            const TestCommand = class extends Command {};
             checkValidInstall.throws();
 
             try {
@@ -193,9 +193,9 @@ describe('Unit: Command', function () {
         });
 
         it('loads system and ui dependencies, calls run method', function () {
-            let uiStub = sandbox.stub().returns({ui: true});
-            let setEnvironmentStub = sandbox.stub();
-            let systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const uiStub = sandbox.stub().returns({ui: true});
+            const setEnvironmentStub = sandbox.stub();
+            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -205,7 +205,7 @@ describe('Unit: Command', function () {
             class TestCommand extends Command {}
             TestCommand.global = true;
 
-            let runStub = sandbox.stub(TestCommand.prototype, 'run');
+            const runStub = sandbox.stub(TestCommand.prototype, 'run');
 
             return TestCommand._run('test', {
                 verbose: true,
@@ -227,9 +227,9 @@ describe('Unit: Command', function () {
         });
 
         it('binds cleanup handler if cleanup method is defined', function () {
-            let uiStub = sandbox.stub().returns({ui: true});
-            let setEnvironmentStub = sandbox.stub();
-            let systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const uiStub = sandbox.stub().returns({ui: true});
+            const setEnvironmentStub = sandbox.stub();
+            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -241,9 +241,9 @@ describe('Unit: Command', function () {
             }
             TestCommand.global = true;
 
-            let runStub = sandbox.stub(TestCommand.prototype, 'run');
-            let onStub = sandbox.stub(process, 'on').returnsThis();
-            let oldEnv = process.env.NODE_ENV;
+            const runStub = sandbox.stub(TestCommand.prototype, 'run');
+            const onStub = sandbox.stub(process, 'on').returnsThis();
+            const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
             return TestCommand._run('test', {
@@ -271,10 +271,10 @@ describe('Unit: Command', function () {
         });
 
         it('catches errors, passes them to ui error method, then exits', function () {
-            let errorStub = sandbox.stub();
-            let uiStub = sandbox.stub().returns({error: errorStub});
-            let setEnvironmentStub = sandbox.stub();
-            let systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const errorStub = sandbox.stub();
+            const uiStub = sandbox.stub().returns({error: errorStub});
+            const setEnvironmentStub = sandbox.stub();
+            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -288,10 +288,10 @@ describe('Unit: Command', function () {
             }
             TestCommand.global = true;
 
-            let runStub = sandbox.spy(TestCommand.prototype, 'run');
-            let oldEnv = process.env.NODE_ENV;
+            const runStub = sandbox.spy(TestCommand.prototype, 'run');
+            const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'production';
-            let exitStub = sandbox.stub(process, 'exit');
+            const exitStub = sandbox.stub(process, 'exit');
 
             return TestCommand._run('test', {
                 verbose: false,
@@ -320,7 +320,7 @@ describe('Unit: Command', function () {
     it('base run method throws error', function () {
         const Command = require(modulePath);
         class TestCommand extends Command {}
-        let commandInstance = new TestCommand({}, {});
+        const commandInstance = new TestCommand({}, {});
 
         try {
             commandInstance.run();
@@ -337,7 +337,7 @@ describe('Unit: Command', function () {
             class TestCommand extends Command {}
             class BadCommand {}
 
-            let newInstance = new TestCommand({}, {});
+            const newInstance = new TestCommand({}, {});
 
             return newInstance.runCommand(BadCommand, {}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -354,8 +354,8 @@ describe('Unit: Command', function () {
                 }
             }
 
-            let runSpy = sinon.spy(Test2Command.prototype, 'run');
-            let testInstance = new TestCommand({}, {});
+            const runSpy = sinon.spy(Test2Command.prototype, 'run');
+            const testInstance = new TestCommand({}, {});
 
             return testInstance.runCommand(Test2Command, {argv: true}).then(() => {
                 expect(runSpy.calledOnce).to.be.true;
@@ -371,8 +371,8 @@ describe('Unit: Command', function () {
                 }
             }
 
-            let runSpy = sinon.spy(Test2Command.prototype, 'run');
-            let testInstance = new TestCommand({}, {});
+            const runSpy = sinon.spy(Test2Command.prototype, 'run');
+            const testInstance = new TestCommand({}, {});
 
             return testInstance.runCommand(Test2Command).then(() => {
                 expect(runSpy.calledOnce).to.be.true;
@@ -382,21 +382,21 @@ describe('Unit: Command', function () {
     });
 
     describe('checkValidInstall', function () {
-        let sandbox = sinon.sandbox.create();
+        const sandbox = sinon.sandbox.create();
 
         afterEach(() => {
             sandbox.restore();
         })
 
         it('throws error if config.js present', function () {
-            let existsStub = sandbox.stub();
+            const existsStub = sandbox.stub();
             existsStub.withArgs(sinon.match(/config\.js/)).returns(true);
             const Command = proxyquire(modulePath, {
                 'fs-extra': {existsSync: existsStub}
             });
 
-            let exitStub = sandbox.stub(process, 'exit').throws();
-            let errorStub = sandbox.stub(console, 'error');
+            const exitStub = sandbox.stub(process, 'exit').throws();
+            const errorStub = sandbox.stub(console, 'error');
 
             try {
                 Command.checkValidInstall('test');
@@ -407,13 +407,13 @@ describe('Unit: Command', function () {
                 expect(errorStub.calledOnce).to.be.true;
                 expect(exitStub.calledOnce).to.be.true;
                 expect(existsStub.args[0][0]).to.match(/config\.js/);
-                expect(errorStub.args[0][0]).to.match(/Ghost\-CLI only works with Ghost versions \>= 1\.0\.0/);
+                expect(errorStub.args[0][0]).to.match(/Ghost-CLI only works with Ghost versions >= 1\.0\.0/);
             }
         });
 
         it('throws error if within a Ghost git clone', function () {
-            let existsStub = sandbox.stub();
-            let readJsonStub = sandbox.stub();
+            const existsStub = sandbox.stub();
+            const readJsonStub = sandbox.stub();
 
             existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
             existsStub.withArgs(sinon.match(/package\.json/)).returns(true);
@@ -425,8 +425,8 @@ describe('Unit: Command', function () {
                 'fs-extra': {existsSync: existsStub, readJsonSync: readJsonStub}
             });
 
-            let exitStub = sandbox.stub(process, 'exit').throws();
-            let errorStub = sandbox.stub(console, 'error');
+            const exitStub = sandbox.stub(process, 'exit').throws();
+            const errorStub = sandbox.stub(console, 'error');
 
             try {
                 Command.checkValidInstall('test');
@@ -437,23 +437,23 @@ describe('Unit: Command', function () {
                 expect(errorStub.calledOnce).to.be.true;
                 expect(exitStub.calledOnce).to.be.true;
                 expect(existsStub.args[1][0]).to.match(/package\.json/);
-                expect(errorStub.args[0][0]).to.match(/Ghost\-CLI commands do not work inside of a git clone/);
+                expect(errorStub.args[0][0]).to.match(/Ghost-CLI commands do not work inside of a git clone/);
             }
         });
 
         it('throws error if above two conditions don\t exit and .ghost-cli file is missing', function () {
-            let existsStub = sandbox.stub();
+            const existsStub = sandbox.stub();
 
             existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
             existsStub.withArgs(sinon.match(/package\.json/)).returns(false);
-            existsStub.withArgs(sinon.match(/\.ghost\-cli/)).returns(false);
+            existsStub.withArgs(sinon.match(/\.ghost-cli/)).returns(false);
 
             const Command = proxyquire(modulePath, {
                 'fs-extra': {existsSync: existsStub}
             });
 
-            let exitStub = sandbox.stub(process, 'exit').throws();
-            let errorStub = sandbox.stub(console, 'error');
+            const exitStub = sandbox.stub(process, 'exit').throws();
+            const errorStub = sandbox.stub(console, 'error');
 
             try {
                 Command.checkValidInstall('test');
@@ -463,24 +463,24 @@ describe('Unit: Command', function () {
                 expect(existsStub.calledThrice).to.be.true;
                 expect(errorStub.calledOnce).to.be.true;
                 expect(exitStub.calledOnce).to.be.true;
-                expect(existsStub.args[2][0]).to.match(/\.ghost\-cli/);
+                expect(existsStub.args[2][0]).to.match(/\.ghost-cli/);
                 expect(errorStub.args[0][0]).to.match(/Working directory is not a recognisable Ghost installation/);
             }
         });
 
         it('doesn\'t do anything if all conditions return false', function () {
-            let existsStub = sandbox.stub();
+            const existsStub = sandbox.stub();
 
             existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
             existsStub.withArgs(sinon.match(/package\.json/)).returns(false);
-            existsStub.withArgs(sinon.match(/\.ghost\-cli/)).returns(true);
+            existsStub.withArgs(sinon.match(/\.ghost-cli/)).returns(true);
 
             const Command = proxyquire(modulePath, {
                 'fs-extra': {existsSync: existsStub}
             });
 
-            let exitStub = sandbox.stub(process, 'exit').throws();
-            let errorStub = sandbox.stub(console, 'error');
+            const exitStub = sandbox.stub(process, 'exit').throws();
+            const errorStub = sandbox.stub(console, 'error');
 
             Command.checkValidInstall('test');
             expect(existsStub.calledThrice).to.be.true;

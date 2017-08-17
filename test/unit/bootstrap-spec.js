@@ -11,7 +11,7 @@ describe('Unit: Bootstrap', function () {
     describe('discoverCommands', function () {
         it('loads basic command names into commands object', function () {
             let commands = {};
-            let testEnv = env({
+            const testEnv = env({
                 dirs: ['commands/test3'],
                 files: [{
                     path: 'commands/test.js',
@@ -24,7 +24,7 @@ describe('Unit: Bootstrap', function () {
                     content: ''
                 }]
             });
-            let dir = testEnv.dir;
+            const dir = testEnv.dir;
 
             commands = bootstrap.discoverCommands(commands, dir, 'testing');
 
@@ -39,7 +39,7 @@ describe('Unit: Bootstrap', function () {
 
         it('returns unmodified commands object if no commands dir exists for an extension', function () {
             let commands = {};
-            let testEnv = env({});
+            const testEnv = env({});
 
             commands = bootstrap.discoverCommands(commands, testEnv.dir, 'testing');
 
@@ -48,7 +48,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('ignores non-js files or folders without an index.js', function () {
-            let testEnv = env({
+            const testEnv = env({
                 dirs: ['commands/test2', 'commands/test3'],
                 files: [{
                     path: 'commands/test.js',
@@ -66,8 +66,8 @@ describe('Unit: Bootstrap', function () {
                 }]
             });
 
-            let dir = testEnv.dir;
-            let commands = bootstrap.discoverCommands({}, dir, 'testing');
+            const dir = testEnv.dir;
+            const commands = bootstrap.discoverCommands({}, dir, 'testing');
 
             expect(commands).to.deep.equal({
                 test: path.join(dir, 'commands/test'),
@@ -77,7 +77,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('namespaces a command with the extension name if another command exists with the same basename', function () {
-            let testEnv = env({
+            const testEnv = env({
                 dirs: ['commands/test2'],
                 files: [{
                     path: 'commands/test.js',
@@ -88,8 +88,8 @@ describe('Unit: Bootstrap', function () {
                 }]
             });
 
-            let dir = testEnv.dir;
-            let commands = bootstrap.discoverCommands({
+            const dir = testEnv.dir;
+            const commands = bootstrap.discoverCommands({
                 test: '/some/test/dir/test'
             }, dir, 'foo');
 
@@ -122,8 +122,8 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('throws reason and logs to console if it exists', function () {
-            let handler = process.listeners('unhandledRejection')[0];
-            let testError = new Error('some problem');
+            const handler = process.listeners('unhandledRejection')[0];
+            const testError = new Error('some problem');
 
             try {
                 handler(testError);
@@ -136,7 +136,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('logs reason if reason isn\'t an error', function () {
-            let handler = process.listeners('unhandledRejection')[0];
+            const handler = process.listeners('unhandledRejection')[0];
 
             try {
                 handler('some problem');
@@ -149,8 +149,8 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('logs promise if no reason given', function () {
-            let handler = process.listeners('unhandledRejection')[0];
-            let p = new Promise((resolve) => resolve());
+            const handler = process.listeners('unhandledRejection')[0];
+            const p = new Promise((resolve) => resolve());
 
             try {
                 handler(null, p);
@@ -183,8 +183,8 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('errors and exits with no args', function () {
-            let error = sandbox.stub(console, 'error');
-            let exit = sandbox.stub(process, 'exit');
+            const error = sandbox.stub(console, 'error');
+            const exit = sandbox.stub(process, 'exit');
 
             exit.throws();
 
@@ -197,8 +197,8 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('errors if no command name matches', function () {
-            let error = sandbox.stub(console, 'error');
-            let exit = sandbox.stub(process, 'exit');
+            const error = sandbox.stub(console, 'error');
+            const exit = sandbox.stub(process, 'exit');
 
             discoverCommands.returns({
                 ls: path.resolve(__dirname, '../../lib/commands/ls')
@@ -217,15 +217,15 @@ describe('Unit: Bootstrap', function () {
 
         describe('with first arg as a command name', function () {
             it('errors when discovered command is *not* an instance of the command class', function () {
-                let testEnv = env({
+                const testEnv = env({
                     dirs: ['commands'],
                     files: [{
                         path: 'commands/test.js',
                         content: 'module.exports = {};'
                     }]
                 });
-                let exit = sandbox.stub(process, 'exit');
-                let error = sandbox.stub(console, 'error');
+                const exit = sandbox.stub(process, 'exit');
+                const error = sandbox.stub(console, 'error');
 
                 discoverCommands.returns({
                     test: path.join(testEnv.dir, 'commands/test')
