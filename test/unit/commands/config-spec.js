@@ -401,10 +401,10 @@ describe('Unit: Command > Config', function () {
                 expect(results.validateExpectsTrue).to.be.true;
                 expect(results.validateExpectsMessage).to.match(/'2366' is in use/);
 
-                expect(portPromiseStub.calledWithExactly({ port: '2366' })).to.be.true;
-                expect(portPromiseStub.calledWithExactly({ port: '2367' })).to.be.true;
-                expect(portPromiseStub.calledWithExactly({ port: '2368' })).to.be.true;
-                expect(portPromiseStub.calledWithExactly({ port: '2369' })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: 2366 })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: 2367 })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: 2368 })).to.be.true;
+                expect(portPromiseStub.calledWithExactly({ port: 2369 })).to.be.true;
             });
         });
     });
