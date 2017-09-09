@@ -36,8 +36,8 @@ describe('Unit: Doctor Checks > Install', function () {
 
     describe('node version check', function () {
         it('rejects if global bin is different than the one ghost is running from', function () {
-            let execaStub = sinon.stub().returns({stdout: '/usr/local/bin'});
-            let originalArgv = process.argv;
+            const execaStub = sinon.stub().returns({stdout: '/usr/local/bin'});
+            const originalArgv = process.argv;
             process.argv = ['node', '/home/ghost/.nvm/versions/6.11.1/bin'];
 
             const task = proxyquire(modulePath, {
@@ -57,12 +57,12 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('rejects if node version is not in range', function () {
-            let cliPackage = {
+            const cliPackage = {
                 engines: {
                     node: '0.10.0'
                 }
             };
-            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            const execaStub = sinon.stub().returns({stdout: process.argv[1]});
 
             const task = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
@@ -73,7 +73,7 @@ describe('Unit: Doctor Checks > Install', function () {
                 expect(false, 'error should be thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
-                let message = stripAnsi(error.message);
+                const message = stripAnsi(error.message);
 
                 expect(message).to.match(/Supported: 0.10.0/);
                 expect(message).to.match(new RegExp(`Installed: ${process.versions.node}`));
@@ -82,20 +82,20 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('doesn\'t reject if bin is the local ghost bin file from the install (and local is true)', function () {
-            let cliPackage = {
+            const cliPackage = {
                 engines: {
                     node: process.versions.node // this future-proofs the test
                 }
             };
-            let execaStub = sinon.stub().returns({stdout: '/usr/local/bin'});
-            let originalArgv = process.argv;
+            const execaStub = sinon.stub().returns({stdout: '/usr/local/bin'});
+            const originalArgv = process.argv;
             process.argv = ['node', path.join(__dirname, '../../../../bin/ghost')];
 
             const tasks = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
                 execa: {shellSync: execaStub}
             }).tasks;
-            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.nodeVersion({local: true}).then(() => {
                 process.argv = originalArgv;
@@ -105,20 +105,20 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('doesn\'t do anything if GHOST_NODE_VERSION_CHECK is false and local is true', function () {
-            let originalEnv = process.env;
-            let cliPackage = {
+            const originalEnv = process.env;
+            const cliPackage = {
                 engines: {
                     node: '0.10.0'
                 }
             };
-            process.env = { GHOST_NODE_VERSION_CHECK: 'false' };
-            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            process.env = {GHOST_NODE_VERSION_CHECK: 'false'};
+            const execaStub = sinon.stub().returns({stdout: process.argv[1]});
 
             const tasks = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
                 execa: {shellSync: execaStub}
             }).tasks;
-            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.nodeVersion({local: true}).then(() => {
                 process.env = originalEnv;
@@ -128,18 +128,18 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('doesn\'t do anything if node version is in range and local is true', function () {
-            let cliPackage = {
+            const cliPackage = {
                 engines: {
                     node: process.versions.node // this future-proofs the test
                 }
             };
-            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            const execaStub = sinon.stub().returns({stdout: process.argv[1]});
 
             const tasks = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
                 execa: {shellSync: execaStub}
             }).tasks;
-            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.nodeVersion({local: true}).then(() => {
                 expect(execaStub.calledOnce).to.be.true;
@@ -148,20 +148,20 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('doesn\'t call checkDirectoryAndAbove if os is not linux', function () {
-            let cliPackage = {
+            const cliPackage = {
                 engines: {
                     node: process.versions.node // this future-proofs the test
                 }
             };
-            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
-            let platformStub = sinon.stub().returns('darwin');
+            const execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            const platformStub = sinon.stub().returns('darwin');
 
             const tasks = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
                 execa: {shellSync: execaStub},
                 os: {platform: platformStub}
             }).tasks;
-            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.nodeVersion({local: false}).then(() => {
                 expect(execaStub.calledOnce).to.be.true;
@@ -170,20 +170,20 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('doesn\'t call checkDirectoryAndAbove if no-setup-linux-user is passed', function () {
-            let cliPackage = {
+            const cliPackage = {
                 engines: {
                     node: process.versions.node // this future-proofs the test
                 }
             };
-            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
-            let platformStub = sinon.stub().returns('linux');
+            const execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            const platformStub = sinon.stub().returns('linux');
 
             const tasks = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
                 execa: {shellSync: execaStub},
                 os: {platform: platformStub}
             }).tasks;
-            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.nodeVersion({local: false, argv: {'setup-linux-user': false}}).then(() => {
                 expect(execaStub.calledOnce).to.be.true;
@@ -192,20 +192,20 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('calls checkDirectoryAndAbove if none of the three conditions are true', function () {
-            let cliPackage = {
+            const cliPackage = {
                 engines: {
                     node: process.versions.node // this future-proofs the test
                 }
             };
-            let execaStub = sinon.stub().returns({stdout: process.argv[1]});
-            let platformStub = sinon.stub().returns('linux');
+            const execaStub = sinon.stub().returns({stdout: process.argv[1]});
+            const platformStub = sinon.stub().returns('linux');
 
             const tasks = proxyquire(modulePath, {
                 '../../../../package': cliPackage,
                 execa: {shellSync: execaStub},
                 os: {platform: platformStub}
             }).tasks;
-            let checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryStub = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.nodeVersion({local: false, argv: {'setup-linux-user': true}}).then(() => {
                 expect(execaStub.calledOnce).to.be.true;
@@ -217,8 +217,8 @@ describe('Unit: Doctor Checks > Install', function () {
 
     describe('checkDirectoryAndAbove util', function () {
         it('returns if directory is root', function () {
-            let lstatStub = sinon.stub().resolves();
-            let isRootStub = sinon.stub().returns(true);
+            const lstatStub = sinon.stub().resolves();
+            const isRootStub = sinon.stub().returns(true);
 
             const checkDirectoryAndAbove = proxyquire(modulePath, {
                 'fs-extra': {lstat: lstatStub},
@@ -233,9 +233,9 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('recursively goes back to root if read is set to true', function () {
-            let lstatStub = sinon.stub().resolves({ stats: true });
-            let isRootStub = sinon.stub();
-            let modeStub = sinon.stub().returns({others: {read: true}});
+            const lstatStub = sinon.stub().resolves({stats: true});
+            const isRootStub = sinon.stub();
+            const modeStub = sinon.stub().returns({others: {read: true}});
             isRootStub.onFirstCall().returns(false);
             isRootStub.onSecondCall().returns(false);
             isRootStub.onThirdCall().returns(true);
@@ -260,9 +260,9 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('throws error if a directory isn\'t readable by others', function () {
-            let lstatStub = sinon.stub().resolves({ stats: true });
-            let isRootStub = sinon.stub();
-            let modeStub = sinon.stub();
+            const lstatStub = sinon.stub().resolves({stats: true});
+            const isRootStub = sinon.stub();
+            const modeStub = sinon.stub();
 
             isRootStub.onFirstCall().returns(false);
             isRootStub.onSecondCall().returns(false);
@@ -292,7 +292,7 @@ describe('Unit: Doctor Checks > Install', function () {
 
     describe('folderPermissions check', function () {
         it('throws error if current directory is not writable', function () {
-            let accessStub = sinon.stub().rejects();
+            const accessStub = sinon.stub().rejects();
             const folderPermissions = proxyquire(modulePath, {
                 'fs-extra': {access: accessStub}
             }).tasks.folderPermissions;
@@ -308,11 +308,11 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('skips checking parent folder permissions if ctx.local is set', function () {
-            let accessStub = sinon.stub().resolves();
+            const accessStub = sinon.stub().resolves();
             const tasks = proxyquire(modulePath, {
                 'fs-extra': {access: accessStub}
             }).tasks;
-            let checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.folderPermissions({local: true}).then(() => {
                 expect(accessStub.calledOnce).to.be.true;
@@ -321,13 +321,13 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('skips checking parent folder permissions if os is not linux', function () {
-            let accessStub = sinon.stub().resolves();
-            let platformStub = sinon.stub().returns('darwin');
+            const accessStub = sinon.stub().resolves();
+            const platformStub = sinon.stub().returns('darwin');
             const tasks = proxyquire(modulePath, {
                 'fs-extra': {access: accessStub},
                 os: {platform: platformStub}
             }).tasks;
-            let checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.folderPermissions({}).then(() => {
                 expect(accessStub.calledOnce).to.be.true;
@@ -337,13 +337,13 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('skips checking parent folder permissions if --no-setup-linux-user is passed', function () {
-            let accessStub = sinon.stub().resolves();
-            let platformStub = sinon.stub().returns('linux');
+            const accessStub = sinon.stub().resolves();
+            const platformStub = sinon.stub().returns('linux');
             const tasks = proxyquire(modulePath, {
                 'fs-extra': {access: accessStub},
                 os: {platform: platformStub}
             }).tasks;
-            let checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.folderPermissions({argv: {'setup-linux-user': false}}).then(() => {
                 expect(accessStub.calledOnce).to.be.true;
@@ -353,13 +353,13 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('runs checkParentAndAbove if local not set and platform is linux', function () {
-            let accessStub = sinon.stub().resolves();
-            let platformStub = sinon.stub().returns('linux');
+            const accessStub = sinon.stub().resolves();
+            const platformStub = sinon.stub().returns('linux');
             const tasks = proxyquire(modulePath, {
                 'fs-extra': {access: accessStub},
                 os: {platform: platformStub}
             }).tasks;
-            let checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
+            const checkDirectoryAndAbove = sinon.stub(tasks, 'checkDirectoryAndAbove').resolves();
 
             return tasks.folderPermissions({}).then(() => {
                 expect(accessStub.calledOnce).to.be.true;
@@ -380,7 +380,7 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('rejects if platform is not linux', function () {
-            let platformStub = sinon.stub().returns('darwin');
+            const platformStub = sinon.stub().returns('darwin');
 
             const systemStack = proxyquire(modulePath, {
                 os: {platform: platformStub},
@@ -403,7 +403,7 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('does not call confirm if prompt is disabled', function () {
-            let platformStub = sinon.stub().returns('darwin');
+            const platformStub = sinon.stub().returns('darwin');
 
             const systemStack = proxyquire(modulePath, {
                 os: {platform: platformStub},
@@ -426,7 +426,7 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('does not reject if confirm resolves with true', function () {
-            let platformStub = sinon.stub().returns('darwin');
+            const platformStub = sinon.stub().returns('darwin');
 
             const systemStack = proxyquire(modulePath, {
                 os: {platform: platformStub},
@@ -445,7 +445,7 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('rejects if lsb_release command does not exist', function () {
-            let platformStub = sinon.stub().returns('linux');
+            const platformStub = sinon.stub().returns('linux');
             execaStub.rejects();
 
             const systemStack = proxyquire(modulePath, {
@@ -469,7 +469,7 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('rejects if lsb_release command does not return Ubuntu 16', function () {
-            let platformStub = sinon.stub().returns('linux');
+            const platformStub = sinon.stub().returns('linux');
             execaStub.resolves({stdout: 'Ubuntu 14'});
 
             const systemStack = proxyquire(modulePath, {
@@ -493,8 +493,8 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('groups missing rejected promises for systemd and nginx', function () {
-            let platformStub = sinon.stub().returns('linux');
-            let listrStub = sinon.stub().rejects({
+            const platformStub = sinon.stub().returns('linux');
+            const listrStub = sinon.stub().rejects({
                 errors: [{missing: 'systemd'}, {missing: 'nginx'}]
             });
             execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
@@ -506,7 +506,9 @@ describe('Unit: Doctor Checks > Install', function () {
 
             confirmStub.resolves({yes: false});
 
-            return systemStack({ui: {log: logStub, confirm: confirmStub, allowPrompt: true, listr: listrStub}}).then(() => {
+            const ui = {log: logStub, confirm: confirmStub, allowPrompt: true, listr: listrStub};
+
+            return systemStack({ui: ui}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
@@ -522,16 +524,16 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('nginx and systemd checks reject correctly', function () {
-            let platformStub = sinon.stub().returns('linux');
+            const platformStub = sinon.stub().returns('linux');
             execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
             execaStub.withArgs('dpkg -l | grep nginx').rejects();
             execaStub.withArgs('dpkg -l | grep systemd').rejects();
 
-            let listr = sinon.spy(function (tasks, ctx, opts) {
+            const listr = sinon.spy(function (tasks, ctx, opts) {
                 expect(opts.renderer).to.equal('verbose');
 
-                let systemdCheck = tasks.find(task => task.title.match(/systemd/));
-                let nginxCheck = tasks.find(task => task.title.match(/nginx/));
+                const systemdCheck = tasks.find(task => task.title.match(/systemd/));
+                const nginxCheck = tasks.find(task => task.title.match(/nginx/));
                 expect(systemdCheck).to.exist;
                 expect(nginxCheck).to.exist;
 
@@ -556,7 +558,7 @@ describe('Unit: Doctor Checks > Install', function () {
             }).tasks.systemStack;
 
             confirmStub.resolves({yes: false});
-            let ui = {log: logStub, confirm: confirmStub, verbose: true, allowPrompt: true, listr: listr};
+            const ui = {log: logStub, confirm: confirmStub, verbose: true, allowPrompt: true, listr: listr};
 
             return systemStack({ui: ui}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -572,15 +574,15 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('resolves if all stack conditions are met', function () {
-            let platformStub = sinon.stub().returns('linux');
+            const platformStub = sinon.stub().returns('linux');
             execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
-            let listrStub = sinon.stub().resolves();
+            const listrStub = sinon.stub().resolves();
 
             const systemStack = proxyquire(modulePath, {
                 os: {platform: platformStub},
                 execa: {shell: execaStub}
             }).tasks.systemStack;
-            let ui = {log: logStub, confirm: confirmStub, allowPrompt: true, listr: listrStub};
+            const ui = {log: logStub, confirm: confirmStub, allowPrompt: true, listr: listrStub};
 
             return systemStack({ui: ui}).then(() => {
                 expect(platformStub.calledOnce).to.be.true;
@@ -593,8 +595,8 @@ describe('Unit: Doctor Checks > Install', function () {
 
     describe('mysqlCheck', function () {
         it('appends sbin to path if platform is linux', function () {
-            let execaStub = sinon.stub().resolves();
-            let platformStub = sinon.stub().returns('linux');
+            const execaStub = sinon.stub().resolves();
+            const platformStub = sinon.stub().returns('linux');
 
             const mysqlCheck = proxyquire(modulePath, {
                 execa: {shell: execaStub},
@@ -605,13 +607,13 @@ describe('Unit: Doctor Checks > Install', function () {
                 expect(platformStub.calledOnce).to.be.true;
                 expect(execaStub.calledOnce).to.be.true;
                 expect(execaStub.args[0][1].env).to.exist;
-                expect(execaStub.args[0][1].env.PATH).to.match(/^\/usr\/sbin\:/);
+                expect(execaStub.args[0][1].env.PATH).to.match(/^\/usr\/sbin:/);
             });
         });
 
         it('does not append sbin to path if platform is not linux', function () {
-            let execaStub = sinon.stub().resolves();
-            let platformStub = sinon.stub().returns('darwin');
+            const execaStub = sinon.stub().resolves();
+            const platformStub = sinon.stub().returns('darwin');
 
             const mysqlCheck = proxyquire(modulePath, {
                 execa: {shell: execaStub},
@@ -626,17 +628,17 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('calls confirm if execa rejects and allowPrompt is true', function () {
-            let execaStub = sinon.stub().rejects();
-            let platformStub = sinon.stub().returns('linux');
-            let logStub = sinon.stub();
-            let confirmStub = sinon.stub().resolves({yes: true});
+            const execaStub = sinon.stub().rejects();
+            const platformStub = sinon.stub().returns('linux');
+            const logStub = sinon.stub();
+            const confirmStub = sinon.stub().resolves({yes: true});
 
             const mysqlCheck = proxyquire(modulePath, {
                 execa: {shell: execaStub},
                 os: {platform: platformStub}
             }).tasks.mysqlCheck;
 
-            let ui = {log: logStub, confirm: confirmStub, allowPrompt: true};
+            const ui = {log: logStub, confirm: confirmStub, allowPrompt: true};
 
             return mysqlCheck({ui: ui}).then(() => {
                 expect(platformStub.calledOnce).to.be.true;
@@ -648,17 +650,17 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('rejects if confirm says no', function () {
-            let execaStub = sinon.stub().rejects();
-            let platformStub = sinon.stub().returns('linux');
-            let logStub = sinon.stub();
-            let confirmStub = sinon.stub().resolves({yes: false});
+            const execaStub = sinon.stub().rejects();
+            const platformStub = sinon.stub().returns('linux');
+            const logStub = sinon.stub();
+            const confirmStub = sinon.stub().resolves({yes: false});
 
             const mysqlCheck = proxyquire(modulePath, {
                 execa: {shell: execaStub},
                 os: {platform: platformStub}
             }).tasks.mysqlCheck;
 
-            let ui = {log: logStub, confirm: confirmStub, allowPrompt: true};
+            const ui = {log: logStub, confirm: confirmStub, allowPrompt: true};
 
             return mysqlCheck({ui: ui}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -675,17 +677,17 @@ describe('Unit: Doctor Checks > Install', function () {
         });
 
         it('rejects if allowPrompt is false', function () {
-            let execaStub = sinon.stub().rejects();
-            let platformStub = sinon.stub().returns('linux');
-            let logStub = sinon.stub();
-            let confirmStub = sinon.stub().resolves({yes: true});
+            const execaStub = sinon.stub().rejects();
+            const platformStub = sinon.stub().returns('linux');
+            const logStub = sinon.stub();
+            const confirmStub = sinon.stub().resolves({yes: true});
 
             const mysqlCheck = proxyquire(modulePath, {
                 execa: {shell: execaStub},
                 os: {platform: platformStub}
             }).tasks.mysqlCheck;
 
-            let ui = {log: logStub, confirm: confirmStub, allowPrompt: false};
+            const ui = {log: logStub, confirm: confirmStub, allowPrompt: false};
 
             return mysqlCheck({ui: ui}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;

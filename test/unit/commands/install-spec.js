@@ -10,8 +10,8 @@ const errors = require('../../../lib/errors');
 
 describe('Unit: Commands > Install', function () {
     it('configureOptions adds setup options as well', function () {
-        let superStub = sinon.stub().returnsArg(1);
-        let setupStub = sinon.stub().returnsArg(1);
+        const superStub = sinon.stub().returnsArg(1);
+        const setupStub = sinon.stub().returnsArg(1);
 
         // Needed for extension
         class Command {}
@@ -22,7 +22,7 @@ describe('Unit: Commands > Install', function () {
             '../command': Command
         });
 
-        let result = InstallCommand.configureOptions('install', { yargs: true }, [{extensiona: true}]);
+        const result = InstallCommand.configureOptions('install', {yargs: true}, [{extensiona: true}]);
         expect(result).to.deep.equal({yargs: true});
         expect(superStub.calledOnce).to.be.true;
         expect(superStub.calledWithExactly('install', {yargs: true}, [{extensiona: true}])).to.be.true;
@@ -38,13 +38,13 @@ describe('Unit: Commands > Install', function () {
         })
 
         it('creates dir and changes into it if --dir option is passed', function () {
-            let chdirStub = sandbox.stub(process, 'chdir').throws();
-            let ensureDirStub = sandbox.stub();
+            const chdirStub = sandbox.stub(process, 'chdir').throws();
+            const ensureDirStub = sandbox.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {ensureDirSync: ensureDirStub}
             });
-            let testInstance = new InstallCommand({}, {});
+            const testInstance = new InstallCommand({}, {});
 
             try {
                 testInstance.run({dir: '/some/dir'});
@@ -58,7 +58,7 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('rejects if directory is not empty', function () {
-            let readdirStub = sandbox.stub().returns([
+            const readdirStub = sandbox.stub().returns([
                 '.ghost-cli',
                 'README.md'
             ]);
@@ -66,7 +66,7 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub}
             });
-            let testInstance = new InstallCommand({}, {});
+            const testInstance = new InstallCommand({}, {});
 
             return testInstance.run({version: '1.0.0'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -78,14 +78,14 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('calls install checks first', function () {
-            let readdirStub = sandbox.stub().returns(['ghost-cli-debug-1234.log']);
-            let listrStub = sandbox.stub().rejects();
+            const readdirStub = sandbox.stub().returns(['ghost-cli-debug-1234.log']);
+            const listrStub = sandbox.stub().rejects();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 './doctor/checks/install': [{check1: true}, {check2: true}]
             });
-            let testInstance = new InstallCommand({listr: listrStub}, {});
+            const testInstance = new InstallCommand({listr: listrStub}, {});
 
             return testInstance.run({argv: true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
@@ -105,17 +105,17 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('runs local install when command is `ghost install local`', function () {
-            let readdirStub = sandbox.stub().returns([]);
-            let listrStub = sandbox.stub();
+            const readdirStub = sandbox.stub().returns([]);
+            const listrStub = sandbox.stub();
             listrStub.onFirstCall().resolves();
             listrStub.onSecondCall().rejects();
-            let setEnvironmentStub = sandbox.stub();
+            const setEnvironmentStub = sandbox.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 './doctor/checks/install': [{check1: true}, {check2: true}]
             });
-            let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
 
             return testInstance.run({version: 'local', zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
@@ -142,17 +142,17 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('runs local install when command is `ghost install <version> --local`', function () {
-            let readdirStub = sandbox.stub().returns([]);
-            let listrStub = sandbox.stub();
+            const readdirStub = sandbox.stub().returns([]);
+            const listrStub = sandbox.stub();
             listrStub.onFirstCall().resolves();
             listrStub.onSecondCall().rejects();
-            let setEnvironmentStub = sandbox.stub();
+            const setEnvironmentStub = sandbox.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 './doctor/checks/install': [{check1: true}, {check2: true}]
             });
-            let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
 
             return testInstance.run({version: '1.5.0', local: true, zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
@@ -211,16 +211,16 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('sets local and runs setup command if setup is true', function () {
-            let readdirStub = sandbox.stub().returns([]);
-            let listrStub = sandbox.stub().resolves();
-            let setEnvironmentStub = sandbox.stub();
+            const readdirStub = sandbox.stub().returns([]);
+            const listrStub = sandbox.stub().resolves();
+            const setEnvironmentStub = sandbox.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 './setup': {SetupCommand: true}
             });
-            let testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
-            let runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: 'local', setup: true, zip: ''}).then(() => {
                 expect(readdirStub.calledOnce).to.be.true;
@@ -276,12 +276,12 @@ describe('Unit: Commands > Install', function () {
 
     describe('tasks > casper', function () {
         it('links casper version correctly', function () {
-            let symlinkSyncStub = sinon.stub();
+            const symlinkSyncStub = sinon.stub();
             const InstallCommand = proxyquire(modulePath, {
                 'symlink-or-copy': {sync: symlinkSyncStub}
             });
 
-            let testInstance = new InstallCommand({}, {});
+            const testInstance = new InstallCommand({}, {});
 
             testInstance.casper();
             expect(symlinkSyncStub.calledOnce).to.be.true;
@@ -294,19 +294,19 @@ describe('Unit: Commands > Install', function () {
 
     describe('tasks > link', function () {
         it('creates current link and updates cliConfig', function () {
-            let symlinkSyncStub = sinon.stub();
-            let config = {
+            const symlinkSyncStub = sinon.stub();
+            const config = {
                 set: sinon.stub(),
                 save: sinon.stub()
             };
             config.set.returns(config);
-            let getInstanceStub = sinon.stub().returns({cliConfig: config});
+            const getInstanceStub = sinon.stub().returns({cliConfig: config});
 
             const InstallCommand = proxyquire(modulePath, {
                 'symlink-or-copy': {sync: symlinkSyncStub}
             });
 
-            let testInstance = new InstallCommand({}, {getInstance: getInstanceStub, cliVersion: '1.0.0'});
+            const testInstance = new InstallCommand({}, {getInstance: getInstanceStub, cliVersion: '1.0.0'});
 
             testInstance.link({version: '1.5.0', installPath: '/some/dir/1.5.0'});
             expect(symlinkSyncStub.calledOnce).to.be.true;

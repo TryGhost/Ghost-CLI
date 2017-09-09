@@ -43,7 +43,7 @@ describe('Unit: Commands > Update', function () {
                     zip: ''
                 });
                 expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/install is using out\-of\-date configuration/);
+                expect(ui.log.args[0][0]).to.match(/install is using out-of-date configuration/);
                 expect(ui.log.args[1][0]).to.match(/up to date/);
                 expect(ui.listr.called).to.be.false;
                 expect(fakeInstance.running.calledOnce).to.be.true;

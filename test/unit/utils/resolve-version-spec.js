@@ -24,7 +24,7 @@ describe('Unit: resolveVersion', function () {
         });
     });
 
-    it('rejects if result from npm is invalid JSON', function () {
+    it('rejects if result from yarn is invalid JSON', function () {
         stubYarn('invalid json');
 
         return resolveVersion().then(function () {
