@@ -26,9 +26,9 @@
     "ghost": "./bin/ghost"
   },
   "scripts": {
-    "coverage": "cat ./coverage/lcov.info | coveralls",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint bin lib test",
-    "test:unit": "istanbul cover _mocha -- --recursive test/unit extensions/**/test",
+    "test:unit": "nyc --reporter=html --reporter=text mocha --recursive test/unit extensions/**/test",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
@@ -43,15 +43,15 @@
     "bluebird": "3.5.0",
     "chalk": "2.1.0",
     "cli-table2": "0.2.0",
-    "debug": "3.0.0",
+    "debug": "3.0.1",
     "decompress": "4.2.0",
     "download": "6.2.5",
     "execa": "0.8.0",
     "find-plugins": "1.0.3",
     "fkill": "5.0.0",
-    "fs-extra": "4.0.1",
-    "ghost-ignition": "2.8.13",
-    "inquirer": "3.2.1",
+    "fs-extra": "4.0.2",
+    "ghost-ignition": "2.8.14",
+    "inquirer": "3.2.3",
     "is-running": "2.1.0",
     "knex-migrator": "2.1.6",
     "listr": "0.12.0",
@@ -72,19 +72,18 @@
     "update-notifier": "2.2.0",
     "validator": "7.2.0",
     "yargs": "8.0.2",
-    "yarn": "0.27.5"
+    "yarn": "1.0.2"
   },
   "devDependencies": {
-    "chai": "4.1.1",
+    "chai": "4.1.2",
     "coveralls": "2.13.1",
-    "eslint": "4.4.1",
+    "eslint": "4.6.1",
     "has-ansi": "3.0.0",
-    "istanbul": "0.4.5",
-    "mocha": "3.5.0",
-    "mocha-lcov-reporter": "1.3.0",
+    "mocha": "3.5.3",
+    "nyc": "11.2.1",
     "proxyquire": "1.8.0",
     "rewire": "2.5.2",
-    "sinon": "3.2.0",
+    "sinon": "3.2.1",
     "tmp": "0.0.33"
   },
   "standard-version": {

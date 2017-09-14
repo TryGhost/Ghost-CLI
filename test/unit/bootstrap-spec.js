@@ -197,6 +197,8 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('errors if no command name matches', function () {
+            this.timeout(10000); // this test can take awhile depending on the system
+
             const error = sandbox.stub(console, 'error');
             const exit = sandbox.stub(process, 'exit');
 
