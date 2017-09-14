@@ -26,9 +26,9 @@
     "ghost": "./bin/ghost"
   },
   "scripts": {
-    "coverage": "cat ./coverage/lcov.info | coveralls",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint bin lib test",
-    "test:unit": "istanbul cover _mocha -- --recursive test/unit extensions/**/test",
+    "test:unit": "nyc --reporter=html --reporter=text mocha --recursive test/unit extensions/**/test",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
@@ -79,9 +79,8 @@
     "coveralls": "2.13.1",
     "eslint": "4.4.1",
     "has-ansi": "3.0.0",
-    "istanbul": "0.4.5",
     "mocha": "3.5.0",
-    "mocha-lcov-reporter": "1.3.0",
+    "nyc": "11.2.1",
     "proxyquire": "1.8.0",
     "rewire": "2.5.2",
     "sinon": "3.2.0",
