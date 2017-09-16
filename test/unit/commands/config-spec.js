@@ -117,6 +117,21 @@ describe('Unit: Command > Config', function () {
                 expect(error.options.config).to.deep.equal({url: 'http://localhost:2368'});
             });
         });
+
+        it('handles non-string arg values correctly', function () {
+            const ConfigCommand = require(modulePath);
+            const instanceConfig = new Config('config.json');
+            const getInstanceStub = sinon.stub().returns({config: instanceConfig});
+            const save = sinon.stub(instanceConfig, 'save');
+            const config = new ConfigCommand({}, {getInstance: getInstanceStub});
+
+            return config.handleAdvancedOptions({url: 'http://localhost:2368/', port: 1234}).then(() => {
+                expect(getInstanceStub.calledOnce).to.be.true;
+                expect(save.calledOnce).to.be.true;
+                expect(instanceConfig.get('url')).to.equal('http://localhost:1234/');
+                expect(instanceConfig.get('server.port')).to.equal(1234);
+            });
+        });
     });
 
     describe('getConfigPrompts', function () {
