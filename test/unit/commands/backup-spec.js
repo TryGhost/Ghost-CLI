@@ -35,8 +35,7 @@ const envConfig = {
     }]
 };
 
-const ui = {log: sinon.stub(), listr: sinon.stub()};
-ui.listr.callsFake((tasks, ctx) => {
+const listrCall = (tasks, ctx) => {
     return Promise.each(tasks, (task) => {
         if (task.skip && task.skip(ctx)) {
             return;
@@ -44,7 +43,7 @@ ui.listr.callsFake((tasks, ctx) => {
 
         return task.task(ctx);
     });
-});
+};
 
 describe('Unit: Commands > Backup', function () {
     describe('Basic functionality', function () {
@@ -74,6 +73,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -115,6 +115,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -156,6 +157,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(true);
@@ -199,6 +201,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(true);
@@ -237,6 +240,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -284,6 +288,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -328,6 +333,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -370,6 +376,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -431,6 +438,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
@@ -500,6 +508,7 @@ describe('Unit: Commands > Backup', function () {
                 'fs-extra': fsstub
             });
 
+            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
             const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.returns(false);
