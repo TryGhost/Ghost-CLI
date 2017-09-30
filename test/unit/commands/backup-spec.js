@@ -48,7 +48,6 @@ const listrCall = (tasks, ctx) => {
 describe('Unit: Commands > Backup', function () {
     describe('Basic functionality', function () {
         it('Saves to the right location', function () {
-            this.timeout(3000);
             const env = setupEnv(envConfig);
             const dbbackupStub = sinon.stub().resolves({});
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
@@ -81,447 +80,207 @@ describe('Unit: Commands > Backup', function () {
 
             const backup = new BackupCommand(ui,system);
 
-            backup.run({}).then(() => {
+            return backup.run({}).then(() => {
                 cwdStub.restore();
                 expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.true;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
-                env.cleanup();
-            });
-        });
-
-        it('Accepts the output flag', function () {
-            const env = setupEnv(envConfig);
-            const dbbackupStub = sinon.stub().resolves({});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
-                W_OK: fs.W_OK
-            };
-
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({output: './a'}).then(() => {
-                cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `a/ghoster.backup.${datetime}.zip`))).to.be.true;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
-                env.cleanup();
-            });
-        });
-
-        it('Complains about write permissions', function () {
-            const env = setupEnv(envConfig);
-            const dbbackupStub = sinon.stub().resolves({});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                access: sinon.stub().throws(new Error()),
-                ensureDirSync: sinon.stub().throws(new Error()),
-                W_OK: fs.W_OK
-            };
-
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(true);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch(() => {
-                cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.false;
                 expect(ui.listr.calledOnce).to.be.true;
                 expect(ui.log.calledOnce).to.be.true;
                 env.cleanup();
             });
         });
 
-        it('Warns of running instance', function () {
+        it('Accepts the output flag', function () {
             const env = setupEnv(envConfig);
-            const dbbackupStub = sinon.stub().resolves({});
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
+            const localContext = {
+                argv: {output: './path/to/test'},
+                instance: {
+                    name: 'ghoster',
+                    running: () => false,
+                    ui: {log: sinon.stub()},
+                    checkEnvironment: () => true
+                }
+            };
             const fsstub = {
-                readFileSync: sinon.stub(),
                 ensureDirSync: fs.ensureDirSync,
                 access: fs.access,
                 W_OK: fs.W_OK
             };
 
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
             const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
+            const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
+            const backup = new BackupCommand();
 
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(true);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.initialize(localContext).then(() => {
                 cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.true;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.calledOnce).to.be.true;
+                const expectedPath = path.join(env.dir, `path/to/test/ghoster.backup.${datetime}.zip`);
+                expect(localContext.saveLocation).to.equal(expectedPath);
+                expect(fs.existsSync(path.join(env.dir, 'path/to/test'))).to.be.true;
+                expect(localContext.instance.ui.log.called).to.be.false;
                 env.cleanup();
+            });
+        });
+
+        it('Complains about write permissions', function () {
+            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            const localContext = {
+                argv: {},
+                instance: {
+                    name: 'ghoster',
+                    running: sinon.stub(),
+                    ui: {log: sinon.stub()},
+                    checkEnvironment: sinon.stub()
+                }
+            };
+            const fsstub = {ensureDirSync: sinon.stub().throws(new Error())};
+            const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
+            const backup = new BackupCommand();
+
+            return backup.initialize(localContext).then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            }).catch(() => {
+                cwdStub.restore();
+                expect(localContext.saveLocation).to.equal('./');
+                expect(localContext.instance.ui.log.calledOnce).to.be.true;
+                expect(localContext.zipFile).to.equal(undefined);
+                expect(localContext.instance.running.called).to.be.false;
+            });
+        });
+
+        it('Warns of running instance', function () {
+            const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+            const localContext = {
+                argv: {},
+                instance: {
+                    name: 'ghoster',
+                    running: sinon.stub().returns(true),
+                    ui: {log: sinon.stub()},
+                    checkEnvironment: sinon.stub(),
+                    loadRunningEnvironment: sinon.stub()
+                }
+            };
+            const fsstub = {
+                ensureDirSync: sinon.stub(),
+                access: sinon.stub(),
+                W_OK: fs.W_OK
+            };
+            const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
+            const backup = new BackupCommand();
+
+            return backup.initialize(localContext).then(() => {
+                cwdStub.restore();
+                expect(localContext.instance.ui.log.calledOnce).to.be.true;
+                expect(localContext.zipFile).to.exist;
             });
         });
     });
 
     describe('Database Exports', function () {
         it('Fails when the exporter doesn\'t load', function () {
-            const env = setupEnv(envConfig);
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
-                W_OK: fs.W_OK
-            };
+            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            const BackupCommand = require(modulePath);
+            const backup = new BackupCommand();
 
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const BackupCommand = proxyquire(modulePath, {
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.backupDatabase({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) =>{
                 cwdStub.restore();
-                // @todo: figure out why this returns true
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.false;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
                 expect(error.message).to.match(/Unable to initialize database exporter/)
-                env.cleanup();
             });
         });
 
         it('Errors on MYSQL connection failure', function () {
             const mysqlError = new Error('You\'ve been ghosted!');
             mysqlError.code = 'ECONNREFUSED';
-            const env = setupEnv(envConfig);
             const dbbackupStub = sinon.stub().rejects(mysqlError);
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                access: fs.access,
-                ensureDirSync: fs.ensureDirSync,
-                W_OK: fs.W_OK
-            };
+            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            const exporterLocation = 'current/core/server/data/export/';
+            const BackupCommand = proxyquire(modulePath, {[exporterLocation]: {doExport: dbbackupStub}});
+            const backup = new BackupCommand();
 
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.backupDatabase({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.false;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
+                expect(dbbackupStub.calledOnce).to.be.true;
                 expect(error.message).to.match(/Unable to connect to MySQL/);
-                env.cleanup();
             });
         });
 
         it('Fails on unknown export failure', function () {
-            const env = setupEnv(envConfig);
             const dbbackupStub = sinon.stub().rejects(new Error('What even is backing up'));
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                access: fs.access,
-                ensureDirSync: fs.ensureDirSync,
-                W_OK: fs.W_OK
-            };
+            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            const exporterLocation = 'current/core/server/data/export/';
+            const BackupCommand = proxyquire(modulePath, {[exporterLocation]: {doExport: dbbackupStub}});
+            const backup = new BackupCommand();
 
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.backupDatabase({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.false;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
+                expect(dbbackupStub.calledOnce).to.be.true;
                 expect(error.message).to.match(/What even is backing up/);
-                env.cleanup();
             });
         });
     });
 
     describe('File Exports', function () {
         it('Fails if core data files can\'t be read', function () {
-            const env = setupEnv(envConfig);
-            const dbbackupStub = sinon.stub().resolves({});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub().throws(new Error('File doesn\'t exist')),
-                ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
-                W_OK: fs.W_OK
+            const context = {
+                env: '',
+                zipFile: sinon.stub()
             };
+            const fsstub = {readFileSync: sinon.stub().throws(new Error('File doesn\'t exist'))};
+            const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
+            const backup = new BackupCommand();
 
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.backupConfig(context).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.false;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
-                expect(error.message).to.match(/Failed to create zip file/);
-                env.cleanup();
+                expect(context.zipFile.called).to.be.false;
+                expect(error.message).to.match(/Failed backing up configuration files/);
             });
         });
 
         it('Fails if content folder can\'t be read', function () {
-            const env = setupEnv({
-                files: [{
-                    path: './.ghost-cli',
-                    content: {
-                        'cli-version': '1.1.1',
-                        'active-version': '1.8.0',
-                        name: 'ghost-local',
-                        'previous-version': '1.7.1'
-                    },
-                    json: true
-                }, {
-                    path: './config.production.json',
-                    content: {
-                        test: 'true'
-                    },
-                    json: true
-                }]
-            });
-            const dbbackupStub = sinon.stub().resolves({});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
-                W_OK: fs.W_OK
-            };
+            const walkerStub = sinon.stub().throws(new Error('Access denied'))
+            const BackupCommand = proxyquire(modulePath, {'klaw-sync': walkerStub});
+            const backup = new BackupCommand();
 
-            fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
-            });
-
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
-            const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
-                'fs-extra': fsstub
-            });
-
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.backupContent({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.false;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.called).to.be.false;
                 expect(error.message).to.match(/Failed to read content folder/);
-                env.cleanup();
             });
         });
 
-        it('Links in content folder are skipped & user is notified', function () {
-            const env = setupEnv({
-                dirs: ['content','linker'],
-                links: [['linker','content/casper']],
-                files: [{
-                    path: './.ghost-cli',
-                    content: {
-                        'cli-version': '1.1.1',
-                        'active-version': '1.8.0',
-                        name: 'ghost-local',
-                        'previous-version': '1.7.1'
-                    },
-                    json: true
-                }, {
-                    path: './config.production.json',
-                    content: {
-                        test: 'true'
-                    },
-                    json: true
-                }, {
-                    path: './content/nap.json',
-                    content: {
-                        isreal: true
-                    },
-                    json: true
-                }]
-            });
-            const dbbackupStub = sinon.stub().resolves({});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
-            const fsstub = {
-                readFileSync: sinon.stub(),
-                ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
-                W_OK: fs.W_OK
-            };
+        it('Warns when not backing up a file', function () {
+            const fakeFiles = [{path: './blah/blah/blah.pdf'}, {path: './blah/blah/bleh.bin'}, {path: './blah/blah/blu.txt'}];
+            const walkerStub = sinon.stub().returns(fakeFiles);
+            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            const fsstub = {readFileSync: sinon.stub()};
+            const context = {
+                zipFile: {addFile: sinon.stub()},
+                instance: {ui: {log: sinon.stub()}}
+            }
 
             fsstub.readFileSync.callsFake((location) => {
-                return fs.readFileSync(path.join(env.dir, location));
+                if (location.indexOf('blu') >= 0) {
+                    throw new Error('Baaad file');
+                }
+                return '';
             });
 
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            const exporterLocation = path.join(env.dir, 'current/core/server/data/export/');
             const BackupCommand = proxyquire(modulePath, {
-                [exporterLocation]: {
-                    doExport: dbbackupStub
-                },
+                'klaw-sync': walkerStub,
                 'fs-extra': fsstub
             });
+            const backup = new BackupCommand();
 
-            const ui = {log: sinon.stub(), listr: sinon.stub().callsFake(listrCall)};
-            const fakeInstance = sinon.stub(new Instance(ui, system, env.dir));
-            system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
-            fakeInstance.name = 'ghoster'
-
-            const backup = new BackupCommand(ui,system);
-
-            backup.run({}).then(() => {
+            return backup.backupContent(context).then(() => {
                 cwdStub.restore();
-                expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.true;
-                expect(ui.listr.calledTwice).to.be.true;
-                expect(ui.log.calledOnce).to.be.true;
-                env.cleanup();
+                expect(context.instance.ui.log.calledOnce).to.be.true;
+                expect(context.zipFile.addFile.calledTwice).to.be.true;
             });
         });
     });
