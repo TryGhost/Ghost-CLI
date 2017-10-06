@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.2"></a>
+## [1.1.2](https://github.com/TryGhost/Ghost-CLI/compare/1.1.0...1.1.2) (2017-10-06)
+
+### Bug Fixes
+
+* **config:** ensure non-string args are handled correctly ([8612df2](https://github.com/TryGhost/Ghost-CLI/commit/8612df2)), closes [#479](https://github.com/TryGhost/Ghost-CLI/issues/479)
+* **config:** ensure port number is treated as an integer ([#452](https://github.com/TryGhost/Ghost-CLI/issues/452)) ([aeb772a](https://github.com/TryGhost/Ghost-CLI/commit/aeb772a)), closes [#451](https://github.com/TryGhost/Ghost-CLI/issues/451)
+* **config:** offer better default database name when installing ([#454](https://github.com/TryGhost/Ghost-CLI/issues/454)) ([c40d628](https://github.com/TryGhost/Ghost-CLI/commit/c40d628)), closes [#453](https://github.com/TryGhost/Ghost-CLI/issues/453)
+* **setup:** don’t rewrite no-start option when no-prompt is passed ([bbc2270](https://github.com/TryGhost/Ghost-CLI/commit/bbc2270))
+
 <a name="1.1.1"></a>
 ## [1.1.1](https://github.com/TryGhost/Ghost-CLI/compare/1.1.0...1.1.1) (2017-08-17)
 
