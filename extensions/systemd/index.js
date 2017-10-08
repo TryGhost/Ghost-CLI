@@ -9,7 +9,7 @@ const getUid = require('./get-uid');
 
 class SystemdExtension extends cli.Extension {
     setup(cmd, argv) {
-        let instance = this.system.getInstance();
+        const instance = this.system.getInstance();
 
         if (!argv.local && instance.config.get('process') === 'systemd') {
             cmd.addStage('systemd', this._setup.bind(this), [], 'Systemd');
@@ -17,21 +17,21 @@ class SystemdExtension extends cli.Extension {
     }
 
     _setup(argv, ctx, task) {
-        let uid = getUid(ctx.instance.dir);
+        const uid = getUid(ctx.instance.dir);
 
         if (!uid) {
             this.ui.log('The "ghost" user has not been created, please run `ghost setup linux-user` first', 'yellow');
             return task.skip();
         }
 
-        let serviceFilename = `ghost_${ctx.instance.name}.service`;
+        const serviceFilename = `ghost_${ctx.instance.name}.service`;
 
         if (ctx.instance.cliConfig.get('extension.systemd', false) || fs.existsSync(path.join('/lib/systemd/system', serviceFilename))) {
             this.ui.log('Systemd service has already been set up. Skipping Systemd setup');
             return task.skip();
         }
 
-        let service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
+        const service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
 
         return ctx.instance.template(service({
             name: ctx.instance.name,
@@ -45,7 +45,7 @@ class SystemdExtension extends cli.Extension {
     }
 
     uninstall(instance) {
-        let serviceFilename = `/lib/systemd/system/ghost_${instance.name}.service`;
+        const serviceFilename = `/lib/systemd/system/ghost_${instance.name}.service`;
 
         if (fs.existsSync(serviceFilename)) {
             return this.ui.sudo(`rm ${serviceFilename}`).catch(

@@ -7,7 +7,7 @@ const modulePath = '../get-uid';
 
 describe('Unit: Systemd > get-uid util', function () {
     it('throws error if execa error is not an expected one', function () {
-        let shellStub = sinon.stub().throws(new Error('some error'));
+        const shellStub = sinon.stub().throws(new Error('some error'));
         const getUid = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
         });
@@ -23,25 +23,25 @@ describe('Unit: Systemd > get-uid util', function () {
     });
 
     it('returns null if ghost user doesn\'t exist', function () {
-        let shellStub = sinon.stub().throws(new Error('No such user'));
+        const shellStub = sinon.stub().throws(new Error('No such user'));
         const getUid = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
         });
 
-        let result = getUid('/some/dir');
+        const result = getUid('/some/dir');
         expect(result).to.be.null;
         expect(shellStub.calledOnce).to.be.true;
     });
 
     it('returns null if owner of folder is not the ghost user', function () {
-        let shellStub = sinon.stub().returns({stdout: '42'});
-        let lstatStub = sinon.stub().returns({uid: 1});
+        const shellStub = sinon.stub().returns({stdout: '42'});
+        const lstatStub = sinon.stub().returns({uid: 1});
         const getUid = proxyquire(modulePath, {
             fs: {lstatSync: lstatStub},
             execa: {shellSync: shellStub}
         });
 
-        let result = getUid('/some/dir');
+        const result = getUid('/some/dir');
         expect(result).to.be.null;
         expect(shellStub.calledOnce).to.be.true;
         expect(lstatStub.calledOnce).to.be.true;
@@ -49,14 +49,14 @@ describe('Unit: Systemd > get-uid util', function () {
     });
 
     it('returns uid if owner of content folder is the ghost user', function () {
-        let shellStub = sinon.stub().returns({stdout: '42'});
-        let lstatStub = sinon.stub().returns({uid: 42});
+        const shellStub = sinon.stub().returns({stdout: '42'});
+        const lstatStub = sinon.stub().returns({uid: 42});
         const getUid = proxyquire(modulePath, {
             fs: {lstatSync: lstatStub},
             execa: {shellSync: shellStub}
         });
 
-        let result = getUid('/some/dir');
+        const result = getUid('/some/dir');
         expect(result).to.equal('42');
         expect(shellStub.calledOnce).to.be.true;
         expect(lstatStub.calledOnce).to.be.true;

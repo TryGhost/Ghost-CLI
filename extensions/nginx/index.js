@@ -28,25 +28,25 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        let parsedUrl = url.parse(ctx.instance.config.get('url'));
+        const parsedUrl = url.parse(ctx.instance.config.get('url'));
 
         if (parsedUrl.port) {
             this.ui.log('Your url contains a port. Skipping Nginx setup.', 'yellow');
             return task.skip();
         }
 
-        let confFile = `${parsedUrl.hostname}.conf`;
+        const confFile = `${parsedUrl.hostname}.conf`;
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('Nginx configuration already found for this url. Skipping Nginx setup.', 'yellow');
             return task.skip();
         }
 
-        let conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
+        const conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
 
-        let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
+        const rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
 
-        let generatedConfig = conf({
+        const generatedConfig = conf({
             url: parsedUrl.hostname,
             webroot: rootPath,
             location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
@@ -64,8 +64,8 @@ class NginxExtension extends cli.Extension {
     }
 
     setupSSL(argv, ctx, task) {
-        let parsedUrl = url.parse(ctx.instance.config.get('url'));
-        let confFile = `${parsedUrl.hostname}-ssl.conf`;
+        const parsedUrl = url.parse(ctx.instance.config.get('url'));
+        const confFile = `${parsedUrl.hostname}-ssl.conf`;
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('SSL has already been set up, skipping', 'yellow');
@@ -85,8 +85,8 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
-        let dhparamFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
+        const rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
+        const dhparamFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
@@ -99,7 +99,7 @@ class NginxExtension extends cli.Extension {
 
                     // DNS entry has not populated yet, log an error and skip rest of the
                     // ssl configuration
-                    let text = [
+                    const text = [
                         'Uh-oh! It looks like your domain isn\'t set up correctly yet.',
                         'Because of this, SSL setup won\'t work correctly. Once you\'ve set up your domain',
                         'and pointed it at this server\'s IP, try running `ghost setup ssl` again.'
@@ -133,9 +133,9 @@ class NginxExtension extends cli.Extension {
             skip: (ctx) => ctx.dnsfail,
             task: () => {
                 return execa.shell('curl https://get.acme.sh | sh').then(() => {
-                    let acmeScriptPath = path.join(os.homedir(), '.acme.sh', 'acme.sh');
+                    const acmeScriptPath = path.join(os.homedir(), '.acme.sh', 'acme.sh');
 
-                    let cmd = `${acmeScriptPath} --issue --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
+                    const cmd = `${acmeScriptPath} --issue --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
                         `--accountemail ${argv.sslemail}${argv.sslstaging ? ' --staging' : ''}`;
 
                     return execa.shell(cmd);
@@ -157,9 +157,9 @@ class NginxExtension extends cli.Extension {
             title: 'Generating SSL security headers',
             skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
-                let sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
+                const sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
                 return ctx.instance.template(
-                    sslParamsConf({ dhparam: dhparamFile }),
+                    sslParamsConf({dhparam: dhparamFile}),
                     'ssl security parameters',
                     'ssl-params.conf'
                 );
@@ -168,9 +168,9 @@ class NginxExtension extends cli.Extension {
             title: 'Generating SSL configuration',
             skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
-                let acmeFolder = path.join(os.homedir(), '.acme.sh', parsedUrl.hostname);
-                let sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
-                let generatedSslConfig = sslConf({
+                const acmeFolder = path.join(os.homedir(), '.acme.sh', parsedUrl.hostname);
+                const sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
+                const generatedSslConfig = sslConf({
                     url: parsedUrl.hostname,
                     webroot: rootPath,
                     fullchain: path.join(acmeFolder, 'fullchain.cer'),
@@ -197,11 +197,11 @@ class NginxExtension extends cli.Extension {
     }
 
     uninstall(instance) {
-        let parsedUrl = url.parse(instance.config.get('url'));
-        let confFile = `${parsedUrl.hostname}.conf`;
-        let sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
+        const parsedUrl = url.parse(instance.config.get('url'));
+        const confFile = `${parsedUrl.hostname}.conf`;
+        const sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
 
-        let promises = [];
+        const promises = [];
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             // Nginx config exists, remove it
