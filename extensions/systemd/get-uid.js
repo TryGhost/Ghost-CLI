@@ -12,8 +12,8 @@ const execa = require('execa');
  */
 module.exports = function getUid(dir) {
     try {
-        let uid = execa.shellSync('id -u ghost').stdout;
-        let stat = fs.lstatSync(path.join(dir, 'content'));
+        const uid = execa.shellSync('id -u ghost').stdout;
+        const stat = fs.lstatSync(path.join(dir, 'content'));
 
         if (stat.uid.toString() !== uid) {
             // Ghost user is not the owner of this folder, return null

@@ -72,7 +72,7 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     _precheck() {
-        let uid = getUid(this.instance.dir);
+        const uid = getUid(this.instance.dir);
 
         if (!uid) {
             throw new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup linux-user systemd` and try again.')
