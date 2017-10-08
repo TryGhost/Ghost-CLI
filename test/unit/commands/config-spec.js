@@ -192,7 +192,12 @@ describe('Unit: Command > Config', function () {
             expect(passprompt).to.be.ok;
             expect(passprompt.message).to.match(/skip to keep current/);
 
-            expect(result.find(prompt => prompt.name === 'dbname')).to.be.ok;
+            const nameprompt = result.find(prompt => prompt.name === 'dbname');
+            expect(nameprompt).to.be.ok;
+            expect(nameprompt.validate('example123')).to.be.true;
+            expect(nameprompt.validate('example123.com')).to.match(/consist of only alpha/);
+            expect(nameprompt.validate('example-123')).to.match(/consist of only alpha/);
+            expect(nameprompt.validate('example!!!')).to.match(/consist of only alpha/);
         });
 
         it('doesn\'t return dbhost prompt if dbhost provided', function () {
