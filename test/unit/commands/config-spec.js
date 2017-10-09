@@ -291,7 +291,8 @@ describe('Unit: Command > Config', function () {
         });
 
         it('calls handleAdvancedOptions without prompts if no-prompt is set', function () {
-            const getInstanceStub = sinon.stub().returns({});
+            const checkEnvironmentStub = sinon.stub();
+            const getInstanceStub = sinon.stub().returns({checkEnvironment: checkEnvironmentStub});
 
             const config = new ConfigCommand({}, {getInstance: getInstanceStub});
             const getConfigPromptsStub = sinon.stub(config, 'getConfigPrompts').returns([]);
@@ -299,6 +300,7 @@ describe('Unit: Command > Config', function () {
 
             return config.run({prompt: false}).then((result) => {
                 expect(result).to.deep.equal({result: true});
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.args[0][0]).to.deep.equal({prompt: false});
                 expect(handleAdvancedOptionsStub.calledOnce).to.be.true;
@@ -306,8 +308,27 @@ describe('Unit: Command > Config', function () {
             });
         });
 
+        it('does not call checkEnvironment if ignoreEnvCheck is passed', function () {
+            const checkEnvironmentStub = sinon.stub();
+            const getInstanceStub = sinon.stub().returns({checkEnvironment: checkEnvironmentStub});
+
+            const config = new ConfigCommand({}, {getInstance: getInstanceStub});
+            const getConfigPromptsStub = sinon.stub(config, 'getConfigPrompts').returns([]);
+            const handleAdvancedOptionsStub = sinon.stub(config, 'handleAdvancedOptions').resolves({result: true});
+
+            return config.run({prompt: false, ignoreEnvCheck: true}).then((result) => {
+                expect(result).to.deep.equal({result: true});
+                expect(checkEnvironmentStub.called).to.be.false;
+                expect(getConfigPromptsStub.calledOnce).to.be.true;
+                expect(getConfigPromptsStub.args[0][0]).to.deep.equal({prompt: false, ignoreEnvCheck: true});
+                expect(handleAdvancedOptionsStub.calledOnce).to.be.true;
+                expect(handleAdvancedOptionsStub.args[0][0]).to.deep.equal({prompt: false, ignoreEnvCheck: true});
+            });
+        });
+
         it('calls handleAdvancedOptions without prompts if no prompts are needed', function () {
-            const getInstanceStub = sinon.stub().returns({});
+            const checkEnvironmentStub = sinon.stub();
+            const getInstanceStub = sinon.stub().returns({checkEnvironment: checkEnvironmentStub});
 
             const config = new ConfigCommand({}, {getInstance: getInstanceStub});
             const getConfigPromptsStub = sinon.stub(config, 'getConfigPrompts').returns([]);
@@ -315,6 +336,7 @@ describe('Unit: Command > Config', function () {
 
             return config.run({prompt: true}).then((result) => {
                 expect(result).to.deep.equal({result: true});
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.args[0][0]).to.deep.equal({prompt: true});
                 expect(handleAdvancedOptionsStub.calledOnce).to.be.true;
@@ -323,7 +345,8 @@ describe('Unit: Command > Config', function () {
         });
 
         it('prompts with defined prompts, passes result to handleAdvancedOptions', function () {
-            const getInstanceStub = sinon.stub().returns({});
+            const checkEnvironmentStub = sinon.stub();
+            const getInstanceStub = sinon.stub().returns({checkEnvironment: checkEnvironmentStub});
             const promptStub = sinon.stub().resolves({});
 
             const config = new ConfigCommand({prompt: promptStub}, {getInstance: getInstanceStub});
@@ -332,6 +355,7 @@ describe('Unit: Command > Config', function () {
 
             return config.run({prompt: true}).then((result) => {
                 expect(result).to.deep.equal({result: true});
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.args[0][0]).to.deep.equal({prompt: true});
                 expect(promptStub.calledOnce).to.be.true;
@@ -342,7 +366,8 @@ describe('Unit: Command > Config', function () {
         });
 
         it('sets db to mysql if dbhost is provided via prompts', function () {
-            const getInstanceStub = sinon.stub().returns({});
+            const checkEnvironmentStub = sinon.stub();
+            const getInstanceStub = sinon.stub().returns({checkEnvironment: checkEnvironmentStub});
             const promptStub = sinon.stub().resolves({dbhost: 'localhost'});
 
             const config = new ConfigCommand({prompt: promptStub}, {getInstance: getInstanceStub});
@@ -351,6 +376,7 @@ describe('Unit: Command > Config', function () {
 
             return config.run({prompt: true}).then((result) => {
                 expect(result).to.deep.equal({result: true});
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.args[0][0]).to.deep.equal({prompt: true, db: 'mysql', dbhost: 'localhost'});
                 expect(promptStub.calledOnce).to.be.true;
@@ -361,7 +387,8 @@ describe('Unit: Command > Config', function () {
         });
 
         it('doesn\'t add null prompt values to argv object', function () {
-            const getInstanceStub = sinon.stub().returns({});
+            const checkEnvironmentStub = sinon.stub();
+            const getInstanceStub = sinon.stub().returns({checkEnvironment: checkEnvironmentStub});
             const promptStub = sinon.stub().resolves({dbhost: 'localhost', dbpass: ''});
 
             const config = new ConfigCommand({prompt: promptStub}, {getInstance: getInstanceStub});
@@ -370,6 +397,7 @@ describe('Unit: Command > Config', function () {
 
             return config.run({prompt: true}).then((result) => {
                 expect(result).to.deep.equal({result: true});
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.calledOnce).to.be.true;
                 expect(getConfigPromptsStub.args[0][0]).to.deep.equal({prompt: true, db: 'mysql', dbhost: 'localhost'});
                 expect(promptStub.calledOnce).to.be.true;
