@@ -51,7 +51,11 @@ describe('Unit: Commands > Backup', function () {
             const env = setupEnv(envConfig);
             const dbbackupStub = sinon.stub().resolves({});
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const system = {getInstance: sinon.stub(), environment: 'production'};
+            const system = {
+                getInstance: sinon.stub(),
+                environment: 'production',
+                hook: sinon.stub().resolves([])
+            };
             const fsstub = {
                 readFileSync: sinon.stub(),
                 ensureDirSync: fs.ensureDirSync,
@@ -83,6 +87,7 @@ describe('Unit: Commands > Backup', function () {
             return backup.run({}).then(() => {
                 cwdStub.restore();
                 expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.true;
+                expect(system.hook.calledOnce).to.be.true;
                 expect(ui.listr.calledOnce).to.be.true;
                 expect(ui.log.calledOnce).to.be.true;
                 env.cleanup();
@@ -281,6 +286,117 @@ describe('Unit: Commands > Backup', function () {
                 cwdStub.restore();
                 expect(context.instance.ui.log.calledOnce).to.be.true;
                 expect(context.zipFile.addFile.calledTwice).to.be.true;
+            });
+        });
+    });
+
+    describe('Extension Backups', function () {
+        it('Hooks are properly called', function () {
+            const files = {
+                '/var/www/ghost/system/files/test.conf': '[test]',
+                '/var/www/ghost/system/files/test-ssl.conf': '[test-ssl]',
+                '/var/www/ghost/system/files/test.service': '[service]'
+            };
+
+            const fileStore = {};
+            const readStub = sinon.stub().callsFake((location) => files[location]);
+            const addFileStub = sinon.stub().callsFake((location, contents) => fileStore[location] = contents);
+            const Backup = proxyquire(modulePath, {'fs-extra': {readFileSync: readStub}});
+
+            const hook1 = [{
+                fileName: 'process.service',
+                location: '/var/www/ghost/system/files/test.service'
+            }];
+
+            const hook2 = [{
+                fileName: 'route.conf',
+                location: '/var/www/ghost/system/files/test.conf'
+            }, {
+                fileName: 'route-ssl.conf',
+                location: '/var/www/ghost/system/files/test-ssl.conf'
+            }];
+
+            // First is one file, second doesn't support, third is two files
+            const hookStub = sinon.stub().callsFake(function checkName(name) {
+                if (name === 'backup') {
+                    return Promise.resolve([hook1, undefined, hook2]);
+                } else {
+                    return Promise.reject('Expected backup hook to be called');
+                }
+            });
+            const BackupCmd = new Backup();
+
+            const ctx = {
+                hook: hookStub,
+                zipFile: {addFile: addFileStub}
+            };
+
+            return BackupCmd.backupExtensions(ctx).then(function () {
+                const expectedFileStore = {
+                    'extension/process.service': '[service]',
+                    'extension/route.conf': '[test]',
+                    'extension/route-ssl.conf': '[test-ssl]'
+                };
+                expect(addFileStub.calledThrice).to.be.true;
+                expect(readStub.calledThrice).to.be.true;
+                expect(hookStub.calledOnce).to.be.true;
+                expect(expectedFileStore).to.deep.equal(fileStore);
+            });
+        });
+
+        it('Properly warns when a file isn\'t added', function () {
+            const files = {'/var/www/ghost/system/files/test.service': '[service]'};
+            const fileStore = {};
+            const readStub = sinon.stub().callsFake(function getFile(location) {
+                if (files[location] !== undefined) {
+                    return files[location];
+                } else {
+                    throw new Error('This file is not supposed to exist');
+                }
+            });
+            const addFileStub = sinon.stub().callsFake((location, contents) => fileStore[location] = contents);
+            const Backup = proxyquire(modulePath, {'fs-extra': {readFileSync: readStub}});
+
+            const hook1 = [{
+                fileName: 'process.service',
+                location: '/var/www/ghost/system/files/test.service'
+            }];
+
+            const hook2 = [{
+                fileName: 'route.conf',
+                location: '/var/www/ghost/system/files/test.conf'
+            }];
+
+            const hook3 = [{
+                fileName: 'route-ssl.conf',
+                location: '/var/www/ghost/system/files/test-ssl.conf',
+                description: 'SSL config'
+            }];
+
+            const hookStub = sinon.stub().callsFake(function checkName(name) {
+                if (name === 'backup') {
+                    return Promise.resolve([hook1, undefined, hook2, hook3]);
+                } else {
+                    return Promise.reject('Expected backup hook to be called');
+                }
+            });
+            const BackupCmd = new Backup();
+
+            const ctx = {
+                hook: hookStub,
+                zipFile: {addFile: addFileStub},
+                ui: {log: sinon.stub()}
+            };
+
+            return BackupCmd.backupExtensions(ctx).then(function () {
+                const expectedFileStore = {'extension/process.service': '[service]'};
+                expect(addFileStub.calledOnce).to.be.true;
+                expect(readStub.calledThrice).to.be.true;
+                expect(hookStub.calledOnce).to.be.true;
+                expect(expectedFileStore).to.deep.equal(fileStore);
+                expect(ctx.ui.log.calledTwice).to.be.true;
+                expect(ctx.ui.log.getCall(0).args[0]).to.equal('Not backing up "/var/www/ghost/system/files/test.conf" - This file is not supposed to exist');
+                expect(ctx.ui.log.getCall(1).args[0]).to.equal('Not backing up "SSL config" - This file is not supposed to exist');
             });
         });
     });
