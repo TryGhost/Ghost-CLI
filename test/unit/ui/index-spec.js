@@ -285,7 +285,7 @@ describe('Unit: UI', function () {
         // @todo: finish and fix this
         let ui;
 
-        before(function() {
+        before(function () {
             ui = new UI();
         });
 
@@ -299,7 +299,7 @@ describe('Unit: UI', function () {
                     _formatDebug: sinon.stub().returns('cherries')
                 };
 
-                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message:'Bad Stack',logToFile:true})];
+                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
 
                 errs.forEach((err) => {
                     ui.error.bind(ctx)(err, system);
@@ -328,7 +328,7 @@ describe('Unit: UI', function () {
                     _formatDebug: sinon.stub().returns('cherries')
                 };
 
-                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message:'Bad Stack',logToFile:true})];
+                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
 
                 errs.forEach((err) => {
                     ui.error.bind(ctx)(err, system);
@@ -348,7 +348,6 @@ describe('Unit: UI', function () {
 
                 done();
             });
-
         });
 
         describe('handles generic errors', function () {
@@ -361,7 +360,7 @@ describe('Unit: UI', function () {
                 };
                 const errs = [new Error('Error 1'), new Error('Error 2'), new Error('Error 3'), new Error('Error 4')];
                 errs[0].code = 404;
-                errs[1].path = "/var/www/ghost/index.js";
+                errs[1].path = '/var/www/ghost/index.js';
                 errs[2].stack = null;
 
                 errs.forEach(function (err) {
@@ -413,10 +412,10 @@ describe('Unit: UI', function () {
         it('handles objects', function (done) {
             const ctx = {log: sinon.stub(), _formatDebug: sinon.stub()};
             const testError = {
-                'him': 'her',
-                'this': 'that',
-                'here': 'there',
-                'enough': 'probably'
+                him: 'her',
+                this: 'that',
+                here: 'there',
+                enough: 'probably'
             };
             const expectedCall = JSON.stringify(testError);
 
