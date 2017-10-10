@@ -2,6 +2,7 @@
 const expect = require('chai').expect;
 const chalk = require('chalk');
 const hasAnsi = require('has-ansi');
+const stripAnsi = require('strip-ansi');
 const sinon = require('sinon');
 const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
@@ -47,8 +48,7 @@ describe('Unit: UI', function () {
             const ctx = {
                 stdout: {write: sinon.stub()},
                 stderr: {write: sinon.stub()}
-            }
-
+            };
             const ui = new UI();
 
             ui.log.bind(ctx)('Error', null, true);
@@ -175,7 +175,6 @@ describe('Unit: UI', function () {
 
         it('quietly returns a value', function (done) {
             const testRet = {data: 'test'};
-
             ui.run(testRet, null, {quiet: true}).then((resolved) => {
                 expect(resolved, 'Returned proper values').to.deep.equal(testRet);
                 done();
@@ -203,8 +202,7 @@ describe('Unit: UI', function () {
         expect(ctx.log.calledOnce).to.be.true;
 
         // Clear out all of the escape characters and split by line
-        // @todo implement where eslint won't complain
-        const actualTable = ctx.log.getCall(0).args[0].replace(/..../g,'').split(/\n/); // eslint-disable-line no-control-regex
+        const actualTable = stripAnsi(ctx.log.getCall(0).args[0]).split(/\n/);
         expect(actualTable).to.deep.equal(expectTable);
 
         done();
@@ -237,7 +235,7 @@ describe('Unit: UI', function () {
             }
         });
 
-        it('calls inquirer with the prompts', function (done) {
+        it('passes through options to prompt method', function (done) {
             const ctx = {
                 allowPrompt: true,
                 noSpin: sinon.stub().callsFake(run => run()),
@@ -261,14 +259,12 @@ describe('Unit: UI', function () {
     it('#confirm calls prompt', function (done) {
         const ui = new UI();
         const ctx = {prompt: sinon.stub()};
-
         const testA = {
             type: 'confirm',
             name: 'yes',
             message: 'Is the sky blue',
             default: 'yes'
         };
-
         const testB = {
             type: 'confirm',
             name: 'yes',
@@ -283,5 +279,167 @@ describe('Unit: UI', function () {
         expect(ctx.prompt.getCall(0).args[0]).to.deep.equal(testA);
         expect(ctx.prompt.getCall(1).args[0]).to.deep.equal(testB);
         done();
+    });
+
+    describe('#error', function () {
+        // @todo: finish and fix this
+        let ui;
+
+        before(function() {
+            ui = new UI();
+        });
+
+        describe('Handles cliError', function () {
+            const errors = require('../../../lib/errors');
+            it('verbose', function (done) {
+                const system = {writeErrorLog: sinon.stub()};
+                const ctx = {
+                    verbose: true,
+                    log: sinon.stub(),
+                    _formatDebug: sinon.stub().returns('cherries')
+                };
+
+                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message:'Bad Stack',logToFile:true})];
+
+                errs.forEach((err) => {
+                    ui.error.bind(ctx)(err, system);
+                });
+
+                expect(ctx.log.called).to.be.true;
+                expect(ctx._formatDebug.calledTwice).to.be.true;
+                expect(system.writeErrorLog.calledOnce).to.be.true;
+                expect(ctx.log.getCall(0).args[0]).to.match(/Config/);
+                expect(ctx.log.getCall(1).args[0]).to.equal(errs[0].toString(true));
+                expect(ctx.log.getCall(2).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(3).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(ctx.log.getCall(4).args[0]).to.match(/Cli/);
+                expect(ctx.log.getCall(5).args[0]).to.equal(errs[1].toString(true));
+                expect(ctx.log.getCall(6).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(7).args[0]).to.match(/Additional log info/);
+
+                done();
+            });
+
+            it('non-verbose', function (done) {
+                const system = {writeErrorLog: sinon.stub()};
+                const ctx = {
+                    verbose: false,
+                    log: sinon.stub(),
+                    _formatDebug: sinon.stub().returns('cherries')
+                };
+
+                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message:'Bad Stack',logToFile:true})];
+
+                errs.forEach((err) => {
+                    ui.error.bind(ctx)(err, system);
+                });
+
+                sinon.assert.callCount(ctx.log,9);
+                expect(ctx._formatDebug.calledTwice).to.be.true;
+                expect(system.writeErrorLog.calledOnce).to.be.true;
+                expect(ctx.log.getCall(0).args[0]).to.match(/Config/);
+                expect(ctx.log.getCall(1).args[0]).to.equal(errs[0].toString(false));
+                expect(ctx.log.getCall(2).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(3).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(ctx.log.getCall(4).args[0]).to.match(/Cli/);
+                expect(ctx.log.getCall(5).args[0]).to.equal(errs[1].toString(false));
+                expect(ctx.log.getCall(6).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(7).args[0]).to.match(/Additional log info/);
+
+                done();
+            });
+
+        });
+
+        describe('handles generic errors', function () {
+            it('verbosly', function (done) {
+                const system = {writeErrorLog: sinon.stub()};
+                const ctx = {
+                    verbose: true,
+                    log: sinon.stub(),
+                    _formatDebug: sinon.stub()
+                };
+                const errs = [new Error('Error 1'), new Error('Error 2'), new Error('Error 3'), new Error('Error 4')];
+                errs[0].code = 404;
+                errs[1].path = "/var/www/ghost/index.js";
+                errs[2].stack = null;
+
+                errs.forEach(function (err) {
+                    ui.error.bind(ctx)(err, system);
+                });
+
+
+                const expectedErrors = [
+                    `An error occurred.\nMessage: '${errs[0].message}'\n\nStack: ${errs[0].stack}\nCode: ${errs[0].code}\n`.split('\n'),
+                    `An error occurred.\nMessage: '${errs[1].message}'\n\nStack: ${errs[1].stack}\nPath: ${errs[1].path}\n`.split('\n'),
+                    `An error occurred.\nMessage: '${errs[2].message}'\n\n`.split('\n'),
+                    `An error occurred.\nMessage: '${errs[3].message}'\n\nStack: ${errs[3].stack}\n`.split('\n')
+                ];
+                // Log is called 4 times per run
+                sinon.assert.callCount(ctx.log, 16);
+                sinon.assert.callCount(ctx._formatDebug, 4);
+                sinon.assert.callCount(system.writeErrorLog, 4);
+                expectedErrors.forEach(function (err, i) {
+                    expect(ctx.log.getCall(i * 4 + 2).args[0]).to.match(/Additional log info/);
+                    expect(ctx.log.getCall(i * 4 + 3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                    expect(stripAnsi(ctx.log.getCall(i * 4).args[0]).split(/\n/)).to.deep.equal(err);
+                });
+                done();
+            });
+
+            it('non-verbose', function (done) {
+                const system = {writeErrorLog: sinon.stub()};
+                const ctx = {
+                    verbose: false,
+                    log: sinon.stub(),
+                    _formatDebug: sinon.stub()
+                };
+                const err = new Error('!!!error!!!');
+                const expectedError = `An error occurred.\nMessage: '${err.message}'\n\n`.split('\n');
+
+                ui.error.bind(ctx)(err, system);
+
+                sinon.assert.callCount(ctx.log, 4);
+                expect(ctx._formatDebug.calledOnce).to.be.true;
+                expect(system.writeErrorLog.calledOnce).to.be.true;
+                expect(ctx.log.getCall(2).args[0]).to.match(/Additional log info/);
+                expect(ctx.log.getCall(3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                expect(stripAnsi(ctx.log.getCall(0).args[0]).split(/\n/)).to.deep.equal(expectedError);
+
+                done();
+            });
+        });
+
+        it('handles objects', function (done) {
+            const ctx = {log: sinon.stub(), _formatDebug: sinon.stub()};
+            const testError = {
+                'him': 'her',
+                'this': 'that',
+                'here': 'there',
+                'enough': 'probably'
+            };
+            const expectedCall = JSON.stringify(testError);
+
+            ui.error.bind(ctx)(testError);
+
+            expect(ctx._formatDebug.calledOnce).to.be.true;
+            expect(ctx.log.calledOnce).to.be.true;
+            expect(ctx.log.getCall(0).args[0]).to.deep.equal(expectedCall);
+            expect(ctx.log.getCall(0).args[2]).to.be.true;
+
+            done();
+        });
+
+        it('handles strings', function (done) {
+            const ctx = {log: sinon.stub(), _formatDebug: sinon.stub()};
+            ui.error.bind(ctx)('That\'s a known issue');
+
+            expect(ctx._formatDebug.calledOnce).to.be.true;
+            expect(ctx.log.calledOnce).to.be.true;
+            expect(ctx.log.getCall(0).args[0]).to.match(/error occured/);
+            expect(ctx.log.getCall(0).args[2]).to.be.true;
+
+            done();
+        });
     });
 });
