@@ -42,6 +42,49 @@ describe('Unit: UI', function () {
             const ui = new UI({stdout: stdout});
             ui.log('test', 'green');
         });
+
+        it('outputs message to proper stream', function (done) {
+            const ctx = {
+                stdout: {write: sinon.stub()},
+                stderr: {write: sinon.stub()}
+            }
+
+            const ui = new UI();
+
+            ui.log.bind(ctx)('Error', null, true);
+            ui.log.bind(ctx)('Good', null, false);
+
+            expect(ctx.stdout.write.calledOnce).to.be.true;
+            expect(ctx.stderr.write.calledOnce).to.be.true;
+            expect(ctx.stderr.write.getCall(0).args[0]).to.equal('Error\n');
+            expect(ctx.stdout.write.getCall(0).args[0]).to.equal('Good\n');
+
+            done();
+        });
+
+        it('resets spinner', function (done) {
+            const ui = new UI();
+            const write = sinon.stub()
+            const ctx = {
+                spinner: {
+                    stop: sinon.stub(),
+                    paused: false,
+                    start: sinon.stub()
+                },
+                stdout: {write}
+            };
+
+            ui.log.bind(ctx)('test');
+            ui.log.bind({stdout: {write}})('best');
+
+            expect(ctx.spinner.stop.calledOnce).to.be.true;
+            expect(ctx.spinner.start.calledOnce).to.be.true;
+            expect(write.calledTwice).to.be.true;
+            expect(write.getCall(0).args[0]).to.equal('test\n');
+            expect(write.getCall(1).args[0]).to.equal('best\n');
+
+            done();
+        });
     });
 
     describe('#logVerbose', function () {
@@ -120,5 +163,125 @@ describe('Unit: UI', function () {
                 done();
             });
         });
+
+        it('quietly calls a function', function (done) {
+            const testFun = sinon.stub().returns('Shh');
+            ui.run(testFun, null, {quiet: true}).then((resolver) => {
+                expect(testFun.calledOnce, 'Function called').to.be.true;
+                expect(resolver, 'Returned proper values').to.equal('Shh');
+                done();
+            });
+        });
+
+        it('quietly returns a value', function (done) {
+            const testRet = {data: 'test'};
+
+            ui.run(testRet, null, {quiet: true}).then((resolved) => {
+                expect(resolved, 'Returned proper values').to.deep.equal(testRet);
+                done();
+            });
+        });
+    });
+
+    it('#table creates a pretty looking table', function (done) {
+        const ui = new UI();
+        const ctx = {log: sinon.stub()};
+        const expectTable = [
+            '┌───┬───┬───┐',
+            '│ a │ b │ c │',
+            '├───┼───┼───┤',
+            '│ d │ e │ f │',
+            '├───┼───┼───┤',
+            '│ g │ h │ i │',
+            '├───┼───┼───┤',
+            '│ j │ k │ l │',
+            '└───┴───┴───┘'
+        ];
+
+        ui.table.bind(ctx)(['a','b','c'], [['d','e','f'], ['g','h','i'], ['j','k','l']]);
+
+        expect(ctx.log.calledOnce).to.be.true;
+
+        // Clear out all of the escape characters and split by line
+        // @todo implement where eslint won't complain
+        const actualTable = ctx.log.getCall(0).args[0].replace(/..../g,'').split(/\n/); // eslint-disable-line no-control-regex
+        expect(actualTable).to.deep.equal(expectTable);
+
+        done();
+    });
+
+    describe('#prompt', function () {
+        let ui;
+
+        before(function () {
+            ui = new UI();
+        });
+
+        it('fails when prompting is disabled', function (done) {
+            const ctx = {
+                allowPrompt: false,
+                noSpin: sinon.stub()
+            };
+            try {
+                ui.prompt.bind(ctx)({
+                    name: 'test',
+                    type: 'input',
+                    message: 'Enter anything'
+                });
+                expect(false, 'An error should have been thrown').to.be.true;
+                done();
+            } catch (error) {
+                expect(ctx.noSpin.called).to.be.false;
+                expect(error.message).to.match(/Prompts have been disabled/);
+                done();
+            }
+        });
+
+        it('calls inquirer with the prompts', function (done) {
+            const ctx = {
+                allowPrompt: true,
+                noSpin: sinon.stub().callsFake(run => run()),
+                inquirer: sinon.stub().callsFake((prompts) => prompts)
+            };
+            const prompt = {
+                name: 'test',
+                type: 'input',
+                message: 'Enter anything'
+            };
+
+            ui.prompt.bind(ctx)(prompt);
+
+            expect(ctx.inquirer.called).to.be.true;
+            expect(ctx.noSpin.calledOnce).to.be.true;
+
+            done();
+        });
+    });
+
+    it('#confirm calls prompt', function (done) {
+        const ui = new UI();
+        const ctx = {prompt: sinon.stub()};
+
+        const testA = {
+            type: 'confirm',
+            name: 'yes',
+            message: 'Is the sky blue',
+            default: 'yes'
+        };
+
+        const testB = {
+            type: 'confirm',
+            name: 'yes',
+            message: 'Is ghost just a blogging platform',
+            default: undefined
+        };
+
+        ui.confirm.bind(ctx)('Is the sky blue', 'yes');
+        ui.confirm.bind(ctx)('Is ghost just a blogging platform');
+
+        expect(ctx.prompt.calledTwice).to.be.true;
+        expect(ctx.prompt.getCall(0).args[0]).to.deep.equal(testA);
+        expect(ctx.prompt.getCall(1).args[0]).to.deep.equal(testB);
+        done();
     });
 });
