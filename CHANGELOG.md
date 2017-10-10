@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.3"></a>
+## [1.1.3](https://github.com/TryGhost/Ghost-CLI/compare/1.1.2...v1.1.3) (2017-10-10)
+
+### Bug Fixes
+
+* **config:** add 'ses' to valid mail config transport options (#492) ([7f51138](https://github.com/TryGhost/Ghost-CLI/commit/7f51138)), closes [#467](https://github.com/TryGhost/Ghost-CLI/issues/467)
+* **config:** run environment check when not part of ghost setup ([9126a47](https://github.com/TryGhost/Ghost-CLI/commit/9126a47)), closes [#265](https://github.com/TryGhost/Ghost-CLI/issues/265)
+* **setup:** strip undesirable characters out of DB name (#486) ([5878002](https://github.com/TryGhost/Ghost-CLI/commit/5878002))
+* **system:** use mapSeries rather than each ([9500899](https://github.com/TryGhost/Ghost-CLI/commit/9500899))
+
 <a name="1.1.2"></a>
 ## [1.1.2](https://github.com/TryGhost/Ghost-CLI/compare/1.1.1...1.1.2) (2017-10-06)
 
