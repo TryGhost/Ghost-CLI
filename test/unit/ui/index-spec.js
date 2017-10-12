@@ -168,24 +168,73 @@ describe('Unit: UI', function () {
     });
 
     describe('#listr', function () {
-        // This is purposefully left as a tree...
-        // @todo: figure out how to test instances of classes
         it('passes tasks to constructor', function (done) {
-            const Listr = require('listr');
+            class Listr {run() {}}
             const ListrStub = sinon.spy(function () {
                 return sinon.createStubInstance(Listr);
             });
             const UI = proxyquire(modulePath, {listr: ListrStub});
             const ui = new UI();
+            const tasks = ['test','ing','is','necessary'];
 
-            ui.listr(['test','ing']);
+            ui.listr(tasks);
 
             expect(ListrStub.calledWithNew()).to.be.true;
+            expect(ListrStub.firstCall.args[0]).to.deep.equal(tasks);
             done();
+        });
+
+        it('sets verbose renderer', function (done) {
+            const ctx = {verbose: true};
+            class Listr {run() {}}
+            const ListrStub = sinon.spy(function () {
+                return sinon.createStubInstance(Listr);
+            });
+            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const ui = new UI();
+            const tasks = ['test','ing','is','necessary'];
+
+            ui.listr.bind(ctx)(tasks);
+
+            expect(ListrStub.calledWithNew()).to.be.true;
+            expect(ListrStub.firstCall.args[0]).to.deep.equal(tasks);
+            expect(ListrStub.firstCall.args[1].renderer).to.equal('verbose');
+            done();
+        });
+
+        // @todo: Is this an acceptable way to test
+        it('passes context through', function () {
+            const ui = new UI();
+            const context = {
+                write: 'tests',
+                like: 'there\'s',
+                no: 'tomorrow',
+                title: 'context test'
+            };
+            const tasks = [{
+                title: 'test',
+                task: (ctx) => {
+                    expect(ctx).to.deep.equal(context);
+                }
+            }];
+
+            return ui.listr(tasks,context);
+        });
+
+        it('ignores context if requested', function () {
+            const ui = new UI();
+            const tasks = [{
+                title: 'test',
+                task: (ctx) => {
+                    expect(ctx).to.be.undefined;
+                }
+            }];
+
+            return ui.listr(tasks,false);
         });
     });
 
-    it('#sudo', function (done) {
+    it('#sudo runs a sudo command', function (done) {
         const execa = require('execa');
         const ctx = {
             log: sinon.stub(),

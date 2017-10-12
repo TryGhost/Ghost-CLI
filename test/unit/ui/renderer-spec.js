@@ -1,17 +1,32 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const stripAnsi = require('strip-ansi');
+const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../../../lib/ui/renderer';
 const Renderer = require(modulePath);
 
-// TODO: remove line once tests are implemented
-require(modulePath);
-
 describe('Unit: UI > Renderer', function () {
-    it('can be created successfully', function () {
+    it('can be created successfully', function (done) {
         const rdr = new Renderer();
 
         expect(rdr).to.be.ok;
+        done();
+    });
+
+    it('constructs a new UI if needed', function (done) {
+        class UI {}
+        const uiStub = sinon.spy(function () {
+            return sinon.createStubInstance(UI);
+        });
+        const Rdr = proxyquire(modulePath,{'./index': uiStub});
+
+        Rdr.ui = null;
+        const rdr = new Rdr();
+
+        expect(uiStub.calledWithNew()).to.be.true;
+        expect(rdr).to.be.ok;
+        done();
     });
 
     describe('#render', function () {
@@ -63,7 +78,7 @@ describe('Unit: UI > Renderer', function () {
             const ctx = {
                 tasks: [
                     {subscribe: sinon.stub()},
-                    {subscribe: sinon.stub()},
+                    {subscribe: sinon.stub()}
                 ]
             };
 
@@ -231,21 +246,22 @@ describe('Unit: UI > Renderer', function () {
             expect(ctx.spinner.start.calledOnce).to.be.true;
             expect(ctx.spinner.start.firstCall.args[0]).to.equal('2 | 5 | 6');
 
-            done()
+            done();
         });
 
-        xit('spinner does nothing with no tasks', function (done) {
+        it('spinner does nothing with no tasks', function (done) {
             const ctx = {
                 tasks: [],
-                spinner:{
-                    paused: false,
-                    start: sinon.stub()
-                }
+                spinner: {
+                    start: sinon.stub(),
+                    paused: false
+                },
+                buildText: sinon.stub().callsFake((ret) => ret.name)
             };
 
             rdr.frame.bind(ctx)();
 
-            expect(spinner.start.called).to.be.false;
+            expect(ctx.spinner.start.called).to.be.false;
             done();
         });
 
@@ -296,33 +312,110 @@ describe('Unit: UI > Renderer', function () {
         });
     });
 
-    describe.only('#buildText', function () {
+    describe('#buildText', function () {
         let rdr;
 
         before(function () {
             rdr = new Renderer();
         });
 
-        it('works when task has subtasks', function (done) {
+        it('no subtasks, yes output', function (done) {
             const task = {
-                hasSubtasks: sinon.stub().returns(true),
-                output: 'T-Rex',
+                hasSubtasks: sinon.stub().returns(false),
+                output: '     my \n name \n is \n not \n important \n   ',
                 title: 'Dino'
             };
 
             const ret = rdr.buildText(task);
-            console.log(ret);
+            expect(stripAnsi(ret)).to.equal('Dino >  important');
             done();
         });
 
-        it('works when subtasks don\'t output anything', function (done) {
+        it('no subtasks, no output', function (done) {
             const task = {
-                hasSubtasks: sinon.stub().returns(true),
+                hasSubtasks: sinon.stub().returns(false),
                 title: 'Dinos'
             };
             const ret = rdr.buildText(task);
 
+            expect(task.hasSubtasks.calledOnce).to.be.true;
             expect(ret).to.equal('Dinos');
+
+            done();
+        });
+
+        it('handles subtasks', function (done) {
+            const task = {
+                hasSubtasks: sinon.stub().returns(true),
+                subtasks: [{
+                    isPending: sinon.stub().returns(true),
+                    hasSubtasks: sinon.stub().returns(false),
+                    title: 'Pig'
+                }, {
+                    isPending: sinon.stub().returns(false),
+                    hasSubtasks: sinon.stub().returns(false),
+                    title: 'Cow'
+                }],
+                title: 'Animal'
+            };
+
+            const ret = rdr.buildText(task);
+
+            expect(task.hasSubtasks.calledOnce).to.be.true;
+            expect(task.subtasks[0].isPending.calledOnce).to.be.true;
+            expect(task.subtasks[0].hasSubtasks.calledOnce).to.be.true;
+            expect(task.subtasks[1].isPending.calledOnce).to.be.true;
+            expect(task.subtasks[1].hasSubtasks.called).to.be.false;
+            expect(stripAnsi(ret)).to.equal('Animal > Pig');
+
+            done();
+        });
+    });
+
+    describe('#end', function () {
+        let rdr;
+
+        before(function () {
+            rdr = new Renderer();
+        });
+
+        it('clears its interval', function (done) {
+            const ctx = {id: 100};
+            const clrStub = sinon.stub(global,'clearInterval');
+
+            rdr.end.bind(ctx)();
+
+            expect(ctx.id).to.be.undefined;
+            expect(clrStub.called).to.be.true;
+            expect(clrStub.firstCall.args[0]).to.equal(100);
+
+            clrStub.restore();
+
+            done();
+        });
+
+        it('doesn\'t clear nonexistant ids', function (done) {
+            const clrStub = sinon.stub(global,'clearInterval');
+
+            rdr.end();
+
+            expect(clrStub.called).to.be.false;
+            clrStub.restore();
+            done();
+        });
+
+        it('removes spinner', function (done) {
+            const spStub = sinon.stub();
+            const ctx = {
+                spinner: {stop: spStub},
+                ui: {spinner: true}
+            };
+
+            rdr.end.bind(ctx)();
+
+            expect(spStub.calledOnce).to.be.true;
+            expect(ctx.spinner).to.be.null;
+            expect(ctx.ui.spinner).to.be.null;
 
             done();
         });
