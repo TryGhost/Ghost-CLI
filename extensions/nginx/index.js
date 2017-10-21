@@ -86,7 +86,9 @@ class NginxExtension extends cli.Extension {
         }
 
         const rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
-        const dhparamFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
+        const dhparamFile = '/etc/nginx/snippets/dhparam.pem';
+        const sslParamsFile = '/etc/nginx/snippets/ssl-params.conf';
+        const sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
@@ -148,21 +150,22 @@ class NginxExtension extends cli.Extension {
             }
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
-            skip: (ctx) => ctx.dnsfail,
+            skip: (ctx) => ctx.dnsfail || fs.existsSync(dhparamFile),
             task: () => {
-                return execa.shell(`openssl dhparam -out ${dhparamFile} 2048`)
+                return this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048 > /dev/null`)
                     .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
             title: 'Generating SSL security headers',
-            skip: (ctx) => ctx.dnsfail,
-            task: (ctx) => {
-                const sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
-                return ctx.instance.template(
-                    sslParamsConf({dhparam: dhparamFile}),
-                    'ssl security parameters',
-                    'ssl-params.conf'
-                );
+            skip: (ctx) => ctx.dnsfail || fs.existsSync(sslParamsFile),
+            task: () => {
+                const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
+
+                return fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'}).then(() => {
+                    return this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`).catch(
+                        (error) => Promise.reject(new cli.errors.ProcessError(error))
+                    );
+                });
             }
         }, {
             title: 'Generating SSL configuration',
@@ -175,7 +178,7 @@ class NginxExtension extends cli.Extension {
                     webroot: rootPath,
                     fullchain: path.join(acmeFolder, 'fullchain.cer'),
                     privkey: path.join(acmeFolder, `${parsedUrl.hostname}.key`),
-                    sslparams: path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'),
+                    sslparams: sslParamsFile,
                     location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
                     port: ctx.instance.config.get('server.port')
                 });
