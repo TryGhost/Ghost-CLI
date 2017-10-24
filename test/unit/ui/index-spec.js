@@ -7,11 +7,13 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
-const modulePath = '../../../lib/ui'
-const UI = require(modulePath);
+const EventEmitter = require('events');
+
+const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {
     it('can be created successfully', function () {
+        const UI = require(modulePath);
         const ui = new UI();
 
         expect(ui).to.be.ok;
@@ -21,6 +23,7 @@ describe('Unit: UI', function () {
         let ui;
 
         before(function () {
+            const UI = require(modulePath);
             ui = new UI();
         });
 
@@ -69,6 +72,7 @@ describe('Unit: UI', function () {
     });
 
     it('#table creates a pretty looking table', function (done) {
+        const UI = require(modulePath);
         const ui = new UI();
         const ctx = {log: sinon.stub()};
         const expectTable = [
@@ -98,6 +102,7 @@ describe('Unit: UI', function () {
         let ui;
 
         before(function () {
+            const UI = require(modulePath);
             ui = new UI();
         });
 
@@ -143,6 +148,7 @@ describe('Unit: UI', function () {
     });
 
     it('#confirm calls prompt', function (done) {
+        const UI = require(modulePath);
         const ui = new UI();
         const ctx = {prompt: sinon.stub()};
         const testA = {
@@ -204,6 +210,7 @@ describe('Unit: UI', function () {
 
         // @todo: Is this an acceptable way to test
         it('passes context through', function () {
+            const UI = require(modulePath);
             const ui = new UI();
             const context = {
                 write: 'tests',
@@ -222,6 +229,7 @@ describe('Unit: UI', function () {
         });
 
         it('ignores context if requested', function () {
+            const UI = require(modulePath);
             const ui = new UI();
             const tasks = [{
                 title: 'test',
@@ -235,29 +243,37 @@ describe('Unit: UI', function () {
     });
 
     it('#sudo runs a sudo command', function (done) {
-        const execa = require('execa');
-        const ctx = {
-            log: sinon.stub(),
-            noSpin: sinon.stub().callsFake((run) => run())
-        }
-        const UI = proxyquire(modulePath, {execa: execa});
+        const shellStub = sinon.stub();
+        const UI = proxyquire(modulePath, {execa: {shell: shellStub}});
         const ui = new UI();
-        const eCall = new RegExp(`sudo ${process.argv.slice(0, 2).join(' ')} restart`);
-        sinon.stub(execa,'shell');
 
-        ui.sudo.bind(ctx)('ghost restart');
+        const logStub = sinon.stub(ui, 'log');
+        const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
+        const stderr = new EventEmitter();
 
-        expect(ctx.log.calledOnce).to.be.true;
-        expect(execa.shell.calledOnce).to.be.true;
-        expect(execa.shell.firstCall.args[0]).to.match(eCall);
-        expect(execa.shell.firstCall.args[1].stdio).to.equal('inherit');
-        done();
+        const eCall = new RegExp(`sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`);
+
+        const stdin = streamTestUtils.getWritableStream((output) => {
+            expect(output).to.equal('password\n');
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.calledWithExactly('Running sudo command: ghost -v', 'gray')).to.be.true;
+            expect(shellStub.calledOnce).to.be.true;
+            expect(shellStub.args[0][0]).to.match(eCall);
+            expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo'});
+            expect(promptStub.calledOnce).to.be.true;
+            done();
+        });
+        shellStub.returns({stdin: stdin, stderr: stderr});
+
+        ui.sudo('ghost -v', {cwd: '/var/foo', sudoArgs: ['-E -u ghost']});
+        stderr.emit('data', '#node-sudo-passwd#');
     });
 
     describe('#noSpin', function () {
         let ui;
 
         before(function () {
+            const UI = require(modulePath);
             ui = new UI();
         });
 
@@ -300,6 +316,7 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
+            const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('test');
         });
@@ -314,6 +331,7 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
+            const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('test', 'green');
         });
@@ -323,6 +341,7 @@ describe('Unit: UI', function () {
                 stdout: {write: sinon.stub()},
                 stderr: {write: sinon.stub()}
             };
+            const UI = require(modulePath);
             const ui = new UI();
 
             ui.log.bind(ctx)('Error', null, true);
@@ -337,6 +356,7 @@ describe('Unit: UI', function () {
         });
 
         it('resets spinner', function (done) {
+            const UI = require(modulePath);
             const ui = new UI();
             const write = sinon.stub()
             const ctx = {
@@ -363,6 +383,7 @@ describe('Unit: UI', function () {
 
     describe('#logVerbose', function () {
         it('passes through options to log method when verbose is set', function () {
+            const UI = require(modulePath);
             const ui = new UI({verbose: true});
             const logStub = sinon.stub(ui, 'log');
 
@@ -372,6 +393,7 @@ describe('Unit: UI', function () {
         });
 
         it('does not call log when verbose is false', function () {
+            const UI = require(modulePath);
             const ui = new UI({verbose: false});
             const logStub = sinon.stub(ui, 'log');
 
@@ -389,6 +411,7 @@ describe('Unit: UI', function () {
         });
         stdout.on('error', done);
 
+        const UI = require(modulePath);
         const ui = new UI({stdout: stdout});
         ui.success('test');
     });
@@ -402,6 +425,7 @@ describe('Unit: UI', function () {
         });
         stdout.on('error', done);
 
+        const UI = require(modulePath);
         const ui = new UI({stdout: stdout});
         ui.fail('test');
     });
@@ -411,6 +435,7 @@ describe('Unit: UI', function () {
         let ui;
 
         before(function () {
+            const UI = require(modulePath);
             ui = new UI();
         });
 
@@ -582,6 +607,7 @@ describe('Unit: UI', function () {
             environment: 'Earth'
         };
         const SPACES = '    ';
+        const UI = require(modulePath);
         const ui = new UI();
         const expected = ['Debug Information:',
             `${SPACES}Node Version: ${process.version}`,
