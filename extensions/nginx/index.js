@@ -152,7 +152,7 @@ class NginxExtension extends cli.Extension {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: (ctx) => ctx.dnsfail || fs.existsSync(dhparamFile),
             task: () => {
-                return this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048 > /dev/null`)
+                return this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`)
                     .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
