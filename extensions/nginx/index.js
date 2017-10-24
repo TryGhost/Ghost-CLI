@@ -131,21 +131,46 @@ class NginxExtension extends cli.Extension {
                 return promise;
             }
         }, {
+            title: 'Installing acme.sh',
+            skip: (ctx) => ctx.dnsfail || fs.existsSync('/etc/letsencrypt/acme.sh'),
+            task: () => {
+                const acmeTmpDir = path.join(os.tmpdir(), 'acme.sh');
+
+                this.ui.logVerbose('ssl: creating /etc/letsencrypt directory', 'green');
+                // acme.sh creates the directory without global read permissions, so we need to make sure
+                // it has global read permissions first
+                return this.ui.sudo('mkdir -p /etc/letsencrypt').then(() => {
+                    this.ui.logVerbose('ssl: cloning acme.sh to temporary directory', 'green');
+                    return execa.shell(`git clone https://github.com/Neilpang/acme.sh.git ${acmeTmpDir}`);
+                }).then(() => {
+                    this.ui.logVerbose('ssl: installing acme.sh components', 'green');
+
+                    // Installs acme.sh into /etc/letsencrypt
+                    return this.ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
+                }).catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            }
+        }, {
             title: 'Getting SSL Certificate from Let\'s Encrypt',
             skip: (ctx) => ctx.dnsfail,
             task: () => {
-                return execa.shell('curl https://get.acme.sh | sh').then(() => {
-                    const acmeScriptPath = path.join(os.homedir(), '.acme.sh', 'acme.sh');
+                const cmd = `/etc/letsencrypt/acme.sh --issue --home /etc/letsencrypt --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
+                `--reloadcmd "nginx -s reload" --accountemail ${argv.sslemail}${argv.sslstaging ? ' --staging' : ''}`;
 
-                    const cmd = `${acmeScriptPath} --issue --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
-                        `--accountemail ${argv.sslemail}${argv.sslstaging ? ' --staging' : ''}`;
-
-                    return execa.shell(cmd);
-                }).catch((error) => {
-                    // Certs have been generated before, skip
-                    if (!error.stdout.match(/Skip/)) {
-                        return Promise.reject(new cli.errors.ProcessError(error));
+                return this.ui.sudo(cmd).catch((error) => {
+                    if (error.code === 2) {
+                        // error code 2 is given if a cert doesn't need to be renewed
+                        return Promise.resolve();
                     }
+
+                    if (error.stderr.match(/Verify error:(Fetching|Invalid Response)/)) {
+                        // Domain verification failed
+                        return Promise.reject(new cli.errors.SystemError(
+                            'Your domain name is not pointing to the correct IP address of your server, please update it and run `ghost setup ssl` again'
+                        ));
+                    }
+
+                    // It's not an error we expect might happen, throw a ProcessError instead.
+                    return Promise.reject(new cli.errors.ProcessError(error));
                 });
             }
         }, {
@@ -171,7 +196,7 @@ class NginxExtension extends cli.Extension {
             title: 'Generating SSL configuration',
             skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
-                const acmeFolder = path.join(os.homedir(), '.acme.sh', parsedUrl.hostname);
+                const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
                 const sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
                 const generatedSslConfig = sslConf({
                     url: parsedUrl.hostname,
