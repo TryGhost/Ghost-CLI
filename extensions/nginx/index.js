@@ -238,7 +238,7 @@ class NginxExtension extends cli.Extension {
     }
 
     restartNginx() {
-        return this.ui.sudo('service nginx restart')
+        return this.ui.sudo('nginx -s reload')
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
