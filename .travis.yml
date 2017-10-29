@@ -25,7 +25,7 @@ install:
   - yarn add --force sqlite3 # fix sqlite caching issues
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then npm run lint; else npm run test:all; fi
+  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
 
 after_success:
-  - if [[ "$TRAVIS_NODE_VERSION" == "4" && "$TEST_SUITE" != "lint" ]]; then npm run coverage; fi
+  - if [[ "$TRAVIS_NODE_VERSION" == "4" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
