@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/TryGhost/Ghost-CLI/compare/1.1.3...v1.2.0) (2017-10-30)
+
+### Bug Fixes
+
+* **nginx:** switch to `nginx -s reload` to reload nginx configuration ([9d502ef](https://github.com/TryGhost/Ghost-CLI/commit/9d502ef))
+* **ssl:** rework how we use acme.sh ([6f30109](https://github.com/TryGhost/Ghost-CLI/commit/6f30109)), closes [#495](https://github.com/TryGhost/Ghost-CLI/issues/495)
+* **ui:** improve sudo output suppression ([398fc27](https://github.com/TryGhost/Ghost-CLI/commit/398fc27))
+
+### Features
+
+* **ssl:** only generate dhparam and ssl-params once per server ([2dfe847](https://github.com/TryGhost/Ghost-CLI/commit/2dfe847)), closes [#487](https://github.com/TryGhost/Ghost-CLI/issues/487)
+* enable node 8 support ([26dd314](https://github.com/TryGhost/Ghost-CLI/commit/26dd314b126ee030fb571a30705f970b3b90c2e9))
+
 <a name="1.1.3"></a>
 ## [1.1.3](https://github.com/TryGhost/Ghost-CLI/compare/1.1.2...v1.1.3) (2017-10-10)
 
