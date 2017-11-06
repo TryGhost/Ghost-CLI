@@ -5,20 +5,20 @@ const sinon = require('sinon');
 const proxyQuire = require('proxyquire').noCallThru();
 const modulePath = '../index';
 
-const nginx = require(modulePath);
+const NGINX = require(modulePath);
 
 describe('Unit: Nginx extension', function () {
     it('inherits from extension', function () {
         const ext = require('../../../lib/extension.js');
 
-        expect(nginx.prototype instanceof ext).to.be.true;
+        expect(NGINX.prototype instanceof ext).to.be.true;
     });
 
     describe('setup hook', function () {
         let ext;
 
         before(function () {
-            ext = new nginx();
+            ext = new NGINX();
         });
 
         it('Doesn\'t run on local installs', function () {
@@ -42,10 +42,10 @@ describe('Unit: Nginx extension', function () {
     });
 
     describe('setupNginx', function () {
-        let ext, task;
+        let ext;
 
         before(function () {
-            ext = new nginx();
+            ext = new NGINX();
         });
 
         it('Checks if nginx is installed', function () {
@@ -63,9 +63,11 @@ describe('Unit: Nginx extension', function () {
 
         it('Doesn\'t run if URL contains a port', function () {
             const getStub = sinon.stub().callsFake((request) => {
-                if(request == 'url')
+                if (request === 'url') {
                     return 'http://ghost.dev:3000';
-                else throw new Error('Unknown key');
+                } else {
+                    throw new Error('Unknown key')
+                }
             });
             const ctx = {instance: {config: {get: getStub}}};
             const task = {skip: sinon.stub()};
@@ -86,14 +88,14 @@ describe('Unit: Nginx extension', function () {
             const expectedFile = '/etc/nginx/sites-available/ghost.dev.conf';
             const esStub = sinon.stub().returns(true);
             const getStub = sinon.stub().callsFake((request) => {
-                if(request == 'url')
+                if (request === 'url') {
                     return 'http://ghost.dev';
-                else throw new Error('Unknown key');
+                } else {throw new Error('Unknown key')}
             });
-            const nginx = proxyQuire(modulePath,{'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyQuire(modulePath,{'fs-extra': {existsSync: esStub}});
             const task = {skip: sinon.stub()};
             const ctx = {instance: {config: {get: getStub}}};
-            const ext = new nginx();
+            const ext = new NGINX();
             ext.isSupported = sinon.stub().returns(true);
             ext.ui = {log: sinon.stub()};
 
@@ -109,9 +111,9 @@ describe('Unit: Nginx extension', function () {
         });
 
         it('Generates the proper config (root)', function () {
-            const sudo = `ln -sf /etc/nginx/sites-available/ghost.dev.conf /etc/nginx/sites-enabled/ghost.dev.conf`
+            const sudo = 'ln -sf /etc/nginx/sites-available/ghost.dev.conf /etc/nginx/sites-enabled/ghost.dev.conf';
             const getStub = sinon.stub().callsFake((request) => {
-                switch(request) {
+                switch (request) {
                     case 'url':
                         return 'http://ghost.dev';
                     case 'server.port':
@@ -136,18 +138,18 @@ describe('Unit: Nginx extension', function () {
             const esStub = sinon.stub().returns(false);
             const syncStub = sinon.stub().returns('hello!');
             const templatifyStub = sinon.stub().returns('nginx config file');
-            const templateStub = sinon.stub().callsFake(() => templatifyStub);
+            const templateStub = sinon.stub().returns(templatifyStub);
             const task = {skip: sinon.stub()};
-            const nginx = proxyQuire(modulePath, {
+            const NGINX = proxyQuire(modulePath, {
                 'fs-extra': {
                     existsSync: esStub,
                     readFileSync: syncStub
                 },
                 'lodash/template': templateStub
             });
-            const ext = new nginx();
+            const ext = new NGINX();
             ext.isSupported = sinon.stub().returns(true);
-            ext.ui = {sudo:sinon.stub().resolves()};
+            ext.ui = {sudo: sinon.stub().resolves()};
             ext.restartNginx = sinon.stub();
 
             return ext.setupNginx(null, ctx, task).then(() => {
@@ -167,9 +169,9 @@ describe('Unit: Nginx extension', function () {
 
         // @todo: should this be merged w/ the previous test?
         it('Generates the proper config (subdir)', function () {
-            const sudo = `ln -sf /etc/nginx/sites-available/ghost.dev.conf /etc/nginx/sites-enabled/ghost.dev.conf`
+            const sudo = 'ln -sf /etc/nginx/sites-available/ghost.dev.conf /etc/nginx/sites-enabled/ghost.dev.conf';
             const getStub = sinon.stub().callsFake((request) => {
-                switch(request) {
+                switch (request) {
                     case 'url':
                         return 'http://ghost.dev/a/b/c/d';
                     case 'server.port':
@@ -194,18 +196,18 @@ describe('Unit: Nginx extension', function () {
             const esStub = sinon.stub().returns(false);
             const syncStub = sinon.stub().returns('hello!');
             const templatifyStub = sinon.stub().returns('nginx config file');
-            const templateStub = sinon.stub().callsFake(() => templatifyStub);
+            const templateStub = sinon.stub().returns(templatifyStub);
             const task = {skip: sinon.stub()};
-            const nginx = proxyQuire(modulePath, {
+            const NGINX = proxyQuire(modulePath, {
                 'fs-extra': {
                     existsSync: esStub,
                     readFileSync: syncStub
                 },
                 'lodash/template': templateStub
             });
-            const ext = new nginx();
+            const ext = new NGINX();
             ext.isSupported = sinon.stub().returns(true);
-            ext.ui = {sudo:sinon.stub().resolves()};
+            ext.ui = {sudo: sinon.stub().resolves()};
             ext.restartNginx = sinon.stub();
 
             return ext.setupNginx(null, ctx, task).then(() => {
