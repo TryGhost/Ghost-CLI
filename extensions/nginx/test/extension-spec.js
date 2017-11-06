@@ -226,7 +226,7 @@ describe('Unit: Nginx extension', function () {
     describe.skip('setupSSL', () => {});
 
     describe.skip('uninstall hook', () => {});
-    describe('restartNginx', function() {
+    describe('restartNginx', function () {
         let ext;
 
         beforeEach(function () {
@@ -250,16 +250,16 @@ describe('Unit: Nginx extension', function () {
             return ext.restartNginx().then(function () {
                 expect(false, 'An error should have been thrown').to.be.true;
             }).catch(function (err) {
-                const expectedError = require('../../../lib/errors');
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.getCall(0).args[0]).to.match(/nginx -s reload/);
                 // @todo make sure a process error is thrown
+                // const expectedError = require('../../../lib/errors');
+                expect(err).to.be.ok;
             });
-
         });
     });
 
-    describe('isSupported', function() {
+    describe('isSupported', function () {
         it('Calls dpkg', function () {
             const shellStub = sinon.stub().resolves();
             const NGINX = proxyQuire(modulePath,{execa: {shellSync: shellStub}});
@@ -269,7 +269,6 @@ describe('Unit: Nginx extension', function () {
 
             expect(shellStub.calledOnce).to.be.true;
             expect(shellStub.getCall(0).args[0]).to.match(/dpkg -l \| grep nginx/);
-
         });
 
         it('Returns false when dpkg fails', function () {
@@ -281,7 +280,6 @@ describe('Unit: Nginx extension', function () {
 
             expect(shellStub.calledOnce).to.be.true;
             expect(isSupported).to.be.false;
-
         });
     });
 });
