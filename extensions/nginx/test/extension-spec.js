@@ -62,13 +62,7 @@ describe('Unit: Nginx extension', function () {
         });
 
         it('Doesn\'t run if URL contains a port', function () {
-            const getStub = sinon.stub().callsFake((request) => {
-                if (request === 'url') {
-                    return 'http://ghost.dev:3000';
-                } else {
-                    throw new Error('Unknown key')
-                }
-            });
+            const getStub = sinon.stub().returns('http://ghost.dev:3000');
             const ctx = {instance: {config: {get: getStub}}};
             const task = {skip: sinon.stub()};
             ext.isSupported = sinon.stub().returns(true);
@@ -82,16 +76,12 @@ describe('Unit: Nginx extension', function () {
             expect(task.skip.calledOnce).to.be.true;
         });
 
-        // This is 2 tests in one, because checking the proper file name via test requires
+        // This is 2 tests in one, because checking the proper file name via a test requires
         //  very similar logic to nginx not running setup if the config file already exists
         it('Doesn\'t run if config file exists & generates proper file name', function () {
             const expectedFile = '/etc/nginx/sites-available/ghost.dev.conf';
             const esStub = sinon.stub().returns(true);
-            const getStub = sinon.stub().callsFake((request) => {
-                if (request === 'url') {
-                    return 'http://ghost.dev';
-                } else {throw new Error('Unknown key')}
-            });
+            const getStub = sinon.stub().returns('http://ghost.dev');
             const NGINX = proxyQuire(modulePath,{'fs-extra': {existsSync: esStub}});
             const task = {skip: sinon.stub()};
             const ctx = {instance: {config: {get: getStub}}};
@@ -111,7 +101,8 @@ describe('Unit: Nginx extension', function () {
         });
 
         it('Generates the proper config (root)', function () {
-            const sudo = 'ln -sf /etc/nginx/sites-available/ghost.dev.conf /etc/nginx/sites-enabled/ghost.dev.conf';
+            const base = '/etc/nginx/sites-';
+            const sudo = `ln -sf ${base}available/ghost.dev.conf ${base}enabled/ghost.dev.conf`;
             const getStub = sinon.stub().callsFake((request) => {
                 switch (request) {
                     case 'url':
@@ -169,7 +160,8 @@ describe('Unit: Nginx extension', function () {
 
         // @todo: should this be merged w/ the previous test?
         it('Generates the proper config (subdir)', function () {
-            const sudo = 'ln -sf /etc/nginx/sites-available/ghost.dev.conf /etc/nginx/sites-enabled/ghost.dev.conf';
+            const base = '/etc/nginx/sites-';
+            const sudo = `ln -sf ${base}available/ghost.dev.conf ${base}enabled/ghost.dev.conf`;
             const getStub = sinon.stub().callsFake((request) => {
                 switch (request) {
                     case 'url':
@@ -223,7 +215,33 @@ describe('Unit: Nginx extension', function () {
         });
     });
 
-    describe.skip('setupSSL', () => {});
+    describe('setupSSL', function () {
+        let ext;
+
+        beforeEach(function () {
+            ext = new NGINX();
+        });
+
+        it('Skips if ssl config already exists', function () {
+            const sslFile = '/etc/nginx/sites-available/ghost.dev-ssl.conf';
+            const esStub = sinon.stub().returns(true);
+            const getStub = sinon.stub().returns('http://ghost.dev');
+            const task = {skip: sinon.stub()};
+            const ctx = {instance: {config: {get: getStub}}};
+            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const ext = new NGINX();
+            ext.ui = {log: sinon.stub()};
+
+            ext.setupSSL(null, ctx, task);
+
+            expect(getStub.calledOnce).to.be.true;
+            expect(esStub.calledOnce).to.be.true;
+            expect(esStub.getCall(0).args[0]).to.equal(sslFile);
+            expect(ext.ui.log.calledOnce).to.be.true;
+            expect(ext.ui.log.getCall(0).args[0]).to.match(/SSL has /);
+            expect(task.skip.calledOnce).to.be.true;
+        });
+    });
 
     describe('uninstall hook', function () {
         it('Leaves nginx alone when no config file exists', function () {
@@ -243,6 +261,7 @@ describe('Unit: Nginx extension', function () {
 
         it('Removes http config', function () {
             const urlStub = sinon.stub().returns('http://ghost.dev');
+            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev\.conf/)
             const instance = {config: {get: urlStub}};
             const esStub = sinon.stub().callsFake((file) => !(new RegExp(/-ssl/)).test(file));
             const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
@@ -252,14 +271,15 @@ describe('Unit: Nginx extension', function () {
 
             return ext.uninstall(instance).then(() => {
                 expect(ext.ui.sudo.calledTwice).to.be.true;
-                expect(ext.ui.sudo.getCall(0).args[0]).to.match(/(available|enabled)\/ghost.dev\.conf/);
-                expect(ext.ui.sudo.getCall(1).args[0]).to.match(/(available|enabled)\/ghost.dev\.conf/);
+                expect(ext.ui.sudo.getCall(0).args[0]).to.match(sudoExp);
+                expect(ext.ui.sudo.getCall(1).args[0]).to.match(sudoExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
             });
         });
 
         it('Removes https config', function () {
             const urlStub = sinon.stub().returns('http://ghost.dev');
+            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev-ssl\.conf/)
             const instance = {config: {get: urlStub}};
             const esStub = sinon.stub().callsFake((file) => (new RegExp(/-ssl/)).test(file));
             const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
@@ -269,8 +289,8 @@ describe('Unit: Nginx extension', function () {
 
             return ext.uninstall(instance).then(() => {
                 expect(ext.ui.sudo.calledTwice).to.be.true;
-                expect(ext.ui.sudo.getCall(0).args[0]).to.match(/(available|enabled)\/ghost\.dev-ssl\.conf/);
-                expect(ext.ui.sudo.getCall(1).args[0]).to.match(/(available|enabled)\/ghost\.dev-ssl\.conf/);
+                expect(ext.ui.sudo.getCall(0).args[0]).to.match(sudoExp);
+                expect(ext.ui.sudo.getCall(1).args[0]).to.match(sudoExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
             });
         });
