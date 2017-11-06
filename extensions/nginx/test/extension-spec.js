@@ -225,7 +225,75 @@ describe('Unit: Nginx extension', function () {
 
     describe.skip('setupSSL', () => {});
 
-    describe.skip('uninstall hook', () => {});
+    describe('uninstall hook', function () {
+        it('Leaves nginx alone when no config file exists', function () {
+            const urlStub = sinon.stub().returns('http://ghost.dev');
+            const instance = {config: {get: urlStub}};
+            const esStub = sinon.stub().returns(false);
+            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const ext = new NGINX();
+            ext.ui = {sudo: sinon.stub().resolves(), log: sinon.stub()};
+            ext.restartNginx = sinon.stub();
+
+            return ext.uninstall(instance).then(() => {
+                expect(esStub.calledTwice).to.be.true;
+                expect(ext.restartNginx.called).to.be.false;
+            });
+        });
+
+        it('Removes http config', function () {
+            const urlStub = sinon.stub().returns('http://ghost.dev');
+            const instance = {config: {get: urlStub}};
+            const esStub = sinon.stub().callsFake((file) => !(new RegExp(/-ssl/)).test(file));
+            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const ext = new NGINX();
+            ext.ui = {sudo: sinon.stub().resolves(), log: sinon.stub()};
+            ext.restartNginx = sinon.stub();
+
+            return ext.uninstall(instance).then(() => {
+                expect(ext.ui.sudo.calledTwice).to.be.true;
+                expect(ext.ui.sudo.getCall(0).args[0]).to.match(/(available|enabled)\/ghost.dev\.conf/);
+                expect(ext.ui.sudo.getCall(1).args[0]).to.match(/(available|enabled)\/ghost.dev\.conf/);
+                expect(ext.restartNginx.calledOnce).to.be.true;
+            });
+        });
+
+        it('Removes https config', function () {
+            const urlStub = sinon.stub().returns('http://ghost.dev');
+            const instance = {config: {get: urlStub}};
+            const esStub = sinon.stub().callsFake((file) => (new RegExp(/-ssl/)).test(file));
+            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const ext = new NGINX();
+            ext.ui = {sudo: sinon.stub().resolves(), log: sinon.stub()};
+            ext.restartNginx = sinon.stub();
+
+            return ext.uninstall(instance).then(() => {
+                expect(ext.ui.sudo.calledTwice).to.be.true;
+                expect(ext.ui.sudo.getCall(0).args[0]).to.match(/(available|enabled)\/ghost\.dev-ssl\.conf/);
+                expect(ext.ui.sudo.getCall(1).args[0]).to.match(/(available|enabled)\/ghost\.dev-ssl\.conf/);
+                expect(ext.restartNginx.calledOnce).to.be.true;
+            });
+        });
+
+        it('Handles symlink removal fails smoothly', function () {
+            const urlStub = sinon.stub().returns('http://ghost.dev');
+            const instance = {config: {get: urlStub}};
+            const esStub = sinon.stub().returns(true);
+            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const ext = new NGINX();
+            ext.ui = {sudo: sinon.stub().rejects(), log: sinon.stub()};
+            ext.restartNginx = sinon.stub();
+
+            return ext.uninstall(instance).then(() => {
+                expect(false, 'A rejection should have happened').to.be.true;
+            }).catch((error) => {
+                sinon.assert.callCount(ext.ui.sudo, 4);
+                expect(error.message).to.match(/Nginx config file/);
+                expect(ext.restartNginx.calledOnce).to.be.false;
+            });
+        });
+    });
+
     describe('restartNginx', function () {
         let ext;
 
