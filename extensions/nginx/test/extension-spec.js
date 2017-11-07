@@ -2,11 +2,33 @@
 
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const proxyQuire = require('proxyquire').noCallThru();
+const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../index';
 const Promise = require('bluebird');
 
 const NGINX = require(modulePath);
+const testURL = 'http://ghost.dev';
+const nginxBase = '/etc/nginx/sites-';
+const dir = '/var/www/ghost';
+
+function proxyNginx(proxyOptions) {
+    const Nginx = proxyquire(modulePath, proxyOptions);
+    const created = new Nginx();
+    created.isSupported = () => true;
+    created.ui = {log: sinon.stub()};
+    created.restartNginx = sinon.stub();
+
+    return created;
+}
+
+function _get(key) {
+    const keys = {
+        url: testURL,
+        'server.port': 2368
+    };
+
+    return keys[key];
+}
 
 describe('Unit: Nginx extension', function () {
     it('inherits from extension', function () {
@@ -23,17 +45,17 @@ describe('Unit: Nginx extension', function () {
         });
 
         it('Doesn\'t run on local installs', function () {
-            const command = {addStage: sinon.stub()};
-            ext.setup(command, {local: true});
-            expect(command.addStage.called).to.be.false;
+            const asStub = sinon.stub();
+            const cmd = {addStage: asStub};
+            ext.setup(cmd, {local: true});
+
+            expect(cmd.addStage.called).to.be.false;
         });
 
         it('Adds nginx and ssl substages', function () {
             const asStub = sinon.stub();
-            const command = {
-                addStage: asStub
-            };
-            ext.setup(command,{});
+            const cmd = {addStage: asStub};
+            ext.setup(cmd,{});
 
             expect(asStub.calledTwice).to.be.true;
             expect(asStub.getCall(0).args[0]).to.equal('nginx');
@@ -44,16 +66,20 @@ describe('Unit: Nginx extension', function () {
 
     describe('setupNginx', function () {
         let ext;
+        const task = {skip: sinon.stub()};
 
-        before(function () {
+        beforeEach(function () {
             ext = new NGINX();
+            ext.ui = {log: sinon.stub()};
+            ext.isSupported = () => true;
         });
 
-        it('Checks if nginx is installed', function () {
-            const task = {skip: sinon.stub()};
-            ext.isSupported = sinon.stub().returns(false);
-            ext.ui = {log: sinon.stub()};
+        afterEach(function () {
+            task.skip.reset();
+        });
 
+        it('Checks if nginx is installed & breaks if not', function () {
+            ext.isSupported = sinon.stub().returns(false);
             ext.setupNginx(null, null, task);
 
             expect(ext.isSupported.calledOnce).to.be.true;
@@ -62,13 +88,9 @@ describe('Unit: Nginx extension', function () {
             expect(task.skip.calledOnce).to.be.true;
         });
 
-        it('Doesn\'t run if URL contains a port', function () {
-            const getStub = sinon.stub().returns('http://ghost.dev:3000');
+        it('Notifies if URL contains a port & breaks', function () {
+            const getStub = sinon.stub().returns(`${testURL}:3000`);
             const ctx = {instance: {config: {get: getStub}}};
-            const task = {skip: sinon.stub()};
-            ext.isSupported = sinon.stub().returns(true);
-            ext.ui = {log: sinon.stub()};
-
             ext.setupNginx(null, ctx, task);
 
             expect(getStub.calledOnce).to.be.true;
@@ -79,21 +101,13 @@ describe('Unit: Nginx extension', function () {
 
         // This is 2 tests in one, because checking the proper file name via a test requires
         //  very similar logic to nginx not running setup if the config file already exists
-        it('Doesn\'t run if config file exists & generates proper file name', function () {
-            const expectedFile = '/etc/nginx/sites-available/ghost.dev.conf';
+        it('Generates correct filename & breaks if already configured', function () {
+            const expectedFile = `${nginxBase}available/ghost.dev.conf`;
             const esStub = sinon.stub().returns(true);
-            const getStub = sinon.stub().returns('http://ghost.dev');
-            const NGINX = proxyQuire(modulePath,{'fs-extra': {existsSync: esStub}});
-            const task = {skip: sinon.stub()};
-            const ctx = {instance: {config: {get: getStub}}};
-            const ext = new NGINX();
-            ext.isSupported = sinon.stub().returns(true);
-            ext.ui = {log: sinon.stub()};
-
+            const ctx = {instance: {config: {get: _get}}};
+            const ext = proxyNginx({'fs-extra': {existsSync: esStub}});
             ext.setupNginx(null, ctx, task);
 
-            expect(ext.isSupported.calledOnce).to.be.true;
-            expect(getStub.calledOnce).to.be.true;
             expect(esStub.calledOnce).to.be.true;
             expect(esStub.getCall(0).args[0]).to.equal(expectedFile);
             expect(ext.ui.log.calledOnce).to.be.true;
@@ -101,117 +115,58 @@ describe('Unit: Nginx extension', function () {
             expect(task.skip.calledOnce).to.be.true;
         });
 
-        it('Generates the proper config (root)', function () {
-            const base = '/etc/nginx/sites-';
-            const sudo = `ln -sf ${base}available/ghost.dev.conf ${base}enabled/ghost.dev.conf`;
-            const getStub = sinon.stub().callsFake((request) => {
-                switch (request) {
-                    case 'url':
-                        return 'http://ghost.dev';
-                    case 'server.port':
-                        return 2368;
-                    default:
-                        throw new Error(`Unknown key '${request}'`);
-                }
-            });
+        it('Generates the proper config', function () {
+            const name = 'ghost.dev.conf';
+            const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
+            const getStub = sinon.stub().callsFake(_get);
             const ctx = {
                 instance: {
-                    dir: '/var/www/ghost',
+                    dir: dir,
                     config: {get: getStub},
                     template: sinon.stub().resolves()
                 }
             };
             const expectedConfig = {
                 url: 'ghost.dev',
-                webroot: '/var/www/ghost/system/nginx-root',
+                webroot: `${dir}/system/nginx-root`,
                 location: '/',
                 port: 2368
             };
-            const esStub = sinon.stub().returns(false);
-            const syncStub = sinon.stub().returns('hello!');
-            const templatifyStub = sinon.stub().returns('nginx config file');
-            const templateStub = sinon.stub().returns(templatifyStub);
-            const task = {skip: sinon.stub()};
-            const NGINX = proxyQuire(modulePath, {
+            const loadStub = sinon.stub().returns('nginx config file');
+            const templateStub = sinon.stub().returns(loadStub);
+            const ext = proxyNginx({
                 'fs-extra': {
-                    existsSync: esStub,
-                    readFileSync: syncStub
+                    existsSync: () => false,
+                    readFileSync: () => 'hello'
                 },
                 'lodash/template': templateStub
             });
-            const ext = new NGINX();
-            ext.isSupported = sinon.stub().returns(true);
-            ext.ui = {sudo: sinon.stub().resolves()};
-            ext.restartNginx = sinon.stub();
+            ext.ui.sudo = sinon.stub().resolves();
 
             return ext.setupNginx(null, ctx, task).then(() => {
-                expect(ext.isSupported.calledOnce, 'isSupported called').to.be.true;
-                expect(esStub.calledOnce, 'fs.existsSync called').to.be.true;
-                expect(templateStub.calledOnce, 'loadash template create called').to.be.true;
-                expect(templatifyStub.calledOnce, 'lodash template load called').to.be.true;
-                expect(templatifyStub.getCall(0).args[0]).to.deep.equal(expectedConfig);
-                expect(ext.ui.sudo.calledOnce, 'sudo called').to.be.true;
-                expect(ext.ui.sudo.getCall(0).args[0]).to.equal(sudo);
-                expect(ext.restartNginx.calledOnce).to.be.true;
-            }).catch((e) => {
-                console.log(e);
-                expect(false,'Should not have rejected').to.be.true;
-            });
-        });
-
-        // @todo: should this be merged w/ the previous test?
-        it('Generates the proper config (subdir)', function () {
-            const base = '/etc/nginx/sites-';
-            const sudo = `ln -sf ${base}available/ghost.dev.conf ${base}enabled/ghost.dev.conf`;
-            const getStub = sinon.stub().callsFake((request) => {
-                switch (request) {
-                    case 'url':
-                        return 'http://ghost.dev/a/b/c/d';
-                    case 'server.port':
-                        return 2368;
-                    default:
-                        throw new Error(`Unknown key '${request}'`);
-                }
-            });
-            const ctx = {
-                instance: {
-                    dir: '/var/www/ghost',
-                    config: {get: getStub},
-                    template: sinon.stub().resolves()
-                }
-            };
-            const expectedConfig = {
-                url: 'ghost.dev',
-                webroot: '/var/www/ghost/system/nginx-root',
-                location: '^~ /a/b/c/d',
-                port: 2368
-            };
-            const esStub = sinon.stub().returns(false);
-            const syncStub = sinon.stub().returns('hello!');
-            const templatifyStub = sinon.stub().returns('nginx config file');
-            const templateStub = sinon.stub().returns(templatifyStub);
-            const task = {skip: sinon.stub()};
-            const NGINX = proxyQuire(modulePath, {
-                'fs-extra': {
-                    existsSync: esStub,
-                    readFileSync: syncStub
-                },
-                'lodash/template': templateStub
-            });
-            const ext = new NGINX();
-            ext.isSupported = sinon.stub().returns(true);
-            ext.ui = {sudo: sinon.stub().resolves()};
-            ext.restartNginx = sinon.stub();
-
-            return ext.setupNginx(null, ctx, task).then(() => {
-                expect(ext.isSupported.calledOnce).to.be.true;
-                expect(esStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
-                expect(templatifyStub.calledOnce).to.be.true;
-                expect(templatifyStub.getCall(0).args[0]).to.deep.equal(expectedConfig);
+                expect(loadStub.calledOnce).to.be.true;
+                expect(loadStub.getCall(0).args[0]).to.deep.equal(expectedConfig);
                 expect(ext.ui.sudo.calledOnce).to.be.true;
-                expect(ext.ui.sudo.getCall(0).args[0]).to.equal(sudo);
+                expect(ext.ui.sudo.getCall(0).args[0]).to.match(lnExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
+
+                // Testing handling of subdirectory installations
+
+                loadStub.reset();
+                ctx.instance.config.get = (key) => {
+                    if (key === 'url') {
+                        return `${testURL}/a/b/c`;
+                    } else {
+                        return _get(key);
+                    }
+                };
+                expectedConfig.location = '^~ /a/b/c';
+
+                return ext.setupNginx(null, ctx, task).then(() => {
+                    expect(loadStub.calledOnce).to.be.true;
+                    expect(loadStub.getCall(0).args[0]).to.deep.equal(expectedConfig);
+                });
             });
         });
     });
@@ -223,7 +178,7 @@ describe('Unit: Nginx extension', function () {
             const getStub = sinon.stub().returns('http://ghost.dev');
             const task = {skip: sinon.stub()};
             const ctx = {instance: {config: {get: getStub}}};
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {log: sinon.stub()};
 
@@ -242,7 +197,7 @@ describe('Unit: Nginx extension', function () {
             const getStub = sinon.stub().returns('http://ghost.dev');
             const task = {skip: sinon.stub()};
             const ctx = {instance: {config: {get: getStub}}};
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {log: sinon.stub()};
 
@@ -260,7 +215,7 @@ describe('Unit: Nginx extension', function () {
             const getStub = sinon.stub().returns('http://ghost.dev');
             const task = {skip: sinon.stub()};
             const ctx = {instance: {config: {get: getStub}}, single: true};
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {log: sinon.stub()};
 
@@ -278,7 +233,7 @@ describe('Unit: Nginx extension', function () {
             const getStub = sinon.stub().returns('http://ghost.dev');
             const task = {skip: sinon.stub()};
             const ctx = {instance: {config: {get: getStub}}};
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {log: sinon.stub()};
 
@@ -304,7 +259,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -347,7 +302,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -390,7 +345,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -435,7 +390,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -473,7 +428,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -521,7 +476,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -566,7 +521,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -610,7 +565,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -650,7 +605,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -689,7 +644,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -729,7 +684,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -770,7 +725,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -814,7 +769,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -856,7 +811,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: value => value
@@ -899,7 +854,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         writeFile: sinon.stub().resolves(),
@@ -932,7 +887,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: file => file,
@@ -968,7 +923,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         readFileSync: file => file,
@@ -1019,7 +974,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         writeFile: sinon.stub().resolves(),
@@ -1071,7 +1026,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         writeFile: sinon.stub().resolves(),
@@ -1110,7 +1065,7 @@ describe('Unit: Nginx extension', function () {
                     },
                     single: true
                 };
-                const NGINX = proxyQuire(modulePath, {
+                const NGINX = proxyquire(modulePath, {
                     'fs-extra': {
                         existsSync: esStub,
                         writeFile: sinon.stub().resolves(),
@@ -1143,7 +1098,7 @@ describe('Unit: Nginx extension', function () {
             const urlStub = sinon.stub().returns('http://ghost.dev');
             const instance = {config: {get: urlStub}};
             const esStub = sinon.stub().returns(false);
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {sudo: sinon.stub().resolves(), log: sinon.stub()};
             ext.restartNginx = sinon.stub();
@@ -1159,7 +1114,7 @@ describe('Unit: Nginx extension', function () {
             const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev\.conf/)
             const instance = {config: {get: urlStub}};
             const esStub = sinon.stub().callsFake((file) => !(new RegExp(/-ssl/)).test(file));
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {sudo: sinon.stub().resolves(), log: sinon.stub()};
             ext.restartNginx = sinon.stub();
@@ -1177,7 +1132,7 @@ describe('Unit: Nginx extension', function () {
             const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev-ssl\.conf/)
             const instance = {config: {get: urlStub}};
             const esStub = sinon.stub().callsFake((file) => (new RegExp(/-ssl/)).test(file));
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {sudo: sinon.stub().resolves(), log: sinon.stub()};
             ext.restartNginx = sinon.stub();
@@ -1194,7 +1149,7 @@ describe('Unit: Nginx extension', function () {
             const urlStub = sinon.stub().returns('http://ghost.dev');
             const instance = {config: {get: urlStub}};
             const esStub = sinon.stub().returns(true);
-            const NGINX = proxyQuire(modulePath, {'fs-extra': {existsSync: esStub}});
+            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
             const ext = new NGINX();
             ext.ui = {sudo: sinon.stub().rejects(), log: sinon.stub()};
             ext.restartNginx = sinon.stub();
@@ -1245,7 +1200,7 @@ describe('Unit: Nginx extension', function () {
     describe('isSupported', function () {
         it('Calls dpkg', function () {
             const shellStub = sinon.stub().resolves();
-            const NGINX = proxyQuire(modulePath,{execa: {shellSync: shellStub}});
+            const NGINX = proxyquire(modulePath,{execa: {shellSync: shellStub}});
             const ext = new NGINX();
 
             ext.isSupported();
@@ -1256,7 +1211,7 @@ describe('Unit: Nginx extension', function () {
 
         it('Returns false when dpkg fails', function () {
             const shellStub = sinon.stub().throws('uh oh');
-            const NGINX = proxyQuire(modulePath,{execa: {shellSync: shellStub}});
+            const NGINX = proxyquire(modulePath,{execa: {shellSync: shellStub}});
             const ext = new NGINX();
 
             const isSupported = ext.isSupported();
