@@ -172,7 +172,7 @@ describe('Unit: Nginx extension', function () {
     });
 
     describe('setupSSL', function () {
-        let ext, stubs, task;
+        let stubs, task;
 
         function sslFS(filename) {
             const expected = new RegExp(/ /);
@@ -256,7 +256,7 @@ describe('Unit: Nginx extension', function () {
             DNS = new Error('DNS_ERROR');
             stubs = {
                 es: sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value)),
-                skip: sinon.stub(),
+                skip: sinon.stub()
             };
             task = {skip: stubs.skip};
             ctx = {
@@ -271,7 +271,7 @@ describe('Unit: Nginx extension', function () {
                     existsSync: stubs.es,
                     readFileSync: value => value
                 },
-                dns: {lookup: () => {throw(DNS)}}
+                dns: {lookup: () => {throw DNS}}
             };
         });
         describe('DNS', function () {
@@ -305,7 +305,7 @@ describe('Unit: Nginx extension', function () {
             });
 
             it('Everything skips when DNS fails', function () {
-                const esStub = sinon.stub().callsFake(function(value) {
+                stubs.es = sinon.stub().callsFake(function (value) {
                     return value.indexOf('-ssl') < 0 ||
                           !value.indexOf('acme') < 0;
                 });
@@ -327,7 +327,6 @@ describe('Unit: Nginx extension', function () {
         });
         describe('Email', function () {
             it('Loads additional config (sslemail exists)', function () {
-                const esStub = sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value));
                 const ext = proxyNginx(proxy);
                 ext.ui.listr = sinon.stub();
                 ext.ui.prompt = sinon.stub().resolves();
