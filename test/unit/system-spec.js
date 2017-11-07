@@ -305,18 +305,23 @@ describe('Unit: System', function () {
                 './extension': {getInstance: getInstanceStub}
             });
 
-            const setupHookStub = sinon.stub().resolves();
+            const hook1 = sinon.stub().resolves('a');
+            const hook2 = sinon.stub().resolves('b');
 
-            const extensionOne = {setup: setupHookStub};
+            const extensionOne = {setup: hook1};
             const extensionTwo = {};
-            const extensions = [extensionOne, extensionTwo];
+            const extensionThree = {setup: hook2};
+            const extensions = [extensionOne, extensionTwo, extensionThree];
 
             const systemInstance = new System({}, extensions);
 
-            return systemInstance.hook('setup', {arg1: true}, {arg2: true}).then(() => {
-                expect(getInstanceStub.calledTwice).to.be.true;
-                expect(setupHookStub.calledOnce).to.be.true;
-                expect(setupHookStub.calledWithExactly({arg1: true}, {arg2: true})).to.be.true;
+            return systemInstance.hook('setup', {arg1: true}, {arg2: true}).then((results) => {
+                expect(results).to.deep.equal(['a', undefined, 'b']);
+                expect(getInstanceStub.calledThrice).to.be.true;
+                expect(hook1.calledOnce).to.be.true;
+                expect(hook1.calledWithExactly({arg1: true}, {arg2: true})).to.be.true;
+                expect(hook2.calledOnce).to.be.true;
+                expect(hook2.calledWithExactly({arg1: true}, {arg2: true})).to.be.true;
             });
         });
     });

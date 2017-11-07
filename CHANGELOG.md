@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/TryGhost/Ghost-CLI/compare/1.1.3...v1.2.0) (2017-10-30)
+
+### Bug Fixes
+
+* **nginx:** switch to `nginx -s reload` to reload nginx configuration ([9d502ef](https://github.com/TryGhost/Ghost-CLI/commit/9d502ef))
+* **ssl:** rework how we use acme.sh ([6f30109](https://github.com/TryGhost/Ghost-CLI/commit/6f30109)), closes [#495](https://github.com/TryGhost/Ghost-CLI/issues/495)
+* **ui:** improve sudo output suppression ([398fc27](https://github.com/TryGhost/Ghost-CLI/commit/398fc27))
+
+### Features
+
+* **ssl:** only generate dhparam and ssl-params once per server ([2dfe847](https://github.com/TryGhost/Ghost-CLI/commit/2dfe847)), closes [#487](https://github.com/TryGhost/Ghost-CLI/issues/487)
+* enable node 8 support ([26dd314](https://github.com/TryGhost/Ghost-CLI/commit/26dd314b126ee030fb571a30705f970b3b90c2e9))
+
+<a name="1.1.3"></a>
+## [1.1.3](https://github.com/TryGhost/Ghost-CLI/compare/1.1.2...v1.1.3) (2017-10-10)
+
+### Bug Fixes
+
+* **config:** add 'ses' to valid mail config transport options (#492) ([7f51138](https://github.com/TryGhost/Ghost-CLI/commit/7f51138)), closes [#467](https://github.com/TryGhost/Ghost-CLI/issues/467)
+* **config:** run environment check when not part of ghost setup ([9126a47](https://github.com/TryGhost/Ghost-CLI/commit/9126a47)), closes [#265](https://github.com/TryGhost/Ghost-CLI/issues/265)
+* **setup:** strip undesirable characters out of DB name (#486) ([5878002](https://github.com/TryGhost/Ghost-CLI/commit/5878002))
+* **system:** use mapSeries rather than each ([9500899](https://github.com/TryGhost/Ghost-CLI/commit/9500899))
+
+<a name="1.1.2"></a>
+## [1.1.2](https://github.com/TryGhost/Ghost-CLI/compare/1.1.1...1.1.2) (2017-10-06)
+
+### Bug Fixes
+
+* **config:** ensure non-string args are handled correctly ([8612df2](https://github.com/TryGhost/Ghost-CLI/commit/8612df2)), closes [#479](https://github.com/TryGhost/Ghost-CLI/issues/479)
+* **config:** ensure port number is treated as an integer ([#452](https://github.com/TryGhost/Ghost-CLI/issues/452)) ([aeb772a](https://github.com/TryGhost/Ghost-CLI/commit/aeb772a)), closes [#451](https://github.com/TryGhost/Ghost-CLI/issues/451)
+* **config:** offer better default database name when installing ([#454](https://github.com/TryGhost/Ghost-CLI/issues/454)) ([c40d628](https://github.com/TryGhost/Ghost-CLI/commit/c40d628)), closes [#453](https://github.com/TryGhost/Ghost-CLI/issues/453)
+* **setup:** don’t rewrite no-start option when no-prompt is passed ([bbc2270](https://github.com/TryGhost/Ghost-CLI/commit/bbc2270))
+
 <a name="1.1.1"></a>
 ## [1.1.1](https://github.com/TryGhost/Ghost-CLI/compare/1.1.0...1.1.1) (2017-08-17)
 

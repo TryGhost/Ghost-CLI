@@ -19,7 +19,7 @@ class MySQLExtension extends cli.Extension {
     }
 
     setupMySQL(argv, ctx, task) {
-        let dbconfig = ctx.instance.config.get('database.connection');
+        const dbconfig = ctx.instance.config.get('database.connection');
 
         if (dbconfig.user !== 'root') {
             this.ui.log('MySQL user is not "root", skipping additional user setup', 'yellow');
@@ -77,14 +77,14 @@ class MySQLExtension extends cli.Extension {
     }
 
     createUser(ctx, dbconfig) {
-        let randomPassword = crypto.randomBytes(10).toString('hex');
+        const randomPassword = crypto.randomBytes(10).toString('hex');
 
         // IMPORTANT: we generate random MySQL usernames
         // e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to work
         // e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
         // the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
         // disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
-        let username = 'ghost-' + Math.floor(Math.random() * 1000);
+        const username = 'ghost-' + Math.floor(Math.random() * 1000);
 
         return this._query(`CREATE USER '${username}'@'${dbconfig.host}' IDENTIFIED WITH mysql_native_password;`).then(() => {
             this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
