@@ -49,13 +49,13 @@ describe('Unit: Nginx extension', function () {
             const cmd = {addStage: asStub};
             ext.setup(cmd, {local: true});
 
-            expect(cmd.addStage.called).to.be.false;
+            expect(asStub.called).to.be.false;
         });
 
         it('Adds nginx and ssl substages', function () {
             const asStub = sinon.stub();
             const cmd = {addStage: asStub};
-            ext.setup(cmd,{});
+            ext.setup(cmd, {});
 
             expect(asStub.calledTwice).to.be.true;
             expect(asStub.getCall(0).args[0]).to.equal('nginx');
@@ -172,237 +172,165 @@ describe('Unit: Nginx extension', function () {
     });
 
     describe('setupSSL', function () {
-        it('Skips if ssl config already exists', function () {
-            const sslFile = '/etc/nginx/sites-available/ghost.dev-ssl.conf';
-            const esStub = sinon.stub().returns(true);
-            const getStub = sinon.stub().returns('http://ghost.dev');
-            const task = {skip: sinon.stub()};
-            const ctx = {instance: {config: {get: getStub}}};
-            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
-            const ext = new NGINX();
-            ext.ui = {log: sinon.stub()};
+        let ext, stubs, task;
 
+        function sslFS(filename) {
+            const expected = new RegExp(/ /);
+            return expected.test(filename);
+        }
+
+        beforeEach(function () {
+            stubs = {};
+            stubs.es = sinon.stub().callsFake(sslFS);
+            stubs.skip = sinon.stub();
+            task = {skip: stubs.skip};
+        });
+
+        it('Breaks if ssl config already exists', function () {
+            const sslFile = '/etc/nginx/sites-available/ghost.dev-ssl.conf';
+            const ctx = {instance: {config: {get: _get}}};
+            stubs.es = sinon.stub().returns(true);
+            const ext = proxyNginx({'fs-extra': {existsSync: stubs.es}});
             ext.setupSSL(null, ctx, task);
 
-            expect(getStub.calledOnce).to.be.true;
-            expect(esStub.calledOnce).to.be.true;
-            expect(esStub.getCall(0).args[0]).to.equal(sslFile);
+            expect(stubs.es.calledOnce).to.be.true;
+            expect(stubs.es.getCall(0).args[0]).to.equal(sslFile);
             expect(ext.ui.log.calledOnce).to.be.true;
             expect(ext.ui.log.getCall(0).args[0]).to.match(/SSL has /);
-            expect(task.skip.calledOnce).to.be.true;
+            expect(stubs.skip.calledOnce).to.be.true;
         });
 
         it('Errors when email cannot be retrieved', function () {
-            const esStub = sinon.stub().returns(false);
-            const getStub = sinon.stub().returns('http://ghost.dev');
-            const task = {skip: sinon.stub()};
-            const ctx = {instance: {config: {get: getStub}}};
-            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
-            const ext = new NGINX();
-            ext.ui = {log: sinon.stub()};
-
+            stubs.es = sinon.stub().returns(false);
+            const ctx = {instance: {config: {get: _get}}};
+            const ext = proxyNginx({'fs-extra': {existsSync: stubs.es}});
             ext.setupSSL({}, ctx, task);
 
-            expect(getStub.calledOnce).to.be.true;
-            expect(esStub.calledOnce).to.be.true;
+            expect(stubs.es.calledOnce).to.be.true;
             expect(ext.ui.log.calledOnce).to.be.true;
             expect(ext.ui.log.getCall(0).args[0]).to.match(/SSL email must be provided/);
-            expect(task.skip.calledOnce).to.be.true;
+            expect(stubs.skip.calledOnce).to.be.true;
         });
 
-        it('Skips if http config doesn\'t exist', function () {
-            const esStub = sinon.stub().returns(false);
-            const getStub = sinon.stub().returns('http://ghost.dev');
-            const task = {skip: sinon.stub()};
-            const ctx = {instance: {config: {get: getStub}}, single: true};
-            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
-            const ext = new NGINX();
-            ext.ui = {log: sinon.stub()};
-
+        it('Breaks if http config doesn\'t exist', function () {
+            stubs.es = sinon.stub().returns(false);
+            const ctx = {instance: {config: {get: _get}}, single: true};
+            const ext = proxyNginx({'fs-extra': {existsSync: stubs.es}});
             ext.setupSSL({prompt: true}, ctx, task);
 
-            expect(getStub.calledOnce).to.be.true;
-            expect(esStub.calledTwice).to.be.true;
+            expect(stubs.es.calledTwice).to.be.true;
             expect(ext.ui.log.calledOnce).to.be.true;
             expect(ext.ui.log.getCall(0).args[0]).to.match(/Nginx config file/);
-            expect(task.skip.calledOnce).to.be.true;
-        });
+            expect(stubs.skip.calledOnce).to.be.true;
 
-        it('Skips if http config doesn\'t exist (ctx not single)', function () {
-            const esStub = sinon.stub().returns(false);
-            const getStub = sinon.stub().returns('http://ghost.dev');
-            const task = {skip: sinon.stub()};
-            const ctx = {instance: {config: {get: getStub}}};
-            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
-            const ext = new NGINX();
-            ext.ui = {log: sinon.stub()};
-
+            stubs.es.reset();
+            ext.ui.log.reset();
+            stubs.skip.reset();
+            ctx.single = false;
             ext.setupSSL({prompt: true}, ctx, task);
 
-            expect(getStub.calledOnce).to.be.true;
-            expect(esStub.calledTwice).to.be.true;
+            expect(stubs.es.calledTwice).to.be.true;
             expect(ext.ui.log.called).to.be.false;
-            expect(task.skip.calledOnce).to.be.true;
+            expect(stubs.skip.calledOnce).to.be.true;
         });
+    });
 
-        describe('Subtask > DNS', function () {
-            it('Cancels if DNS fails (not found)', function () {
-                const DNS = new Error('failed');
+    describe('setupSSL > Subtasks', function () {
+        let DNS;
+        let stubs;
+        let task;
+        let ctx;
+        let proxy;
+
+        function preSetup(ext) {
+            ext.setupSSL({prompt: true}, ctx, task);
+
+            expect(task.skip.called).to.be.false;
+            expect(ext.ui.log.called).to.be.false;
+            expect(ext.ui.listr.calledOnce).to.be.true;
+
+            return ext.ui.listr.getCall(0).args[0];
+        }
+
+        beforeEach(function () {
+            DNS = new Error('DNS_ERROR');
+            stubs = {
+                es: sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value)),
+                skip: sinon.stub(),
+            };
+            task = {skip: stubs.skip};
+            ctx = {
+                instance: {
+                    config: {get: _get},
+                    dir: dir
+                },
+                single: true
+            };
+            proxy = {
+                'fs-extra': {
+                    existsSync: stubs.es,
+                    readFileSync: value => value
+                },
+                dns: {lookup: () => {throw(DNS)}}
+            };
+        });
+        describe('DNS', function () {
+            it('Breaks if DNS fails', function () {
                 DNS.code  = 'ENOTFOUND';
-                const esStub = sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value));
-                const dnsStub = sinon.stub().throws(DNS);
-                const task = {skip: sinon.stub()};
-                const ctx = {
-                    instance: {
-                        config: {get: () => 'http://ghost.dev'},
-                        dir: '/var/www/ghost'
-                    },
-                    single: true
-                };
-                const NGINX = proxyquire(modulePath, {
-                    'fs-extra': {
-                        existsSync: esStub,
-                        readFileSync: value => value
-                    },
-                    dns: {lookup: dnsStub}
-                });
-                const ext = new NGINX();
-                ext.ui = {
-                    log: sinon.stub(),
-                    listr: sinon.stub()
-                };
+                let ctx = {};
+                const ext = proxyNginx(proxy);
+                ext.ui.listr = sinon.stub();
+                const tasks = preSetup(ext);
+                let firstSet = false;
 
-                ext.setupSSL({prompt: true}, ctx, task);
-
-                expect(task.skip.called).to.be.false;
-                expect(ext.ui.log.called).to.be.false;
-                expect(ext.ui.listr.calledOnce).to.be.true;
-
-                const tasks = ext.ui.listr.getCall(0).args[0];
-                const taskContext = {};
-
-                return tasks[0].task(taskContext).then(() => {
+                return tasks[0].task(ctx).then(() => {
                     expect(ext.ui.log.called).to.be.true;
                     expect(ext.ui.log.getCall(0).args[0]).to.match(/domain isn't set up correctly/);
-                    expect(taskContext.dnsfail).to.exist;
-                    expect(taskContext.dnsfail).to.be.true;
-                });
-            });
+                    expect(ctx.dnsfail).to.be.true;
 
-            it('Cancels if DNS fails (generic)', function () {
-                const DNS = new Error('failed');
-                DNS.code  = 'PEACHESARETASTY';
-                const esStub = sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value));
-                const dnsStub = sinon.stub().throws(DNS);
-                const task = {skip: sinon.stub()};
-                const ctx = {
-                    instance: {
-                        config: {get: () => 'http://ghost.dev'},
-                        dir: '/var/www/ghost'
-                    },
-                    single: true
-                };
-                const NGINX = proxyquire(modulePath, {
-                    'fs-extra': {
-                        existsSync: esStub,
-                        readFileSync: value => value
-                    },
-                    dns: {lookup: dnsStub}
-                });
-                const ext = new NGINX();
-                ext.ui = {
-                    log: sinon.stub(),
-                    listr: sinon.stub()
-                };
-
-                ext.setupSSL({prompt: true}, ctx, task);
-
-                expect(task.skip.called).to.be.false;
-                expect(ext.ui.log.called).to.be.false;
-                expect(ext.ui.listr.calledOnce).to.be.true;
-
-                const tasks = ext.ui.listr.getCall(0).args[0];
-                const taskContext = {};
-
-                return tasks[0].task(taskContext).then(() => {
-                    expect(false, 'Promise should have been rejected').to.be.true;
+                    DNS.code = 'PEACHESARETASTY';
+                    ext.ui.log.reset();
+                    ctx = {};
+                    firstSet = true;
+                    return tasks[0].task(ctx)
+                }).then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true
                 }).catch((err) => {
+                    expect(firstSet, `ENOTFOUND Failed: ${err}`).to.be.true;
                     expect(err).to.exist;
                     expect(err.code).to.equal('PEACHESARETASTY');
                     expect(ext.ui.log.called).to.be.false;
-                    expect(taskContext.dnsfail).to.not.exist;
+                    expect(ctx.dnsfail).to.not.exist;
                 });
             });
 
-            it('If DNS fails, nothing else runs', function () {
-                const esStub = sinon.stub().callsFake(value => value.indexOf('-ssl') < 0 || value.indexOf('acme') >= 0);
-                const dnsStub = sinon.stub();
-                const task = {skip: sinon.stub()};
-                const ctx = {
-                    instance: {
-                        config: {get: () => 'http://ghost.dev'},
-                        dir: '/var/www/ghost'
-                    },
-                    single: true
-                };
-                const NGINX = proxyquire(modulePath, {
-                    'fs-extra': {
-                        existsSync: esStub,
-                        readFileSync: value => value
-                    },
-                    dns: {lookup: dnsStub}
+            it('Everything skips when DNS fails', function () {
+                const esStub = sinon.stub().callsFake(function(value) {
+                    return value.indexOf('-ssl') < 0 ||
+                          !value.indexOf('acme') < 0;
                 });
-                const ext = new NGINX();
-                ext.ui = {
-                    log: sinon.stub(),
-                    listr: sinon.stub(),
-                    prompt: sinon.stub().resolves()
-                };
+                const ctx = {dnsfail: true};
+                const ext = proxyNginx(proxy);
+                ext.ui.listr = sinon.stub(),
+                ext.ui.prompt = sinon.stub().resolves()
+                const tasks = preSetup(ext);
 
-                ext.setupSSL({prompt: true}, ctx, task);
-
-                expect(task.skip.called).to.be.false;
-                expect(ext.ui.log.called).to.be.false;
-                expect(ext.ui.listr.calledOnce).to.be.true;
-
-                const tasks = ext.ui.listr.getCall(0).args[0];
-                const cntx = {dnsfail: true};
-
-                expect(tasks[1].skip(cntx)).to.be.true;
-                expect(tasks[2].skip(cntx)).to.be.true;
+                expect(tasks[1].skip(ctx)).to.be.true;
+                expect(tasks[2].skip(ctx)).to.be.true;
                 expect(tasks[2].skip({})).to.be.true;
-                expect(tasks[3].skip(cntx)).to.be.true;
-                expect(tasks[4].skip(cntx)).to.be.true;
-                expect(tasks[5].skip(cntx)).to.be.true;
-                expect(tasks[6].skip(cntx)).to.be.true;
-                expect(tasks[7].skip(cntx)).to.be.true;
+                expect(tasks[3].skip(ctx)).to.be.true;
+                expect(tasks[4].skip(ctx)).to.be.true;
+                expect(tasks[5].skip(ctx)).to.be.true;
+                expect(tasks[6].skip(ctx)).to.be.true;
+                expect(tasks[7].skip(ctx)).to.be.true;
             });
         });
-        describe('Subtask > Email', function () {
+        describe('Email', function () {
             it('Loads additional config (sslemail exists)', function () {
                 const esStub = sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value));
-                const dnsStub = sinon.stub();
-                const task = {skip: sinon.stub()};
-                const ctx = {
-                    instance: {
-                        config: {get: () => 'http://ghost.dev'},
-                        dir: '/var/www/ghost'
-                    },
-                    single: true
-                };
-                const NGINX = proxyquire(modulePath, {
-                    'fs-extra': {
-                        existsSync: esStub,
-                        readFileSync: value => value
-                    },
-                    dns: {lookup: dnsStub}
-                });
-                const ext = new NGINX();
-                ext.ui = {
-                    log: sinon.stub(),
-                    listr: sinon.stub(),
-                    prompt: sinon.stub().resolves()
-                };
+                const ext = proxyNginx(proxy);
+                ext.ui.listr = sinon.stub();
+                ext.ui.prompt = sinon.stub().resolves();
 
                 ext.setupSSL({prompt: true, sslemail: 'ghost.is@pretty.great'}, ctx, task);
 
@@ -464,7 +392,7 @@ describe('Unit: Nginx extension', function () {
                 });
             });
         });
-        describe('Subtask > Install ACME', function () {
+        describe('Install ACME', function () {
             it('Installs acme.sh', function () {
                 const esStub = sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value));
                 const execaStub = sinon.stub();
@@ -553,7 +481,7 @@ describe('Unit: Nginx extension', function () {
                 });
             });
         });
-        describe('Subtask > Certificate', function () {
+        describe('Certificate', function () {
             it('Gets an SSL certificate', function () {
                 const esStub = sinon.stub().callsFake(value => !(new RegExp(/-ssl/)).test(value));
                 const execaStub = sinon.stub().throws(new Error('Uh-oh'));
@@ -757,7 +685,7 @@ describe('Unit: Nginx extension', function () {
                 });
             });
         });
-        describe('Subtask > dhparam', function () {
+        describe('dhparam', function () {
             it('Uses OpenSSL (and skips if already exists)', function () {
                 const esStub = sinon.stub().callsFake(value => !(new RegExp(/(-ssl|\.pem)/)).test(value));
                 const execaStub = sinon.stub().throws(new Error('Uh-oh'));
@@ -844,7 +772,7 @@ describe('Unit: Nginx extension', function () {
                 });
             });
         });
-        describe('Subtask > Headers', function () {
+        describe('Headers', function () {
             it('Won\'t run if file already exists', function () {
                 const esStub = sinon.stub().callsFake(value => !(new RegExp(/(-ssl|params\.conf)/)).test(value));
                 const ctx = {
@@ -952,7 +880,7 @@ describe('Unit: Nginx extension', function () {
                 });
             });
         });
-        describe('Subtask > Config', function () {
+        describe('Config', function () {
             it('Provides necessary template data', function () {
                 const expectedTemplateData = {
                     url: 'ghost.dev',
@@ -1055,7 +983,7 @@ describe('Unit: Nginx extension', function () {
                 });
             });
         });
-        describe('Subtask > Restart', function () {
+        describe('Restart', function () {
             it('Restarts Nginx', function () {
                 const esStub = sinon.stub().callsFake(value => !(new RegExp(/(-ssl|params\.conf)/)).test(value));
                 const ctx = {
