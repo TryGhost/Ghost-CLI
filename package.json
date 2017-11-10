@@ -52,6 +52,7 @@
     "fkill": "5.1.0",
     "fs-extra": "4.0.2",
     "ghost-ignition": "2.8.16",
+    "got": "7.1.0",
     "inquirer": "3.3.0",
     "is-running": "2.1.0",
     "listr": "0.13.0",
