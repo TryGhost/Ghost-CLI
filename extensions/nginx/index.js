@@ -145,9 +145,8 @@ class NginxExtension extends cli.Extension {
                 return this.ui.sudo('mkdir -p /etc/letsencrypt').then(() => {
                     this.ui.logVerbose('ssl: downloading acme.sh to temporary directory', 'green');
                     return fs.emptyDir(acmeTmpDir)
-                }).then(() => got(acmeApiUrl))
-                .then((response) => {
-                    if (response.statusCode != 200) {
+                }).then(() => got(acmeApiUrl)).then((response) => {
+                    if (response.statusCode !== 200) {
                         // @todo: Should a specific type of error be thrown?
                         throw new Error('Unable to query GitHub for ACME download URL');
                     }
@@ -157,7 +156,7 @@ class NginxExtension extends cli.Extension {
                     } catch (E) {
                         throw new Error('Unable to parse GitHub response');
                     }
-                    return download(url, acmeTmpDir, {extract: true});
+                    return download(response, acmeTmpDir, {extract: true});
                 }).then(() => {
                     // The archive contains a single folder with the structure
                     //  `{user}-{repo}-{commit}`, but we don't know what commit is
@@ -165,7 +164,7 @@ class NginxExtension extends cli.Extension {
                     //  the only thing in acmeTmpDir will be the extracted zip.
                     //  The subdir contents need to be moved up one level
                     let subdir = fs.readdirSync(acmeTmpDir)[0];
-                    subdir = path.resolve(acmeTmpDir,contents);
+                    subdir = path.resolve(acmeTmpDir, subdir);
                     return fs.move(subdir, acmeTmpDir);
                 }).then(() => {
                     this.ui.logVerbose('ssl: installing acme.sh components', 'green');
