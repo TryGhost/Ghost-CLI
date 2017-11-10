@@ -9,6 +9,7 @@ const execa = require('execa');
 const Promise = require('bluebird');
 const template = require('lodash/template');
 const download = require('download');
+const got = require('got');
 
 const cli = require('../../lib');
 
@@ -159,8 +160,8 @@ class NginxExtension extends cli.Extension {
                     return download(url, acmeTmpDir, {extract: true});
                 }).then(() => {
                     // The archive contains a single folder with the structure
-                    //  `{user}-{repo}-{commit}`, but commit isn't specified
-                    //  in the API call. Since the dir is empty (we cleared it),
+                    //  `{user}-{repo}-{commit}`, but we don't know what commit is
+                    //  from the API call. Since the dir is empty (we cleared it),
                     //  the only thing in acmeTmpDir will be the extracted zip.
                     //  The subdir contents need to be moved up one level
                     let subdir = fs.readdirSync(acmeTmpDir)[0];
