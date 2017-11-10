@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.2.1"></a>
+## [1.2.1](https://github.com/TryGhost/Ghost-CLI/compare/1.2.0...1.2.1) (2017-11-10)
+
+
+### Bug Fixes
+
+* node 8 compatibility ([#521](https://github.com/TryGhost/Ghost-CLI/issues/521)) ([e1fb3b0](https://github.com/TryGhost/Ghost-CLI/commit/e1fb3b0))
+
+
+
 <a name="1.2.0"></a>
 # [1.2.0](https://github.com/TryGhost/Ghost-CLI/compare/1.1.3...v1.2.0) (2017-10-30)
 
