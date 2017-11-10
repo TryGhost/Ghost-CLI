@@ -28,6 +28,7 @@
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint bin lib test extensions",
+    "release": "standard-version",
     "test:unit": "nyc --reporter=html --reporter=text mocha --recursive test/unit extensions/**/test",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
@@ -83,6 +84,7 @@
     "proxyquire": "1.8.0",
     "rewire": "2.5.2",
     "sinon": "4.0.1",
+    "standard-version": "4.2.0",
     "tmp": "0.0.33"
   },
   "standard-version": {
