@@ -34,7 +34,7 @@
     "test": "yarn run lint && yarn run test:all"
   },
   "engines": {
-    "node": "^4.5.0 || ^6.9.0 || ^8.8.0"
+    "node": "^4.5.0 || ^6.9.0 || ^8.9.0"
   },
   "preferGlobal": true,
   "dependencies": {
