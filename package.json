@@ -1,6 +1,6 @@
 {
   "name": "ghost-cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Just a CLI manager (for a blogging platform)",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -28,20 +28,21 @@
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint bin lib test extensions",
+    "release": "standard-version",
     "test:unit": "nyc --reporter=html --reporter=text mocha --recursive test/unit extensions/**/test",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
   },
   "engines": {
-    "node": "^4.5.0 || ^6.9.0 || ^8.8.0"
+    "node": "^4.5.0 || ^6.9.0 || ^8.9.0"
   },
   "preferGlobal": true,
   "dependencies": {
     "abbrev": "1.1.1",
     "adm-zip": "0.4.7",
     "bluebird": "3.5.1",
-    "chalk": "2.1.0",
+    "chalk": "2.3.0",
     "cli-table2": "0.2.0",
     "debug": "3.1.0",
     "decompress": "4.2.0",
@@ -50,12 +51,11 @@
     "find-plugins": "1.1.3",
     "fkill": "5.1.0",
     "fs-extra": "4.0.2",
-    "ghost-ignition": "2.8.14",
+    "ghost-ignition": "2.8.16",
     "inquirer": "3.3.0",
     "is-running": "2.1.0",
     "klaw-sync": "3.0.0",
-    "knex-migrator": "2.1.7",
-    "listr": "0.12.0",
+    "listr": "0.13.0",
     "lodash": "4.17.4",
     "log-symbols": "2.1.0",
     "mysql": "2.15.0",
@@ -63,28 +63,29 @@
     "path-is-root": "0.1.0",
     "portfinder": "1.0.13",
     "read-last-lines": "1.2.0",
-    "rxjs": "5.4.3",
+    "rxjs": "5.5.2",
     "semver": "5.4.1",
     "shasum": "1.0.2",
     "stat-mode": "0.2.2",
     "strip-ansi": "4.0.0",
     "symlink-or-copy": "1.1.8",
-    "tail": "1.2.2",
+    "tail": "1.2.3",
     "update-notifier": "2.3.0",
     "validator": "7.2.0",
-    "yargs": "9.0.1",
-    "yarn": "1.1.0"
+    "yargs": "10.0.3",
+    "yarn": "1.3.2"
   },
   "devDependencies": {
     "chai": "4.1.2",
     "coveralls": "3.0.0",
-    "eslint": "4.8.0",
+    "eslint": "4.10.0",
     "has-ansi": "3.0.0",
     "mocha": "4.0.1",
-    "nyc": "11.2.1",
+    "nyc": "11.3.0",
     "proxyquire": "1.8.0",
     "rewire": "2.5.2",
-    "sinon": "4.0.1",
+    "sinon": "4.1.2",
+    "standard-version": "4.2.0",
     "tmp": "0.0.33"
   },
   "standard-version": {
