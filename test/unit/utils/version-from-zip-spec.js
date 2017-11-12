@@ -73,6 +73,42 @@ describe('Unit: Utils > versionFromZip', function () {
         });
     });
 
+    it('rejects if node version isn\'t compatible with ghost node version range and GHOST_NODE_VERSION_CHECK isn\'t set', function () {
+        const versionFromZip = require(modulePath);
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip')).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.equal('Zip file contains a Ghost version incompatible with the current Node version.');
+        });
+    });
+
+    it('resolves if node version isn\'t compatible with ghost node version range and GHOST_NODE_VERSION_CHECK is set', function () {
+        const versionFromZip = require(modulePath);
+
+        process.env.GHOST_NODE_VERSION_CHECK = 'false';
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip')).then((version) => {
+            delete process.env.GHOST_NODE_VERSION_CHECK;
+            expect(version).to.equal('1.0.0');
+        }).catch((error) => {
+            delete process.env.GHOST_NODE_VERSION_CHECK;
+            return Promise.reject(error);
+        });
+    });
+
+    it('rejects if a CLI version is specified in package.json and is not compatible with the current CLI version', function () {
+        const versionFromZip = require(modulePath);
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-invalid-cli.zip')).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.equal('Zip file contains a Ghost version incompatible with this version of the CLI.');
+        });
+    });
+
     it('rejects if update version passed and zip version < update version', function () {
         const versionFromZip = require(modulePath);
 
