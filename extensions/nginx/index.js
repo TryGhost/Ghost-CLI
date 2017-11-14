@@ -162,15 +162,12 @@ class NginxExtension extends cli.Extension {
                     //  `{user}-{repo}-{commit}`, but we don't know what commit is
                     //  from the API call. Since the dir is empty (we cleared it),
                     //  the only thing in acmeTmpDir will be the extracted zip.
-                    //  The subdir contents need to be moved up one level
-                    let subdir = fs.readdirSync(acmeTmpDir)[0];
-                    subdir = path.resolve(acmeTmpDir, subdir);
-                    return fs.move(subdir, acmeTmpDir);
-                }).then(() => {
+                    const acmeCodeDir = path.resolve(acmeTmpDir, fs.readdirSync(acmeTmpDir)[0]);
+                    
                     this.ui.logVerbose('ssl: installing acme.sh components', 'green');
 
                     // Installs acme.sh into /etc/letsencrypt
-                    return this.ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
+                    return this.ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeCodeDir});
                 }).catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
