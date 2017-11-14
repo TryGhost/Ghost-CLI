@@ -192,7 +192,7 @@ describe('Unit: Mysql extension', function () {
             return instance.createUser(ctx, {host: 'localhost'}).then(() => {
                 expect(queryStub.calledThrice).to.be.true;
                 expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[0-9A-Fa-f]*'\) AS password;$/);
+                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
                 expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
                 expect(logStub.calledThrice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/disabled old_password/);
@@ -200,7 +200,7 @@ describe('Unit: Mysql extension', function () {
                 expect(logStub.args[2][0]).to.match(/successfully created new user/);
                 expect(ctx.mysql).to.exist;
                 expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[0-9A-Fa-f]*$/);
+                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
             });
         });
 
@@ -219,7 +219,7 @@ describe('Unit: Mysql extension', function () {
             return instance.createUser(ctx, {host: 'localhost'}).then(() => {
                 expect(queryStub.callCount).to.equal(4);
                 expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[0-9A-Fa-f]*'\) AS password;$/);
+                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
                 expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
                 expect(queryStub.args[3][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
                 expect(logStub.callCount).to.equal(4);
@@ -229,7 +229,7 @@ describe('Unit: Mysql extension', function () {
                 expect(logStub.args[3][0]).to.match(/successfully created new user/);
                 expect(ctx.mysql).to.exist;
                 expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[0-9A-Fa-f]*$/);
+                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
             });
         });
 
@@ -249,7 +249,7 @@ describe('Unit: Mysql extension', function () {
                 expect(error.message).to.match(/Creating new mysql user errored/);
                 expect(queryStub.callCount).to.equal(3);
                 expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[0-9A-Fa-f]*'\) AS password;$/);
+                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
                 expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
                 expect(logStub.callCount).to.equal(3);
                 expect(logStub.args[0][0]).to.match(/disabled old_password/);
