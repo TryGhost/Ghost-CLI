@@ -368,9 +368,26 @@ describe('Unit: Nginx extension', function () {
         });
 
         describe('Install ACME', function () {
-            it('Installs acme.sh', function () {
-                stubs.exec = sinon.stub();
-                proxy.execa = {shell: stubs.exec};
+            it('Downloads ACME.sh', function () {
+                const dwUrl = 'https://ghost.org/download'
+                const fakeResponse = {
+                    body: {tarball_url: dwUrl},
+                    statusCode: 200
+                };
+                fakeResponse.body = JSON.stringify(fakeResponse.body);
+
+                stubs.rds = sinon.stub().returns(['cake']);
+                stubs.got = sinon.stub().resolves(fakeResponse);
+                stubs.empty = sinon.stub();
+                stubs.move = sinon.stub();
+                stubs.dw = sinon.stub();
+
+                proxy['fs-extra'].readdirSync = stubs.rds;
+                proxy['fs-extra'].emptyDir = stubs.empty;
+                proxy['fs-extra'].move = stubs.move;
+                proxy.download = stubs.dw;
+                proxy.got = stubs.got;
+
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 ext.ui.logVerbose = sinon.stub();
@@ -378,25 +395,110 @@ describe('Unit: Nginx extension', function () {
                 return tasks[2].task().then(() => {
                     expect(ext.ui.logVerbose.calledThrice).to.be.true;
                     expect(ext.ui.sudo.calledTwice).to.be.true;
-                    expect(stubs.exec.calledOnce).to.be.true;
-                    expect(stubs.exec.getCall(0).args[0]).to.match(/(?=^git clone)(?=.*acme\.sh)/);
+                    expect(stubs.empty.calledOnce).to.be.true;
+                    expect(stubs.got.calledOnce).to.be.true;
+                    expect(stubs.dw.calledOnce).to.be.true;
+                    expect(stubs.dw.getCall(0).args[0]).to.equal(dwUrl);
                     expect(ext.ui.sudo.getCall(0).args[0]).to.match(/mkdir -p/);
                     expect(ext.ui.sudo.getCall(1).args[0]).to.match(/acme\.sh --install/);
                 });
             });
 
-            it('Rejects when acme.sh fails', function () {
-                stubs.exec = sinon.stub().throws(new Error('Uh-oh'));
-                proxy.execa = {shell: stubs.exec};
+
+            it('Errors when github is down', function () {
+                const dwUrl = 'https://ghost.org/download'
+                const fakeResponse = {
+                    body: {tarball_url: dwUrl},
+                    statusCode: 502
+                };
+                fakeResponse.body = JSON.stringify(fakeResponse.body);
+
+                stubs.rds = sinon.stub().returns(['cake']);
+                stubs.got = sinon.stub().resolves(fakeResponse);
+                stubs.empty = sinon.stub();
+                stubs.move = sinon.stub();
+                stubs.dw = sinon.stub();
+
+                proxy['fs-extra'].readdirSync = stubs.rds;
+                proxy['fs-extra'].emptyDir = stubs.empty;
+                proxy['fs-extra'].move = stubs.move;
+                proxy.download = stubs.dw;
+                proxy.got = stubs.got;
+
                 const ext = proxyNginx(proxy);
-                ext.ui.logVerbose = sinon.stub();
                 const tasks = getTasks(ext);
+                ext.ui.logVerbose = sinon.stub();
 
                 return tasks[2].task().then(() => {
                     expect(false, 'Promise should have been rejected').to.be.true;
-                }).catch((e) => {
-                    // @todo make sure e is a process error
-                    expect(e.message).to.equal('Uh-oh');
+                }).catch((reject) => {
+                    expect(reject).to.exist;
+                    expect(reject.message).to.match(/query github/i);
+                    expect(ext.ui.logVerbose.calledTwice).to.be.true;
+                    expect(ext.ui.sudo.calledOnce).to.be.true;
+                    expect(stubs.empty.calledOnce).to.be.true;
+                    expect(stubs.got.calledOnce).to.be.true;
+                    expect(stubs.dw.called).to.be.false;
+                });
+            });
+
+            it('Errors when bad data is passed', function () {
+                const fakeResponse = {
+                    body: 'Waffles',
+                    statusCode: 200
+                };
+
+                stubs.rds = sinon.stub().returns(['cake']);
+                stubs.got = sinon.stub().resolves(fakeResponse);
+                stubs.empty = sinon.stub();
+                stubs.move = sinon.stub();
+                stubs.dw = sinon.stub();
+
+                proxy['fs-extra'].readdirSync = stubs.rds;
+                proxy['fs-extra'].emptyDir = stubs.empty;
+                proxy['fs-extra'].move = stubs.move;
+                proxy.download = stubs.dw;
+                proxy.got = stubs.got;
+
+                const ext = proxyNginx(proxy);
+                const tasks = getTasks(ext);
+                ext.ui.logVerbose = sinon.stub();
+
+                return tasks[2].task().then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                }).catch((reject) => {
+                    expect(reject).to.exist;
+                    expect(reject.message).to.match(/parse github/i);
+                    expect(ext.ui.logVerbose.calledTwice).to.be.true;
+                    expect(ext.ui.sudo.calledOnce).to.be.true;
+                    expect(stubs.empty.calledOnce).to.be.true;
+                    expect(stubs.got.calledOnce).to.be.true;
+                    expect(stubs.dw.called).to.be.false;
+                });
+            });
+
+            it('Rejects when acme.sh fails', function () {
+                stubs.got = sinon.stub().rejects(new Error('Uh-oh'));
+                stubs.empty = sinon.stub();
+                stubs.dw = sinon.stub();
+
+                proxy['fs-extra'].emptyDir = stubs.empty;
+                proxy.download = stubs.dw;
+                proxy.got = stubs.got;
+
+                const ext = proxyNginx(proxy);
+                const tasks = getTasks(ext);
+                ext.ui.logVerbose = sinon.stub();
+
+                return tasks[2].task().then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                }).catch((reject) => {
+                    expect(reject.message).to.equal('Uh-oh');
+                    expect(ext.ui.logVerbose.calledTwice).to.be.true;
+                    expect(ext.ui.sudo.calledOnce).to.be.true;
+                    expect(stubs.empty.calledOnce).to.be.true;
+                    expect(stubs.got.calledOnce).to.be.true;
+                    expect(stubs.dw.called).to.be.false;
                 });
             });
         });

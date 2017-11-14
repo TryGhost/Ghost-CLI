@@ -8,6 +8,8 @@ const path = require('path');
 const execa = require('execa');
 const Promise = require('bluebird');
 const template = require('lodash/template');
+const download = require('download');
+const got = require('got');
 
 const cli = require('../../lib');
 
@@ -135,18 +137,37 @@ class NginxExtension extends cli.Extension {
             skip: (ctx) => ctx.dnsfail || fs.existsSync('/etc/letsencrypt/acme.sh'),
             task: () => {
                 const acmeTmpDir = path.join(os.tmpdir(), 'acme.sh');
+                const acmeApiUrl = 'https://api.github.com/repos/Neilpang/acme.sh/releases/latest';
 
                 this.ui.logVerbose('ssl: creating /etc/letsencrypt directory', 'green');
-                // acme.sh creates the directory without global read permissions, so we need to make sure
-                // it has global read permissions first
+                // acme.sh creates the directory without global read permissions, so we need to make
+                // sure it has global read permissions first
                 return this.ui.sudo('mkdir -p /etc/letsencrypt').then(() => {
-                    this.ui.logVerbose('ssl: cloning acme.sh to temporary directory', 'green');
-                    return execa.shell(`git clone https://github.com/Neilpang/acme.sh.git ${acmeTmpDir}`);
+                    this.ui.logVerbose('ssl: downloading acme.sh to temporary directory', 'green');
+                    return fs.emptyDir(acmeTmpDir)
+                }).then(() => got(acmeApiUrl)).then((response) => {
+                    if (response.statusCode !== 200) {
+                        // @todo: Should a specific type of error be thrown?
+                        throw new Error('Unable to query GitHub for ACME download URL');
+                    }
+
+                    try {
+                        response = JSON.parse(response.body).tarball_url;
+                    } catch (E) {
+                        throw new Error('Unable to parse GitHub response');
+                    }
+                    return download(response, acmeTmpDir, {extract: true});
                 }).then(() => {
+                    // The archive contains a single folder with the structure
+                    //  `{user}-{repo}-{commit}`, but we don't know what commit is
+                    //  from the API call. Since the dir is empty (we cleared it),
+                    //  the only thing in acmeTmpDir will be the extracted zip.
+                    const acmeCodeDir = path.resolve(acmeTmpDir, fs.readdirSync(acmeTmpDir)[0]);
+
                     this.ui.logVerbose('ssl: installing acme.sh components', 'green');
 
                     // Installs acme.sh into /etc/letsencrypt
-                    return this.ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
+                    return this.ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeCodeDir});
                 }).catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
