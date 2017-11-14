@@ -163,7 +163,7 @@ class NginxExtension extends cli.Extension {
                     //  from the API call. Since the dir is empty (we cleared it),
                     //  the only thing in acmeTmpDir will be the extracted zip.
                     const acmeCodeDir = path.resolve(acmeTmpDir, fs.readdirSync(acmeTmpDir)[0]);
-                    
+
                     this.ui.logVerbose('ssl: installing acme.sh components', 'green');
 
                     // Installs acme.sh into /etc/letsencrypt
