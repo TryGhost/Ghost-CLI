@@ -59,7 +59,7 @@ describe('Unit: Commands > Backup', function () {
             const fsstub = {
                 readFileSync: sinon.stub(),
                 ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
+                accessSync: fs.access,
                 W_OK: fs.W_OK
             };
 
