@@ -4,11 +4,22 @@
 // provide a title to the process
 process.title = 'ghost';
 
-// Check for CLI updates if not running `ghost run`
-if (process.argv.length > 2 && process.argv[2] !== 'run') {
-    require('../lib/utils/update-notifier');
+function startup() {
+    const yargs = require('yargs');
+    const bootstrap = require('../lib/bootstrap');
+    bootstrap.run(process.argv.slice(2), yargs);
 }
 
-const yargs = require('yargs');
-const bootstrap = require('../lib/bootstrap');
-bootstrap.run(process.argv.slice(2), yargs);
+// Check for CLI updates if not running `ghost run`
+if (process.argv.length > 2 && process.argv[2] !== 'run') {
+    const updateCheck = require('../lib/utils/update-check');
+    updateCheck().then(startup).catch((error) => {
+        if (error) {
+            console.error(error);
+        }
+
+        process.exit(1);
+    });
+} else {
+    startup();
+}
