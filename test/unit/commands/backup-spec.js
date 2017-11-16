@@ -113,7 +113,7 @@ describe('Unit: Commands > Backup', function () {
             };
             const fsstub = {
                 ensureDirSync: fs.ensureDirSync,
-                access: fs.access,
+                accessSync: fs.accessSync,
                 W_OK: fs.W_OK
             };
 
@@ -169,7 +169,7 @@ describe('Unit: Commands > Backup', function () {
             };
             const fsstub = {
                 ensureDirSync: sinon.stub(),
-                access: sinon.stub(),
+                accessSync: sinon.stub(),
                 W_OK: fs.W_OK
             };
             const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
