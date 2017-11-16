@@ -28,25 +28,25 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        let parsedUrl = url.parse(ctx.instance.config.get('url'));
+        const parsedUrl = url.parse(ctx.instance.config.get('url'));
 
         if (parsedUrl.port) {
             this.ui.log('Your url contains a port. Skipping Nginx setup.', 'yellow');
             return task.skip();
         }
 
-        let confFile = `${parsedUrl.hostname}.conf`;
+        const confFile = `${parsedUrl.hostname}.conf`;
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('Nginx configuration already found for this url. Skipping Nginx setup.', 'yellow');
             return task.skip();
         }
 
-        let conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
+        const conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
 
-        let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
+        const rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
 
-        let generatedConfig = conf({
+        const generatedConfig = conf({
             url: parsedUrl.hostname,
             webroot: rootPath,
             location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
@@ -64,8 +64,8 @@ class NginxExtension extends cli.Extension {
     }
 
     setupSSL(argv, ctx, task) {
-        let parsedUrl = url.parse(ctx.instance.config.get('url'));
-        let confFile = `${parsedUrl.hostname}-ssl.conf`;
+        const parsedUrl = url.parse(ctx.instance.config.get('url'));
+        const confFile = `${parsedUrl.hostname}-ssl.conf`;
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('SSL has already been set up, skipping', 'yellow');
@@ -85,8 +85,10 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        let rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
-        let dhparamFile = path.join(ctx.instance.dir, 'system', 'files', 'dhparam.pem');
+        const rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
+        const dhparamFile = '/etc/nginx/snippets/dhparam.pem';
+        const sslParamsFile = '/etc/nginx/snippets/ssl-params.conf';
+        const sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
@@ -99,7 +101,7 @@ class NginxExtension extends cli.Extension {
 
                     // DNS entry has not populated yet, log an error and skip rest of the
                     // ssl configuration
-                    let text = [
+                    const text = [
                         'Uh-oh! It looks like your domain isn\'t set up correctly yet.',
                         'Because of this, SSL setup won\'t work correctly. Once you\'ve set up your domain',
                         'and pointed it at this server\'s IP, try running `ghost setup ssl` again.'
@@ -129,53 +131,79 @@ class NginxExtension extends cli.Extension {
                 return promise;
             }
         }, {
+            title: 'Installing acme.sh',
+            skip: (ctx) => ctx.dnsfail || fs.existsSync('/etc/letsencrypt/acme.sh'),
+            task: () => {
+                const acmeTmpDir = path.join(os.tmpdir(), 'acme.sh');
+
+                this.ui.logVerbose('ssl: creating /etc/letsencrypt directory', 'green');
+                // acme.sh creates the directory without global read permissions, so we need to make sure
+                // it has global read permissions first
+                return this.ui.sudo('mkdir -p /etc/letsencrypt').then(() => {
+                    this.ui.logVerbose('ssl: cloning acme.sh to temporary directory', 'green');
+                    return execa.shell(`git clone https://github.com/Neilpang/acme.sh.git ${acmeTmpDir}`);
+                }).then(() => {
+                    this.ui.logVerbose('ssl: installing acme.sh components', 'green');
+
+                    // Installs acme.sh into /etc/letsencrypt
+                    return this.ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
+                }).catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            }
+        }, {
             title: 'Getting SSL Certificate from Let\'s Encrypt',
             skip: (ctx) => ctx.dnsfail,
             task: () => {
-                return execa.shell('curl https://get.acme.sh | sh').then(() => {
-                    let acmeScriptPath = path.join(os.homedir(), '.acme.sh', 'acme.sh');
+                const cmd = `/etc/letsencrypt/acme.sh --issue --home /etc/letsencrypt --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
+                `--reloadcmd "nginx -s reload" --accountemail ${argv.sslemail}${argv.sslstaging ? ' --staging' : ''}`;
 
-                    let cmd = `${acmeScriptPath} --issue --domain ${parsedUrl.hostname} --webroot ${rootPath} ` +
-                        `--accountemail ${argv.sslemail}${argv.sslstaging ? ' --staging' : ''}`;
-
-                    return execa.shell(cmd);
-                }).catch((error) => {
-                    // Certs have been generated before, skip
-                    if (!error.stdout.match(/Skip/)) {
-                        return Promise.reject(new cli.errors.ProcessError(error));
+                return this.ui.sudo(cmd).catch((error) => {
+                    if (error.code === 2) {
+                        // error code 2 is given if a cert doesn't need to be renewed
+                        return Promise.resolve();
                     }
+
+                    if (error.stderr.match(/Verify error:(Fetching|Invalid Response)/)) {
+                        // Domain verification failed
+                        return Promise.reject(new cli.errors.SystemError(
+                            'Your domain name is not pointing to the correct IP address of your server, please update it and run `ghost setup ssl` again'
+                        ));
+                    }
+
+                    // It's not an error we expect might happen, throw a ProcessError instead.
+                    return Promise.reject(new cli.errors.ProcessError(error));
                 });
             }
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
-            skip: (ctx) => ctx.dnsfail,
+            skip: (ctx) => ctx.dnsfail || fs.existsSync(dhparamFile),
             task: () => {
-                return execa.shell(`openssl dhparam -out ${dhparamFile} 2048`)
+                return this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`)
                     .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
             }
         }, {
             title: 'Generating SSL security headers',
-            skip: (ctx) => ctx.dnsfail,
-            task: (ctx) => {
-                let sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
-                return ctx.instance.template(
-                    sslParamsConf({ dhparam: dhparamFile }),
-                    'ssl security parameters',
-                    'ssl-params.conf'
-                );
+            skip: (ctx) => ctx.dnsfail || fs.existsSync(sslParamsFile),
+            task: () => {
+                const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
+
+                return fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'}).then(() => {
+                    return this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`).catch(
+                        (error) => Promise.reject(new cli.errors.ProcessError(error))
+                    );
+                });
             }
         }, {
             title: 'Generating SSL configuration',
             skip: (ctx) => ctx.dnsfail,
             task: (ctx) => {
-                let acmeFolder = path.join(os.homedir(), '.acme.sh', parsedUrl.hostname);
-                let sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
-                let generatedSslConfig = sslConf({
+                const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
+                const sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
+                const generatedSslConfig = sslConf({
                     url: parsedUrl.hostname,
                     webroot: rootPath,
                     fullchain: path.join(acmeFolder, 'fullchain.cer'),
                     privkey: path.join(acmeFolder, `${parsedUrl.hostname}.key`),
-                    sslparams: path.join(ctx.instance.dir, 'system', 'files', 'ssl-params.conf'),
+                    sslparams: sslParamsFile,
                     location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
                     port: ctx.instance.config.get('server.port')
                 });
@@ -197,11 +225,11 @@ class NginxExtension extends cli.Extension {
     }
 
     uninstall(instance) {
-        let parsedUrl = url.parse(instance.config.get('url'));
-        let confFile = `${parsedUrl.hostname}.conf`;
-        let sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
+        const parsedUrl = url.parse(instance.config.get('url'));
+        const confFile = `${parsedUrl.hostname}.conf`;
+        const sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
 
-        let promises = [];
+        const promises = [];
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             // Nginx config exists, remove it
@@ -235,7 +263,7 @@ class NginxExtension extends cli.Extension {
     }
 
     restartNginx() {
-        return this.ui.sudo('service nginx restart')
+        return this.ui.sudo('nginx -s reload')
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 

@@ -78,7 +78,9 @@ describe('Unit: Mysql extension', function () {
 
             instance.connection = {end: endStub};
 
-            return instance.setupMySQL({}, {instance: {config: {get: getStub, set: setStub, save: saveStub}}}, {skip: skipStub}).then(() => {
+            return instance.setupMySQL({}, {
+                instance: {config: {get: getStub, set: setStub, save: saveStub}}
+            }, {skip: skipStub}).then(() => {
                 expect(skipStub.called).to.be.false;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.be.false;
@@ -188,9 +190,9 @@ describe('Unit: Mysql extension', function () {
 
             return instance.createUser(ctx, {host: 'localhost'}).then(() => {
                 expect(queryStub.calledThrice).to.be.true;
-                expect(queryStub.args[0][0]).to.match(/^CREATE USER \'ghost-[0-9]{1,4}\'@\'localhost\' IDENTIFIED WITH mysql\_native\_password\;$/);
+                expect(queryStub.args[0][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
                 expect(queryStub.args[1][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[2][0]).to.match(/^SET PASSWORD FOR \'ghost-[0-9]{1,4}\'@\'localhost\' = PASSWORD\(\'[0-9A-Fa-f]*\'\);$/);
+                expect(queryStub.args[2][0]).to.match(/^SET PASSWORD FOR 'ghost-[0-9]{1,4}'@'localhost' = PASSWORD\('[0-9A-Fa-f]*'\);$/);
                 expect(logStub.calledThrice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/created new user/);
                 expect(logStub.args[1][0]).to.match(/disabled old_password/);
@@ -214,10 +216,10 @@ describe('Unit: Mysql extension', function () {
 
             return instance.createUser(ctx, {host: 'localhost'}).then(() => {
                 expect(queryStub.callCount).to.equal(4);
-                expect(queryStub.args[0][0]).to.match(/^CREATE USER \'ghost-[0-9]{1,4}\'@\'localhost\' IDENTIFIED WITH mysql\_native\_password\;$/);
-                expect(queryStub.args[1][0]).to.match(/^CREATE USER \'ghost-[0-9]{1,4}\'@\'localhost\' IDENTIFIED WITH mysql\_native\_password\;$/);
+                expect(queryStub.args[0][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
+                expect(queryStub.args[1][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
                 expect(queryStub.args[2][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[3][0]).to.match(/^SET PASSWORD FOR \'ghost-[0-9]{1,4}\'@\'localhost\' = PASSWORD\(\'[0-9A-Fa-f]*\'\);$/);
+                expect(queryStub.args[3][0]).to.match(/^SET PASSWORD FOR 'ghost-[0-9]{1,4}'@'localhost' = PASSWORD\('[0-9A-Fa-f]*'\);$/);
                 expect(logStub.callCount).to.equal(4);
                 expect(logStub.args[0][0]).to.match(/user exists, re-trying user creation/);
                 expect(logStub.args[1][0]).to.match(/created new user/);
@@ -242,7 +244,7 @@ describe('Unit: Mysql extension', function () {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.match(/Creating new mysql user errored/);
                 expect(queryStub.calledOnce).to.be.true;
-                expect(queryStub.args[0][0]).to.match(/^CREATE USER \'ghost-[0-9]{1,4}\'@\'localhost\' IDENTIFIED WITH mysql\_native\_password\;$/);
+                expect(queryStub.args[0][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
                 expect(logStub.calledOnce).to.be.true;
                 expect(logStub.args[0][0]).to.match(/Unable to create custom Ghost user/);
                 expect(endStub.calledOnce).to.be.true;
