@@ -12,6 +12,17 @@ const template = require('lodash/template');
 const cli = require('../../lib');
 
 class NginxExtension extends cli.Extension {
+    migrations() {
+        const migrations = require('./migrations');
+
+        return [{
+            before: '1.2.0',
+            title: 'Migrating SSL certs',
+            skip: () => os.platform() !== 'linux' || !fs.existsSync(path.join(os.homedir(), '.acme.sh')),
+            task: migrations.migrateSSL.bind(this)
+        }];
+    }
+
     setup(cmd, argv) {
         // ghost setup --local, skip
         if (argv.local) {
