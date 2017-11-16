@@ -47,10 +47,16 @@ const listrCall = (tasks, ctx) => {
 
 describe('Unit: Commands > Backup', function () {
     describe('Basic functionality', function () {
+        let cwdStub;
+
+        afterEach(function () {
+            cwdStub.restore();
+        });
+
         it('Saves to the right location', function () {
             const env = setupEnv(envConfig);
+            cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
             const dbbackupStub = sinon.stub().resolves({});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
             const system = {
                 getInstance: sinon.stub(),
                 environment: 'production',
@@ -59,7 +65,7 @@ describe('Unit: Commands > Backup', function () {
             const fsstub = {
                 readFileSync: sinon.stub(),
                 ensureDirSync: fs.ensureDirSync,
-                accessSync: fs.access,
+                accessSync: fs.accessSync,
                 W_OK: fs.W_OK
             };
 
@@ -85,7 +91,6 @@ describe('Unit: Commands > Backup', function () {
             const backup = new BackupCommand(ui,system);
 
             return backup.run({}).then(() => {
-                cwdStub.restore();
                 expect(fs.existsSync(path.join(env.dir, `ghoster.backup.${datetime}.zip`))).to.be.true;
                 expect(system.hook.calledOnce).to.be.true;
                 expect(ui.listr.calledOnce).to.be.true;
@@ -96,7 +101,7 @@ describe('Unit: Commands > Backup', function () {
 
         it('Accepts the output flag', function () {
             const env = setupEnv(envConfig);
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
             const localContext = {
                 argv: {output: './path/to/test'},
                 instance: {
@@ -117,7 +122,6 @@ describe('Unit: Commands > Backup', function () {
             const backup = new BackupCommand();
 
             return backup.initialize(localContext).then(() => {
-                cwdStub.restore();
                 const expectedPath = path.join(env.dir, `path/to/test/ghoster.backup.${datetime}.zip`);
                 expect(localContext.saveLocation).to.equal(expectedPath);
                 expect(fs.existsSync(path.join(env.dir, 'path/to/test'))).to.be.true;
@@ -127,7 +131,7 @@ describe('Unit: Commands > Backup', function () {
         });
 
         it('Complains about write permissions', function () {
-            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            cwdStub = sinon.stub(process, 'cwd').returns('./');
             const localContext = {
                 argv: {},
                 instance: {
@@ -144,7 +148,6 @@ describe('Unit: Commands > Backup', function () {
             return backup.initialize(localContext).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch(() => {
-                cwdStub.restore();
                 expect(localContext.saveLocation).to.equal('./');
                 expect(localContext.instance.ui.log.calledOnce).to.be.true;
                 expect(localContext.zipFile).to.equal(undefined);
@@ -153,7 +156,7 @@ describe('Unit: Commands > Backup', function () {
         });
 
         it('Warns of running instance', function () {
-            const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+            cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
             const localContext = {
                 argv: {},
                 instance: {
@@ -173,7 +176,6 @@ describe('Unit: Commands > Backup', function () {
             const backup = new BackupCommand();
 
             return backup.initialize(localContext).then(() => {
-                cwdStub.restore();
                 expect(localContext.instance.ui.log.calledOnce).to.be.true;
                 expect(localContext.zipFile).to.exist;
             });
@@ -181,24 +183,29 @@ describe('Unit: Commands > Backup', function () {
     });
 
     describe('Database Exports', function () {
+        let cwdStub;
+
+        afterEach(function () {
+            cwdStub.restore();
+        });
+
         it('Fails when the exporter doesn\'t load', function () {
-            const cwdStub = sinon.stub(process, 'cwd').returns('./');
+            cwdStub = sinon.stub(process, 'cwd').returns('./');
             const BackupCommand = require(modulePath);
             const backup = new BackupCommand();
 
             return backup.backupDatabase({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) =>{
-                cwdStub.restore();
                 expect(error.message).to.match(/Unable to initialize database exporter/)
             });
         });
 
         it('Errors on MYSQL connection failure', function () {
+            cwdStub = sinon.stub(process, 'cwd').returns('./');
             const mysqlError = new Error('You\'ve been ghosted!');
             mysqlError.code = 'ECONNREFUSED';
             const dbbackupStub = sinon.stub().rejects(mysqlError);
-            const cwdStub = sinon.stub(process, 'cwd').returns('./');
             const exporterLocation = 'current/core/server/data/export/';
             const BackupCommand = proxyquire(modulePath, {[exporterLocation]: {doExport: dbbackupStub}});
             const backup = new BackupCommand();
@@ -206,15 +213,14 @@ describe('Unit: Commands > Backup', function () {
             return backup.backupDatabase({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                cwdStub.restore();
                 expect(dbbackupStub.calledOnce).to.be.true;
                 expect(error.message).to.match(/Unable to connect to MySQL/);
             });
         });
 
         it('Fails on unknown export failure', function () {
+            cwdStub = sinon.stub(process, 'cwd').returns('./');
             const dbbackupStub = sinon.stub().rejects(new Error('What even is backing up'));
-            const cwdStub = sinon.stub(process, 'cwd').returns('./');
             const exporterLocation = 'current/core/server/data/export/';
             const BackupCommand = proxyquire(modulePath, {[exporterLocation]: {doExport: dbbackupStub}});
             const backup = new BackupCommand();
@@ -222,7 +228,6 @@ describe('Unit: Commands > Backup', function () {
             return backup.backupDatabase({}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                cwdStub.restore();
                 expect(dbbackupStub.calledOnce).to.be.true;
                 expect(error.message).to.match(/What even is backing up/);
             });
