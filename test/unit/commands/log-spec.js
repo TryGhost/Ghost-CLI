@@ -8,20 +8,10 @@ const Errors = require('../../../lib/errors');
 const modulePath = '../../../lib/commands/log';
 
 const psModule = 'ghost-ignition/lib/logging/PrettyStream';
-const defaultInstance = {
-    running: () => true,
-    loadRunningEnvironment: () => true,
-    config: {get: config_get},
-    dir: '/var/www/ghost'
-};
-const defaultSystem = {
-    getInstance: () => defaultInstance,
-    environment: 'dev'
-};
 
 function proxyLog(proxyOptions) {
     let Log;
-    if(proxyOptions == null) {
+    if (proxyOptions === null) {
         Log = require(modulePath);
     } else {
         Log = proxyquire(modulePath, proxyOptions);
@@ -29,15 +19,27 @@ function proxyLog(proxyOptions) {
     return new Log();
 }
 
-function config_get(what) {
-    if(what === 'url') {
+function configGet(what) {
+    if (what === 'url') {
         return 'https://dev.ghost.org'
-    } else if(what === 'logging.transports') {
+    } else if (what === 'logging.transports') {
         return ['file'];
     }
 
     return undefined;
 }
+
+const defaultInstance = {
+    running: () => true,
+    loadRunningEnvironment: () => true,
+    config: {get: configGet},
+    dir: '/var/www/ghost'
+};
+const defaultSystem = {
+    getInstance: () => defaultInstance,
+    environment: 'dev'
+};
+
 
 describe('Unit: Commands > Log', function () {
     let ext, stubs;
@@ -86,7 +88,7 @@ describe('Unit: Commands > Log', function () {
             const ext = proxyLog();
             const instance = {
                 running: stubs.running,
-                loadRunningEnvironment: stubs.lre,
+                loadRunningEnvironment: stubs.lre
             };
             stubs.gi = sinon.stub().returns(instance);
             ext.system = {getInstance: stubs.gi};
@@ -167,7 +169,7 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('Passes unknown PrettyStream errors through', function () {
-            class PrettyStream {};
+            class PrettyStream {}
             PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) =>{
                 expect(event).to.equal('error');
                 callback(new Error('test error'));
@@ -188,7 +190,7 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('Ignores PrettyStream syntax errors', function () {
-            class PrettyStream {};
+            class PrettyStream {}
             PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) =>{
                 expect(event).to.equal('error');
                 callback(new SyntaxError('bad error'));
@@ -225,7 +227,7 @@ describe('Unit: Commands > Log', function () {
             const instance = {
                 running: () => true,
                 loadRunningEnvironment: () => true,
-                config: {get: sinon.stub().callsFake(config_get)},
+                config: {get: sinon.stub().callsFake(configGet)},
                 dir: '/var/www/ghost'
             };
             ext.system = {getInstance: () => instance, environment: 'dev'};
