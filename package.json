@@ -34,6 +34,12 @@
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
   },
+  "nyc": {
+    "exclude": [
+      "**/*-spec.js",
+      "test"
+     ]
+  },
   "engines": {
     "node": "^4.5.0 || ^6.9.0 || ^8.9.0"
   },
