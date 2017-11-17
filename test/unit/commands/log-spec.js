@@ -11,7 +11,8 @@ const psModule = 'ghost-ignition/lib/logging/PrettyStream';
 
 function proxyLog(proxyOptions) {
     let Log;
-    if (proxyOptions === null) {
+
+    if (!proxyOptions) {
         Log = require(modulePath);
     } else {
         Log = proxyquire(modulePath, proxyOptions);
