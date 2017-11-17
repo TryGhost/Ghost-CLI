@@ -318,6 +318,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             it('Everything skips when DNS fails', function () {
                 stubs.es.callsFake((val) => (val.indexOf('-ssl') < 0 || val.indexOf('acme') >= 0));
+
                 const ctx = {dnsfail: true};
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
@@ -331,7 +332,6 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(tasks[6].skip(ctx)).to.be.true;
                 expect(tasks[7].skip(ctx)).to.be.true;
                 ctx.dnsfail = false;
-                // @todo: stub fs so this returns false
                 // These are FS related validators
                 expect(tasks[4].skip(ctx)).to.be.true;
                 expect(tasks[5].skip(ctx)).to.be.true;
@@ -601,9 +601,9 @@ describe('Unit: Extensions > Nginx', function () {
             }).catch(function (err) {
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.getCall(0).args[0]).to.match(/nginx -s reload/);
-                // @todo make sure a process error is thrown
-                // const expectedError = require('../../../lib/errors');
                 expect(err).to.be.ok;
+                const expectedError = require('../../../lib/errors');
+                expect(err).to.be.instanceof(expectedError.ProcessError);
             });
         });
     });
