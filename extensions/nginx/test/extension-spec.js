@@ -45,6 +45,36 @@ describe('Unit: Extensions > Nginx', function () {
         expect(NGINX.prototype instanceof ext).to.be.true;
     });
 
+    describe('migrations hook', function () {
+        // Describe is used here for future-proofing
+        describe('[before 1.2.0]', function () {
+            it('Skips if not linux', function () {
+                const osStub = sinon.stub().returns('win32');
+                const ext = proxyNginx({os: {platform: osStub}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.true;
+            });
+
+            it('Skips if acme.sh doesn\'t exist', function () {
+                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(false)}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.true;
+            });
+
+            it('Doesn\'t skip if acme.sh exists', function () {
+                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(true)}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.false;
+            });
+        });
+    });
+
     describe('setup hook', function () {
         let ext;
 
@@ -318,6 +348,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             it('Everything skips when DNS fails', function () {
                 stubs.es.callsFake((val) => (val.indexOf('-ssl') < 0 || val.indexOf('acme') >= 0));
+
                 const ctx = {dnsfail: true};
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
@@ -331,7 +362,6 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(tasks[6].skip(ctx)).to.be.true;
                 expect(tasks[7].skip(ctx)).to.be.true;
                 ctx.dnsfail = false;
-                // @todo: stub fs so this returns false
                 // These are FS related validators
                 expect(tasks[4].skip(ctx)).to.be.true;
                 expect(tasks[5].skip(ctx)).to.be.true;
@@ -601,9 +631,9 @@ describe('Unit: Extensions > Nginx', function () {
             }).catch(function (err) {
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.getCall(0).args[0]).to.match(/nginx -s reload/);
-                // @todo make sure a process error is thrown
-                // const expectedError = require('../../../lib/errors');
                 expect(err).to.be.ok;
+                const expectedError = require('../../../lib/errors');
+                expect(err).to.be.instanceof(expectedError.ProcessError);
             });
         });
     });
