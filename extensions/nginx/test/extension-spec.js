@@ -45,6 +45,36 @@ describe('Unit: Extensions > Nginx', function () {
         expect(NGINX.prototype instanceof ext).to.be.true;
     });
 
+    describe('migrations hook', function () {
+        // Describe is used here for future-proofing
+        describe('[before 1.2.0]', function () {
+            it('Skips if not linux', function () {
+                const osStub = sinon.stub().returns('win32');
+                const ext = proxyNginx({os: {platform: osStub}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.true;
+            });
+
+            it('Skips if acme.sh doesn\'t exist', function () {
+                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(false)}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.true;
+            });
+
+            it('Doesn\'t skip if acme.sh exists', function () {
+                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(true)}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.false;
+            });
+        });
+    });
+
     describe('setup hook', function () {
         let ext;
 
