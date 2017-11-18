@@ -1,6 +1,6 @@
 {
   "name": "ghost-cli",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Just a CLI manager (for a blogging platform)",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -34,6 +34,12 @@
     "test:all": "yarn run test:unit && yarn run test:acceptance",
     "test": "yarn run lint && yarn run test:all"
   },
+  "nyc": {
+    "exclude": [
+      "**/*-spec.js",
+      "test"
+     ]
+  },
   "engines": {
     "node": "^4.5.0 || ^6.9.0 || ^8.9.0"
   },
@@ -51,6 +57,7 @@
     "find-plugins": "1.1.3",
     "fkill": "5.1.0",
     "fs-extra": "4.0.2",
+    "generate-password": "1.3.0",
     "ghost-ignition": "2.8.16",
     "got": "7.1.0",
     "inquirer": "3.3.0",
@@ -64,6 +71,7 @@
     "path-is-root": "0.1.0",
     "portfinder": "1.0.13",
     "read-last-lines": "1.2.0",
+    "replace-in-file": "2.6.4",
     "rxjs": "5.5.2",
     "semver": "5.4.1",
     "shasum": "1.0.2",

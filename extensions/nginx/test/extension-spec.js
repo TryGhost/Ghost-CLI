@@ -38,11 +38,41 @@ function _get(key) {
     return keys[key];
 }
 
-describe('Unit: Nginx extension', function () {
+describe('Unit: Extensions > Nginx', function () {
     it('inherits from extension', function () {
         const ext = require('../../../lib/extension.js');
 
         expect(NGINX.prototype instanceof ext).to.be.true;
+    });
+
+    describe('migrations hook', function () {
+        // Describe is used here for future-proofing
+        describe('[before 1.2.0]', function () {
+            it('Skips if not linux', function () {
+                const osStub = sinon.stub().returns('win32');
+                const ext = proxyNginx({os: {platform: osStub}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.true;
+            });
+
+            it('Skips if acme.sh doesn\'t exist', function () {
+                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(false)}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.true;
+            });
+
+            it('Doesn\'t skip if acme.sh exists', function () {
+                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(true)}});
+                const migrations = ext.migrations();
+
+                expect(migrations[0].before).to.equal('1.2.0');
+                expect(migrations[0].skip()).to.be.false;
+            });
+        });
     });
 
     describe('setup hook', function () {
@@ -318,20 +348,20 @@ describe('Unit: Nginx extension', function () {
 
             it('Everything skips when DNS fails', function () {
                 stubs.es.callsFake((val) => (val.indexOf('-ssl') < 0 || val.indexOf('acme') >= 0));
+
                 const ctx = {dnsfail: true};
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
 
                 expect(tasks[1].skip(ctx)).to.be.true;
                 expect(tasks[2].skip(ctx)).to.be.true;
-                expect(tasks[2].skip({})).to.be.true;
+                expect(tasks[2].skip(ctx)).to.be.true;
                 expect(tasks[3].skip(ctx)).to.be.true;
                 expect(tasks[4].skip(ctx)).to.be.true;
                 expect(tasks[5].skip(ctx)).to.be.true;
                 expect(tasks[6].skip(ctx)).to.be.true;
                 expect(tasks[7].skip(ctx)).to.be.true;
                 ctx.dnsfail = false;
-                // @todo: stub fs so this returns false
                 // These are FS related validators
                 expect(tasks[4].skip(ctx)).to.be.true;
                 expect(tasks[5].skip(ctx)).to.be.true;
@@ -367,203 +397,37 @@ describe('Unit: Nginx extension', function () {
             });
         });
 
-        describe('Install ACME', function () {
-            it('Downloads ACME.sh', function () {
-                const dwUrl = 'https://ghost.org/download'
-                const fakeResponse = {
-                    body: {tarball_url: dwUrl},
-                    statusCode: 200
-                };
-                fakeResponse.body = JSON.stringify(fakeResponse.body);
+        describe('acme', function () {
+            it('runs acme install task', function () {
+                const installStub = sinon.stub().resolves();
+                const ext = proxyNginx(Object.assign(proxy, {
+                    './acme': {install: installStub}
+                }));
+                const tasks = getTasks(ext, {});
+                const taskObject = {installTestTask: true};
 
-                stubs.rds = sinon.stub().returns(['cake']);
-                stubs.got = sinon.stub().resolves(fakeResponse);
-                stubs.empty = sinon.stub();
-                stubs.move = sinon.stub();
-                stubs.dw = sinon.stub();
-
-                proxy['fs-extra'].readdirSync = stubs.rds;
-                proxy['fs-extra'].emptyDir = stubs.empty;
-                proxy['fs-extra'].move = stubs.move;
-                proxy.download = stubs.dw;
-                proxy.got = stubs.got;
-
-                const ext = proxyNginx(proxy);
-                const tasks = getTasks(ext);
-                ext.ui.logVerbose = sinon.stub();
-
-                return tasks[2].task().then(() => {
-                    expect(ext.ui.logVerbose.calledThrice).to.be.true;
-                    expect(ext.ui.sudo.calledTwice).to.be.true;
-                    expect(stubs.empty.calledOnce).to.be.true;
-                    expect(stubs.got.calledOnce).to.be.true;
-                    expect(stubs.dw.calledOnce).to.be.true;
-                    expect(stubs.dw.getCall(0).args[0]).to.equal(dwUrl);
-                    expect(ext.ui.sudo.getCall(0).args[0]).to.match(/mkdir -p/);
-                    expect(ext.ui.sudo.getCall(1).args[0]).to.match(/acme\.sh --install/);
+                return tasks[2].task(null, taskObject).then(() => {
+                    expect(installStub.calledOnce).to.be.true;
+                    expect(installStub.calledWithExactly(ext.ui, taskObject)).to.be.true;
                 });
             });
 
-
-            it('Errors when github is down', function () {
-                const dwUrl = 'https://ghost.org/download'
-                const fakeResponse = {
-                    body: {tarball_url: dwUrl},
-                    statusCode: 502
-                };
-                fakeResponse.body = JSON.stringify(fakeResponse.body);
-
-                stubs.rds = sinon.stub().returns(['cake']);
-                stubs.got = sinon.stub().resolves(fakeResponse);
-                stubs.empty = sinon.stub();
-                stubs.move = sinon.stub();
-                stubs.dw = sinon.stub();
-
-                proxy['fs-extra'].readdirSync = stubs.rds;
-                proxy['fs-extra'].emptyDir = stubs.empty;
-                proxy['fs-extra'].move = stubs.move;
-                proxy.download = stubs.dw;
-                proxy.got = stubs.got;
-
-                const ext = proxyNginx(proxy);
-                const tasks = getTasks(ext);
-                ext.ui.logVerbose = sinon.stub();
-
-                return tasks[2].task().then(() => {
-                    expect(false, 'Promise should have been rejected').to.be.true;
-                }).catch((reject) => {
-                    expect(reject).to.exist;
-                    expect(reject.message).to.match(/query github/i);
-                    expect(ext.ui.logVerbose.calledTwice).to.be.true;
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(stubs.empty.calledOnce).to.be.true;
-                    expect(stubs.got.calledOnce).to.be.true;
-                    expect(stubs.dw.called).to.be.false;
-                });
-            });
-
-            it('Errors when bad data is passed', function () {
-                const fakeResponse = {
-                    body: 'Waffles',
-                    statusCode: 200
-                };
-
-                stubs.rds = sinon.stub().returns(['cake']);
-                stubs.got = sinon.stub().resolves(fakeResponse);
-                stubs.empty = sinon.stub();
-                stubs.move = sinon.stub();
-                stubs.dw = sinon.stub();
-
-                proxy['fs-extra'].readdirSync = stubs.rds;
-                proxy['fs-extra'].emptyDir = stubs.empty;
-                proxy['fs-extra'].move = stubs.move;
-                proxy.download = stubs.dw;
-                proxy.got = stubs.got;
-
-                const ext = proxyNginx(proxy);
-                const tasks = getTasks(ext);
-                ext.ui.logVerbose = sinon.stub();
-
-                return tasks[2].task().then(() => {
-                    expect(false, 'Promise should have been rejected').to.be.true;
-                }).catch((reject) => {
-                    expect(reject).to.exist;
-                    expect(reject.message).to.match(/parse github/i);
-                    expect(ext.ui.logVerbose.calledTwice).to.be.true;
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(stubs.empty.calledOnce).to.be.true;
-                    expect(stubs.got.calledOnce).to.be.true;
-                    expect(stubs.dw.called).to.be.false;
-                });
-            });
-
-            it('Rejects when acme.sh fails', function () {
-                stubs.got = sinon.stub().rejects(new Error('Uh-oh'));
-                stubs.empty = sinon.stub();
-                stubs.dw = sinon.stub();
-
-                proxy['fs-extra'].emptyDir = stubs.empty;
-                proxy.download = stubs.dw;
-                proxy.got = stubs.got;
-
-                const ext = proxyNginx(proxy);
-                const tasks = getTasks(ext);
-                ext.ui.logVerbose = sinon.stub();
-
-                return tasks[2].task().then(() => {
-                    expect(false, 'Promise should have been rejected').to.be.true;
-                }).catch((reject) => {
-                    expect(reject.message).to.equal('Uh-oh');
-                    expect(ext.ui.logVerbose.calledTwice).to.be.true;
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(stubs.empty.calledOnce).to.be.true;
-                    expect(stubs.got.calledOnce).to.be.true;
-                    expect(stubs.dw.called).to.be.false;
-                });
-            });
-        });
-
-        describe('Certificate', function () {
-            it('Gets an SSL certificate (prod & staging)', function () {
-                const expectedSudo = new RegExp('/etc/letsencrypt/acme.sh --issue');
-                const ext = proxyNginx(proxy);
-                let tasks = getTasks(ext);
+            it('runs acme generate task', function () {
+                const generateStub = sinon.stub().resolves();
+                const ext = proxyNginx(Object.assign(proxy, {
+                    './acme': {generate: generateStub}
+                }));
+                const tasks = getTasks(ext, {sslemail: 'test@example.com', sslstaging: true});
 
                 return tasks[3].task().then(() => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.getCall(0).args[0]).to.match(expectedSudo);
-
-                    ext.ui.sudo = sinon.stub().resolves();
-                    ext.ui.log.reset();
-                    ext.ui.listr.reset();
-                    tasks = getTasks(ext, {sslstaging: true});
-
-                    return tasks[3].task();
-                }).then(() => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.getCall(0).args[0]).to.match(/--issue .{0,} --staging/);
-                });
-            });
-
-            it('Knows when a certificate already exists', function () {
-                const ext = proxyNginx(proxy);
-                const acmeError = new Error('Cert exists');
-                acmeError.code = 2;
-                ext.ui.sudo.rejects(acmeError);
-                const tasks = getTasks(ext);
-
-                return tasks[3].task().then((ret) => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ret).to.not.exist
-                });
-            });
-
-            it('Knows when domain doesn\'t point to the right place', function () {
-                const acmeError = {stderr: 'Verify error:Invalid Response'};
-                const ext = proxyNginx(proxy);
-                ext.ui.sudo.rejects(acmeError);
-                const tasks = getTasks(ext);
-
-                return tasks[3].task().then(() => {
-                    expect(false, 'Promise should be rejected').to.be.true;
-                }).catch((err) => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(err).to.match(/correct IP address/i);
-                });
-            });
-
-            it('Gracefully rejects unknown errors', function () {
-                const acmeError = new Error('Minions overworked');
-                acmeError.stderr = 'Minions overworked';
-                const ext = proxyNginx(proxy);
-                ext.ui.sudo.rejects(acmeError);
-                const tasks = getTasks(ext);
-
-                return tasks[3].task().then(() => {
-                    expect(false, 'Promise should be rejected').to.be.true;
-                }).catch((err) => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(err.message).to.equal('Minions overworked');
+                    expect(generateStub.calledOnce).to.be.true;
+                    expect(generateStub.calledWithExactly(
+                        ext.ui,
+                        'ghost.dev',
+                        '/var/www/ghost/system/nginx-root',
+                        'test@example.com',
+                        true
+                    )).to.be.true;
                 });
             });
         });
@@ -767,9 +631,9 @@ describe('Unit: Nginx extension', function () {
             }).catch(function (err) {
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.getCall(0).args[0]).to.match(/nginx -s reload/);
-                // @todo make sure a process error is thrown
-                // const expectedError = require('../../../lib/errors');
                 expect(err).to.be.ok;
+                const expectedError = require('../../../lib/errors');
+                expect(err).to.be.instanceof(expectedError.ProcessError);
             });
         });
     });

@@ -2,15 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.3.0"></a>
+# [1.3.0](https://github.com/TryGhost/Ghost-CLI/compare/1.2.1...1.3.0) (2017-11-16)
+
+### Bug Fixes
+
+* **config:** default port and custom ports ([a820687](https://github.com/TryGhost/Ghost-CLI/commit/a820687)), closes [#519](https://github.com/TryGhost/Ghost-CLI/issues/519)
+
+### Features
+
+* **db:** remove knex-migrator dep, use one installed with Ghost ([#505](https://github.com/TryGhost/Ghost-CLI/issues/505)) ([9b78843](https://github.com/TryGhost/Ghost-CLI/commit/9b78843))
+* add additional node and cli version checks ([8ab4892](https://github.com/TryGhost/Ghost-CLI/commit/8ab4892))
+* **migrations:** add migrate command & related utilities ([a532d03](https://github.com/TryGhost/Ghost-CLI/commit/a532d03))
+* **ssl:** add ssl migration ([3c60d89](https://github.com/TryGhost/Ghost-CLI/commit/3c60d89)), closes [#495](https://github.com/TryGhost/Ghost-CLI/issues/495)
+* **ui:** improve update notifications ([ff5e4ad](https://github.com/TryGhost/Ghost-CLI/commit/ff5e4ad)), closes [#525](https://github.com/TryGhost/Ghost-CLI/issues/525)
+
 <a name="1.2.1"></a>
 ## [1.2.1](https://github.com/TryGhost/Ghost-CLI/compare/1.2.0...1.2.1) (2017-11-10)
-
 
 ### Bug Fixes
 
 * node 8 compatibility ([#521](https://github.com/TryGhost/Ghost-CLI/issues/521)) ([e1fb3b0](https://github.com/TryGhost/Ghost-CLI/commit/e1fb3b0))
-
-
 
 <a name="1.2.0"></a>
 # [1.2.0](https://github.com/TryGhost/Ghost-CLI/compare/1.1.3...v1.2.0) (2017-10-30)
