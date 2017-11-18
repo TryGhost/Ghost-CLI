@@ -2,7 +2,6 @@
 
 const Promise = require('bluebird');
 const mysql = require('mysql');
-const crypto = require('crypto');
 const omit = require('lodash/omit');
 const cli = require('../../lib');
 
@@ -77,7 +76,74 @@ class MySQLExtension extends cli.Extension {
     }
 
     createUser(ctx, dbconfig) {
-        const randomPassword = crypto.randomBytes(10).toString('hex');
+        // Generate random MySQL password
+        const generateRandomPassword = () => {
+            /**
+             * LCG Random
+             * @example const random = (lcgRandom())
+             * @description Use Linear Congruential Generator to generate a random number between 0 and 1
+             *              Instead of Math.random()
+             */
+            const lcgRandom = (() => {
+                let _seed = (new Date()).getTime();
+                return () => {
+                    _seed = (_seed * 9301 + 49297) % 233280;
+                    return _seed / (233280.0);
+                };
+            })();
+
+            /**
+             * Random Sort
+             * @param {Array} array
+             * @return {Array}
+             */
+            const randomSort = (array) => array.sort(() => (lcgRandom()) > .5 ? -1 : 1);
+
+            /**
+             * Random Number
+             * @param {Number} length
+             * @return {String}
+             */
+            const randomNumber = (length) => {
+                let _str = '';
+                for (let i = 0; i < length; i = i + 1) {
+                    _str += String.fromCharCode(Math.round((lcgRandom()) * 9) + 48);
+                }
+                return _str;
+            };
+
+            /**
+             * Random Letter
+             * @param {Number} length
+             * @param {Boolean} [capital=false]
+             * @return {String}
+             */
+            const randomLetter = (length, capital) => {
+                let _str = '';
+                for (let i = 0; i < length; i = i + 1) {
+                    _str += String.fromCharCode(Math.round((lcgRandom()) * 25) + 97);
+                }
+                return capital ? _str.toUpperCase() : _str;
+            };
+
+            /**
+             * Random Symbol
+             * @param {Number} length
+             * @return {String}
+             */
+            const randomSymbol = (length) => {
+                const chars = ['~', '!', '@', '#', '$'];
+                return randomSort(chars).join('').substr(0, length);
+            };
+
+            const allChars = randomNumber(6)
+                + randomLetter(4)
+                + randomLetter(4, true)
+                + randomSymbol(2);
+
+            return randomSort(allChars.split('')).join('');
+        };
+        const randomPassword = generateRandomPassword();
 
         // IMPORTANT: we generate random MySQL usernames
         // e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to work
