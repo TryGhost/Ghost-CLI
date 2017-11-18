@@ -2,9 +2,9 @@
 
 const Promise = require('bluebird');
 const mysql = require('mysql');
-const crypto = require('crypto');
 const omit = require('lodash/omit');
 const cli = require('../../lib');
+const generator = require('generate-password');
 
 class MySQLExtension extends cli.Extension {
     setup(cmd, argv) {
@@ -77,7 +77,12 @@ class MySQLExtension extends cli.Extension {
     }
 
     createUser(ctx, dbconfig) {
-        const randomPassword = crypto.randomBytes(10).toString('hex');
+        const randomPassword = generator.generate({
+            length: 10,
+            numbers: true,
+            symbols: true,
+            strict: true
+        });
 
         // IMPORTANT: we generate random MySQL usernames
         // e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to work

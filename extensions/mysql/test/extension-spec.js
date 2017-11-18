@@ -192,14 +192,14 @@ describe('Unit: Mysql extension', function () {
                 expect(queryStub.calledThrice).to.be.true;
                 expect(queryStub.args[0][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
                 expect(queryStub.args[1][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[2][0]).to.match(/^SET PASSWORD FOR 'ghost-[0-9]{1,4}'@'localhost' = PASSWORD\('[0-9A-Fa-f]*'\);$/);
+                expect(queryStub.args[2][0]).to.match(/^SET PASSWORD FOR 'ghost-[0-9]{1,4}'@'localhost' = PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\);$/);
                 expect(logStub.calledThrice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/created new user/);
                 expect(logStub.args[1][0]).to.match(/disabled old_password/);
                 expect(logStub.args[2][0]).to.match(/successfully created password for user/);
                 expect(ctx.mysql).to.exist;
                 expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[0-9A-Fa-f]*$/);
+                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
             });
         });
 
@@ -219,7 +219,7 @@ describe('Unit: Mysql extension', function () {
                 expect(queryStub.args[0][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
                 expect(queryStub.args[1][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password;$/);
                 expect(queryStub.args[2][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[3][0]).to.match(/^SET PASSWORD FOR 'ghost-[0-9]{1,4}'@'localhost' = PASSWORD\('[0-9A-Fa-f]*'\);$/);
+                expect(queryStub.args[3][0]).to.match(/^SET PASSWORD FOR 'ghost-[0-9]{1,4}'@'localhost' = PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\);$/);
                 expect(logStub.callCount).to.equal(4);
                 expect(logStub.args[0][0]).to.match(/user exists, re-trying user creation/);
                 expect(logStub.args[1][0]).to.match(/created new user/);
@@ -227,7 +227,7 @@ describe('Unit: Mysql extension', function () {
                 expect(logStub.args[3][0]).to.match(/successfully created password for user/);
                 expect(ctx.mysql).to.exist;
                 expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[0-9A-Fa-f]*$/);
+                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
             });
         });
 
