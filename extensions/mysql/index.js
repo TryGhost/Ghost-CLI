@@ -79,35 +79,47 @@ class MySQLExtension extends cli.Extension {
     createUser(ctx, dbconfig) {
         const randomPassword = crypto.randomBytes(10).toString('hex');
 
-        // IMPORTANT: we generate random MySQL usernames
-        // e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to work
-        // e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
-        // the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
-        // disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
-        const username = 'ghost-' + Math.floor(Math.random() * 1000);
+        let username;
 
-        return this._query(`CREATE USER '${username}'@'${dbconfig.host}' IDENTIFIED WITH mysql_native_password;`).then(() => {
-            this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
-
-            return this._query('SET old_passwords = 0;');
-        }).then(() => {
+        // Ensure old passwords is set to 0
+        return this._query('SET old_passwords = 0;').then(() => {
             this.ui.logVerbose('MySQL: successfully disabled old_password', 'green');
 
-            return this._query(`SET PASSWORD FOR '${username}'@'${dbconfig.host}' = PASSWORD('${randomPassword}');`);
+            return this._query(`SELECT PASSWORD('${randomPassword}') AS password;`);
+        }).then((result) => {
+            this.ui.logVerbose('MySQL: successfully created password hash.', 'green');
+
+            const tryCreateUser = () => {
+                // IMPORTANT: we generate random MySQL usernames
+                // e.g. you delete all your Ghost instances from your droplet and start from scratch, the MySQL users would remain and the CLI has to generate a random user name to work
+                // e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
+                // the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
+                // disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
+                username = `ghost-${Math.floor(Math.random() * 1000)}`;
+
+                return this._query(
+                    `CREATE USER '${username}'@'${dbconfig.host}' ` +
+                    `IDENTIFIED WITH mysql_native_password AS '${result[0].password}';`
+                ).catch((error) => {
+                    // User already exists, run this method again
+                    if (error.errno === 1396) {
+                        this.ui.logVerbose('MySQL: user exists, re-trying user creation with new username', 'yellow');
+                        return tryCreateUser();
+                    }
+
+                    return Promise.reject(error);
+                });
+            };
+
+            return tryCreateUser();
         }).then(() => {
-            this.ui.logVerbose(`MySQL: successfully created password for user ${username}`, 'green');
+            this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
 
             ctx.mysql = {
                 username: username,
                 password: randomPassword
             };
         }).catch((error) => {
-            // User already exists, run this method again
-            if (error.errno === 1396) {
-                this.ui.logVerbose('MySQL: user exists, re-trying user creation with new username', 'yellow');
-                return this.createUser(ctx, dbconfig);
-            }
-
             this.ui.logVerbose('MySQL: Unable to create custom Ghost user', 'red');
             this.connection.end(); // Ensure we end the connection
             return Promise.reject(new cli.errors.SystemError(`Creating new mysql user errored with message: ${error.message}`));
