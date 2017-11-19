@@ -52,15 +52,15 @@ module.exports = function setupEnv(typeOrDefinition, dir) {
         });
     }
 
-    if (setup.links) {
-        setup.links.forEach((link) => {
-            fs.ensureSymlinkSync(path.join(dir, link[0]), path.join(dir, link[1]));
-        });
-    }
-
     if (setup.files) {
         setup.files.forEach((file) => {
             fs[(file.json ? 'writeJsonSync' : 'writeFileSync')](path.join(dir, file.path), file.content);
+        });
+    }
+
+    if (setup.links) {
+        setup.links.forEach((link) => {
+            fs.ensureSymlinkSync(path.join(dir, link[0]), path.join(dir, link[1]));
         });
     }
 
