@@ -9,7 +9,7 @@ const path = require('path');
 
 const modulePath = '../../../lib/commands/backup';
 const Instance = require('../../../lib/instance');
-const BackupCommand = require(modulePath);
+
 const envConfig = {
     dirs: ['content'],
     files: [{
@@ -52,7 +52,7 @@ describe('Unit: Commands > Backup', function () {
         let cwdStub;
 
         afterEach(function () {
-            if(cwdStub) {
+            if (cwdStub) {
                 cwdStub.restore();
             }
         });
@@ -112,7 +112,7 @@ describe('Unit: Commands > Backup', function () {
             };
             const fsstub = {
                 existsSync: () => false,
-                ensureDirSync: () => {throw new Error('You shall not pass')},
+                ensureDirSync: () => {throw new Error('You shall not pass')}
             };
 
             const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
@@ -146,7 +146,7 @@ describe('Unit: Commands > Backup', function () {
             }
 
             const BackupCommand = proxyquire(modulePath, {'fs-extra': fs});
-            const backup = new BackupCommand;
+            const backup = new BackupCommand();
 
             return backup.initialize(ctx).then(() => {
                 expect(fs.existsSync.calledThrice).to.be.true;
@@ -218,7 +218,7 @@ describe('Unit: Commands > Backup', function () {
             };
             function walkerFake(location) {
                 const base = '/var/www/ghost';
-                if(location.indexOf('badSymlink') >= 0){
+                if (location.indexOf('badSymlink') >= 0) {
                     throw new Error('User Error');
                 } else if (location.indexOf('symlink') >= 0) {
                     return [{path: `${base}/folder/a`}, {path: `${base}/folder/1`}];
@@ -248,7 +248,7 @@ describe('Unit: Commands > Backup', function () {
             const ctx = {
                 instance: {ui: {log: stubs.log}},
                 zipFile: {addFile: stubs.add},
-                argv: {},
+                argv: {}
             };
 
             const BackupCommand = proxyquire(modulePath, {
