@@ -9,6 +9,7 @@ const path = require('path');
 
 const modulePath = '../../../lib/commands/backup';
 const Instance = require('../../../lib/instance');
+const BackupCommand = require(modulePath);
 const envConfig = {
     dirs: ['content'],
     files: [{
@@ -32,7 +33,8 @@ const envConfig = {
             itsreal: true
         },
         json: true
-    }]
+    }],
+    links: [['./config.production.json', 'content/symlink.json']]
 };
 
 const listrCall = (tasks, ctx) => {
@@ -50,7 +52,9 @@ describe('Unit: Commands > Backup', function () {
         let cwdStub;
 
         afterEach(function () {
-            cwdStub.restore();
+            if(cwdStub) {
+                cwdStub.restore();
+            }
         });
 
         it('Saves to the right location', function () {
@@ -64,6 +68,8 @@ describe('Unit: Commands > Backup', function () {
             };
             const fsstub = {
                 readFileSync: sinon.stub(),
+                existsSync: () => false,
+                readFile: () => Promise.resolve(''),
                 ensureDirSync: fs.ensureDirSync,
                 accessSync: fs.accessSync,
                 W_OK: fs.W_OK
@@ -100,38 +106,55 @@ describe('Unit: Commands > Backup', function () {
         });
 
         it('Accepts the output flag', function () {
-            const env = setupEnv(envConfig);
-            cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
             const localContext = {
-                argv: {output: './path/to/test'},
-                instance: {
-                    name: 'ghoster',
-                    running: () => false,
-                    ui: {log: sinon.stub()},
-                    checkEnvironment: () => true
-                }
+                argv: {output: '/path/to/test'},
+                instance: {ui: {log: () => true}}
             };
             const fsstub = {
-                ensureDirSync: fs.ensureDirSync,
-                accessSync: fs.accessSync,
-                W_OK: fs.W_OK
+                existsSync: () => false,
+                ensureDirSync: () => {throw new Error('You shall not pass')},
             };
 
-            const datetime = (new Date()).toJSON().substring(0, 10);
             const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
             const backup = new BackupCommand();
 
             return backup.initialize(localContext).then(() => {
-                const expectedPath = path.join(env.dir, `path/to/test/ghoster.backup.${datetime}.zip`);
+                // Surprise! :)
+                expect(true, 'An error should have been thrown').to.be.false;
+            }).catch((error) => {
+                const expectedPath = '/path/to/test';
+                expect(error).to.be.ok;
                 expect(localContext.saveLocation).to.equal(expectedPath);
-                expect(fs.existsSync(path.join(env.dir, 'path/to/test'))).to.be.true;
-                expect(localContext.instance.ui.log.called).to.be.false;
-                env.cleanup();
+            });
+        });
+
+        it('Doesn\'t overwrite existing backups', function () {
+            const ctx = {
+                argv: {},
+                instance: {
+                    name: 'ghost',
+                    running: () => false,
+                    checkEnvironment: () => true
+                }
+            };
+
+            const fs = {
+                ensureDirSync: () => true,
+                accessSync: () => true,
+                W_OK: 1,
+                existsSync: sinon.stub().callsFake((file) => !(file.indexOf('-2.zip') >= 0))
+            }
+
+            const BackupCommand = proxyquire(modulePath, {'fs-extra': fs});
+            const backup = new BackupCommand;
+
+            return backup.initialize(ctx).then(() => {
+                expect(fs.existsSync.calledThrice).to.be.true;
+                expect(ctx.saveLocation).to.match(/-2\.zip/);
             });
         });
 
         it('Complains about write permissions', function () {
-            cwdStub = sinon.stub(process, 'cwd').returns('./');
             const localContext = {
                 argv: {},
                 instance: {
@@ -141,14 +164,14 @@ describe('Unit: Commands > Backup', function () {
                     checkEnvironment: sinon.stub()
                 }
             };
-            const fsstub = {ensureDirSync: sinon.stub().throws(new Error())};
+            const fsstub = {ensureDirSync: () => {throw new Error('WALL')}};
             const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
             const backup = new BackupCommand();
 
             return backup.initialize(localContext).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
-            }).catch(() => {
-                expect(localContext.saveLocation).to.equal('./');
+            }).catch((error) => {
+                expect(error).to.be.ok;
                 expect(localContext.instance.ui.log.calledOnce).to.be.true;
                 expect(localContext.zipFile).to.equal(undefined);
                 expect(localContext.instance.running.called).to.be.false;
@@ -168,6 +191,7 @@ describe('Unit: Commands > Backup', function () {
                 }
             };
             const fsstub = {
+                existsSync: () => false,
                 ensureDirSync: sinon.stub(),
                 accessSync: sinon.stub(),
                 W_OK: fs.W_OK
@@ -178,6 +202,66 @@ describe('Unit: Commands > Backup', function () {
             return backup.initialize(localContext).then(() => {
                 expect(localContext.instance.ui.log.calledOnce).to.be.true;
                 expect(localContext.zipFile).to.exist;
+            });
+        });
+
+        it('Can handle symlinks', function () {
+            const symlinkError = new Error('Symlink it!');
+            symlinkError.code = 'EISDIR'
+            const fileStore = {
+                '/var/www/ghost/test': () => 'Hello',
+                '/var/www/ghost/symlink': () => {throw symlinkError},
+                '/var/www/ghost/badSymlink': () => {throw symlinkError},
+                // In this case, symlink points to ./folder
+                '/var/www/ghost/folder/a': () => 'b',
+                '/var/www/ghost/folder/1': () => {throw new Error('Permissions')}
+            };
+            function walkerFake(location) {
+                const base = '/var/www/ghost';
+                if(location.indexOf('badSymlink') >= 0){
+                    throw new Error('User Error');
+                } else if (location.indexOf('symlink') >= 0) {
+                    return [{path: `${base}/folder/a`}, {path: `${base}/folder/1`}];
+                } else {
+                    return [{path: `${base}/test`}, {path: `${base}/symlink`}, {path: `${base}/badSymlink`}];
+                }
+            }
+            function readFake(file) {
+                // FileStore is a very simplistic system!
+                file = path.resolve(file);
+
+                expect(fileStore[file]).to.be.a('function');
+
+                try {
+                    const fileContents = fileStore[file]();
+                    return Promise.resolve(fileContents);
+                } catch (error) {
+                    return Promise.reject(error);
+                }
+            }
+            const stubs = {
+                walker: sinon.stub().callsFake(walkerFake),
+                readFile: sinon.stub().callsFake(readFake),
+                log: sinon.stub(),
+                add: sinon.stub()
+            };
+            const ctx = {
+                instance: {ui: {log: stubs.log}},
+                zipFile: {addFile: stubs.add},
+                argv: {},
+            };
+
+            const BackupCommand = proxyquire(modulePath, {
+                'fs-extra': {readFile: stubs.readFile},
+                'klaw-sync': stubs.walker
+            });
+            const backup = new BackupCommand();
+
+            return backup.backupContent.bind(backup)(ctx).then(() => {
+                expect(stubs.walker.calledThrice).to.be.true;
+                expect(stubs.log.calledTwice).to.be.true;
+                expect(stubs.add.calledTwice).to.be.true;
+                sinon.assert.callCount(stubs.readFile, 5);
             });
         });
     });
@@ -238,9 +322,10 @@ describe('Unit: Commands > Backup', function () {
         it('Fails if core data files can\'t be read', function () {
             const context = {
                 env: '',
-                zipFile: sinon.stub()
+                zipFile: sinon.stub(),
+                argv: {}
             };
-            const fsstub = {readFileSync: sinon.stub().throws(new Error('File doesn\'t exist'))};
+            const fsstub = {readFile: () => {throw new Error('File doesn\'t exist')}};
             const BackupCommand = proxyquire(modulePath, {'fs-extra': fsstub});
             const backup = new BackupCommand();
 
@@ -257,33 +342,53 @@ describe('Unit: Commands > Backup', function () {
             const BackupCommand = proxyquire(modulePath, {'klaw-sync': walkerStub});
             const backup = new BackupCommand();
 
-            return backup.backupContent({}).then(() => {
+            return backup.backupContent({argv: {}}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error.message).to.match(/Failed to read content folder/);
             });
         });
 
+        it('Logs verbosely folders that are walked', function () {
+            const walkerStub = () => [];
+            const BackupCommand = proxyquire(modulePath, {'klaw-sync': walkerStub});
+            const backup = new BackupCommand();
+            const ctx = {
+                instance: {ui: {logVerbose: sinon.stub().throws(new Error('Break'))}},
+                argv: {verbose: true}
+            };
+
+            try {
+                backup.backupContent(ctx, null, 'content');
+                expect(false,'Error should have been thrown').to.be.true
+            } catch (error) {
+                expect(error).to.be.ok;
+                expect(error.message).to.equal('Break');
+                expect(ctx.instance.ui.logVerbose.calledOnce).to.be.true;
+                expect(ctx.instance.ui.logVerbose.getCall(0).args[0]).to.match(/\.\/content/);
+            }
+        });
+
         it('Warns when not backing up a file', function () {
             const fakeFiles = [{path: './blah/blah/blah.pdf'}, {path: './blah/blah/bleh.bin'}, {path: './blah/blah/blu.txt'}];
             const walkerStub = sinon.stub().returns(fakeFiles);
             const cwdStub = sinon.stub(process, 'cwd').returns('./');
-            const fsstub = {readFileSync: sinon.stub()};
             const context = {
                 zipFile: {addFile: sinon.stub()},
-                instance: {ui: {log: sinon.stub()}}
+                instance: {ui: {log: sinon.stub()}},
+                argv: {}
             }
 
-            fsstub.readFileSync.callsFake((location) => {
+            function readFile(location) {
                 if (location.indexOf('blu') >= 0) {
-                    throw new Error('Baaad file');
+                    return Promise.reject(Error('Baaad file'));
                 }
-                return '';
-            });
+                return Promise.resolve('');
+            }
 
             const BackupCommand = proxyquire(modulePath, {
                 'klaw-sync': walkerStub,
-                'fs-extra': fsstub
+                'fs-extra': {readFile: readFile}
             });
             const backup = new BackupCommand();
 
@@ -332,7 +437,7 @@ describe('Unit: Commands > Backup', function () {
             const BackupCmd = new Backup();
 
             const ctx = {
-                hook: hookStub,
+                system: {hook: hookStub},
                 zipFile: {addFile: addFileStub}
             };
 
@@ -352,7 +457,7 @@ describe('Unit: Commands > Backup', function () {
         it('Properly warns when a file isn\'t added', function () {
             const files = {'/var/www/ghost/system/files/test.service': '[service]'};
             const fileStore = {};
-            const readStub = sinon.stub().callsFake(function getFile(location) {
+            const readStub = sinon.stub().callsFake((location) => {
                 if (files[location] !== undefined) {
                     return files[location];
                 } else {
@@ -388,7 +493,7 @@ describe('Unit: Commands > Backup', function () {
             const BackupCmd = new Backup();
 
             const ctx = {
-                hook: hookStub,
+                system: {hook: hookStub},
                 zipFile: {addFile: addFileStub},
                 ui: {log: sinon.stub()}
             };
