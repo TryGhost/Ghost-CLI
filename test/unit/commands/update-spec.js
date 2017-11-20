@@ -169,7 +169,7 @@ describe('Unit: Commands > Update', function () {
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({version: '1.1.0', rollback: false, force: false}).then(() => {
+            return cmdInstance.run({version: '1.1.0', rollback: false, force: false, restart: true}).then(() => {
                 cwdStub.restore();
 
                 expect(runCommandStub.calledOnce).to.be.true;
@@ -225,7 +225,7 @@ describe('Unit: Commands > Update', function () {
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({rollback: true, force: false, zip: ''}).then(() => {
+            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true}).then(() => {
                 cwdStub.restore();
 
                 const expectedCtx = {
@@ -290,7 +290,7 @@ describe('Unit: Commands > Update', function () {
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
 
-            return cmdInstance.run({rollback: true, force: false, zip: ''}).then(() => {
+            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true}).then(() => {
                 cwdStub.restore();
                 const expectedCtx = {
                     version: '1.0.0',
