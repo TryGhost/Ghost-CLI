@@ -50,7 +50,7 @@ describe.only('Unit: Commands > Setup', function () {
     });
 
     describe('run', function () {
-        it('handles local setup properly', function () {
+        it('Handles local setup properly', function () {
             const argvA = {
                 local: true,
                 url: 'http://localhost:2369',
@@ -85,7 +85,7 @@ describe.only('Unit: Commands > Setup', function () {
                 expect(false, 'An error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error.message).to.equal('Take a break');
-                expect(argVSpy, 'Options provided').to.deep.equal(argvA);
+                expect(argVSpy).to.deep.equal(argvA);
                 argVSpy = {local: true};
             }
 
@@ -94,9 +94,94 @@ describe.only('Unit: Commands > Setup', function () {
                 expect(false, 'An error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error.message).to.equal('Take a break');
-                expect(argVSpy, 'Defaults').to.deep.equal(argvB);
+                expect(argVSpy).to.deep.equal(argvB);
             }
+        });
 
+        it('Hooks when stages are passed through', function () {
+            let stages = []
+            const stubs = {
+                noCall: sinon.stub().resolves(),
+                important: sinon.stub().resolves(),
+                hook: sinon.stub().callsFake((n, ths) => {ths.stages = stages; return Promise.resolve()}),
+                listr: sinon.stub().callsFake((tasks) => {tasks.forEach((task) => task.task())})
+            };
+            stages = [{name: 'nocall', fn: stubs.noCall}, {name: 'important', fn: stubs.important}];
+            const system = {
+                getInstance: () => ({checkEnvironment: () => true}),
+                hook: stubs.hook,
+            };
+            const ui = {listr: stubs.listr};
+            const setup = new SetupCommand(ui, system);
+            return setup.run({stages: ['important']}).then(() => {
+                expect(stubs.hook.calledOnce).to.be.true;
+                expect(stubs.noCall.called).to.be.false;
+                expect(stubs.important.calledOnce).to.be.true;
+                expect(stubs.listr.calledOnce).to.be.true;
+            });
+        });
+
+        describe('special case migrations', function () {
+            it('db migrations', function () {
+                const system = {
+                    getInstance: () => ({checkEnvironment: () => true}),
+                    hook: () => Promise.resolve()
+                };
+                const ui = {
+                    listr: sinon.stub().callsFake((tasks) => {
+                        expect(tasks[0].title).to.equal('Running database migrations');
+                        expect(tasks[0].task.name).to.equal('runMigrations');
+                        return Promise.resolve();
+                    })
+                };
+                const setup = new SetupCommand(ui, system);
+
+                return setup.run({stages: ['migrate']}).then(() => {
+                    expect(ui.listr.calledOnce).to.be.true;
+                });
+            });
+
+            it('linx-user', function () {
+                const system = {
+                    getInstance: () => ({checkEnvironment: () => true}),
+                    hook: () => Promise.resolve()
+                };
+                const ui = {
+                    listr: sinon.stub().callsFake((tasks) => {
+                        expect(tasks[0].title).to.equal('Setting up "ghost" system user');
+                        expect(tasks[0].task.name).to.equal('bound linuxSetupTask');
+                        return Promise.resolve();
+                    })
+                };
+                const setup = new SetupCommand(ui, system);
+
+                return setup.run({stages: ['linux-user']}).then(() => {
+                    expect(ui.listr.calledOnce).to.be.true;
+                });
+            });
+
+            it('linx-user (on windows)', function () {
+                const system = {
+                    getInstance: () => ({checkEnvironment: () => true}),
+                    hook: () => Promise.resolve()
+                };
+                // @todo: figure out why this doesn't work
+                const osStub = {platform: () => 'win32'};
+                const ui = {
+                    listr: sinon.stub().callsFake((tasks) => {
+                        expect(tasks.length).to.equal(0);
+                        return Promise.resolve();
+                    }),
+                    log: sinon.stub()
+                };
+                const SetupCommand = proxyquire(modulePath, {os: osStub});
+                const setup = new SetupCommand(ui, system);
+
+                return setup.run({stages: ['cobra']}).then(() => {
+                    expect(ui.log.calledOnce).to.be.true;
+                    expect(ui.log.getCall(0).args[0]).to.match(/is not Linux/);
+                });
+            });
         });
     });
 });
