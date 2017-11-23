@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const os = require('os');
 const dns = require('dns');
 const url = require('url');
+const isIP = require('validator/lib/isIP');
 const path = require('path');
 const execa = require('execa');
 const Promise = require('bluebird');
@@ -77,6 +78,11 @@ class NginxExtension extends cli.Extension {
     setupSSL(argv, ctx, task) {
         const parsedUrl = url.parse(ctx.instance.config.get('url'));
         const confFile = `${parsedUrl.hostname}-ssl.conf`;
+
+        if (isIP(parsedUrl.hostname)) {
+            this.ui.log('SSL certs cannot be generated for IP addresses, skipping', 'yellow');
+            return task.skip();
+        }
 
         if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
             this.ui.log('SSL has already been set up, skipping', 'yellow');
