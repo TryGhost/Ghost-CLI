@@ -226,6 +226,16 @@ describe('Unit: Extensions > Nginx', function () {
             ext = proxyNginx({'fs-extra': {existsSync: stubs.es}});
         });
 
+        it('skips if the url is an IP address', function () {
+            ctx = {instance: {config: {get: () => 'http://10.0.0.1'}}};
+            ext.setupSSL({}, ctx, task);
+
+            expect(stubs.es.calledOnce).to.be.false;
+            expect(ext.ui.log.calledOnce).to.be.true;
+            expect(ext.ui.log.getCall(0).args[0]).to.match(/SSL certs cannot be generated for IP addresses/);
+            expect(stubs.skip.calledOnce).to.be.true;
+        });
+
         it('Breaks if ssl config already exists', function () {
             const sslFile = '/etc/nginx/sites-available/ghost.dev-ssl.conf';
             const existsStub = sinon.stub().returns(true);
