@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.4.0"></a>
+# [1.4.0](https://github.com/TryGhost/Ghost-CLI/compare/1.3.0...1.4.0) (2017-12-01)
+
+### Bug Fixes
+
+* **config:** shorten default database name ([d8b6e0f](https://github.com/TryGhost/Ghost-CLI/commit/d8b6e0f)), closes [#508](https://github.com/TryGhost/Ghost-CLI/issues/508)
+* **extension:** ensure require(ghost-cli) returns the root instance ([8a96fa1](https://github.com/TryGhost/Ghost-CLI/commit/8a96fa1))
+* **mysql:** improve password compatibility of mysql user ([6927121](https://github.com/TryGhost/Ghost-CLI/commit/6927121)), closes [#511](https://github.com/TryGhost/Ghost-CLI/issues/511)
+* **mysql:** re-order create user statements ([d690918](https://github.com/TryGhost/Ghost-CLI/commit/d690918))
+* **nginx:** skip SSL setup if url is an IP address ([5ed1cfe](https://github.com/TryGhost/Ghost-CLI/commit/5ed1cfe)), closes [#301](https://github.com/TryGhost/Ghost-CLI/issues/301)
+* **ssl-migration:** make the checks for migrating ssl more robust ([f5c8ee1](https://github.com/TryGhost/Ghost-CLI/commit/f5c8ee1)), closes [#552](https://github.com/TryGhost/Ghost-CLI/issues/552)
+
+### Features
+
+* **log:** add --error flag to `ghost log` ([462a58f](https://github.com/TryGhost/Ghost-CLI/commit/462a58f)), closes [#432](https://github.com/TryGhost/Ghost-CLI/issues/432)
+* **update:** add option to disable restart on update ([0c3c974](https://github.com/TryGhost/Ghost-CLI/commit/0c3c974)), closes [#481](https://github.com/TryGhost/Ghost-CLI/issues/481)
+
 <a name="1.3.0"></a>
 # [1.3.0](https://github.com/TryGhost/Ghost-CLI/compare/1.2.1...1.3.0) (2017-11-16)
 
