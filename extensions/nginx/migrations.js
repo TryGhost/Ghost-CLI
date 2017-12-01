@@ -14,11 +14,26 @@ function migrateSSL(ctx, migrateTask) {
     const confFile = path.join(ctx.instance.dir, 'system', 'files', `${parsedUrl.hostname}-ssl.conf`);
     const rootPath = path.resolve(ctx.instance.dir, 'system', 'nginx-root');
 
+    // Case to skip 1: SSL config for nginx does not exist
     if (!fs.existsSync(confFile)) {
         return migrateTask.skip('SSL config has not been set up for this domain');
     }
 
     const originalAcmePath = path.join(os.homedir(), '.acme.sh');
+    const originalCertFolder = path.join(originalAcmePath, parsedUrl.hostname);
+
+    // Case to skip 2: SSL cert doesn't exist in the original location for this domain
+    if (!fs.existsSync(originalCertFolder)) {
+        return migrateTask.skip('SSL cert does not exist for this domain');
+    }
+
+    const confFileContents = fs.readFileSync(confFile, {encoding: 'utf8'});
+    const certCheck = new RegExp(`ssl_certificate ${originalCertFolder}/fullchain.cer;`)
+
+    // Case to skip 3: SSL conf does not contain a cert config using the old LE cert
+    if (!certCheck.test(confFileContents)) {
+        return migrateTask.skip('LetsEncrypt SSL cert is not being used for this domain');
+    }
 
     // 1. parse ~/.acme.sh/account.conf to get the email
     const accountConf = fs.readFileSync(path.join(originalAcmePath, 'account.conf'), {encoding: 'utf8'});
@@ -45,8 +60,10 @@ function migrateSSL(ctx, migrateTask) {
             return replace({
                 files: confFile,
                 from: [
-                    /ssl_certificate .*/,
-                    /ssl_certificate_key .*/
+                    // Ensure here that we ONLY replace instances of the LetsEncrypt cert in the file,
+                    // that way we don't overwrite the cert config of other certs.
+                    certCheck,
+                    new RegExp(`ssl_certificate_key ${originalCertFolder}/${parsedUrl.hostname}.key;`)
                 ],
                 to: [
                     `ssl_certificate ${path.join(acmeFolder, 'fullchain.cer')};`,

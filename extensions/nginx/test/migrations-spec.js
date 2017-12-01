@@ -1,5 +1,6 @@
 'use strict';
-
+const fs = require('fs');
+const path = require('path');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
@@ -16,6 +17,9 @@ const context =  {
         }
     }
 };
+
+const sslWithoutLe = fs.readFileSync(path.join(__dirname, './fixtures/ssl-without-le.txt'), {encoding: 'utf8'});
+const oldSslWithLe = fs.readFileSync(path.join(__dirname, './fixtures/old-ssl-with-le.txt'), {encoding: 'utf8'});
 
 describe('Unit: Extensions > Nginx > Migrations', function () {
     describe('migrateSSL', function () {
@@ -34,12 +38,61 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             expect(skipStub.calledOnce).to.be.true;
         });
 
-        it('throws an error if it can\'t parse the letsencrypt account email', function () {
-            const existsStub = sinon.stub().returns(true);
-            const rfsStub = sinon.stub().returns('');
+        it('skips if cert has not been generated using the old method', function () {
+            const skip = sinon.stub();
+            const existsSync = sinon.stub();
+
+            existsSync.withArgs('/var/www/ghost/system/files/ghost.org-ssl.conf').returns(true);
+            existsSync.withArgs('/home/ghost/.acme.sh/ghost.org').returns(false);
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsStub, readFileSync: rfsStub},
+                'fs-extra': {existsSync: existsSync},
+                os: {homedir: () => '/home/ghost'}
+            });
+
+            migrate.migrateSSL(context, {skip: skip});
+
+            expect(existsSync.calledTwice).to.be.true;
+            expect(existsSync.calledWithExactly('/var/www/ghost/system/files/ghost.org-ssl.conf')).to.be.true;
+            expect(existsSync.calledWithExactly('/home/ghost/.acme.sh/ghost.org')).to.be.true;
+            expect(skip.calledOnce).to.be.true;
+        });
+
+        it('skips if ssl conf isn\'t using an LE cert', function () {
+            const skip = sinon.stub();
+            const existsSync = sinon.stub();
+            const readFileSync = sinon.stub();
+
+            const confFile = '/var/www/ghost/system/files/ghost.org-ssl.conf';
+
+            existsSync.withArgs(confFile).returns(true);
+            existsSync.withArgs('/home/ghost/.acme.sh/ghost.org').returns(true);
+            readFileSync.withArgs(confFile).returns(sslWithoutLe);
+
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync},
+                os: {homedir: () => '/home/ghost'}
+            });
+
+            migrate.migrateSSL(context, {skip: skip});
+
+            expect(existsSync.calledTwice).to.be.true;
+            expect(existsSync.calledWithExactly('/var/www/ghost/system/files/ghost.org-ssl.conf')).to.be.true;
+            expect(existsSync.calledWithExactly('/home/ghost/.acme.sh/ghost.org')).to.be.true;
+            expect(readFileSync.calledOnce).to.be.true;
+            expect(readFileSync.calledWithExactly(confFile, {encoding: 'utf8'})).to.be.true;
+            expect(skip.calledOnce).to.be.true;
+        });
+
+        it('throws an error if it can\'t parse the letsencrypt account email', function () {
+            const existsSync = sinon.stub().returns(true);
+            const readFileSync = sinon.stub();
+
+            readFileSync.onFirstCall().returns(oldSslWithLe);
+            readFileSync.onSecondCall().returns('');
+
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync},
                 os: {homedir: () => '/home/ghost'}
             });
 
@@ -50,13 +103,18 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
                 expect(e).to.be.an.instanceof(cli.errors.SystemError);
                 expect(e.message).to.equal('Unable to parse letsencrypt account email');
 
-                expect(rfsStub.calledWithExactly('/home/ghost/.acme.sh/account.conf'));
+                expect(readFileSync.calledTwice).to.be.true;
+                expect(readFileSync.calledWithExactly('/home/ghost/.acme.sh/account.conf', {encoding: 'utf8'})).to.be.true;
             }
         });
 
         it('runs tasks correctly', function () {
-            const existsStub = sinon.stub().returns(true);
-            const rfsStub = sinon.stub().returns('ACCOUNT_EMAIL=\'test@example.com\'\n');
+            const existsSync = sinon.stub().returns(true);
+            const readFileSync = sinon.stub();
+
+            readFileSync.onFirstCall().returns(oldSslWithLe);
+            readFileSync.onSecondCall().returns('ACCOUNT_EMAIL=\'test@example.com\'\n');
+
             const restartStub = sinon.stub().resolves();
             const replaceStub = sinon.stub().resolves();
 
@@ -70,7 +128,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             };
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsStub, readFileSync: rfsStub},
+                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync},
                 'replace-in-file': replaceStub,
                 './acme': acme,
                 os: {homedir: () => '/home/ghost'}
@@ -80,8 +138,8 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
 
             fn(context);
 
-            expect(existsStub.calledOnce).to.be.true;
-            expect(rfsStub.calledOnce).to.be.true;
+            expect(existsSync.calledTwice).to.be.true;
+            expect(readFileSync.calledTwice).to.be.true;
             expect(ui.listr.calledOnce).to.be.true;
 
             const tasks = ui.listr.getCall(0).args[0];
@@ -112,7 +170,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
                 return tasks[4].task();
             }).then(() => {
                 expect(acme.remove.calledOnce).to.be.true;
-                expect(acme.remove.calledWithExactly('ghost.org', ui, '/home/ghost/.acme.sh'));
+                expect(acme.remove.calledWithExactly('ghost.org', ui, '/home/ghost/.acme.sh')).to.be.true;
             });
         });
     });
