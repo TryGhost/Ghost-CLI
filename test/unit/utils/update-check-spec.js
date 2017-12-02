@@ -92,6 +92,41 @@ describe('Unit: Utils > update-check', function () {
         });
     });
 
+    it('rejects if --no-prompt flag is passed', function (done) {
+        process.argv.push('--no-prompt');
+        const pkg = {name: 'ghost', version: '1.0.0'};
+        const updateNotifer = sinon.stub().callsFake((options) => {
+            expect(options).to.exist;
+            expect(options.pkg).to.deep.equal(pkg);
+            expect(options.callback).to.be.a('function');
+            options.callback(null, {type: 'minor'});
+        });
+        const logStub = sinon.stub(console, 'log');
+        const promptStub = sinon.stub();
+
+        const updateCheck = proxyquire(modulePath, {
+            '../../package.json': pkg,
+            'update-notifier': updateNotifer,
+            inquirer: {prompt: promptStub}
+        });
+
+        updateCheck().then(() => {
+            logStub.restore();
+            process.argv.pop();
+
+            done(new Error('updateCheck should not have resolved'));
+        }).catch((error) => {
+            logStub.restore();
+            process.argv.pop();
+
+            expect(error).to.equal('Requested no prompting. Exiting...');
+            expect(logStub.calledOnce).to.be.true;
+            expect(promptStub.calledOnce).to.be.false;
+
+            done();
+        });
+    });
+
     it('prompts if an update is available, rejects if no', function (done) {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const updateNotifer = sinon.stub().callsFake((options) => {
