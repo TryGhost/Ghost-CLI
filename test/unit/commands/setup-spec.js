@@ -406,7 +406,7 @@ describe.only('Unit: Commands > Setup', function () {
         });
     });
 
-    // @todo: Any more tests to be added for this?
+    // @todo: Add more tests if necessary
     it('configureOptions loops over extensions', function () {
         const extensions = [{
             config: {options: {setup: {test: true}}}
