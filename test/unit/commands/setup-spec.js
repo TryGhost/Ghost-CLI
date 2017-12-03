@@ -8,7 +8,7 @@ const path = require('path');
 const modulePath = '../../../lib/commands/setup';
 const SetupCommand = require(modulePath);
 
-describe.only('Unit: Commands > Setup', function () {
+describe('Unit: Commands > Setup', function () {
     it('Constructor initializes stages', function () {
         const setup = new SetupCommand({},{});
         expect(setup.stages).to.be.an('array');
