@@ -20,7 +20,7 @@ describe.only('Unit: Commands > Setup', function () {
         const expectedA = {
             name: 'Eat',
             description: 'Consume food',
-            dependencies: ['food'],
+            dependencies: ['food', 'water'],
             fn: () => true
         };
         const expectedB = {
@@ -30,22 +30,29 @@ describe.only('Unit: Commands > Setup', function () {
         };
         const expectedC = {
             name: 'Code',
-            fn: () => 'Ghost'
+            dependencies: [],
+            fn: () => false
+        };
+        const expectedD = {
+            name: 'Repeat',
+            fn: () => 'Foundation',
+            dependencies: null
         };
         setup.addStage(expectedA.name, expectedA.fn, expectedA.dependencies, expectedA.description);
         setup.addStage(expectedB.name, expectedB.fn, expectedB.dependencies, expectedB.description);
         setup.addStage(expectedC.name, expectedC.fn, expectedC.dependencies, expectedC.description);
+        setup.addStage(expectedD.name, expectedD.fn, expectedD.dependencies, expectedD.description);
 
         expectedB.dependencies = ['bed'];
-        expectedC.dependencies = [undefined];
         expectedB.description = 'Sleep';
         expectedC.description = 'Code';
+        expectedD.description = 'Repeat';
 
-        expect(setup.stages.length).to.equal(3);
+        expect(setup.stages.length).to.equal(4);
         expect(setup.stages[0]).to.deep.equal(expectedA);
         expect(setup.stages[1]).to.deep.equal(expectedB);
-        // @todo: Figure out what's wrong with this (specifically dependencies)
-        // expect(setup.stages[2], 'C').to.deep.equal(expectedC);
+        expect(setup.stages[2]).to.deep.equal(expectedC);
+        expect(setup.stages[3]).to.deep.equal(expectedD);
     });
 
     describe('run', function () {
@@ -345,7 +352,7 @@ describe.only('Unit: Commands > Setup', function () {
         it('honors stage skipping via arguments', function () {
             const ui = {
                 run: (a) => a(),
-                listr: sinon.stub().resolves(),
+                listr: sinon.stub().resolves()
             };
             const skipStub = sinon.stub();
             const system = {hook: () => Promise.resolve()};
@@ -364,7 +371,7 @@ describe.only('Unit: Commands > Setup', function () {
         });
 
         it('normally prompts to run a stage', function () {
-            function confirm (a) {
+            function confirm(a) {
                 return Promise.resolve({yes: a.indexOf('Z') < 0});
             }
             const ui = {
@@ -397,5 +404,18 @@ describe.only('Unit: Commands > Setup', function () {
                 expect(ui.confirm.getCall(1).args[0]).to.match(/Test/);
             });
         });
+    });
+
+    // @todo: Any more tests to be added for this?
+    it('configureOptions loops over extensions', function () {
+        const extensions = [{
+            config: {options: {setup: {test: true}}}
+        }, {}];
+
+        const yargs = {option: sinon.stub(), epilogue: () => true};
+        yargs.option.returns(yargs);
+        SetupCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
+        expect(yargs.option.called).to.be.true;
+        expect(yargs.option.getCall(0).args[0]).to.equal('test');
     });
 });
