@@ -20,9 +20,64 @@ function getConfigStub(noContentPath) {
 }
 
 describe('Unit: Tasks > Migrate', function () {
+    it('runs direct command if database is not sqlite3', function () {
+        const config = getConfigStub(true);
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        config.get.withArgs('database.client').returns('mysql');
+        const execaStub = sinon.stub().resolves();
+        const useGhostUserStub = sinon.stub().returns(true);
+
+        const migrate = proxyquire(migratePath, {
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
+        });
+
+        const sudoStub = sinon.stub().resolves();
+
+        return migrate({instance: {config: config, dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
+            expect(useGhostUserStub.calledOnce).to.be.false;
+            expect(execaStub.calledOnce).to.be.true;
+            expect(sudoStub.called).to.be.false;
+            expect(config.has.calledOnce).to.be.true;
+            expect(config.set.calledThrice).to.be.true;
+            expect(config.set.args[0]).to.deep.equal(['paths.contentPath', '/some-dir/content']);
+            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['file']]);
+            expect(config.set.args[2]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
+            expect(config.save.called).to.be.true;
+        });
+    });
+
+    it('runs sudo command if database is sqlite3', function () {
+        const config = getConfigStub(true);
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        config.get.withArgs('database.client').returns('sqlite3');
+        const execaStub = sinon.stub().resolves();
+        const useGhostUserStub = sinon.stub().returns(true);
+
+        const migrate = proxyquire(migratePath, {
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
+        });
+
+        const sudoStub = sinon.stub().resolves();
+
+        return migrate({instance: {config: config, dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
+            expect(useGhostUserStub.calledOnce).to.be.true;
+            expect(execaStub.calledOnce).to.be.false;
+            expect(sudoStub.called).to.be.true;
+            expect(config.has.calledOnce).to.be.true;
+            expect(config.set.calledThrice).to.be.true;
+            expect(config.set.args[0]).to.deep.equal(['paths.contentPath', '/some-dir/content']);
+            expect(config.set.args[1]).to.deep.equal(['logging.transports', ['file']]);
+            expect(config.set.args[2]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
+            expect(config.save.called).to.be.true;
+        });
+    });
+
     it('runs direct command if useGhostUser returns false', function () {
         const config = getConfigStub(true);
         config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        config.get.withArgs('database.client').returns('sqlite3');
         const execaStub = sinon.stub().resolves();
         const useGhostUserStub = sinon.stub().returns(false);
 
@@ -50,6 +105,7 @@ describe('Unit: Tasks > Migrate', function () {
     it('runs sudo command if useGhostUser returns true', function () {
         const config = getConfigStub();
         config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        config.get.withArgs('database.client').returns('sqlite3');
         const execaStub = sinon.stub().resolves();
         const useGhostUserStub = sinon.stub().returns(true);
 
