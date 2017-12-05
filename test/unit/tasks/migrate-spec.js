@@ -135,4 +135,58 @@ describe('Unit: Tasks > Migrate', function () {
             expect(config.set.args[1]).to.deep.equal(['logging.transports', ['stdout', 'file']]);
         });
     });
+
+    it('error on `ghost update`', function () {
+        const originalArgv = process.argv;
+
+        process.argv = ['node', 'ghost', 'update'];
+
+        const config = getConfigStub();
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        const execaStub = sinon.stub().rejects({stderr: 'YA_GOOFED'});
+        const useGhostUserStub = sinon.stub().returns(false);
+
+        const migrate = proxyquire(migratePath, {
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
+        });
+
+        return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+            process.argv = originalArgv;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceof(errors.ProcessError);
+            expect(error.options.stderr).to.match(/YA_GOOFED/);
+            expect(error.options.suggestion).to.eql('ghost update --rollback');
+            expect(error.options.help).to.exist;
+            process.argv = originalArgv;
+        });
+    });
+
+    it('error on `ghost setup migrate`', function () {
+        const originalArgv = process.argv;
+
+        process.argv = ['node', 'ghost', 'setup', 'migrate'];
+
+        const config = getConfigStub();
+        config.get.withArgs('logging.transports', null).returns(['stdout', 'file']);
+        const execaStub = sinon.stub().rejects({stderr: 'YA_GOOFED'});
+        const useGhostUserStub = sinon.stub().returns(false);
+
+        const migrate = proxyquire(migratePath, {
+            execa: execaStub,
+            '../utils/use-ghost-user': useGhostUserStub
+        });
+
+        return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+            process.argv = originalArgv;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceof(errors.ProcessError);
+            expect(error.options.stderr).to.match(/YA_GOOFED/);
+            expect(error.options.suggestion).to.not.exist;
+            expect(error.options.help).to.exist;
+            process.argv = originalArgv;
+        });
+    });
 });

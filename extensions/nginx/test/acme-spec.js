@@ -138,7 +138,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('Rejects when acme.sh fails', function () {
-            const gotStub = sinon.stub().rejects({stderr: 'CODE: ENOTFOUND'});
+            const gotStub = sinon.stub().rejects({stderr: 'CODE: ENOTFOUND', cmd: 'acme'});
             const emptyStub = sinon.stub();
             const existsStub = sinon.stub().returns(false);
             const downloadStub = sinon.stub().resolves();
@@ -155,7 +155,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
                 expect(false, 'Promise should have been rejected').to.be.true;
             }).catch((reject) => {
-                expect(reject.message).to.equal('An error occurred.');
+                expect(reject.message).to.equal('Error occurred running command: \'acme\'');
                 expect(reject.options.stderr).to.equal('CODE: ENOTFOUND');
                 expect(logStub.calledTwice).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
