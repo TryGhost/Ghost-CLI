@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 const stripAnsi = require('strip-ansi');
+const errors = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/update-check';
 
@@ -23,7 +24,7 @@ describe('Unit: Utils > update-check', function () {
         });
 
         updateCheck().catch((err) => {
-            expect(err).to.equal(testError);
+            expect(err.message).to.equal(testError.message);
             done();
         });
     });
@@ -36,23 +37,17 @@ describe('Unit: Utils > update-check', function () {
             expect(options.callback).to.be.a('function');
             options.callback(null, {type: 'latest'});
         });
-        const logStub = sinon.stub(console, 'log');
+        const logStub = sinon.stub();
         const promptStub = sinon.stub().resolves({yes: false});
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
-            'update-notifier': updateNotifer,
-            inquirer: {prompt: promptStub}
+            'update-notifier': updateNotifer
         });
 
-        return updateCheck().then(() => {
+        return updateCheck({log: logStub, prompt: promptStub}).then(() => {
             expect(logStub.called).to.be.false;
             expect(promptStub.called).to.be.false;
-
-            logStub.restore();
-        }).catch((error) => {
-            logStub.restore();
-            return Promise.reject(error);
         });
     });
 
@@ -64,18 +59,15 @@ describe('Unit: Utils > update-check', function () {
             expect(options.callback).to.be.a('function');
             options.callback(null, {type: 'minor'});
         });
-        const logStub = sinon.stub(console, 'log');
+        const logStub = sinon.stub();
         const promptStub = sinon.stub().resolves({yes: true});
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
-            'update-notifier': updateNotifer,
-            inquirer: {prompt: promptStub}
+            'update-notifier': updateNotifer
         });
 
-        return updateCheck().then(() => {
-            logStub.restore();
-
+        return updateCheck({log: logStub, prompt: promptStub}).then(() => {
             expect(logStub.calledOnce).to.be.true;
             expect(promptStub.calledOnce).to.be.true;
 
@@ -86,9 +78,6 @@ describe('Unit: Utils > update-check', function () {
             expect(prompt).to.exist;
             expect(prompt.type).to.equal('confirm');
             expect(prompt.default).to.be.false;
-        }).catch((error) => {
-            logStub.restore();
-            return Promise.reject(error);
         });
     });
 
@@ -100,23 +89,19 @@ describe('Unit: Utils > update-check', function () {
             expect(options.callback).to.be.a('function');
             options.callback(null, {type: 'minor'});
         });
-        const logStub = sinon.stub(console, 'log');
+        const logStub = sinon.stub();
         const promptStub = sinon.stub().resolves({yes: false});
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
-            'update-notifier': updateNotifer,
-            inquirer: {prompt: promptStub}
+            'update-notifier': updateNotifer
         });
 
-        updateCheck().then(() => {
-            logStub.restore();
-
+        updateCheck({log: logStub, prompt: promptStub}).then(() => {
             done(new Error('updateCheck should not have resolved'));
         }).catch((error) => {
-            logStub.restore();
-
-            expect(error).to.be.undefined;
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.equal('Ghost-CLI version is out-of-date');
             expect(logStub.calledOnce).to.be.true;
             expect(promptStub.calledOnce).to.be.true;
 
