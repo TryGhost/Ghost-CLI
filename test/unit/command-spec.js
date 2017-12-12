@@ -270,6 +270,49 @@ describe('Unit: Command', function () {
             });
         });
 
+        it('runs updateCheck if checkVersion property is true on command class', function () {
+            const uiStub = sandbox.stub().returns({ui: true});
+            const setEnvironmentStub = sandbox.stub();
+            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const updateCheckStub = sandbox.stub().resolves();
+
+            const Command = proxyquire(modulePath, {
+                './ui': uiStub,
+                './system': systemStub,
+                './utils/update-check': updateCheckStub
+            });
+
+            class TestCommand extends Command {}
+            TestCommand.global = true;
+            TestCommand.checkVersion = true;
+
+            const runStub = sandbox.stub(TestCommand.prototype, 'run');
+            const oldEnv = process.env.NODE_ENV;
+            process.env.NODE_ENV = 'development';
+
+            return TestCommand._run('test', {
+                verbose: false,
+                prompt: false,
+                development: false
+            }, [{extensiona: true}]).then(() => {
+                expect(uiStub.calledOnce).to.be.true;
+                expect(uiStub.calledWithExactly({
+                    verbose: false,
+                    allowPrompt: false
+                })).to.be.true;
+                expect(setEnvironmentStub.calledOnce).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+                expect(systemStub.calledOnce).to.be.true;
+                expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+                expect(updateCheckStub.calledOnce).to.be.true;
+                expect(updateCheckStub.calledWithExactly({ui: true})).to.be.true;
+                expect(runStub.calledOnce).to.be.true;
+                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false})).to.be.true;
+
+                process.env.NODE_ENV = oldEnv;
+            });
+        });
+
         it('catches errors, passes them to ui error method, then exits', function () {
             const errorStub = sandbox.stub();
             const uiStub = sandbox.stub().returns({error: errorStub});
