@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.4.1"></a>
+## [1.4.1](https://github.com/TryGhost/Ghost-CLI/compare/1.4.0...1.4.1) (2017-12-12)
+
+### Bug Fixes
+
+* **update-check:** only run update check on specific commands ([581c14a](https://github.com/TryGhost/Ghost-CLI/commit/581c14a)), closes [#565](https://github.com/TryGhost/Ghost-CLI/issues/565) [#563](https://github.com/TryGhost/Ghost-CLI/issues/563)
+
 <a name="1.4.0"></a>
 # [1.4.0](https://github.com/TryGhost/Ghost-CLI/compare/1.3.0...1.4.0) (2017-12-01)
 
