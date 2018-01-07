@@ -234,6 +234,52 @@ describe('Unit: Commands > Setup', function () {
             });
         });
 
+        it('Initial stage is setup properly, sanitizes pname argument', function () {
+            const listr = sinon.stub().resolves();
+            const aIstub = sinon.stub();
+            const system = {
+                getInstance: () => {
+                    return {
+                        checkEnvironment: () => true,
+                        apples: true,
+                        config: {get: () => 'https://ghost.org'}
+                    };
+                },
+                addInstance: aIstub,
+                hook: () => Promise.resolve()
+            };
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: listr,
+                confirm: () => Promise.resolve({yes: false})
+            };
+            const argv = {
+                prompt: true,
+                'setup-linux-user': false,
+                migrate: false,
+                pname: 'example.com'
+            };
+
+            const setup = new SetupCommand(ui, system);
+            return setup.run(argv).then(() => {
+                expect(listr.calledOnce).to.be.true;
+                const tasks = listr.getCall(0).args[0];
+                expect(tasks[0].title).to.equal('Setting up instance');
+                tasks.forEach(function (task) {
+                    expect(task.title).to.not.match(/database migrations/);
+                });
+
+                const ctx = {};
+                tasks[0].task(ctx);
+
+                expect(ctx.instance).to.be.ok;
+                expect(ctx.instance.apples).to.be.true;
+                expect(ctx.instance.name).to.equal('example-com');
+                expect(aIstub.calledOnce).to.be.true;
+                expect(aIstub.getCall(0).args[0]).to.deep.equal(ctx.instance);
+            });
+        });
+
         describe('task dependency checks', function () {
             let stubs, ui, system;
 
