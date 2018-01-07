@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const path = require('path');
 
 const modulePath = '../../../lib/commands/setup';
-const SetupCommand = require(modulePath);
+const SetupCommand = proxyquire(modulePath, {os: {platform: () => 'linux'}});
 
 describe('Unit: Commands > Setup', function () {
     it('Constructor initializes stages', function () {
@@ -147,7 +147,7 @@ describe('Unit: Commands > Setup', function () {
                 });
             });
 
-            it('linx-user', function () {
+            it('linux-user', function () {
                 const system = {
                     getInstance: () => ({checkEnvironment: () => true}),
                     hook: () => Promise.resolve()
@@ -166,12 +166,34 @@ describe('Unit: Commands > Setup', function () {
                 });
             });
 
-            it('linx-user (on windows)', function () {
+            it('linux-user (on windows)', function () {
                 const system = {
                     getInstance: () => ({checkEnvironment: () => true}),
                     hook: () => Promise.resolve()
                 };
                 const osStub = {platform: () => 'win32'};
+                const ui = {
+                    listr: sinon.stub().callsFake((tasks) => {
+                        expect(tasks.length).to.equal(0);
+                        return Promise.resolve();
+                    }),
+                    log: sinon.stub()
+                };
+                const SetupCommand = proxyquire(modulePath, {os: osStub});
+                const setup = new SetupCommand(ui, system);
+
+                return setup.run({stages: ['linux-user']}).then(() => {
+                    expect(ui.log.calledOnce).to.be.true;
+                    expect(ui.log.getCall(0).args[0]).to.match(/is not Linux/);
+                });
+            });
+
+            it('linux-user (on macos)', function () {
+                const system = {
+                    getInstance: () => ({checkEnvironment: () => true}),
+                    hook: () => Promise.resolve()
+                };
+                const osStub = {platform: () => 'darwin'};
                 const ui = {
                     listr: sinon.stub().callsFake((tasks) => {
                         expect(tasks.length).to.equal(0);
