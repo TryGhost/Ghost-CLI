@@ -461,11 +461,12 @@ describe('Unit: UI', function () {
                 expect(ctx.log.getCall(0).args[0]).to.match(/Config/);
                 expect(ctx.log.getCall(1).args[0]).to.equal(errs[0].toString(true));
                 expect(ctx.log.getCall(2).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(3).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
-                expect(ctx.log.getCall(4).args[0]).to.match(/Cli/);
-                expect(ctx.log.getCall(5).args[0]).to.equal(errs[1].toString(true));
-                expect(ctx.log.getCall(6).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(7).args[0]).to.match(/Additional log info/);
+                expect(ctx.log.getCall(3).args[0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(ctx.log.getCall(4).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(ctx.log.getCall(5).args[0]).to.match(/Cli/);
+                expect(ctx.log.getCall(6).args[0]).to.equal(errs[1].toString(true));
+                expect(ctx.log.getCall(7).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(8).args[0]).to.match(/Additional log info/);
 
                 done();
             });
@@ -486,17 +487,18 @@ describe('Unit: UI', function () {
 
                 // @TODO: Are these expectations really required? They're already tested in verbose
 
-                sinon.assert.callCount(ctx.log,9);
+                sinon.assert.callCount(ctx.log,11);
                 expect(ctx._formatDebug.calledTwice).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
                 expect(ctx.log.firstCall.args[0]).to.match(/Config/);
                 expect(ctx.log.secondCall.args[0]).to.equal(errs[0].toString(false));
                 expect(ctx.log.thirdCall.args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(3).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
-                expect(ctx.log.getCall(4).args[0]).to.match(/Cli/);
-                expect(ctx.log.getCall(5).args[0]).to.equal(errs[1].toString(false));
-                expect(ctx.log.getCall(6).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(7).args[0]).to.match(/Additional log info/);
+                expect(ctx.log.getCall(3).args[0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(ctx.log.getCall(4).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(ctx.log.getCall(5).args[0]).to.match(/Cli/);
+                expect(ctx.log.getCall(6).args[0]).to.equal(errs[1].toString(false));
+                expect(ctx.log.getCall(7).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(8).args[0]).to.match(/Additional log info/);
 
                 done();
             });
@@ -525,14 +527,15 @@ describe('Unit: UI', function () {
                     `An error occurred.\nMessage: '${errs[2].message}'\n\n`.split('\n'),
                     `An error occurred.\nMessage: '${errs[3].message}'\n\nStack: ${errs[3].stack}\n`.split('\n')
                 ];
-                // Log is called 4 times per run
-                sinon.assert.callCount(ctx.log, 16);
+                // Log is called 5 times per run
+                sinon.assert.callCount(ctx.log, 20);
                 sinon.assert.callCount(ctx._formatDebug, 4);
                 sinon.assert.callCount(system.writeErrorLog, 4);
                 expectedErrors.forEach(function (err, i) {
-                    expect(ctx.log.getCall(i * 4 + 2).args[0]).to.match(/Additional log info/);
-                    expect(ctx.log.getCall(i * 4 + 3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                    expect(stripAnsi(ctx.log.getCall(i * 4).args[0]).split(/\n/)).to.deep.equal(err);
+                    expect(ctx.log.getCall(i * 5 + 2).args[0]).to.match(/Additional log info/);
+                    expect(ctx.log.getCall(i * 5 + 3).args[0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                    expect(ctx.log.getCall(i * 5 + 4).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                    expect(stripAnsi(ctx.log.getCall(i * 5).args[0]).split(/\n/)).to.deep.equal(err);
                 });
                 done();
             });
@@ -549,11 +552,12 @@ describe('Unit: UI', function () {
 
                 ui.error.bind(ctx)(err, system);
 
-                sinon.assert.callCount(ctx.log, 4);
+                sinon.assert.callCount(ctx.log, 5);
                 expect(ctx._formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
                 expect(ctx.log.getCall(2).args[0]).to.match(/Additional log info/);
-                expect(ctx.log.getCall(3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                // expect(ctx.log.getCall(3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                expect(ctx.log.getCall(4).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
                 expect(stripAnsi(ctx.log.getCall(0).args[0]).split(/\n/)).to.deep.equal(expectedError);
 
                 done();
@@ -573,7 +577,7 @@ describe('Unit: UI', function () {
             ui.error.bind(ctx)(testError);
 
             expect(ctx._formatDebug.calledOnce).to.be.true;
-            expect(ctx.log.calledOnce).to.be.true;
+            sinon.assert.callCount(ctx.log, 2);
             expect(ctx.log.getCall(0).args[0]).to.deep.equal(expectedCall);
             expect(ctx.log.getCall(0).args[2]).to.be.true;
 
@@ -585,8 +589,9 @@ describe('Unit: UI', function () {
             ui.error.bind(ctx)('That\'s a known issue');
 
             expect(ctx._formatDebug.calledOnce).to.be.true;
-            expect(ctx.log.calledOnce).to.be.true;
+            sinon.assert.callCount(ctx.log, 2);
             expect(ctx.log.getCall(0).args[0]).to.match(/error occured/);
+            expect(ctx.log.getCall(1).args[0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
             expect(ctx.log.getCall(0).args[2]).to.be.true;
 
             done();
