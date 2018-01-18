@@ -43,7 +43,7 @@ The team behind Ghost CLI _only_ supports this stack. This restriction is very d
 
 Our primary focus for the project is ensuring that everyone that uses the recommended system stack is able to **install**, **configure**, **start**, **stop**, **restart**, **update** & **list** their Ghost sites. This includes developing better testing to ensure we are able to prevent regressions, and stabilising the code to ensure that edge cases within the recommended stack are accounted for.
 
-The secondary focus is on improving the CLI itself. We want to ensure that the UI, configuration options, flags, flows, prompys, messages and other behaviours are working for both manual and programmatic use. This also includes improving the documentation to make it easy to use the tool, discover advanced options and debug any common issues.
+The secondary focus is on improving the CLI itself. We want to ensure that the UI, configuration options, flags, flows, prompts, messages and other behaviours are working for both manual and programmatic use. This also includes improving the documentation to make it easy to use the tool, discover advanced options & debug any common issues.
 
 **Anything that falls outside of these two areas is not being actively worked on at present.**
 
