@@ -73,7 +73,6 @@ describe('Unit: UI > Renderer', function () {
             rdr = new Renderer();
         });
 
-
         it('calls subscribe on every task', function (done) {
             const ctx = {
                 tasks: [

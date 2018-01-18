@@ -519,7 +519,6 @@ describe('Unit: UI', function () {
                     ui.error.bind(ctx)(err, system);
                 });
 
-
                 const expectedErrors = [
                     `An error occurred.\nMessage: '${errs[0].message}'\n\nStack: ${errs[0].stack}\nCode: ${errs[0].code}\n`.split('\n'),
                     `An error occurred.\nMessage: '${errs[1].message}'\n\nStack: ${errs[1].stack}\nPath: ${errs[1].path}\n`.split('\n'),
