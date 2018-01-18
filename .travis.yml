@@ -11,6 +11,9 @@ matrix:
   include:
     - node_js: "4"
       env: TEST_SUITE=lint
+    - os: osx
+      node_js: "6"
+      env: TEST_SUITE=acceptance
 
 branches:
   except:
@@ -25,7 +28,7 @@ install:
   - yarn add --force sqlite3 # fix sqlite caching issues
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
+  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; elif [ "$TEST_SUITE" = "acceptance" ]; then yarn run test:acceptance; else yarn run test:all; fi
 
 after_success:
   - if [[ "$TRAVIS_NODE_VERSION" == "4" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
