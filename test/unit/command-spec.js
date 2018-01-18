@@ -463,7 +463,6 @@ describe('Unit: Command', function () {
             existsStub.withArgs(sinon.match(/Gruntfile\.js/)).returns(true);
             readJsonStub.returns({name: 'ghost'});
 
-
             const Command = proxyquire(modulePath, {
                 'fs-extra': {existsSync: existsStub, readJsonSync: readJsonStub}
             });

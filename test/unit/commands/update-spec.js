@@ -289,7 +289,6 @@ describe('Unit: Commands > Update', function () {
             sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-
             return cmdInstance.run({rollback: true, force: false, zip: '', restart: true}).then(() => {
                 cwdStub.restore();
                 const expectedCtx = {

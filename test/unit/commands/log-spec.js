@@ -41,7 +41,6 @@ const defaultSystem = {
     environment: 'dev'
 };
 
-
 describe('Unit: Commands > Log', function () {
     let ext, stubs;
 
@@ -241,7 +240,6 @@ describe('Unit: Commands > Log', function () {
                 expect(stubs.write.getCall(2).args[0]).to.equal(' bananas');
             });
         });
-
 
         it('Follows if requested', function () {
             class PrettyStream {
