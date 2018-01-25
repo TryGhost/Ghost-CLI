@@ -2,16 +2,22 @@ Welcome to Ghost-CLI's GitHub repo! 👋🎉
 
 Do you need help or have a question? Please come chat in Slack: https://slack.ghost.org/ 👫.
 
-### This issue is a
+Docs: https://docs.ghost.org 📖.
+
+Please be aware that the team behind the Ghost CLI only supports the recommended stack: https://github.com/TryGhost/Ghost-cli#recommended-stack.
+
+## This issue is a
 
 * [ ] Bug Report
 * [ ] Feature Request
 
+Please fill out this template, deleting where appropriate:
+
 ### Summary
 
-If this is a bug, double-check and make sure there's not already an existing issue for it, then provide a quick summary of what error is occurring.
+Bugs reports: search GitHub for existing issues & check the docs: https://docs.ghost.org/docs/troubleshooting. If you're still stuck, please provide a quick summary of the problem, steps to reproduce, and full tech details including logs.
 
-If this is a feature request, use this section to describe what feature you would like to see in the CLI, as well as a quick summary of any benefits or drawbacks you can think of if this feature is implemented.
+Feature requests: describe the feature and make a clear, detailed case for adding it.
 
 ### Steps to Reproduce (for a bug report)
 
@@ -20,12 +26,31 @@ If this is a feature request, use this section to describe what feature you woul
 
 Any other info e.g. Why do you consider this to be a bug? What did you expect to happen instead?
 
-Also, if there is a log file generated (the CLI will output a message saying "Additional Log Info can be found at..."), please paste the contents of that log file here.
+### Log file (for a bug report)
 
-### Technical details (will be automatically output by Ghost-CLI if an error occurs):
+All errors end with "Additional log info available in: [filepath]".
 
-* OS: 
+Use the command `cat [filepath]` to read the log, then copy & paste the contents here:
+
+```
+Paste log file here
+```
+
+### Technical details (for a bug report)
+
+This is automatically output by Ghost-CLI if an error occurs, please copy & paste:
+
+* OS (add version):
 * Node Version:
-* Ghost-CLI Version: 
-* Environment: 
-* Command: 
+* Ghost-CLI Version:
+* Environment:
+* Command:
+
+## Bug submission checklist
+
+Please fill out this checklist to acknowledge that you followed the requirements to submit a bug report.
+
+- [ ] Tried to find help in Slack & Docs
+- [ ] Checked for existing issues
+- [ ] Attached log file
+- [ ] Provided technical details incl. operating system
