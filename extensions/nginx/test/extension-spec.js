@@ -58,7 +58,13 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Skips if acme.sh doesn\'t exist', function () {
-                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(false)}});
+                const ext = proxyNginx({
+                    'fs-extra': {existsSync: sinon.stub().returns(false)},
+                    os: {
+                        platform: () => 'linux',
+                        homedir: () => '/home/me'
+                    }
+                });
                 const migrations = ext.migrations();
 
                 expect(migrations[0].before).to.equal('1.2.0');
@@ -66,7 +72,13 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Doesn\'t skip if acme.sh exists', function () {
-                const ext = proxyNginx({'fs-extra': {existsSync: sinon.stub().returns(true)}});
+                const ext = proxyNginx({
+                    'fs-extra': {existsSync: sinon.stub().returns(true)},
+                    os: {
+                        platform: () => 'linux',
+                        homedir: () => '/home/me'
+                    }
+                });
                 const migrations = ext.migrations();
 
                 expect(migrations[0].before).to.equal('1.2.0');
