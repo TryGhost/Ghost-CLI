@@ -328,6 +328,45 @@ describe('Unit: Doctor Checks > Install', function () {
         });
     });
 
+    describe('currentUser check', function () {
+        let processStub;
+
+        beforeEach(function () {
+            processStub = sinon.stub(process, 'getuid');
+        });
+
+        afterEach(function () {
+            processStub.restore();
+        });
+
+        it('rejects if user is logged in as root', function () {
+            processStub.returns(0);
+
+            const currentUser = proxyquire(modulePath, {
+                process: {getuid: processStub}
+            }).tasks.currentUser;
+
+            return currentUser({}).then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(processStub.calledOnce).to.be.true;
+            });
+        });
+
+        it('does not reject if user not root', function () {
+            processStub.returns(501);
+
+            const currentUser = proxyquire(modulePath, {
+                process: {getuid: processStub}
+            }).tasks.currentUser;
+
+            return currentUser({}).then(() => {
+                expect(processStub.calledOnce).to.be.true;
+            });
+        });
+    });
+
     describe('system stack', function () {
         let logStub, confirmStub, execaStub;
 
