@@ -678,12 +678,17 @@ describe('Unit: UI', function () {
     it('#_formatDebug returns a properly formatted value', function (done) {
         const system = {
             cliVersion: '0.9.1.8',
-            environment: 'Earth'
+            environment: 'Earth',
+            operatingSystem: {
+                os: 'Ubuntu',
+                version: '16'
+            }
         };
         const SPACES = '    ';
         const UI = require(modulePath);
         const ui = new UI();
         const expected = ['Debug Information:',
+            `${SPACES}OS: Ubuntu, v16`,
             `${SPACES}Node Version: ${process.version}`,
             `${SPACES}Ghost-CLI Version: 0.9.1.8`,
             `${SPACES}Environment: Earth`,

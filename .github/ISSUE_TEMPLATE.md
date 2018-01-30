@@ -40,7 +40,7 @@ Paste log file here
 
 This is automatically output by Ghost-CLI if an error occurs, please copy & paste:
 
-* OS (add version):
+* OS:
 * Node Version:
 * Ghost-CLI Version:
 * Environment:
