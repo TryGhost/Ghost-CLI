@@ -31,6 +31,23 @@ class SystemdProcessManager extends cli.ProcessManager {
             .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
     }
 
+    success() {
+        try {
+            execa.shellSync(`systemd-notify --ready --pid=${process.pid} && sleep 10s`);
+        } catch (error) {
+            // Not much we can do other than throw unfortunately
+            throw new cli.errors.ProcessError(error);
+        }
+    }
+
+    error(error) {
+        try {
+            execa.shellSync(`systemd-notify --status='${error.message}' && sleep 10s`)
+        } catch (error) {
+            throw new cli.errors.ProcessError(error);
+        }
+    }
+
     isEnabled() {
         try {
             execa.shellSync(`systemctl is-enabled ${this.systemdName}`);
