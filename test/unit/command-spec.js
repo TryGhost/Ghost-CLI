@@ -192,6 +192,25 @@ describe('Unit: Command', function () {
             }
         });
 
+        it('will not run command when executed as root user', function () {
+            const checkRootUserStub = sandbox.stub();
+            const Command = proxyquire(modulePath, {
+                './utils/check-root-user': checkRootUserStub
+            });
+
+            const TestCommand = class extends Command {};
+            TestCommand.global = true;
+
+            checkRootUserStub.throws();
+
+            try {
+                TestCommand._run('test');
+            } catch (e) {
+                expect(e).to.exist;
+                expect(checkRootUserStub.calledOnce).to.be.true;
+            }
+        });
+
         it('loads system and ui dependencies, calls run method', function () {
             const uiStub = sandbox.stub().returns({ui: true});
             const setEnvironmentStub = sandbox.stub();
