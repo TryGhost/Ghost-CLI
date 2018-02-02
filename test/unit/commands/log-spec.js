@@ -2,7 +2,6 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const Command = require('../../../lib/command');
 const Errors = require('../../../lib/errors');
 
 const modulePath = '../../../lib/commands/log';
@@ -54,9 +53,7 @@ describe('Unit: Commands > Log', function () {
 
     describe('run', function () {
         it('Checks installation if name isn\'t provided', function () {
-            class FakeCommand extends Command {}
-            FakeCommand.checkValidInstall = stubs.cvi;
-            ext = proxyLog({'../command': FakeCommand});
+            ext = proxyLog({'../utils/check-valid-install': stubs.cvi});
             try {
                 ext.run({});
             } catch (error) {
