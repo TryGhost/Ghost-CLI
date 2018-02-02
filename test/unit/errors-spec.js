@@ -46,6 +46,35 @@ describe('Unit: Errors', function () {
             expect(errorOutput).to.match(/Message: some error/);
             expect(errorOutput).to.match(/Help: some help message/);
         });
+
+        it('logs original error message and stack trace if verbose is set', function () {
+            const originalError = new Error('something aweful happened here');
+            originalError.response = 'very long response';
+
+            const verboseError = new errors.CliError({
+                message: 'some error',
+                err: originalError
+            });
+
+            const errorOutput = stripAnsi(verboseError.toString(true));
+            expect(errorOutput).to.match(/Message: some error/);
+            expect(errorOutput).to.match(/Original Error Message:/);
+            expect(errorOutput).to.match(/Message: something aweful happened here/);
+            expect(errorOutput.indexOf(verboseError.stack)).to.not.equal(-1);
+        });
+
+        it('logs original error message and stack trace in verbose when error is a string', function () {
+            const verboseError = new errors.CliError({
+                message: 'some error',
+                err: 'something aweful happened here'
+            });
+
+            const errorOutput = stripAnsi(verboseError.toString(true));
+            expect(errorOutput).to.match(/Message: some error/);
+            expect(errorOutput).to.match(/Original Error Message:/);
+            expect(errorOutput).to.match(/Message: something aweful happened here/);
+            expect(errorOutput.indexOf(verboseError.stack)).to.not.equal(-1);
+        });
     });
 
     describe('ProcessError', function () {
