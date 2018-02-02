@@ -63,7 +63,7 @@ describe('Unit: Commands > Startup Checks', function () {
     it('rejects if environment is not passed and folder is not a valid Ghost installation', function () {
         const checkValidInstallStub = sandbox.stub().throws({message: 'not a valid Ghost install'});
         const startupChecks = proxyquire(modulePath, {
-            '../../../command': {checkValidInstall: checkValidInstallStub}
+            '../../../utils/check-valid-install': checkValidInstallStub
         });
 
         try {
@@ -84,7 +84,7 @@ describe('Unit: Commands > Startup Checks', function () {
         sandbox.stub(process, 'cwd').returns(env.dir);
 
         const startupChecks = proxyquire(modulePath, {
-            '../../../command': {checkValidInstall: checkValidInstallStub}
+            '../../../utils/check-valid-install': checkValidInstallStub
         });
 
         return startupChecks[0].task({system: {getInstance: getInstanceStub, environment: 'testing'}}).then(() => {

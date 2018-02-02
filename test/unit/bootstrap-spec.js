@@ -219,6 +219,7 @@ describe('Unit: Bootstrap', function () {
 
         describe('with first arg as a command name', function () {
             it('errors when discovered command is *not* an instance of the command class', function () {
+                this.timeout(5000);
                 const testEnv = env({
                     dirs: ['commands'],
                     files: [{

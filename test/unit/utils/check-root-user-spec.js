@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const os = require('os');
 const checkRootUser = require('../../../lib/utils/check-root-user');
 
-describe('checkRootUser', function () {
+describe('Unit: Utils > checkRootUser', function () {
     const sandbox = sinon.sandbox.create();
 
     afterEach(() => {

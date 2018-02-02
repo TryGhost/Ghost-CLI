@@ -5,12 +5,10 @@ const proxyquire = require('proxyquire');
 
 const modulePath = '../../../lib/commands/stop';
 const errors = require('../../../lib/errors');
-const Command = require('../../../lib/command');
-Command.checkValidInstall = () => true;
 const StopCommand = require(modulePath);
 
 function proxiedCommand() {
-    return new (proxyquire(modulePath, {'../command': Command}))();
+    return new (proxyquire(modulePath, {'../utils/check-valid-install': () => true}))();
 }
 
 describe('Unit: Commands > Stop', function () {
@@ -120,7 +118,7 @@ describe('Unit: Commands > Stop', function () {
             };
             ProcessManager.supportsEnableBehavior = sEBstub;
             const StopCommand = proxyquire(modulePath, {
-                '../command': Command,
+                '../utils/check-valid-install': () => true,
                 '../process-manager': ProcessManager
             });
             const stop = new StopCommand();
