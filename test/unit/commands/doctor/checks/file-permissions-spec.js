@@ -5,9 +5,9 @@ const sinon = require('sinon');
 const execa = require('execa');
 const errors = require('../../../../../lib/errors');
 
-const folderPermissions = require('../../../../../lib/commands/doctor/checks/folder-permissions');
+const filePermissions = require('../../../../../lib/commands/doctor/checks/file-permissions');
 
-describe('Unit: Doctor Checks > Checking folder permissions', function () {
+describe('Unit: Doctor Checks > Checking file permissions', function () {
     const sandbox = sinon.sandbox.create();
 
     afterEach(() => {
@@ -15,20 +15,20 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
     });
 
     it('exports tasks', function () {
-        expect(folderPermissions).to.be.an.instanceof(Object);
-        expect(folderPermissions.title).to.match(/Checking folder permissions/);
-        expect(folderPermissions.task).to.be.an.instanceof(Function);
-        expect(folderPermissions.enabled).to.be.an.instanceof(Function);
-        expect(folderPermissions.category).to.be.an.instanceof(Array);
-        expect(folderPermissions.category).to.have.length(2);
+        expect(filePermissions).to.be.an.instanceof(Object);
+        expect(filePermissions.title).to.match(/Checking file permissions/);
+        expect(filePermissions.task).to.be.an.instanceof(Function);
+        expect(filePermissions.enabled).to.be.an.instanceof(Function);
+        expect(filePermissions.category).to.be.an.instanceof(Array);
+        expect(filePermissions.category).to.have.length(2);
     });
 
     it('skips when content when ghost is locally installed', function () {
         const getInstanceStub = sinon.stub().returns({process: {name: 'local'}});
         const execaStub = sandbox.stub(execa, 'shell').resolves();
 
-        expect(folderPermissions).to.exist;
-        expect(folderPermissions.enabled({system: {getInstance: getInstanceStub}}), 'skips if no Ghost user should be used').to.be.false;
+        expect(filePermissions).to.exist;
+        expect(filePermissions.enabled({system: {getInstance: getInstanceStub}}), 'skips if no Ghost user should be used').to.be.false;
         expect(execaStub.called).to.be.false;
     });
 
@@ -36,8 +36,8 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: './content/images\n./system/apps\n./content/themes'});
         const getInstanceStub = sinon.stub().returns({process: {name: ''}});
 
-        expect(folderPermissions.enabled({system: {getInstance: getInstanceStub}}), 'skips if no Ghost user should be used').to.be.true;
-        return folderPermissions.task({}).then(() => {
+        expect(filePermissions.enabled({system: {getInstance: getInstanceStub}}), 'skips if no Ghost user should be used').to.be.true;
+        return filePermissions.task({}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
@@ -50,7 +50,7 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
     it('rejects with error if files have incorrect permissions', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: './content/images/test.jpg'});
 
-        return folderPermissions.task({}).then(() => {
+        return filePermissions.task({}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
@@ -63,7 +63,7 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
     it('passes if all folders have the correct permissions', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: ''});
 
-        return folderPermissions.task({}).then(() => {
+        return filePermissions.task({}).then(() => {
             expect(execaStub.called).to.be.true;
         });
     });
@@ -71,7 +71,7 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
     it('rejects with error if execa command fails', function () {
         const execaStub = sandbox.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
 
-        return folderPermissions.task({}).then(() => {
+        return filePermissions.task({}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ProcessError);
