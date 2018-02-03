@@ -32,6 +32,7 @@ describe('Unit: Systemd > Process Manager', function () {
         beforeEach(function () {
             ui = {sudo: sinon.stub().resolves()},
             ext = new Systemd(ui, null, instance);
+            ext.ensureStarted = sinon.stub().resolves();
             ext._precheck = () => true;
         });
 
@@ -68,6 +69,7 @@ describe('Unit: Systemd > Process Manager', function () {
         beforeEach(function () {
             ui = {sudo: sinon.stub().resolves()},
             ext = new Systemd(ui, null, instance);
+            ext.ensureStarted = sinon.stub().resolves();
             ext._precheck = () => true;
         });
 
@@ -104,6 +106,7 @@ describe('Unit: Systemd > Process Manager', function () {
         beforeEach(function () {
             ui = {sudo: sinon.stub().resolves()},
             ext = new Systemd(ui, null, instance);
+            ext.ensureStarted = sinon.stub().resolves();
             ext._precheck = () => true;
         });
 

@@ -166,7 +166,7 @@ describe('Unit: Commands > Run', function () {
         const errorStub = sinon.stub();
         const exitStub = sinon.stub(process, 'exit');
 
-        instance.useDirect({dir: '/var/www/ghost', process: {success: successStub, error: errorStub}});
+        instance.useDirect({dir: '/var/www/ghost', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
 
         expect(spawnStub.calledOnce).to.be.true;
         expect(spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
