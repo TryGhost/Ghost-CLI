@@ -1,7 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const proxyquire = require('proxyquire');
+const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../../../lib/commands/start';
 const StartCommand = require(modulePath);
@@ -37,24 +37,24 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('runs startup checks', function () {
-            const listr = sinon.stub().rejects(new Error('listr'));
-            const SetupCommand = proxyquire(modulePath, {
-                './doctor/checks/startup': () => Promise.resolve('start')
+            const listr = sinon.stub().resolves();
+            const StartCommand = proxyquire(modulePath, {
+                './doctor': {doctorCommand: true}
             });
-            const setup = new SetupCommand({listr: listr}, mySystem);
+            const start = new StartCommand({listr: listr}, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').rejects(new Error('runCommand'));
 
-            return setup.run({}).then(() => {
+            return start.run({argv: true}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.ok;
-                expect(error.message).to.equal('listr');
-                expect(listr.calledOnce).to.be.true;
-                // This is what listr was supposed to run - run it and make
-                // sure it's our override that was run
-                const cmd = listr.getCall(0).args[0];
-                return cmd().then((res) => {
-                    expect(res).to.equal('start');
-                });
+                expect(error.message).to.equal('runCommand');
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledWithExactly(
+                    {doctorCommand: true},
+                    {categories: ['start'], quiet: true, argv: true}
+                )).to.be.true;
+                expect(listr.called).to.be.false;
             });
         });
 
@@ -66,13 +66,15 @@ describe('Unit: Commands > Start', function () {
                 listr: () => Promise.resolve(),
                 run: sinon.stub().rejects(new Error('UI_RUN'))
             };
-            const setup = new StartCommand(ui, mySystem);
+            const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
 
-            return setup.run({}).then(() => {
+            return start.run({}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('UI_RUN');
+                expect(runCommandStub.calledOnce).to.be.true;
                 const running = myInstance.running;
                 const proces = myInstance.process.start;
 
@@ -101,9 +103,11 @@ describe('Unit: Commands > Start', function () {
                     disable: 'yes'
                 };
                 const start = new StartCommand(ui, mySystem);
+                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
                 return start.run({quiet: true, enable: true}).then(() => {
                     const ie = myInstance.process.isEnabled;
                     const enable = myInstance.process.enable;
+                    expect(runCommandStub.calledOnce).to.be.true;
                     expect(ie.calledOnce).to.be.true;
                     expect(enable.calledOnce).to.be.true;
                     expect(ui.run.calledTwice).to.be.true;
@@ -121,9 +125,11 @@ describe('Unit: Commands > Start', function () {
                     disable: 'yes'
                 };
                 const start = new StartCommand(ui, mySystem);
+                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
                 return start.run({quiet: true, enable: true}).then(() => {
                     const ie = myInstance.process.isEnabled;
                     const enable = myInstance.process.enable;
+                    expect(runCommandStub.calledOnce).to.be.true;
                     expect(ie.calledOnce).to.be.true;
                     expect(enable.called).to.be.false;
                     expect(ui.run.calledOnce).to.be.true;
@@ -140,10 +146,12 @@ describe('Unit: Commands > Start', function () {
                     enable: sinon.stub()
                 };
                 const start = new StartCommand(ui, mySystem);
+                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
                 return start.run({quiet: true, enable: true}).then(() => {
                     const ie = myInstance.process.isEnabled;
                     const enable = myInstance.process.enable;
                     expect(ie.called).to.be.false;
+                    expect(runCommandStub.calledOnce).to.be.true;
                     expect(enable.called).to.be.false;
                     expect(ui.run.calledOnce).to.be.true;
                 });
@@ -159,7 +167,9 @@ describe('Unit: Commands > Start', function () {
                 log: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledOnce).to.be.true;
                 expect(ui.log.getCall(0).args[0]).to.match(/You can access your blog/);
             });
@@ -174,7 +184,9 @@ describe('Unit: Commands > Start', function () {
                 log: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledThrice).to.be.true;
                 expect(ui.log.getCall(1).args[0]).to.match(/Ghost uses direct mail/);
                 expect(ui.log.getCall(2).args[0]).to.match(/alternative email method/);
