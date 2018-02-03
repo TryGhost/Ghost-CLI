@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
+const os = require('os');
 const modulePath = '../../lib/system';
 const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
@@ -19,6 +20,12 @@ function stubGlobalConfig(SystemClass, configDefinition, ui, extensions) {
 }
 
 describe('Unit: System', function () {
+    const sandbox = sinon.sandbox.create();
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
     it('cliVersion getter caches', function () {
         let counter = 0;
         const System = proxyquire(modulePath, {
@@ -55,6 +62,58 @@ describe('Unit: System', function () {
         const configTwo = systemInstance.globalConfig;
         expect(configTwo).to.be.an.instanceof(Config);
         expect(config).to.equal(configTwo);
+    });
+
+    describe('platform getter', function () {
+        const System = require(modulePath);
+
+        it('platform getter works for linux & caches', function () {
+            const osStub = sandbox.stub(os, 'platform').returns('linux');
+            const instance = new System({}, []);
+            const platform = instance.platform;
+
+            expect(osStub.calledOnce).to.be.true;
+            expect(platform).to.deep.equal({
+                linux: true,
+                macos: false,
+                windows: false
+            });
+
+            const platform2 = instance.platform;
+
+            expect(osStub.calledOnce).to.be.true;
+            expect(platform2).to.deep.equal({
+                linux: true,
+                macos: false,
+                windows: false
+            });
+        });
+
+        it('platform getter works for macos', function () {
+            const osStub = sandbox.stub(os, 'platform').returns('darwin');
+            const instance = new System({}, []);
+            const platform = instance.platform;
+
+            expect(osStub.calledOnce).to.be.true;
+            expect(platform).to.deep.equal({
+                linux: false,
+                macos: true,
+                windows: false
+            });
+        });
+
+        it('platform getter works for windows', function () {
+            const osStub = sandbox.stub(os, 'platform').returns('win32');
+            const instance = new System({}, []);
+            const platform = instance.platform;
+
+            expect(osStub.calledOnce).to.be.true;
+            expect(platform).to.deep.equal({
+                linux: false,
+                macos: false,
+                windows: true
+            });
+        });
     });
 
     describe('setEnvironment', function () {
