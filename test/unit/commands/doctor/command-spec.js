@@ -1,72 +1,200 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
+const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 
 const modulePath = '../../../../lib/commands/doctor/index';
-const errors = require('../../../../lib/errors');
 
 describe('Unit: Commands > Doctor', function () {
-    it('defaults to running install checks if no check is supplied', function () {
+    it('doesn\'t do anything if there are no checks to run (with log)', function () {
         const listrStub = sinon.stub().resolves();
-        const successStub = sinon.stub();
-        const ui = {listr: listrStub, success: successStub};
+        const logStub = sinon.stub();
+        const DoctorCommand = proxyquire(modulePath, {
+            './checks': []
+        });
+        const instance = new DoctorCommand({listr: listrStub, log: logStub}, {});
+
+        return instance.run({}).then(() => {
+            expect(listrStub.called).to.be.false;
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.args[0][0]).to.match(/No checks found to run/);
+        });
+    });
+
+    it('doesn\'t do anything if there are no checks to run (without log)', function () {
+        const listrStub = sinon.stub().resolves();
+        const logStub = sinon.stub();
+        const DoctorCommand = proxyquire(modulePath, {
+            './checks': []
+        });
+        const instance = new DoctorCommand({listr: listrStub, log: logStub}, {});
+
+        return instance.run({quiet: true}).then(() => {
+            expect(listrStub.called).to.be.false;
+            expect(logStub.called).to.be.false;
+        });
+    });
+
+    it('checks instance if skipInstanceCheck not passed, uses correct context', function () {
+        const ui = {listr: sinon.stub().resolves()};
+        const instanceStub = {checkEnvironment: sinon.stub()};
+        const system = {getInstance: sinon.stub().returns(instanceStub)};
+        const checkValidStub = sinon.stub();
 
         const DoctorCommand = proxyquire(modulePath, {
-            './checks/install': {installChecks: true}
+            '../../utils/check-valid-install': checkValidStub,
+            './checks': [{}]
         });
-        const instance = new DoctorCommand(ui, {system: true});
+        const instance = new DoctorCommand(ui, system);
 
-        return instance.run({}).then(() => {
-            expect(listrStub.calledOnce).to.be.true;
-            expect(listrStub.args[0][0]).to.deep.equal({installChecks: true});
-            expect(listrStub.args[0][1]).to.deep.equal({
-                ui: ui,
-                system: {system: true}
+        return instance.run({test: true, a: 'b'}).then(() => {
+            expect(checkValidStub.calledOnce).to.be.true;
+            expect(system.getInstance.calledOnce).to.be.true;
+            expect(instanceStub.checkEnvironment.calledOnce).to.be.true;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.listr.args[0][0]).to.deep.equal([{}]);
+            const context = ui.listr.args[0][1];
+            expect(context.argv).to.deep.equal({test: true, a: 'b'});
+            expect(context.system).to.equal(system);
+            expect(context.instance).to.equal(instanceStub);
+            expect(context.ui).to.equal(ui);
+            expect(context.local).to.be.false;
+        });
+    });
+
+    it('skips instance check if skipInstanceCheck is true, uses correct context', function () {
+        const ui = {listr: sinon.stub().resolves()};
+        const instanceStub = {checkEnvironment: sinon.stub()};
+        const system = {getInstance: sinon.stub().returns(instanceStub)};
+        const checkValidStub = sinon.stub();
+
+        const DoctorCommand = proxyquire(modulePath, {
+            '../../utils/check-valid-install': checkValidStub,
+            './checks': [{}]
+        });
+        const instance = new DoctorCommand(ui, system);
+
+        return instance.run({skipInstanceCheck: true, local: true, argv: true}).then(() => {
+            expect(checkValidStub.called).to.be.false;
+            expect(system.getInstance.called).to.be.false;
+            expect(instanceStub.checkEnvironment.called).to.be.false;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.listr.args[0][0]).to.deep.equal([{}]);
+            const context = ui.listr.args[0][1];
+            expect(context.argv).to.deep.equal({skipInstanceCheck: true, local: true, argv: true});
+            expect(context.system).to.equal(system);
+            expect(context.instance).to.not.exist;
+            expect(context.ui).to.equal(ui);
+            expect(context.local).to.be.true;
+        });
+    });
+
+    it('catches errors from checks (with logs)', function () {
+        const ui = {
+            listr: sinon.stub().rejects(new Error('Your argument is invalid')),
+            log: sinon.stub()
+        };
+
+        const DoctorCommand = require(modulePath);
+        const instance = new DoctorCommand(ui, {});
+
+        return instance.run({skipInstanceCheck: true}).then(() => {
+            expect(false, 'Error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error.message).to.equal('Your argument is invalid');
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.log.calledTwice).to.be.true;
+        });
+    });
+
+    it('catches errors from checks (without logs)', function () {
+        const ui = {
+            listr: sinon.stub().rejects(new Error('Your argument is invalid')),
+            log: sinon.stub()
+        };
+
+        const DoctorCommand = require(modulePath);
+        const instance = new DoctorCommand(ui, {});
+
+        return instance.run({skipInstanceCheck: true, quiet: true}).then(() => {
+            expect(false, 'Error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error.message).to.equal('Your argument is invalid');
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.log.called).to.be.false;
+        });
+    });
+
+    describe('filters checks correctly', function () {
+        const testChecks = [{
+            title: 'Check 1',
+            category: ['install']
+        }, {
+            title: 'Check 2',
+            category: ['start']
+        }, {
+            title: 'Check 3',
+            category: ['install', 'start']
+        }];
+
+        let DoctorCommand;
+
+        before(() => {
+            DoctorCommand = proxyquire(modulePath, {
+                './checks': testChecks
             });
-            expect(successStub.calledOnce).to.be.true;
-            expect(successStub.args[0][0]).to.match(/checks passed/);
+        })
+
+        it('doesn\'t filter if no categories passed', function () {
+            const listrStub = sinon.stub().resolves();
+            const instance = new DoctorCommand({listr: listrStub}, {system: true});
+
+            return instance.run({skipInstanceCheck: true}).then(() => {
+                expect(listrStub.calledOnce).to.be.true;
+                const tasks = listrStub.args[0][0];
+                expect(tasks).to.be.an('array');
+                expect(tasks.length).to.equal(3);
+            });
         });
-    });
 
-    it('rejects if checks category not found', function () {
-        const failStub = sinon.stub();
-        const DoctorCommand = require(modulePath);
-        const instance = new DoctorCommand({fail: failStub}, {system: true});
+        it('filters with one category passed', function () {
+            const listrStub = sinon.stub().resolves();
+            const instance = new DoctorCommand({listr: listrStub}, {system: true});
 
-        return instance.run({category: 'nonexistent'}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.not.exist;
-            expect(failStub.calledOnce).to.be.true;
-            expect(failStub.args[0][0]).to.match(/Invalid category/);
+            return instance.run({skipInstanceCheck: true, categories: ['install']}).then(() => {
+                expect(listrStub.calledOnce).to.be.true;
+                const tasks = listrStub.args[0][0];
+                expect(tasks).to.be.an('array');
+                expect(tasks.length).to.equal(2);
+                expect(tasks[0].title).to.equal('Check 1');
+                expect(tasks[1].title).to.equal('Check 3');
+            });
         });
-    });
 
-    it('logs message if a doctor check fails with a SystemError', function () {
-        const listrStub = sinon.stub().rejects(new errors.SystemError({message: 'aaaahhhh'}));
-        const logStub = sinon.stub();
-        const DoctorCommand = require(modulePath);
-        const instance = new DoctorCommand({listr: listrStub, log: logStub});
+        it('filters with another category passed', function () {
+            const listrStub = sinon.stub().resolves();
+            const instance = new DoctorCommand({listr: listrStub}, {system: true});
 
-        return instance.run({}).then(() => {
-            expect(listrStub.calledOnce).to.be.true;
-            expect(logStub.calledTwice).to.be.true;
-            expect(logStub.args[0][0]).to.match(/Checks failed/);
-            expect(logStub.args[1][0]).to.match(/aaaahhhh/);
+            return instance.run({skipInstanceCheck: true, categories: ['start']}).then(() => {
+                expect(listrStub.calledOnce).to.be.true;
+                const tasks = listrStub.args[0][0];
+                expect(tasks).to.be.an('array');
+                expect(tasks.length).to.equal(2);
+                expect(tasks[0].title).to.equal('Check 2');
+                expect(tasks[1].title).to.equal('Check 3');
+            });
         });
-    });
 
-    it('rejects if rejected error is not a system error', function () {
-        const listrStub = sinon.stub().rejects(new Error('aaaahhhh'));
-        const DoctorCommand = require(modulePath);
-        const instance = new DoctorCommand({listr: listrStub});
+        it('filters with multiple categories passed', function () {
+            const listrStub = sinon.stub().resolves();
+            const instance = new DoctorCommand({listr: listrStub}, {system: true});
 
-        return instance.run({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(Error);
-            expect(error.message).to.equal('aaaahhhh');
+            return instance.run({skipInstanceCheck: true, categories: ['install', 'start']}).then(() => {
+                expect(listrStub.calledOnce).to.be.true;
+                const tasks = listrStub.args[0][0];
+                expect(tasks).to.be.an('array');
+                expect(tasks.length).to.equal(3);
+            });
         });
     });
 });

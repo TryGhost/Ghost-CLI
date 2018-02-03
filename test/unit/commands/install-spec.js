@@ -83,24 +83,21 @@ describe('Unit: Commands > Install', function () {
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
-                './doctor/checks/install': [{check1: true}, {check2: true}]
+                './doctor': {doctorCommand: true}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {});
+            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({argv: true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledWithExactly(
+                    {doctorCommand: true},
+                    {categories: ['install'], skipInstanceCheck: true, quiet: true, argv: true, local: false}
+                )).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
-                expect(listrStub.args[0][0]).to.deep.equal([
-                    {check1: true},
-                    {check2: true}
-                ]);
-                expect(listrStub.args[0][1]).to.deep.equal({
-                    ui: {listr: listrStub},
-                    argv: {argv: true},
-                    local: false
-                });
             });
         });
 
@@ -112,26 +109,18 @@ describe('Unit: Commands > Install', function () {
             const setEnvironmentStub = sandbox.stub();
 
             const InstallCommand = proxyquire(modulePath, {
-                'fs-extra': {readdirSync: readdirStub},
-                './doctor/checks/install': [{check1: true}, {check2: true}]
+                'fs-extra': {readdirSync: readdirStub}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: 'local', zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
-                expect(listrStub.calledTwice).to.be.true;
-                expect(listrStub.args[0][0]).to.deep.equal([
-                    {check1: true},
-                    {check2: true}
-                ]);
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
-                    ui: {listr: listrStub},
-                    argv: {version: 'local', zip: ''},
-                    local: true
-                });
-                expect(listrStub.args[1][1]).to.deep.equal({
                     version: null,
                     cliVersion: '1.0.0',
                     zip: ''
@@ -149,26 +138,18 @@ describe('Unit: Commands > Install', function () {
             const setEnvironmentStub = sandbox.stub();
 
             const InstallCommand = proxyquire(modulePath, {
-                'fs-extra': {readdirSync: readdirStub},
-                './doctor/checks/install': [{check1: true}, {check2: true}]
+                'fs-extra': {readdirSync: readdirStub}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: '1.5.0', local: true, zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
-                expect(listrStub.calledTwice).to.be.true;
-                expect(listrStub.args[0][0]).to.deep.equal([
-                    {check1: true},
-                    {check2: true}
-                ]);
+                expect(runCommandStub.calledOnce).to.be.true
+                expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
-                    ui: {listr: listrStub},
-                    argv: {version: '1.5.0', local: true, zip: ''},
-                    local: true
-                });
-                expect(listrStub.args[1][1]).to.deep.equal({
                     version: '1.5.0',
                     cliVersion: '1.0.0',
                     zip: ''
@@ -189,8 +170,7 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 '../tasks/yarn-install': yarnInstallStub,
-                '../tasks/ensure-structure': ensureStructureStub,
-                './doctor/checks/install': []
+                '../tasks/ensure-structure': ensureStructureStub
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0'});
             const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
@@ -200,13 +180,13 @@ describe('Unit: Commands > Install', function () {
 
             return testInstance.run({version: '1.0.0', setup: false}).then(() => {
                 expect(readdirStub.calledOnce).to.be.true;
-                expect(listrStub.calledThrice).to.be.true;
+                expect(listrStub.calledTwice).to.be.true;
                 expect(yarnInstallStub.calledOnce).to.be.true;
                 expect(ensureStructureStub.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;
                 expect(casperStub.calledOnce).to.be.true;
-                expect(runCommandStub.called).to.be.false;
+                expect(runCommandStub.calledOnce).to.be.true;
             });
         });
 
@@ -224,10 +204,10 @@ describe('Unit: Commands > Install', function () {
 
             return testInstance.run({version: 'local', setup: true, zip: ''}).then(() => {
                 expect(readdirStub.calledOnce).to.be.true;
-                expect(listrStub.calledTwice).to.be.true;
+                expect(listrStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true));
-                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledTwice).to.be.true;
                 expect(runCommandStub.calledWithExactly(
                     {SetupCommand: true},
                     {version: 'local', local: true, zip: ''}
