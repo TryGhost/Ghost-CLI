@@ -59,6 +59,7 @@ describe('Unit: Commands > Doctor', function () {
             expect(context.instance).to.equal(instanceStub);
             expect(context.ui).to.equal(ui);
             expect(context.local).to.be.false;
+            expect(context.isDoctorCommand).to.be.false;
         });
     });
 
@@ -86,42 +87,47 @@ describe('Unit: Commands > Doctor', function () {
             expect(context.instance).to.not.exist;
             expect(context.ui).to.equal(ui);
             expect(context.local).to.be.true;
+            expect(context.isDoctorCommand).to.be.false;
         });
     });
 
-    it('catches errors from checks (with logs)', function () {
-        const ui = {
-            listr: sinon.stub().rejects(new Error('Your argument is invalid')),
-            log: sinon.stub()
-        };
+    it('skips instance check if only category is install, uses correct context', function () {
+        const ui = {listr: sinon.stub().resolves()};
+        const instanceStub = {checkEnvironment: sinon.stub()};
+        const system = {getInstance: sinon.stub().returns(instanceStub)};
+        const checkValidStub = sinon.stub();
 
-        const DoctorCommand = require(modulePath);
-        const instance = new DoctorCommand(ui, {});
-
-        return instance.run({skipInstanceCheck: true}).then(() => {
-            expect(false, 'Error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error.message).to.equal('Your argument is invalid');
-            expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.log.calledTwice).to.be.true;
+        const DoctorCommand = proxyquire(modulePath, {
+            '../../utils/check-valid-install': checkValidStub,
+            './checks': [{category: ['install']}]
         });
-    });
+        const instance = new DoctorCommand(ui, system);
 
-    it('catches errors from checks (without logs)', function () {
-        const ui = {
-            listr: sinon.stub().rejects(new Error('Your argument is invalid')),
-            log: sinon.stub()
-        };
-
-        const DoctorCommand = require(modulePath);
-        const instance = new DoctorCommand(ui, {});
-
-        return instance.run({skipInstanceCheck: true, quiet: true}).then(() => {
-            expect(false, 'Error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error.message).to.equal('Your argument is invalid');
+        return instance.run({
+            skipInstanceCheck: true,
+            local: true,
+            argv: true,
+            categories: ['install'],
+            _: ['doctor']
+        }).then(() => {
+            expect(checkValidStub.called).to.be.false;
+            expect(system.getInstance.called).to.be.false;
+            expect(instanceStub.checkEnvironment.called).to.be.false;
             expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.log.called).to.be.false;
+            expect(ui.listr.args[0][0]).to.deep.equal([{category: ['install']}]);
+            const context = ui.listr.args[0][1];
+            expect(context.argv).to.deep.equal({
+                skipInstanceCheck: true,
+                local: true,
+                argv: true,
+                categories: ['install'],
+                _: ['doctor']
+            });
+            expect(context.system).to.equal(system);
+            expect(context.instance).to.not.exist;
+            expect(context.ui).to.equal(ui);
+            expect(context.local).to.be.true;
+            expect(context.isDoctorCommand).to.be.true;
         });
     });
 
