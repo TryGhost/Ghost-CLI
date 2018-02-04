@@ -10,11 +10,26 @@ class SystemdProcessManager extends cli.ProcessManager {
         return `ghost_${this.instance.name}`;
     }
 
+    get logSuggestion() {
+        return `journalctl -u ${this.systemdName} -n 50`;
+    }
+
     start() {
         this._precheck();
 
         return this.ui.sudo(`systemctl start ${this.systemdName}`)
-            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            .then(() => {
+                return this.ensureStarted({
+                    logSuggestion: this.logSuggestion
+                });
+            })
+            .catch((error) => {
+                if (error instanceof cli.errors.CliError) {
+                    throw error;
+                }
+
+                throw new cli.errors.ProcessError(error);
+            });
     }
 
     stop() {
@@ -28,7 +43,18 @@ class SystemdProcessManager extends cli.ProcessManager {
         this._precheck();
 
         return this.ui.sudo(`systemctl restart ${this.systemdName}`)
-            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            .then(() => {
+                return this.ensureStarted({
+                    logSuggestion: this.logSuggestion
+                });
+            })
+            .catch((error) => {
+                if (error instanceof cli.errors.CliError) {
+                    throw error;
+                }
+
+                throw new cli.errors.ProcessError(error);
+            });
     }
 
     isEnabled() {

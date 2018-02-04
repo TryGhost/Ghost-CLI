@@ -1,0 +1,193 @@
+'use strict';
+const expect = require('chai').expect;
+const sinon = require('sinon');
+const net = require('net');
+
+const portPolling = require('../../../lib/utils/port-polling');
+const sandbox = sinon.sandbox.create();
+
+describe('Unit: Utils > portPolling', function () {
+    afterEach(function () {
+        sandbox.restore();
+    });
+
+    it('port is missing', function () {
+        return portPolling()
+            .then(() => {
+                throw new Error('Expected error');
+            })
+            .catch((err) => {
+                expect(err.message).to.eql('Port is required.');
+            });
+    });
+
+
+    it('Ghost does never start', function () {
+        const netStub = sandbox.stub();
+
+        netStub.setTimeout = sandbox.stub();
+        netStub.destroy = sandbox.stub();
+        netStub.on = function (event, cb) {
+            if (event === 'error') {
+                cb(new Error('whoops'));
+            }
+        };
+
+        sandbox.stub(net, 'connect').returns(netStub);
+
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100})
+            .then(() => {
+                throw new Error('Expected error');
+            })
+            .catch((err) => {
+                expect(err.options.suggestion).to.exist;
+                expect(err.message).to.eql('Ghost did not start.');
+                expect(err.err.message).to.eql('whoops');
+                expect(netStub.destroy.callCount).to.eql(4);
+            });
+    });
+
+    it('Ghost does start, but falls over', function () {
+        const netStub = sandbox.stub();
+
+        netStub.setTimeout = sandbox.stub();
+        netStub.destroy = sandbox.stub();
+
+        let i = 0;
+        netStub.on = function (event, cb) {
+            i = i + 1;
+
+            if (event === 'close') {
+                cb();
+            } else if (event === 'error' && i === 3) {
+                cb(new Error());
+            } else if (event === 'connect' && i === 5) {
+                cb();
+            }
+        };
+
+        sandbox.stub(net, 'connect').returns(netStub);
+
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150})
+            .then(() => {
+                throw new Error('Expected error');
+            })
+            .catch((err) => {
+                expect(err.options.suggestion).to.exist;
+                expect(err.message).to.eql('Ghost did not start.');
+                expect(netStub.destroy.callCount).to.eql(2);
+            });
+    });
+
+    it('Ghost does start', function () {
+        const netStub = sandbox.stub();
+
+        netStub.setTimeout = sandbox.stub();
+        netStub.destroy = sandbox.stub();
+
+        let i = 0;
+        netStub.on = function (event, cb) {
+            i = i + 1;
+
+            if (i === 6) {
+                expect(event).to.eql('close');
+            } else if (i === 5 && event === 'connect') {
+                cb();
+            } else if (i === 3 && event === 'error') {
+                cb(new Error());
+            }
+        };
+
+        sandbox.stub(net, 'connect').returns(netStub);
+
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150})
+            .then(() => {
+                expect(netStub.destroy.callCount).to.eql(2);
+            })
+            .catch((err) => {
+                throw err;
+            });
+    });
+
+    it('Ghost does start, skip delay on connect', function () {
+        const netStub = sandbox.stub();
+
+        netStub.setTimeout = sandbox.stub();
+        netStub.destroy = sandbox.stub();
+
+        netStub.on = function (event, cb) {
+            expect(event).to.not.eql('close');
+
+            if (event === 'connect') {
+                cb();
+            }
+        };
+
+        sandbox.stub(net, 'connect').returns(netStub);
+
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: false})
+            .then(() => {
+                expect(netStub.destroy.callCount).to.eql(1);
+            })
+            .catch((err) => {
+                throw err;
+            });
+    });
+
+    it('socket times out', function () {
+        const netStub = sandbox.stub();
+
+        netStub.setTimeout = sandbox.stub();
+        netStub.destroy = sandbox.stub();
+
+        netStub.on = function (event, cb) {
+            if (event === 'timeout') {
+                cb();
+            }
+        };
+
+        sandbox.stub(net, 'connect').returns(netStub);
+
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, socketTimeoutInMS: 300})
+            .then(() => {
+                throw new Error('Expected error');
+            })
+            .catch((err) => {
+                expect(err.options.suggestion).to.exist;
+                expect(err.message).to.eql('Ghost did not start.');
+                expect(netStub.destroy.callCount).to.eql(4);
+            });
+    });
+
+    it('Ghost connects, but socket times out kicks in', function () {
+        const netStub = sandbox.stub();
+
+        netStub.setTimeout = sandbox.stub();
+        netStub.destroy = sandbox.stub();
+
+        const events = {};
+        netStub.on = function (event, cb) {
+            if (event === 'connect') {
+                cb();
+
+                setTimeout(() => {
+                    events.timeout();
+                }, 100);
+            }
+
+            events[event] = cb;
+        };
+
+        sandbox.stub(net, 'connect').returns(netStub);
+
+        return portPolling({port: 1111, maxTries: 2, timeoutInMS: 100, socketTimeoutInMS: 300})
+            .then(() => {
+                throw new Error('Expected error');
+            })
+            .catch((err) => {
+                expect(err.options.suggestion).to.exist;
+                expect(err.message).to.eql('Ghost did not start.');
+                expect(netStub.destroy.callCount).to.eql(3);
+            });
+    });
+});
