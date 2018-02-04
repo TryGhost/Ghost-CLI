@@ -91,7 +91,6 @@
     "mocha": "5.0.0",
     "nyc": "11.4.1",
     "proxyquire": "1.8.0",
-    "rewire": "2.5.2",
     "sinon": "4.1.6",
     "standard-version": "4.3.0",
     "tmp": "0.0.33"
