@@ -34,7 +34,7 @@ describe('Unit: Commands > Update', function () {
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
             return cmdInstance.run({version: '1.0.0', force: false, zip: ''}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(versionStub.args[0][0]).to.deep.equal({
@@ -77,7 +77,7 @@ describe('Unit: Commands > Update', function () {
             return cmdInstance.run({rollback: true}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                expect(runCommandStub.calledOnce).to.be.false;
+                expect(runCommandStub.called).to.be.false;
                 expect(error).to.be.an.instanceof(Error);
                 expect(error.message).to.equal('No previous version found');
                 expect(ui.run.called).to.be.false;
@@ -109,7 +109,7 @@ describe('Unit: Commands > Update', function () {
             const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
 
             return cmdInstance.run({rollback: true, force: false, zip: ''}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledTwice).to.be.true;
                 cwdStub.restore();
 
                 expect(ui.run.calledOnce).to.be.true;
@@ -172,7 +172,7 @@ describe('Unit: Commands > Update', function () {
             return cmdInstance.run({version: '1.1.0', rollback: false, force: false, restart: true}).then(() => {
                 cwdStub.restore();
 
-                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(ui.log.called).to.be.false;
@@ -238,7 +238,7 @@ describe('Unit: Commands > Update', function () {
                     zip: ''
                 };
 
-                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(versionStub.args[0][0]).to.deep.equal(expectedCtx);
@@ -301,7 +301,7 @@ describe('Unit: Commands > Update', function () {
                     zip: ''
                 };
 
-                expect(runCommandStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(versionStub.args[0][0]).to.deep.equal(expectedCtx);
