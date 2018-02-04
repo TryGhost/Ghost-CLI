@@ -2,7 +2,6 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-
 const os = require('os');
 const modulePath = '../../lib/system';
 const Instance = require('../../lib/instance');
@@ -113,6 +112,42 @@ describe('Unit: System', function () {
                 macos: false,
                 windows: true
             });
+        });
+    });
+
+    describe('operatingSystem getter', function () {
+        const sandbox = sinon.sandbox.create();
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('caches and returns the correct OS', function () {
+            const getOsStub = sinon.stub().returns({
+                os: 'Ubuntu',
+                version: '16'
+            });
+            const System = proxyquire(modulePath, {
+                './utils/get-os': getOsStub
+            });
+
+            const instance = new System({}, []);
+            const platformStub = sandbox.stub(os, 'platform').returns('linux');
+            const operatingSystem = instance.operatingSystem;
+
+            expect(platformStub.calledOnce).to.be.true;
+            expect(getOsStub.calledOnce).to.be.true;
+            expect(operatingSystem).to.be.an('object');
+            expect(operatingSystem.os).to.equal('Ubuntu');
+            expect(operatingSystem.version).to.equal('16');
+
+            // do the second call to see that it gets cached
+            const newOperatingSystem = instance.operatingSystem;
+            expect(newOperatingSystem).to.be.an('object');
+            expect(newOperatingSystem.os).to.equal('Ubuntu');
+            expect(newOperatingSystem.version).to.equal('16');
+            expect(newOperatingSystem).to.deep.equal(operatingSystem);
+            expect(getOsStub.calledOnce).to.be.true;
         });
     });
 
