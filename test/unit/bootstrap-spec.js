@@ -1,14 +1,24 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const rewire = require('rewire');
 const env = require('../utils/env');
 const path = require('path');
+const proxyquire = require('proxyquire');
 
-const bootstrap = rewire('../../lib/bootstrap');
+const yargs = require('yargs');
+
+const modulePath = '../../lib/bootstrap';
 
 describe('Unit: Bootstrap', function () {
+    const sandbox = sinon.sandbox.create();
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     describe('discoverCommands', function () {
+        const bootstrap = require(modulePath);
+
         it('loads basic command names into commands object', function () {
             let commands = {};
             const testEnv = env({
@@ -102,6 +112,8 @@ describe('Unit: Bootstrap', function () {
     });
 
     describe('process rejection handler', function () {
+        require(modulePath);
+
         let sandbox;
         let consoleStub;
 
@@ -163,37 +175,66 @@ describe('Unit: Bootstrap', function () {
         });
     });
 
-    describe('run', function () {
-        let sandbox;
-        let discoverCommands;
-        let reset;
+    describe('loadCommand', function () {
+        const bootstrap = require(modulePath);
 
-        before(function () {
-            sandbox = sinon.sandbox.create();
+        it('throws an error and returns if the command doesn\'t inherit the base command', function () {
+            const errorStub = sandbox.stub(console, 'error');
+            const commandPath = path.join(__dirname, '../fixtures/classes/test-invalid-command');
+            const TestInvalidCommand = require(commandPath);
+            const configureStub = sandbox.stub();
+            TestInvalidCommand.configure = configureStub;
+
+            bootstrap.loadCommand('invalid', commandPath, {}, [], []);
+            expect(errorStub.calledOnce).to.be.true;
+            expect(errorStub.args[0][0]).to.match(/Command class for invalid does not inherit/);
+            expect(configureStub.called).to.be.false;
         });
+
+        it('calls configure on command class with passed properties', function () {
+            const errorStub = sandbox.stub(console, 'error');
+            const commandPath = path.join(__dirname, '../fixtures/classes/test-valid-command');
+            const TestValidCommand = require(commandPath);
+            const configureStub = sandbox.stub(TestValidCommand, 'configure');
+
+            const yargs = {yargs: true};
+            const aliases = ['foo', 'bar'];
+            const extensions = [{dir: './test-extension', pkg: {name: 'test'}}];
+
+            bootstrap.loadCommand('valid', commandPath, yargs, aliases, extensions);
+            expect(errorStub.called).to.be.false;
+            expect(configureStub.calledOnce).to.be.true;
+            expect(configureStub.calledWithExactly(
+                'valid',
+                aliases,
+                yargs,
+                extensions
+            )).to.be.true;
+        });
+    });
+
+    describe('run', function () {
+        let discoverCommands;
+        let loadCommand;
+        let yargsStubs;
+        let findExtensionsStub;
+        let bootstrap;
 
         beforeEach(function () {
-            discoverCommands = sandbox.stub();
-            reset = bootstrap.__set__('discoverCommands', discoverCommands);
-        });
+            findExtensionsStub = sandbox.stub().returns([]);
+            bootstrap = proxyquire(modulePath, {
+                './utils/find-extensions': findExtensionsStub
+            });
+            discoverCommands = sandbox.stub(bootstrap, 'discoverCommands');
+            loadCommand = sandbox.stub(bootstrap, 'loadCommand');
 
-        afterEach(function () {
-            reset();
-            sandbox.restore();
-        });
+            yargsStubs = {};
 
-        it('errors and exits with no args', function () {
-            const error = sandbox.stub(console, 'error');
-            const exit = sandbox.stub(process, 'exit');
-
-            exit.throws();
-
-            try {
-                bootstrap.run([]);
-            } catch (e) {
-                expect(error.args[0][0]).to.match(/^No command specified/);
-                expect(exit.args[0][0]).to.equal(1);
-            }
+            Object.keys(yargs).forEach((key) => {
+                if (typeof yargs[key] === 'function') {
+                    yargsStubs[key] = sandbox.stub(yargs, key).returns(yargs);
+                }
+            });
         });
 
         it('errors if no command name matches', function () {
@@ -217,31 +258,48 @@ describe('Unit: Bootstrap', function () {
             }
         });
 
-        describe('with first arg as a command name', function () {
-            it('errors when discovered command is *not* an instance of the command class', function () {
-                this.timeout(5000);
-                const testEnv = env({
-                    dirs: ['commands'],
-                    files: [{
-                        path: 'commands/test.js',
-                        content: 'module.exports = {};'
-                    }]
-                });
-                const exit = sandbox.stub(process, 'exit');
-                const error = sandbox.stub(console, 'error');
-
-                discoverCommands.returns({
-                    test: path.join(testEnv.dir, 'commands/test')
-                });
-                exit.throws();
-
-                try {
-                    bootstrap.run(['test']);
-                } catch (e) {
-                    expect(error.args[0][0]).to.match(/does not inherit from Ghost-CLI/);
-                    expect(exit.args[0][0]).to.equal(1);
-                }
+        it('loads all commands if the first arg is help', function () {
+            const error = sandbox.stub(console, 'error');
+            discoverCommands.returns({
+                ls: path.resolve(__dirname, '../../lib/commands/ls'),
+                log: path.resolve(__dirname, '../../lib/commands/log'),
+                buster: path.resolve(__dirname, '../../lib/commands/buster')
             });
+            findExtensionsStub.returns([{
+                dir: './extensions',
+                pkg: {
+                    name: 'testing'
+                }
+            }]);
+
+            const argv = ['help'];
+            bootstrap.run(argv, yargs);
+
+            expect(error.called).to.be.false;
+            expect(discoverCommands.calledTwice).to.be.true;
+            expect(loadCommand.calledThrice).to.be.true;
+            expect(argv).to.deep.equal(['help']);
+            expect(yargsStubs.parse.calledOnce).to.be.true;
+            expect(yargsStubs.parse.calledWithExactly(['help'])).to.be.true;
+        });
+
+        it('loads one single command if found', function () {
+            const error = sandbox.stub(console, 'error');
+            discoverCommands.returns({
+                ls: path.resolve(__dirname, '../../lib/commands/ls'),
+                log: path.resolve(__dirname, '../../lib/commands/log'),
+                buster: path.resolve(__dirname, '../../lib/commands/buster')
+            });
+
+            const argv = ['ls'];
+            bootstrap.run(argv, yargs);
+
+            expect(error.called).to.be.false;
+            expect(discoverCommands.calledOnce).to.be.true;
+            expect(loadCommand.calledOnce).to.be.true;
+            expect(argv).to.deep.equal(['ls']);
+            expect(yargsStubs.parse.calledOnce).to.be.true;
+            expect(yargsStubs.parse.calledWithExactly(['ls'])).to.be.true;
         });
     });
 });
