@@ -1,11 +1,21 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const proxyquire = require('proxyquire');
+const getConfigStub = require('../utils/config-stub');
 
-const ProcessManager = require('../../lib/process-manager');
+const modulePath = '../../lib/process-manager';
 
 describe('Unit: Process Manager', function () {
+    const sandbox = sinon.sandbox.create();
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
     describe('isValid', function () {
+        const ProcessManager = require(modulePath);
+
         it('returns false if passed class is not a subclass of ProcessManager', function () {
             const result = ProcessManager.isValid({});
             expect(result).to.be.false;
@@ -30,6 +40,8 @@ describe('Unit: Process Manager', function () {
     });
 
     describe('supportsEnableBehavior', function () {
+        const ProcessManager = require(modulePath);
+
         it('returns false if the class does not implement all of the methods for enable behavior', function () {
             const instance = new ProcessManager({}, {}, {});
             expect(ProcessManager.supportsEnableBehavior(instance)).to.be.false;
@@ -46,10 +58,107 @@ describe('Unit: Process Manager', function () {
         });
     });
 
+    describe('ensureStarted', function () {
+        const portPollingStub = sandbox.stub();
+        const ProcessManager = proxyquire(modulePath, {
+            './utils/port-polling': portPollingStub
+        });
+
+        afterEach(() => {
+            portPollingStub.reset();
+        });
+
+        it('calls portPolling with options', function () {
+            const config = getConfigStub();
+            config.get.withArgs('server.port').returns(2368);
+            portPollingStub.resolves();
+
+            const instance = new ProcessManager({}, {}, {config: config});
+            const stopStub = sandbox.stub(instance, 'stop').resolves();
+
+            return instance.ensureStarted({logSuggestion: 'test'}).then(() => {
+                expect(portPollingStub.calledOnce).to.be.true;
+                expect(config.get.calledOnce).to.be.true;
+                expect(portPollingStub.calledWithExactly({
+                    logSuggestion: 'test',
+                    stopOnError: true,
+                    port: 2368
+                })).to.be.true;
+                expect(stopStub.called).to.be.false;
+            });
+        });
+
+        it('throws error without stopping if stopOnError is false', function () {
+            const config = getConfigStub();
+            config.get.withArgs('server.port').returns(2368);
+            portPollingStub.rejects(new Error('test error'));
+
+            const instance = new ProcessManager({}, {}, {config: config});
+            const stopStub = sandbox.stub(instance, 'stop').resolves();
+
+            return instance.ensureStarted({stopOnError: false}).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((err) => {
+                expect(err.message).to.equal('test error');
+                expect(portPollingStub.calledOnce).to.be.true;
+                expect(portPollingStub.calledWithExactly({
+                    stopOnError: false,
+                    port: 2368
+                })).to.be.true;
+                expect(stopStub.called).to.be.false;
+            });
+        });
+
+        it('throws error and calls stop if stopOnError is true', function () {
+            const config = getConfigStub();
+            config.get.withArgs('server.port').returns(2368);
+            portPollingStub.rejects(new Error('test error'));
+
+            const instance = new ProcessManager({}, {}, {config: config});
+            const stopStub = sandbox.stub(instance, 'stop').resolves();
+
+            return instance.ensureStarted({}).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((err) => {
+                expect(err.message).to.equal('test error');
+                expect(config.get.calledOnce).to.be.true;
+                expect(portPollingStub.calledOnce).to.be.true;
+                expect(portPollingStub.calledWithExactly({
+                    stopOnError: true,
+                    port: 2368
+                })).to.be.true;
+                expect(stopStub.calledOnce).to.be.true;
+            });
+        });
+
+        it('throws error and calls stop (swallows stop error) if stopOnError is true', function () {
+            const config = getConfigStub();
+            config.get.withArgs('server.port').returns(2368);
+            portPollingStub.rejects(new Error('test error'));
+
+            const instance = new ProcessManager({}, {}, {config: config});
+            const stopStub = sandbox.stub(instance, 'stop').rejects(new Error('test error 2'));
+
+            return instance.ensureStarted().then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((err) => {
+                expect(err.message).to.equal('test error');
+                expect(config.get.calledOnce).to.be.true;
+                expect(portPollingStub.calledOnce).to.be.true;
+                expect(portPollingStub.calledWithExactly({
+                    stopOnError: true,
+                    port: 2368
+                })).to.be.true;
+                expect(stopStub.calledOnce).to.be.true;
+            });
+        });
+    });
+
     it('restart base implementation calls start and stop methods', function () {
+        const ProcessManager = require(modulePath);
         const instance = new ProcessManager({}, {}, {});
-        const startStub = sinon.stub(instance, 'start').resolves();
-        const stopStub = sinon.stub(instance, 'stop').resolves();
+        const startStub = sandbox.stub(instance, 'start').resolves();
+        const stopStub = sandbox.stub(instance, 'stop').resolves();
 
         return instance.restart().then(() => {
             expect(stopStub.calledOnce).to.be.true;
@@ -59,6 +168,7 @@ describe('Unit: Process Manager', function () {
     });
 
     it('base start implementation returns a promise', function () {
+        const ProcessManager = require(modulePath);
         const instance = new ProcessManager({}, {}, {});
         const start = instance.start();
 
@@ -67,6 +177,7 @@ describe('Unit: Process Manager', function () {
     });
 
     it('base stop implementation returns a promise', function () {
+        const ProcessManager = require(modulePath);
         const instance = new ProcessManager({}, {}, {});
         const stop = instance.stop();
 
@@ -75,10 +186,12 @@ describe('Unit: Process Manager', function () {
     });
 
     it('base willRun method returns true', function () {
+        const ProcessManager = require(modulePath);
         expect(ProcessManager.willRun()).to.be.true;
     });
 
     it('base error method re-throws the error', function () {
+        const ProcessManager = require(modulePath);
         const instance = new ProcessManager({}, {}, {});
         try {
             instance.error({error: true});
