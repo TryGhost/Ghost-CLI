@@ -49,17 +49,19 @@ describe('Unit: Doctor Checks > mysql', function () {
         const execaStub = sandbox.stub(execa, 'shell').rejects();
         const logStub = sandbox.stub();
         const confirmStub = sandbox.stub().resolves({yes: true});
+        const skipStub = sandbox.stub();
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
             system: {platform: {linux: true}}
         };
 
-        return mysqlCheck.task(ctx).then(() => {
+        return mysqlCheck.task(ctx, {skip: skipStub}).then(() => {
             expect(execaStub.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/MySQL install not found/);
             expect(confirmStub.calledOnce).to.be.true;
+            expect(skipStub.calledOnce).to.be.true;
         });
     });
 
