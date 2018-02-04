@@ -38,7 +38,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System checks failed.');
+            expect(error.message).to.equal('System stack checks failed with message: \'Operating system is not Linux\'');
             expect(execaStub.called).to.be.false;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -61,7 +61,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System checks failed.');
+            expect(error.message).to.equal('System stack checks failed with message: \'Operating system is not Linux\'');
             expect(execaStub.called).to.be.false;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -105,7 +105,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System checks failed.');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16\'');
             expect(execaStub.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -128,7 +128,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System checks failed.');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16\'');
             expect(execaStub.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -156,7 +156,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System checks failed.');
+            expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): systemd, nginx\'');
             expect(execaStub.calledOnce).to.be.true;
             expect(listrStub.calledOnce).to.be.true;
             expect(listrStub.args[0][2].renderer).to.equal('silent');
@@ -208,7 +208,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System checks failed.');
+            expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): systemd, nginx\'');
             expect(execaStub.calledThrice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
