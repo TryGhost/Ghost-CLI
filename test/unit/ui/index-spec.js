@@ -504,6 +504,76 @@ describe('Unit: UI', function () {
             });
         });
 
+        describe('handles ListrErrors', function () {
+            const ListrError = require('listr/lib/listr-error');
+            const errors = require('../../../lib/errors');
+
+            it('verbose without log output', function () {
+                const err = new ListrError('Something happened');
+                err.errors = [
+                    new errors.SystemError('Error 1'),
+                    new errors.SystemError({
+                        message: 'Error 2',
+                        task: 'Task 2'
+                    })
+                ];
+
+                const system = {writeErrorLog: sinon.stub()};
+                const ctx = {
+                    verbose: true,
+                    log: sinon.stub(),
+                    _formatDebug: sinon.stub().returns('cherries')
+                };
+
+                ui.error.call(ctx, err, system);
+
+                expect(ctx.log.callCount).to.equal(8);
+                expect(ctx._formatDebug.calledOnce).to.be.true;
+                expect(system.writeErrorLog.called).to.be.false;
+                expect(ctx.log.getCall(0).args[0]).to.match(/One or more errors occurred/);
+                expect(ctx.log.getCall(1).args[0]).to.match(/1\) SystemError/);
+                expect(stripAnsi(ctx.log.getCall(2).args[0])).to.match(/Message: Error 1/);
+                expect(ctx.log.getCall(3).args[0]).to.match(/2\) Task 2/);
+                expect(stripAnsi(ctx.log.getCall(4).args[0])).to.match(/Message: Error 2/);
+                expect(ctx.log.getCall(5).args[0]).to.equal('cherries');
+                expect(stripAnsi(ctx.log.getCall(6).args[0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(ctx.log.getCall(7).args[0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
+            });
+
+            it('non-verbose with log output', function () {
+                const err = new ListrError('Something happened');
+                err.errors = [
+                    new errors.ProcessError({message: 'Error 1'}),
+                    new errors.ProcessError({
+                        message: 'Error 2',
+                        task: 'Task 2'
+                    })
+                ];
+
+                const system = {writeErrorLog: sinon.stub()};
+                const ctx = {
+                    verbose: false,
+                    log: sinon.stub(),
+                    _formatDebug: sinon.stub().returns('cherries')
+                };
+
+                ui.error.call(ctx, err, system);
+
+                expect(ctx.log.callCount).to.equal(9);
+                expect(ctx._formatDebug.calledOnce).to.be.true;
+                expect(system.writeErrorLog.called).to.be.true;
+                expect(ctx.log.getCall(0).args[0]).to.match(/One or more errors occurred/);
+                expect(ctx.log.getCall(1).args[0]).to.match(/1\) ProcessError/);
+                expect(stripAnsi(ctx.log.getCall(2).args[0])).to.match(/Message: Error 1/);
+                expect(ctx.log.getCall(3).args[0]).to.match(/2\) Task 2/);
+                expect(stripAnsi(ctx.log.getCall(4).args[0])).to.match(/Message: Error 2/);
+                expect(ctx.log.getCall(5).args[0]).to.equal('cherries');
+                expect(ctx.log.getCall(6).args[0]).to.match(/Additional log info available in/);
+                expect(stripAnsi(ctx.log.getCall(7).args[0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(ctx.log.getCall(8).args[0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
+            });
+        });
+
         describe('handles generic errors', function () {
             it('verbosly', function (done) {
                 const system = {writeErrorLog: sinon.stub()};
