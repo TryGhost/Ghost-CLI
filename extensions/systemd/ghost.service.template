@@ -3,7 +3,8 @@ Description=Ghost systemd service for blog: <%= name %>
 Documentation=https://docs.ghost.org
 
 [Service]
-Type=simple
+Type=notify
+NotifyAccess=all
 WorkingDirectory=<%= dir %>
 User=<%= user %>
 Environment="NODE_ENV=<%= environment %>"
