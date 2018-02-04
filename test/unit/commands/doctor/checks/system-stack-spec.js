@@ -74,18 +74,20 @@ describe('Unit: Doctor Checks > systemStack', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves();
         const logStub = sandbox.stub();
         const confirmStub = sandbox.stub().resolves({yes: true});
+        const skipStub = sandbox.stub();
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
             system: {platform: {linux: false}}
         };
 
-        return systemStack.task(ctx).then(() => {
+        return systemStack.task(ctx, {skip: skipStub}).then(() => {
             expect(execaStub.called).to.be.false;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
             expect(logStub.args[0][0]).to.match(/not Linux/);
             expect(confirmStub.calledOnce).to.be.true;
+            expect(skipStub.calledOnce).to.be.true;
         });
     });
 
