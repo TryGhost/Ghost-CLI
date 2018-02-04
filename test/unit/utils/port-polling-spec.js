@@ -21,7 +21,6 @@ describe('Unit: Utils > portPolling', function () {
             });
     });
 
-
     it('Ghost does never start', function () {
         const netStub = sandbox.stub();
 

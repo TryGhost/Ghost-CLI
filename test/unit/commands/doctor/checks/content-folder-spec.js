@@ -7,12 +7,21 @@ const errors = require('../../../../../lib/errors');
 
 const contentFolderPermissions = require('../../../../../lib/commands/doctor/checks/content-folder');
 
-describe('Unit: Doctor Checks > Content folder permissions', function () {
+describe('Unit: Doctor Checks > Checking content folder ownership', function () {
     const sandbox = sinon.sandbox.create();
     const shouldUseGhostUserStub = sinon.stub();
 
     afterEach(() => {
         sandbox.restore();
+    });
+
+    it('exports tasks', function () {
+        expect(contentFolderPermissions).to.be.an.instanceof(Object);
+        expect(contentFolderPermissions.title).to.match(/Checking content folder ownership/);
+        expect(contentFolderPermissions.task).to.be.an.instanceof(Function);
+        expect(contentFolderPermissions.enabled).to.be.an.instanceof(Function);
+        expect(contentFolderPermissions.category).to.be.an.instanceof(Array);
+        expect(contentFolderPermissions.category).to.have.length(2);
     });
 
     it('skips when content folder is not owned by ghost', function () {
@@ -33,7 +42,7 @@ describe('Unit: Doctor Checks > Content folder permissions', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your content folder contains some directories or files with incorrect permissions:/);
+            expect(error.message).to.match(/Your installation folder contains some directories or files with incorrect permissions:/);
             expect(error.message).to.match(/- \.\/content\/images/);
             expect(execaStub.called).to.be.true;
         });
@@ -48,7 +57,7 @@ describe('Unit: Doctor Checks > Content folder permissions', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your content folder contains a directory or file with incorrect permissions/);
+            expect(error.message).to.match(/Your installation folder contains a directory or file with incorrect permissions:/);
             expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
             expect(execaStub.called).to.be.true;
         });
