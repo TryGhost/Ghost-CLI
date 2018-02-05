@@ -141,6 +141,25 @@ describe('Unit: Commands > Log', function () {
             });
         });
 
+        it('Reads error log when requested', function () {
+            stubs.es.throws(new Error('SHORT_CIRCUIT'));
+            const ext = proxyLog({fs: {existsSync: stubs.es}});
+            ext.system = defaultSystem;
+
+            try {
+                ext.run({name: 'ghost_org', error: true})
+                expect(false, 'existsSync should have thrown').to.be.true;
+            } catch (error) {
+                const fileName = 'https___dev_ghost_org_dev.error.log'
+                const expectedFilePath = `/var/www/ghost/content/logs/${fileName}`;
+                expect(error).to.be.ok;
+                expect(error.message).to.equal('SHORT_CIRCUIT');
+
+                expect(stubs.es.calledOnce).to.be.true;
+                expect(stubs.es.getCall(0).args[0]).to.equal(expectedFilePath);
+            }
+        });
+
         it('Resolves when log file doesn\'t exist', function () {
             stubs.es.returns(false);
             const ext = proxyLog({fs: {existsSync: stubs.es}});
