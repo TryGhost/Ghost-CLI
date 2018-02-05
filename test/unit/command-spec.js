@@ -211,6 +211,31 @@ describe('Unit: Command', function () {
             }
         });
 
+        it('doesn\'t check for root when command allows root', function () {
+            const checkRootUserStub = sandbox.stub().throws('let them be freeee');
+            class ShortCircuit {
+                constructor() {
+                    throw new Error('you shall not pass');
+                }
+            }
+            const Command = proxyquire(modulePath, {
+                './utils/check-root-user': checkRootUserStub,
+                './ui': ShortCircuit
+            });
+
+            const TestCommand = class extends Command {};
+            TestCommand.global = true;
+            TestCommand.allowRoot = true;
+
+            try {
+                TestCommand._run('test', {});
+            } catch (e) {
+                expect(e).to.exist;
+                expect(e.message).to.equal('you shall not pass');
+                expect(checkRootUserStub.calledOnce).to.be.false;
+            }
+        });
+
         it('loads system and ui dependencies, calls run method', function () {
             const uiStub = sandbox.stub().returns({ui: true});
             const setEnvironmentStub = sandbox.stub();
