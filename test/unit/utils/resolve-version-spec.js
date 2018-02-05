@@ -35,6 +35,18 @@ describe('Unit: resolveVersion', function () {
         });
     });
 
+    it('defaults versions to none', function () {
+        stubYarn('{}');
+
+        return resolveVersion().then(function () {
+            throw new Error('Version finder should not have resolved.');
+        }).catch(function (error) {
+            expect(error).to.be.an.instanceOf(Error);
+            expect(error.message).to.equal('No valid versions found.');
+        });
+    });
+
+
     it('rejects if no versions are found', function () {
         stubYarn('{"data": []}');
 
