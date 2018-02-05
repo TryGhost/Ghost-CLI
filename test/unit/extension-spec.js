@@ -127,4 +127,22 @@ describe('Unit: Extension', function () {
         expect(logStub.calledOnce).to.be.true;
         expect(logStub.args[0][0]).to.match(/not a valid Extension subclass/);
     });
+
+    it('returns an extension subclass if everything works out', function () {
+        const path = require('path');
+        const Extension = require(modulePath);
+        const testExtPath = '../fixtures/TestExtension';
+        const TestExt = require(testExtPath);
+
+        const extensionInstance = Extension.getInstance({}, {}, {
+            pkg: {
+                name: 'ghost-cli-test-extension',
+                main: 'index.js'
+            },
+            dir: path.resolve(__dirname, testExtPath)
+        });
+
+        expect(extensionInstance).to.be.ok;
+        expect(extensionInstance instanceof TestExt).to.be.true;
+    });
 });
