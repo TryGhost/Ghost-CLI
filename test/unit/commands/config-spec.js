@@ -243,6 +243,30 @@ describe('Unit: Command > Config', function () {
             expect(result.find(prompt => prompt.name === 'dbpass')).to.be.ok;
             expect(result.find(prompt => prompt.name === 'dbname')).to.not.be.ok;
         });
+
+        it('dbname prompt generates proper default filename', function () {
+            const argv = {
+                url: 'http://localhost.com',
+                db: 'mysql',
+                dbhost: 'localhost',
+                dbuser: 'ghost_rnd',
+                dbpass: 'good_pass'
+            };
+            const getStub = sinon.stub();
+            const ctx = {
+                system: {},
+                instance: {config: {get: getStub}}
+            };
+
+            config.getConfigPrompts.call(ctx, argv);
+            expect(getStub.calledOnce).to.be.true;
+            expect(getStub.getCall(0).args[1]).to.match(/_prod/);
+
+            ctx.system.development = true;
+            config.getConfigPrompts.call(ctx, argv);
+            expect(getStub.calledTwice).to.be.true;
+            expect(getStub.getCall(1).args[1]).to.match(/_dev/);
+        });
     });
 
     describe('run', function () {
