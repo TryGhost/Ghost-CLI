@@ -7,7 +7,6 @@ const EventEmitter = require('events').EventEmitter;
 
 const fs = require('fs-extra');
 const childProcess = require('child_process');
-const os = require('os');
 
 const modulePath = '../../../lib/utils/local-process';
 
@@ -269,17 +268,17 @@ describe('Unit: Utils > local-process', function () {
         it('calls fkill and removes pidfile', function () {
             const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
             const removeStub = sandbox.stub(fs, 'removeSync');
-            const platformStub = sandbox.stub(os, 'platform').returns('win32');
             const fkillStub = sandbox.stub().resolves();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
             });
-            const instance = new LocalProcess({}, {}, {});
+            const instance = new LocalProcess({}, {
+                platform: {windows: true}
+            }, {});
 
             return instance.stop('/var/www/ghost').then(() => {
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(platformStub.calledOnce).to.be.true;
                 expect(fkillStub.calledWithExactly(42, {force: true})).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             });
@@ -288,17 +287,17 @@ describe('Unit: Utils > local-process', function () {
         it('resolves if process didn\'t exist', function () {
             const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
             const removeStub = sandbox.stub(fs, 'removeSync');
-            const platformStub = sandbox.stub(os, 'platform').returns('darwin');
             const fkillStub = sandbox.stub().rejects(new Error('No such process: 42'));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
             });
-            const instance = new LocalProcess({}, {}, {});
+            const instance = new LocalProcess({}, {
+                platform: {macos: true, windows: false}
+            }, {});
 
             return instance.stop('/var/www/ghost').then(() => {
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(platformStub.calledOnce).to.be.true;
                 expect(fkillStub.calledWithExactly(42, {force: false})).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             });
@@ -307,13 +306,14 @@ describe('Unit: Utils > local-process', function () {
         it('rejects with an unknown error from fkill', function (done) {
             const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
             const removeStub = sandbox.stub(fs, 'removeSync');
-            const platformStub = sandbox.stub(os, 'platform').returns('darwin');
             const fkillStub = sandbox.stub().callsFake(() => Promise.reject(new Error('no idea')));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
             });
-            const instance = new LocalProcess({}, {}, {});
+            const instance = new LocalProcess({}, {
+                platform: {macos: true, windows: false}
+            }, {});
 
             instance.stop('/var/www/ghost').then(() => {
                 done(new Error('stop should have rejected'))
@@ -321,7 +321,6 @@ describe('Unit: Utils > local-process', function () {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An unexpected error occurred while stopping Ghost.');
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(platformStub.calledOnce).to.be.true;
                 expect(fkillStub.calledWithExactly(42, {force: false})).to.be.true;
                 expect(removeStub.calledOnce).to.be.false;
                 done();
@@ -334,41 +333,41 @@ describe('Unit: Utils > local-process', function () {
 
         it('skips if windows', function () {
             const statStub = sandbox.stub(fs, 'lstatSync');
-            const platformStub = sandbox.stub(os, 'platform').returns('win32');
-            const instance = new LocalProcess({}, {}, {});
+            const instance = new LocalProcess({}, {
+                platform: {windows: true}
+            }, {});
 
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.true;
-            expect(platformStub.calledOnce).to.be.true;
             expect(statStub.called).to.be.false;
         });
 
         it('returns false if getuid and lstatSync don\'t match', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
             const statStub = sandbox.stub(fs, 'lstatSync').returns({uid: 2});
             const uidStub = sandbox.stub(process, 'getuid').returns(1);
 
-            const instance = new LocalProcess({}, {}, {});
+            const instance = new LocalProcess({}, {
+                platform: {linux: true}
+            }, {});
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.false;
-            expect(platformStub.calledOnce).to.be.true;
             expect(statStub.calledOnce).to.be.true;
             expect(statStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
             expect(uidStub.calledOnce).to.be.true;
         });
 
         it('returns true if getuid and lstatSync match', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
             const statStub = sandbox.stub(fs, 'lstatSync').returns({uid: 1});
             const uidStub = sandbox.stub(process, 'getuid').returns(1);
 
-            const instance = new LocalProcess({}, {}, {});
+            const instance = new LocalProcess({}, {
+                platform: {linux: true}
+            }, {});
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.true;
-            expect(platformStub.calledOnce).to.be.true;
             expect(statStub.calledOnce).to.be.true;
             expect(statStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
             expect(uidStub.calledOnce).to.be.true;
