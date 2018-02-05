@@ -47,6 +47,21 @@ describe('Unit: Errors', function () {
             expect(errorOutput).to.match(/Help: some help message/);
         });
 
+        it('logs suggestion if suggestion option is passed', function () {
+            const errorWithHelp = new errors.CliError({
+                message: 'some error',
+                help: 'some help message',
+                suggestion: 'run ghost doctor of course'
+            });
+
+            const errorOutput = stripAnsi(errorWithHelp.toString()).trim().split(/\n/);
+            const expected = ['Message: some error',
+                'Help: some help message',
+                'Suggestion: run ghost doctor of course'
+            ];
+            expect(errorOutput).to.deep.equal(expected);
+        });
+
         it('logs original error message and stack trace if verbose is set', function () {
             const originalError = new Error('something aweful happened here');
             originalError.response = 'very long response';
