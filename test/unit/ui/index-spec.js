@@ -269,6 +269,24 @@ describe('Unit: UI', function () {
         stderr.emit('data', '#node-sudo-passwd#');
     });
 
+    it('#sudo can handle defaults', function () {
+        const shell = Promise.resolve();
+        shell.stderr = {on: () => true};
+
+        const shellStub = sinon.stub().returns(shell);
+
+        const UI = proxyquire(modulePath, {execa: {shell: shellStub}});
+        const ui = new UI();
+
+        ui.log = () => true;
+        ui.prompt = sinon.stub();
+
+        return ui.sudo('echo').then(() => {
+            expect(shellStub.calledOnce).to.be.true;
+            expect(shellStub.getCall(0).args[0]).to.match(/#'[ ]{2}echo/);
+        });
+    });
+
     describe('#noSpin', function () {
         let ui;
 
