@@ -1,6 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const configStub = require('../../../../utils/config-stub');
 
 const execa = require('execa');
 const errors = require('../../../../../lib/errors');
@@ -14,14 +15,44 @@ describe('Unit: Doctor Checks > mysql', function () {
         sandbox.restore();
     });
 
-    it('enables works', function () {
-        expect(mysqlCheck).to.exist;
-        expect(mysqlCheck.enabled({argv: {}}), 'doesn\'t skip by default').to.be.true;
-        expect(mysqlCheck.enabled({local: true, argv: {}}), 'skips if local').to.be.false;
-        expect(mysqlCheck.enabled({argv: {db: 'sqlite3'}}), 'skips if db is sqlite3').to.be.false;
-        expect(mysqlCheck.enabled({argv: {dbhost: 'localhost'}}), 'no skip if dbhost is localhost').to.be.true;
-        expect(mysqlCheck.enabled({argv: {dbhost: '127.0.0.1'}}), 'no skip if dbhost is 127.0.0.1').to.be.true;
-        expect(mysqlCheck.enabled({argv: {dbhost: 'mysql.exernalhost.com'}}), 'skip if dbhost is remote').to.be.false;
+    describe('enabled', function () {
+        it('returns false if configured db is sqlite3', function () {
+            const config = configStub();
+            config.get.withArgs('database.client').returns('sqlite3');
+
+            expect(mysqlCheck.enabled({instance: {config: config}})).to.be.false;
+            expect(config.get.calledOnce).to.be.true;
+        });
+
+        it('returns false if configured db host is not localhost', function () {
+            expect(mysqlCheck.enabled).to.exist;
+
+            const config = configStub();
+            config.get.withArgs('database.client').returns('mysql');
+            config.get.withArgs('database.connection.host').returns('mysql.externalhost.com');
+
+            expect(mysqlCheck.enabled({instance: {config: config}})).to.be.false;
+            expect(config.get.calledTwice).to.be.true;
+        });
+
+        it('returns true if configured db host is localhost', function () {
+            expect(mysqlCheck.enabled).to.exist;
+
+            const config = configStub();
+            config.get.withArgs('database.client').returns('mysql');
+            config.get.withArgs('database.connection.host').returns('localhost');
+
+            expect(mysqlCheck.enabled({instance: {config: config}})).to.be.true;
+            expect(config.get.calledTwice).to.be.true;
+        });
+
+        it('works correctly with various arguments', function () {
+            expect(mysqlCheck.enabled({local: true, argv: {}}), 'false if local').to.be.false;
+            expect(mysqlCheck.enabled({argv: {db: 'sqlite3'}}), 'skips if db is sqlite3').to.be.false;
+            expect(mysqlCheck.enabled({argv: {dbhost: 'localhost'}}), 'no skip if dbhost is localhost').to.be.true;
+            expect(mysqlCheck.enabled({argv: {dbhost: '127.0.0.1'}}), 'no skip if dbhost is 127.0.0.1').to.be.true;
+            expect(mysqlCheck.enabled({argv: {dbhost: 'mysql.exernalhost.com'}}), 'skip if dbhost is remote').to.be.false;
+        });
     });
 
     it('appends sbin to path if platform is linux', function () {

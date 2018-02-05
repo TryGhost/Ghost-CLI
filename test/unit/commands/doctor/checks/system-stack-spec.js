@@ -15,8 +15,15 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('enabled works', function () {
-        expect(systemStack.enabled({local: false})).to.be.true;
-        expect(systemStack.enabled({local: true})).to.be.false;
+        expect(systemStack.enabled({local: true}), 'false if local is true').to.be.false;
+        expect(systemStack.enabled({
+            local: false,
+            instance: {process: {name: 'local'}}
+        }), 'false if local is false and process name is local').to.be.false;
+        expect(systemStack.enabled({
+            local: false,
+            instance: {process: {name: 'systemd'}}
+        }), 'true if local is false and process name is not local').to.be.true;
     });
 
     it('skip works', function () {
