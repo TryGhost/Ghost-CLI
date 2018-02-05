@@ -61,6 +61,17 @@ describe('Unit: Systemd > Process Manager', function () {
                 expect(error).to.be.instanceOf(errors.ProcessError);
             });
         });
+
+        it('Errors when starting failed', function () {
+            ext.ensureStarted = sinon.stub().rejects(new errors.CliError('Wasn\'t started'));
+            ext.start().then(() => {
+                expect(false, 'Promise should have rejected').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.ok;
+                expect(ext.ensureStarted.calledOnce).to.be.true;
+                expect(error).to.be.instanceOf(errors.CliError);
+            });
+        });
     });
 
     describe('Stop Hook', function () {
@@ -133,6 +144,17 @@ describe('Unit: Systemd > Process Manager', function () {
                 expect(error).to.be.ok;
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(error).to.be.instanceOf(errors.ProcessError);
+            });
+        });
+
+        it('Errors when starting failed', function () {
+            ext.ensureStarted = sinon.stub().rejects(new errors.CliError('Wasn\'t started'));
+            ext.restart().then(() => {
+                expect(false, 'Promise should have rejected').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.ok;
+                expect(ext.ensureStarted.calledOnce).to.be.true;
+                expect(error).to.be.instanceOf(errors.CliError);
             });
         });
     });
