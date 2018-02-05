@@ -41,6 +41,27 @@ describe('Unit: Tasks > yarn-install', function () {
         });
     });
 
+    it('base function can take zip file', function () {
+        const decompressStub = sinon.stub().resolves();
+        const listrStub = sinon.stub().resolves();
+        const yarnInstall = proxyquire(modulePath, {
+            decompress: decompressStub
+        });
+
+        return yarnInstall({listr: listrStub}, 'test.zip').then(() => {
+            const ctx = {installPath: '/var/www/ghost'};
+            expect(listrStub.calledOnce).to.be.true;
+
+            const tasks = listrStub.getCall(0).args[0];
+            expect(tasks).to.have.length(2);
+
+            tasks[0].task(ctx);
+
+            expect(decompressStub.called).to.be.true;
+            expect(decompressStub.calledWithExactly('test.zip','/var/www/ghost')).to.be.true;
+        });
+    });
+
     describe('dist subtask', function () {
         it('rejects if yarn util returns invalid json', function () {
             const yarnStub = sinon.stub().resolves({stdout: 'not json'});
