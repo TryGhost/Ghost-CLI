@@ -17,7 +17,22 @@ describe('Unit: Commands > Doctor', function () {
         return instance.run({}).then(() => {
             expect(listrStub.called).to.be.false;
             expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/No checks found to run/);
+            expect(logStub.args[0][0]).to.equal('No checks found to run.');
+        });
+    });
+
+    it('doesn\'t do anything if there are no checks to run (with log + specific categories)', function () {
+        const listrStub = sinon.stub().resolves();
+        const logStub = sinon.stub();
+        const DoctorCommand = proxyquire(modulePath, {
+            './checks': []
+        });
+        const instance = new DoctorCommand({listr: listrStub, log: logStub}, {});
+
+        return instance.run({categories: ['testing', 'validity']}).then(() => {
+            expect(listrStub.called).to.be.false;
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.args[0][0]).to.equal('No checks found to run for categories "testing, validity".');
         });
     });
 
@@ -104,7 +119,7 @@ describe('Unit: Commands > Doctor', function () {
         const instance = new DoctorCommand(ui, system);
 
         return instance.run({
-            skipInstanceCheck: true,
+            skipInstanceCheck: false,
             local: true,
             argv: true,
             categories: ['install'],
@@ -117,7 +132,7 @@ describe('Unit: Commands > Doctor', function () {
             expect(ui.listr.args[0][0]).to.deep.equal([{category: ['install']}]);
             const context = ui.listr.args[0][1];
             expect(context.argv).to.deep.equal({
-                skipInstanceCheck: true,
+                skipInstanceCheck: false,
                 local: true,
                 argv: true,
                 categories: ['install'],
