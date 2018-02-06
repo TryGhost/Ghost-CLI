@@ -24,19 +24,17 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
     });
 
     it('skips when content when ghost is locally installed', function () {
-        const getInstanceStub = sinon.stub().returns({process: {name: 'local'}});
         const execaStub = sandbox.stub(execa, 'shell').resolves();
 
         expect(folderPermissions).to.exist;
-        expect(folderPermissions.enabled({system: {getInstance: getInstanceStub}}), 'skips if no Ghost user should be used').to.be.false;
+        expect(folderPermissions.enabled({instance: {process: {name: 'local'}}}), 'skips if no Ghost user should be used').to.be.false;
         expect(execaStub.called).to.be.false;
     });
 
     it('rejects with error if folders have incorrect permissions', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: './content/images\n./system/apps\n./content/themes'});
-        const getInstanceStub = sinon.stub().returns({process: {name: ''}});
 
-        expect(folderPermissions.enabled({system: {getInstance: getInstanceStub}}), 'skips if no Ghost user should be used').to.be.true;
+        expect(folderPermissions.enabled({instance: {process: {name: 'systemd'}}}), 'skips if no Ghost user should be used').to.be.true;
         return folderPermissions.task({}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
