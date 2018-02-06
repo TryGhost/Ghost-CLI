@@ -41,6 +41,7 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.match(/Your installation folder contains some directories or files with incorrect permissions:/);
             expect(error.message).to.match(/- \.\/system\/apps/);
+            expect(error.message).to.match(/sudo find \.\/ -type d -exec chmod 775 \{\} \\;/);
             expect(execaStub.called).to.be.true;
         });
     });
@@ -54,6 +55,7 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.match(/Your installation folder contains a directory or file with incorrect permissions:/);
             expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
+            expect(error.message).to.match(/sudo find \.\/ -type d -exec chmod 775 \{\} \\;/);
             expect(execaStub.called).to.be.true;
         });
     });

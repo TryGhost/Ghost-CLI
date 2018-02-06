@@ -44,6 +44,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.match(/Your installation folder contains some directories or files with incorrect permissions:/);
             expect(error.message).to.match(/- \.\/content\/images/);
+            expect(error.message).to.match(/sudo chown -R ghost:ghost \.\/content/);
             expect(execaStub.called).to.be.true;
         });
     });
@@ -59,6 +60,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.match(/Your installation folder contains a directory or file with incorrect permissions:/);
             expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
+            expect(error.message).to.match(/sudo chown -R ghost:ghost \.\/content/);
             expect(execaStub.called).to.be.true;
         });
     });
