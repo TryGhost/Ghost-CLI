@@ -7,9 +7,8 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../../../lib/utils/find-extensions';
 
 const localExtensions = [
-    'linux',
-    'nginx',
     'mysql',
+    'nginx',
     'systemd'
 ];
 
