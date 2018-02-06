@@ -46,7 +46,6 @@ describe('Unit: resolveVersion', function () {
         });
     });
 
-
     it('rejects if no versions are found', function () {
         stubYarn('{"data": []}');
 

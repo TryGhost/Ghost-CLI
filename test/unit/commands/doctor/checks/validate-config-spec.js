@@ -21,6 +21,11 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         }
     });
 
+    it('skips check, when instance is currently running', function () {
+        const isRunningStub = sinon.stub().returns(true);
+        expect(validateConfig.skip({instance: {process: {isRunning: isRunningStub}}}), 'true if current instance is running').to.be.true;
+    });
+
     it('rejects if environment is passed and no config exists for that environment', function () {
         env = setupEnv();
         const cwdStub = sandbox.stub(process, 'cwd').returns(env.dir);
