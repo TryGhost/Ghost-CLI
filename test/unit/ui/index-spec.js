@@ -168,8 +168,8 @@ describe('Unit: UI', function () {
         ui.confirm.bind(ctx)('Is ghost just a blogging platform');
 
         expect(ctx.prompt.calledTwice).to.be.true;
-        expect(ctx.prompt.getCall(0).args[0]).to.deep.equal(testA);
-        expect(ctx.prompt.getCall(1).args[0]).to.deep.equal(testB);
+        expect(ctx.prompt.args[0][0]).to.deep.equal(testA);
+        expect(ctx.prompt.args[1][0]).to.deep.equal(testB);
         done();
     });
 
@@ -283,7 +283,7 @@ describe('Unit: UI', function () {
 
         return ui.sudo('echo').then(() => {
             expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.getCall(0).args[0]).to.match(/#'[ ]{2}echo/);
+            expect(shellStub.args[0][0]).to.match(/#'[ ]{2}echo/);
         });
     });
 
@@ -476,15 +476,15 @@ describe('Unit: UI', function () {
                 expect(ctx.log.called).to.be.true;
                 expect(ctx._formatDebug.calledTwice).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
-                expect(ctx.log.getCall(0).args[0]).to.match(/Config/);
-                expect(ctx.log.getCall(1).args[0]).to.equal(errs[0].toString(true));
-                expect(ctx.log.getCall(2).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(3).args[0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-                expect(ctx.log.getCall(4).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
-                expect(ctx.log.getCall(5).args[0]).to.match(/Cli/);
-                expect(ctx.log.getCall(6).args[0]).to.equal(errs[1].toString(true));
-                expect(ctx.log.getCall(7).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(8).args[0]).to.match(/Additional log info/);
+                expect(ctx.log.args[0][0]).to.match(/Config/);
+                expect(ctx.log.args[1][0]).to.equal(errs[0].toString(true));
+                expect(ctx.log.args[2][0]).to.equal('cherries');
+                expect(ctx.log.args[3][0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(ctx.log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(ctx.log.args[5][0]).to.match(/Cli/);
+                expect(ctx.log.args[6][0]).to.equal(errs[1].toString(true));
+                expect(ctx.log.args[7][0]).to.equal('cherries');
+                expect(ctx.log.args[8][0]).to.match(/Additional log info/);
 
                 done();
             });
@@ -508,15 +508,15 @@ describe('Unit: UI', function () {
                 sinon.assert.callCount(ctx.log,11);
                 expect(ctx._formatDebug.calledTwice).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
-                expect(ctx.log.firstCall.args[0]).to.match(/Config/);
-                expect(ctx.log.secondCall.args[0]).to.equal(errs[0].toString(false));
-                expect(ctx.log.thirdCall.args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(3).args[0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-                expect(ctx.log.getCall(4).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
-                expect(ctx.log.getCall(5).args[0]).to.match(/Cli/);
-                expect(ctx.log.getCall(6).args[0]).to.equal(errs[1].toString(false));
-                expect(ctx.log.getCall(7).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(8).args[0]).to.match(/Additional log info/);
+                expect(ctx.log.args[0][0]).to.match(/Config/);
+                expect(ctx.log.args[1][0]).to.equal(errs[0].toString(false));
+                expect(ctx.log.args[2][0]).to.equal('cherries');
+                expect(ctx.log.args[3][0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(ctx.log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(ctx.log.args[5][0]).to.match(/Cli/);
+                expect(ctx.log.args[6][0]).to.equal(errs[1].toString(false));
+                expect(ctx.log.args[7][0]).to.equal('cherries');
+                expect(ctx.log.args[8][0]).to.match(/Additional log info/);
 
                 done();
             });
@@ -548,14 +548,14 @@ describe('Unit: UI', function () {
                 expect(ctx.log.callCount).to.equal(8);
                 expect(ctx._formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.called).to.be.false;
-                expect(ctx.log.getCall(0).args[0]).to.match(/One or more errors occurred/);
-                expect(ctx.log.getCall(1).args[0]).to.match(/1\) SystemError/);
-                expect(stripAnsi(ctx.log.getCall(2).args[0])).to.match(/Message: Error 1/);
-                expect(ctx.log.getCall(3).args[0]).to.match(/2\) Task 2/);
-                expect(stripAnsi(ctx.log.getCall(4).args[0])).to.match(/Message: Error 2/);
-                expect(ctx.log.getCall(5).args[0]).to.equal('cherries');
-                expect(stripAnsi(ctx.log.getCall(6).args[0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(ctx.log.getCall(7).args[0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
+                expect(ctx.log.args[0][0]).to.match(/One or more errors occurred/);
+                expect(ctx.log.args[1][0]).to.match(/1\) SystemError/);
+                expect(stripAnsi(ctx.log.args[2][0])).to.match(/Message: Error 1/);
+                expect(ctx.log.args[3][0]).to.match(/2\) Task 2/);
+                expect(stripAnsi(ctx.log.args[4][0])).to.match(/Message: Error 2/);
+                expect(ctx.log.args[5][0]).to.equal('cherries');
+                expect(stripAnsi(ctx.log.args[6][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(ctx.log.args[7][0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
             });
 
             it('non-verbose with log output', function () {
@@ -580,15 +580,15 @@ describe('Unit: UI', function () {
                 expect(ctx.log.callCount).to.equal(9);
                 expect(ctx._formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.called).to.be.true;
-                expect(ctx.log.getCall(0).args[0]).to.match(/One or more errors occurred/);
-                expect(ctx.log.getCall(1).args[0]).to.match(/1\) ProcessError/);
-                expect(stripAnsi(ctx.log.getCall(2).args[0])).to.match(/Message: Error 1/);
-                expect(ctx.log.getCall(3).args[0]).to.match(/2\) Task 2/);
-                expect(stripAnsi(ctx.log.getCall(4).args[0])).to.match(/Message: Error 2/);
-                expect(ctx.log.getCall(5).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(6).args[0]).to.match(/Additional log info available in/);
-                expect(stripAnsi(ctx.log.getCall(7).args[0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(ctx.log.getCall(8).args[0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
+                expect(ctx.log.args[0][0]).to.match(/One or more errors occurred/);
+                expect(ctx.log.args[1][0]).to.match(/1\) ProcessError/);
+                expect(stripAnsi(ctx.log.args[2][0])).to.match(/Message: Error 1/);
+                expect(ctx.log.args[3][0]).to.match(/2\) Task 2/);
+                expect(stripAnsi(ctx.log.args[4][0])).to.match(/Message: Error 2/);
+                expect(ctx.log.args[5][0]).to.equal('cherries');
+                expect(ctx.log.args[6][0]).to.match(/Additional log info available in/);
+                expect(stripAnsi(ctx.log.args[7][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(ctx.log.args[8][0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
             });
         });
 
@@ -620,10 +620,10 @@ describe('Unit: UI', function () {
                 sinon.assert.callCount(ctx._formatDebug, 4);
                 sinon.assert.callCount(system.writeErrorLog, 4);
                 expectedErrors.forEach(function (err, i) {
-                    expect(ctx.log.getCall(i * 5 + 2).args[0]).to.match(/Additional log info/);
-                    expect(ctx.log.getCall(i * 5 + 3).args[0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-                    expect(ctx.log.getCall(i * 5 + 4).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                    expect(stripAnsi(ctx.log.getCall(i * 5).args[0]).split(/\n/)).to.deep.equal(err);
+                    expect(ctx.log.args[i * 5 + 2][0]).to.match(/Additional log info/);
+                    expect(ctx.log.args[i * 5 + 3][0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                    expect(ctx.log.args[i * 5 + 4][0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                    expect(stripAnsi(ctx.log.args[i * 5][0]).split(/\n/)).to.deep.equal(err);
                 });
                 done();
             });
@@ -643,10 +643,10 @@ describe('Unit: UI', function () {
                 sinon.assert.callCount(ctx.log, 5);
                 expect(ctx._formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
-                expect(ctx.log.getCall(2).args[0]).to.match(/Additional log info/);
-                // expect(ctx.log.getCall(3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                expect(ctx.log.getCall(4).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                expect(stripAnsi(ctx.log.getCall(0).args[0]).split(/\n/)).to.deep.equal(expectedError);
+                expect(ctx.log.args[2][0]).to.match(/Additional log info/);
+                // expect(ctx.log.args[3][0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                expect(ctx.log.args[4][0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                expect(stripAnsi(ctx.log.args[0][0]).split(/\n/)).to.deep.equal(expectedError);
 
                 done();
             });
@@ -666,8 +666,8 @@ describe('Unit: UI', function () {
 
             expect(ctx._formatDebug.calledOnce).to.be.true;
             sinon.assert.callCount(ctx.log, 2);
-            expect(ctx.log.getCall(0).args[0]).to.deep.equal(expectedCall);
-            expect(ctx.log.getCall(0).args[2]).to.be.true;
+            expect(ctx.log.args[0][0]).to.deep.equal(expectedCall);
+            expect(ctx.log.args[0][2]).to.be.true;
 
             done();
         });
@@ -678,9 +678,9 @@ describe('Unit: UI', function () {
 
             expect(ctx._formatDebug.calledOnce).to.be.true;
             sinon.assert.callCount(ctx.log, 2);
-            expect(ctx.log.getCall(0).args[0]).to.match(/error occured/);
-            expect(ctx.log.getCall(1).args[0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-            expect(ctx.log.getCall(0).args[2]).to.be.true;
+            expect(ctx.log.args[0][0]).to.match(/error occured/);
+            expect(ctx.log.args[1][0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+            expect(ctx.log.args[0][2]).to.be.true;
 
             done();
         });

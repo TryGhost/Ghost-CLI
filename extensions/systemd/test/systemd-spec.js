@@ -47,7 +47,7 @@ describe('Unit: Systemd > Process Manager', function () {
             ext.start().then(() => {
                 const expectedCmd = 'systemctl start ghost_ghost_org';
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.getCall(0).args[0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
             });
         });
 
@@ -95,7 +95,7 @@ describe('Unit: Systemd > Process Manager', function () {
             ext.stop().then(() => {
                 const expectedCmd = 'systemctl stop ghost_ghost_org';
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.getCall(0).args[0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
             });
         });
 
@@ -132,7 +132,7 @@ describe('Unit: Systemd > Process Manager', function () {
             ext.restart().then(() => {
                 const expectedCmd = 'systemctl restart ghost_ghost_org';
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.getCall(0).args[0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
             });
         });
 
@@ -172,7 +172,7 @@ describe('Unit: Systemd > Process Manager', function () {
 
             expect(ext.isEnabled()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.getCall(0).args[0]).to.equal(expectedCmd);
+            expect(execaStub.args[0][0]).to.equal(expectedCmd);
         });
 
         it('Passes bad errors through', function () {
@@ -209,7 +209,7 @@ describe('Unit: Systemd > Process Manager', function () {
             const ext = makeSystemd(null, ui);
             ext.enable().then(() => {
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.getCall(0).args[0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
             })
         });
 
@@ -233,7 +233,7 @@ describe('Unit: Systemd > Process Manager', function () {
             const ext = makeSystemd(null, ui);
             ext.disable().then(() => {
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.getCall(0).args[0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
             })
         });
 
@@ -263,7 +263,7 @@ describe('Unit: Systemd > Process Manager', function () {
 
             expect(ext.isRunning()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.getCall(0).args[0]).to.equal(expectedCmd);
+            expect(execaStub.args[0][0]).to.equal(expectedCmd);
         });
 
         it('Passes bad errors through', function () {
@@ -323,7 +323,7 @@ describe('Unit: Systemd > Process Manager', function () {
 
             ext._precheck();
             expect(fsStub.calledOnce).to.be.true;
-            expect(fsStub.getCall(0).args[0]).to.equal(expectedFile);
+            expect(fsStub.args[0][0]).to.equal(expectedFile);
         });
 
         it('Errors if unit file doesn\'t exist', function () {
@@ -358,7 +358,7 @@ describe('Unit: Systemd > Process Manager', function () {
 
             expect(Systemd.willRun()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.getCall(0).args[0]).to.equal(expectedCmd);
+            expect(execaStub.args[0][0]).to.equal(expectedCmd);
         });
 
         it('Always fails', function () {

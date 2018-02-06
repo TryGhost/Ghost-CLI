@@ -117,7 +117,7 @@ describe('Unit: Commands > Uninstall', function () {
 
                 return uninstall.run.call(context, argv).then(() => {
                     expect(stubs.listr.calledOnce).to.be.true;
-                    tasklist = stubs.listr.getCall(0).args[0];
+                    tasklist = stubs.listr.args[0][0];
                 });
             });
 
@@ -150,7 +150,7 @@ describe('Unit: Commands > Uninstall', function () {
 
                 expect(stubs.remove.called).to.be.false;
                 expect(stubs.sudo.calledOnce).to.be.true
-                expect(stubs.sudo.getCall(0).args[0]).to.equal(cmd);
+                expect(stubs.sudo.args[0][0]).to.equal(cmd);
             });
 
             // Todo: optimize if possible (because of beforeEach proxyUninstall is
@@ -165,7 +165,7 @@ describe('Unit: Commands > Uninstall', function () {
 
                 return uninstall.run.call(context, argv).then(() => {
                     expect(stubs.listr.calledOnce).to.be.true;
-                    return stubs.listr.getCall(0).args[0][1];
+                    return stubs.listr.args[0][0][1];
                 }).then((task) => {
                     expect(task.title).to.equal('Removing content folder');
                     task.task();

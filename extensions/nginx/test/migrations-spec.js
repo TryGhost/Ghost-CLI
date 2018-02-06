@@ -142,7 +142,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             expect(readFileSync.calledTwice).to.be.true;
             expect(ui.listr.calledOnce).to.be.true;
 
-            const tasks = ui.listr.getCall(0).args[0];
+            const tasks = ui.listr.args[0][0];
             expect(tasks).to.have.length(5);
 
             return tasks[0].task(null).then(() => {

@@ -184,7 +184,7 @@ describe('Unit: Commands > Setup', function () {
 
                 return setup.run({stages: ['linux-user']}).then(() => {
                     expect(ui.log.calledOnce).to.be.true;
-                    expect(ui.log.getCall(0).args[0]).to.match(/is not Linux/);
+                    expect(ui.log.args[0][0]).to.match(/is not Linux/);
                 });
             });
 
@@ -206,7 +206,7 @@ describe('Unit: Commands > Setup', function () {
 
                 return setup.run({stages: ['linux-user']}).then(() => {
                     expect(ui.log.calledOnce).to.be.true;
-                    expect(ui.log.getCall(0).args[0]).to.match(/is not Linux/);
+                    expect(ui.log.args[0][0]).to.match(/is not Linux/);
                 });
             });
         });
@@ -239,7 +239,7 @@ describe('Unit: Commands > Setup', function () {
             const setup = new SetupCommand(ui, system);
             return setup.run(argv).then(() => {
                 expect(listr.calledOnce).to.be.true;
-                const tasks = listr.getCall(0).args[0];
+                const tasks = listr.args[0][0];
                 expect(tasks[0].title).to.equal('Setting up instance');
                 tasks.forEach(function (task) {
                     expect(task.title).to.not.match(/database migrations/);
@@ -252,7 +252,7 @@ describe('Unit: Commands > Setup', function () {
                 expect(ctx.instance.apples).to.be.true;
                 expect(ctx.instance.name).to.equal('ghost-org');
                 expect(aIstub.calledOnce).to.be.true;
-                expect(aIstub.getCall(0).args[0]).to.deep.equal(ctx.instance);
+                expect(aIstub.args[0][0]).to.deep.equal(ctx.instance);
             });
         });
 
@@ -285,7 +285,7 @@ describe('Unit: Commands > Setup', function () {
             const setup = new SetupCommand(ui, system);
             return setup.run(argv).then(() => {
                 expect(listr.calledOnce).to.be.true;
-                const tasks = listr.getCall(0).args[0];
+                const tasks = listr.args[0][0];
                 expect(tasks[0].title).to.equal('Setting up instance');
                 tasks.forEach(function (task) {
                     expect(task.title).to.not.match(/database migrations/);
@@ -298,7 +298,7 @@ describe('Unit: Commands > Setup', function () {
                 expect(ctx.instance.apples).to.be.true;
                 expect(ctx.instance.name).to.equal('example-com');
                 expect(aIstub.calledOnce).to.be.true;
-                expect(aIstub.getCall(0).args[0]).to.deep.equal(ctx.instance);
+                expect(aIstub.args[0][0]).to.deep.equal(ctx.instance);
             });
         });
 
@@ -335,7 +335,7 @@ describe('Unit: Commands > Setup', function () {
                 return setup.run({prompt: false}).then(() => {
                     expect(stubs.listr.calledOnce).to.be.true;
 
-                    const tasks = stubs.listr.getCall(0).args[0];
+                    const tasks = stubs.listr.args[0][0];
 
                     expect(tasks[2].title).to.match(/Test/);
                     expect(tasks[3].title).to.match(/Zesty/);
@@ -356,7 +356,7 @@ describe('Unit: Commands > Setup', function () {
 
                 return setup.run({prompt: false}).then(() => {
                     expect(stubs.listr.calledOnce).to.be.true;
-                    const tasks = stubs.listr.getCall(0).args[0];
+                    const tasks = stubs.listr.args[0][0];
 
                     expect(tasks[2].title).to.match(/Zesty/);
                     tasks[2].task({}, {skip: stubs.skip});
@@ -364,7 +364,7 @@ describe('Unit: Commands > Setup', function () {
                     expect(stubs.zest.calledOnce).to.be.false;
                     expect(stubs.skip.calledOnce).to.be.true;
                     expect(stubs.log.calledOnce).to.be.true;
-                    expect(stubs.log.getCall(0).args[0]).to.match(expectLog);
+                    expect(stubs.log.args[0][0]).to.match(expectLog);
                 });
             });
 
@@ -379,7 +379,7 @@ describe('Unit: Commands > Setup', function () {
 
                 return setup.run({prompt: false}).then(() => {
                     expect(stubs.listr.calledOnce).to.be.true;
-                    const tasks = stubs.listr.getCall(0).args[0];
+                    const tasks = stubs.listr.args[0][0];
 
                     expect(tasks[2].title).to.match(/Test/);
                     expect(tasks[3].title).to.match(/Zesty/);
@@ -392,7 +392,7 @@ describe('Unit: Commands > Setup', function () {
                     expect(stubs.zest.calledOnce).to.be.false;
                     expect(stubs.skip.calledOnce).to.be.true;
                     expect(stubs.log.calledOnce).to.be.true;
-                    expect(stubs.log.getCall(0).args[0]).to.match(expectLog);
+                    expect(stubs.log.args[0][0]).to.match(expectLog);
                 });
             });
 
@@ -404,7 +404,7 @@ describe('Unit: Commands > Setup', function () {
 
                 return setup.run({prompt: false}).then(() => {
                     expect(stubs.listr.calledOnce).to.be.true;
-                    const tasks = stubs.listr.getCall(0).args[0];
+                    const tasks = stubs.listr.args[0][0];
 
                     expect(tasks[2].title).to.match(/Zesty/);
                     tasks[2].task({}, {skip: stubs.skip});
@@ -412,7 +412,7 @@ describe('Unit: Commands > Setup', function () {
 
                     expect(stubs.skip.calledOnce).to.be.true;
                     expect(stubs.log.calledOnce).to.be.true;
-                    expect(stubs.log.getCall(0).args[0]).to.match(expectLog);
+                    expect(stubs.log.args[0][0]).to.match(expectLog);
                 });
             });
         });
@@ -430,7 +430,7 @@ describe('Unit: Commands > Setup', function () {
 
             return setup.run({prompt: false, 'setup-zest': false}).then(() => {
                 expect(ui.listr.calledOnce).to.be.true;
-                const tasks = ui.listr.getCall(0).args[0];
+                const tasks = ui.listr.args[0][0];
 
                 expect(tasks[2].title).to.match(/Zesty/);
                 tasks[2].task({}, {skip: skipStub});
@@ -459,7 +459,7 @@ describe('Unit: Commands > Setup', function () {
 
             return setup.run({prompt: true, start: false}).then(() => {
                 expect(ui.listr.calledOnce).to.be.true;
-                tasks = ui.listr.getCall(0).args[0];
+                tasks = ui.listr.args[0][0];
 
                 expect(tasks[2].title).to.match(/Zesty/);
                 expect(tasks[3].title).to.match(/Test/);
@@ -468,8 +468,8 @@ describe('Unit: Commands > Setup', function () {
             }).then(() => tasks[3].task({}, {})).then(() => {
                 expect(skipStub.calledOnce).to.be.true;
                 expect(ui.confirm.calledTwice).to.be.true;
-                expect(ui.confirm.getCall(0).args[0]).to.match(/Zesty/);
-                expect(ui.confirm.getCall(1).args[0]).to.match(/Test/);
+                expect(ui.confirm.args[0][0]).to.match(/Zesty/);
+                expect(ui.confirm.args[1][0]).to.match(/Test/);
             });
         });
     });
@@ -484,6 +484,6 @@ describe('Unit: Commands > Setup', function () {
         yargs.option.returns(yargs);
         SetupCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
-        expect(yargs.option.getCall(0).args[0]).to.equal('test');
+        expect(yargs.option.args[0][0]).to.equal('test');
     });
 });

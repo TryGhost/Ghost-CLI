@@ -79,14 +79,14 @@ describe('Unit: Commands > Start', function () {
                 const proces = myInstance.process.start;
 
                 expect(ui.run.calledOnce).to.be.true;
-                return ui.run.getCall(0).args[0]().then(() => {
+                return ui.run.args[0][0]().then(() => {
                     expect(running.calledTwice).to.be.true;
-                    expect(running.getCall(0).args).to.be.empty;
-                    expect(running.getCall(1).args[0]).to.equal('Ghost');
+                    expect(running.args[0]).to.be.empty;
+                    expect(running.args[1][0]).to.equal('Ghost');
 
                     expect(proces.calledOnce).to.be.true;
-                    expect(proces.getCall(0).args[0]).to.equal(process.cwd());
-                    expect(proces.getCall(0).args[1]).to.equal('Ghost');
+                    expect(proces.args[0][0]).to.equal(process.cwd());
+                    expect(proces.args[0][1]).to.equal('Ghost');
                 });
             });
         });
@@ -171,7 +171,7 @@ describe('Unit: Commands > Start', function () {
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledOnce).to.be.true;
-                expect(ui.log.getCall(0).args[0]).to.match(/You can access your blog/);
+                expect(ui.log.args[0][0]).to.match(/You can access your blog/);
             });
         });
 
@@ -188,8 +188,8 @@ describe('Unit: Commands > Start', function () {
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledThrice).to.be.true;
-                expect(ui.log.getCall(1).args[0]).to.match(/Ghost uses direct mail/);
-                expect(ui.log.getCall(2).args[0]).to.match(/alternative email method/);
+                expect(ui.log.args[1][0]).to.match(/Ghost uses direct mail/);
+                expect(ui.log.args[2][0]).to.match(/alternative email method/);
             });
         });
     });
@@ -204,6 +204,6 @@ describe('Unit: Commands > Start', function () {
         yargs.option.returns(yargs);
         StartCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
-        expect(yargs.option.getCall(0).args[0]).to.equal('test');
+        expect(yargs.option.args[0][0]).to.equal('test');
     });
 });
