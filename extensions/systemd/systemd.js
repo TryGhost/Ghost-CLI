@@ -4,6 +4,7 @@ const fs = require('fs');
 const execa = require('execa');
 const cli = require('../../lib');
 const getUid = require('./get-uid');
+const chalk = require('chalk');
 
 class SystemdProcessManager extends cli.ProcessManager {
     get systemdName() {
@@ -101,14 +102,20 @@ class SystemdProcessManager extends cli.ProcessManager {
         const uid = getUid(this.instance.dir);
 
         if (!uid) {
-            throw new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup linux-user systemd` and try again.')
+            throw new cli.errors.SystemError({
+                message: 'Systemd process manager has not been set up or is corrupted.',
+                help: `Run ${chalk.green('ghost setup linux-user systemd')} and try again.`
+            });
         }
 
         if (fs.existsSync(`/lib/systemd/system/${this.systemdName}.service`)) {
             return;
         }
 
-        throw new cli.errors.SystemError('Systemd process manager has not been set up. Run `ghost setup systemd` and try again.');
+        throw new cli.errors.SystemError({
+            message: 'Systemd process manager has not been set up or is corrupted.',
+            help: `Run ${chalk.green('ghost setup systemd')} and try again.`
+        });
     }
 
     static willRun() {

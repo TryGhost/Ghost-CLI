@@ -310,7 +310,8 @@ describe('Unit: Systemd > Process Manager', function () {
                 expect(proxyOpts['./get-uid'].calledOnce).to.be.true;
                 expect(error).to.be.ok;
                 expect(error).to.be.instanceOf(errors.SystemError);
-                expect(error.message).to.match(/ghost setup linux-user systemd/);
+                expect(error.message).to.match(/Systemd process manager has not been set up or is corrupted./);
+                expect(error.options.help).to.match(/ghost setup linux-user systemd/);
             }
         });
 
@@ -337,7 +338,8 @@ describe('Unit: Systemd > Process Manager', function () {
                 expect(fsStub.calledOnce).to.be.true;
                 expect(error).to.be.ok;
                 expect(error).to.be.instanceOf(errors.SystemError);
-                expect(error.message).to.match(/ghost setup systemd/);
+                expect(error.message).to.match(/Systemd process manager has not been set up or is corrupted./);
+                expect(error.options.help).to.match(/ghost setup systemd/);
             }
         });
     });
