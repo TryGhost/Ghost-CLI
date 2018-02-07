@@ -3,8 +3,12 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
-const modulePath = '../../../lib/commands/uninstall';
+const fs = require('fs-extra');
+const UI = require('../../../lib/ui');
+const System = require('../../../lib/system');
+const StopCommand = require('../../../lib/commands/stop');
 
+const modulePath = '../../../lib/commands/uninstall';
 const UninstallCommand = require(modulePath);
 
 const fileList = [
@@ -13,177 +17,161 @@ const fileList = [
     'config.development.json'
 ]
 
-function proxiedUninstall(platform) {
-    const stubs = {
-        remove: sinon.stub(),
-        readdirSync: sinon.stub().returns(fileList),
-        existsSync: sinon.stub().returns(true)
-    };
-
-    const instance = new (proxyquire(modulePath, {
-        'fs-extra': {
-            remove: stubs.remove,
-            readdirSync: stubs.readdirSync,
-            existsSync: stubs.existsSync
-        },
-        os: {
-            platform: () => (platform || 'linux')
-        }
-    }))();
-
-    return {
-        instance: instance,
-        stubs: stubs
-    }
-}
-
 describe('Unit: Commands > Uninstall', function () {
+    const sandbox = sinon.sandbox.create();
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    function createInstance(proxied) {
+        const ui = sinon.createStubInstance(UI);
+        const system = sinon.createStubInstance(System);
+
+        const Klass = proxied ? proxyquire(modulePath, proxied) : UninstallCommand;
+        const instance = new Klass(ui, system);
+
+        return {
+            instance: instance,
+            ui: ui,
+            system: system
+        }
+    }
+
     describe('run', function () {
-        let uninstall, context, argv;
+        it('prompts to confirm', function () {
+            const command = createInstance();
+            command.ui.confirm.resolves(true);
+            command.ui.listr.resolves();
 
-        beforeEach(function () {
-            uninstall = new UninstallCommand();
-            context = {
-                ui: {
-                    confirm: sinon.stub().resolves(true),
-                    log: sinon.stub().resolves(true),
-                    listr: sinon.stub().resolves()
-                },
-                system: {getInstance: () => true}
-            };
-
-            argv = {
-                force: false
-            };
-        });
-
-        it('Normally prompts', function () {
-            return uninstall.run.call(context, argv).then(() => {
-                expect(context.ui.confirm.calledOnce).to.be.true;
-                expect(context.ui.log.calledOnce).to.be.true;
-                expect(context.ui.listr.calledOnce).to.be.true;
+            return command.instance.run({}).then(() => {
+                expect(command.ui.confirm.calledOnce).to.be.true;
+                expect(command.ui.log.calledOnce).to.be.true;
+                expect(command.ui.listr.calledOnce).to.be.true;
             });
         });
 
-        it('Doesn\'t run when the user backs out', function () {
-            argv.force = true;
-            context.ui.confirm = sinon.stub().resolves(false);
+        it('doesn\'t run if the user backs out', function (done) {
+            const argv = {force: true};
+            const command = createInstance();
+            command.ui.confirm.resolves(false);
+            command.ui.listr.resolves();
 
-            return uninstall.run.call(context, argv)
-                .then(() => {
-                    expect(false, 'Promise should have rejected').to.be.true;
-                })
-                .catch(() => {
-                    expect(context.ui.confirm.calledOnce).to.be.true;
-                    expect(context.ui.log.called).to.be.false;
-                    expect(context.ui.listr.called).to.be.false;
-                });
+            command.instance.run(argv).then(() => {
+                done(new Error('run should have rejected'));
+            }).catch(() => {
+                expect(command.ui.confirm.calledOnce).to.be.true;
+                expect(command.ui.log.called).to.be.false;
+                expect(command.ui.listr.called).to.be.false;
+                done();
+            }).catch(done);
         });
 
-        describe('Uninstall steps work', function () {
-            let tasklist, stubs;
+        describe('steps', function () {
+            function getSteps(instance, ui) {
+                ui.confirm.resolves(true);
+                ui.listr.resolves();
 
-            beforeEach(function () {
-                const commandThings = proxiedUninstall();
-                stubs = Object.assign({
-                    listr: sinon.stub(),
-                    running: sinon.stub().returns(false),
-                    lre: sinon.stub(),
-                    rc: sinon.stub().returns()
-                }, commandThings.stubs);
-
-                uninstall = commandThings.instance;
-
-                context.ui.listr = stubs.listr;
-                context.runCommand = stubs.rc;
-                context.system.getInstance = sinon.stub().returns({
-                    running: stubs.running,
-                    loadRunningEnvironment: stubs.lre,
-                    dir: '/var/www/ghost'
+                return instance.run({force: true}).then(() => {
+                    expect(ui.listr.calledOnce).to.be.true;
+                    return ui.listr.args[0][0];
                 });
+            }
 
-                return uninstall.run.call(context, argv).then(() => {
-                    expect(stubs.listr.calledOnce).to.be.true;
-                    tasklist = stubs.listr.args[0][0];
+            it('step 1 (stopping ghost)', function () {
+                const command = createInstance();
+                const instance = {
+                    running: sandbox.stub().returns(false),
+                    loadRunningEnvironment: sandbox.stub()
+                };
+                const runCommandStub = sandbox.stub(command.instance, 'runCommand').resolves();
+                command.system.getInstance.returns(instance);
+
+                return getSteps(command.instance, command.ui).then((steps) => {
+                    const task = steps[0];
+
+                    expect(task.title).to.equal('Stopping Ghost');
+                    expect(task.skip()).to.be.true;
+                    expect(instance.running.calledOnce).to.be.true;
+
+                    return task.task();
+                }).then(() => {
+                    expect(instance.loadRunningEnvironment.calledOnce).to.be.true;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(runCommandStub.calledWithExactly(
+                        StopCommand,
+                        {quiet: true, disable: true}
+                    )).to.be.true;
                 });
             });
 
-            afterEach(function () {
-                stubs = null;
-                tasklist = null;
-            });
+            it('step 2 (removing content folder)', function () {
+                const useGhostUserStub = sandbox.stub().returns(false);
+                const command = createInstance({
+                    '../utils/use-ghost-user': useGhostUserStub
+                });
+                command.system.getInstance.returns({dir: '/var/www/ghost'});
+                command.ui.sudo.resolves();
 
-            it('step 1 (stop ghost)', function () {
-                const task = tasklist[0];
-                expect(task.title).to.equal('Stopping Ghost');
+                return getSteps(command.instance, command.ui).then((steps) => {
+                    const task = steps[1];
 
-                expect(task.skip()).to.be.true;
-                expect(stubs.running.calledOnce).to.be.true;
-
-                task.task();
-
-                expect(stubs.rc.calledOnce).to.be.true;
-                expect(stubs.lre.calledOnce).to.be.true;
-            });
-
-            it('step 2 (remove content linux)', function () {
-                stubs.sudo = sinon.stub();
-                context.ui.sudo = stubs.sudo;
-                const task = tasklist[1];
-                const cmd = 'rm -rf /var/www/ghost/content';
-                expect(task.title).to.equal('Removing content folder');
-
-                task.task();
-
-                expect(stubs.remove.called).to.be.false;
-                expect(stubs.sudo.calledOnce).to.be.true
-                expect(stubs.sudo.args[0][0]).to.equal(cmd);
-            });
-
-            // Todo: optimize if possible (because of beforeEach proxyUninstall is
-            // called 2x for 1 test)
-            it('step 2 (remove contexnt non linux)', function () {
-                const commandThings = proxiedUninstall('not_linux');
-                stubs = Object.assign({listr: sinon.stub()}, commandThings.stubs);
-                uninstall = commandThings.instance;
-
-                context.ui.listr = stubs.listr;
-                context.system.getInstance = sinon.stub().returns({dir: '/var/www/ghost'});
-
-                return uninstall.run.call(context, argv).then(() => {
-                    expect(stubs.listr.calledOnce).to.be.true;
-                    return stubs.listr.args[0][0][1];
-                }).then((task) => {
                     expect(task.title).to.equal('Removing content folder');
-                    task.task();
+                    expect(task.enabled()).to.be.false;
+                    expect(useGhostUserStub.calledOnce).to.be.true;
+                    expect(useGhostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
 
-                    expect(stubs.remove.called).to.be.true;
+                    return task.task();
+                }).then(() => {
+                    expect(command.ui.sudo.calledOnce).to.be.true;
+                    expect(command.ui.sudo.calledWithExactly('rm -rf /var/www/ghost/content'));
                 });
             });
 
-            it('step 3 (remove config)', function () {
-                stubs.hook = sinon.stub();
-                context.system.setEnvironment = () => true;
-                context.system.hook = stubs.hook;
+            it('step 3 (removing related configuration)', function () {
+                const command = createInstance();
+                const existsStub = sandbox.stub(fs, 'existsSync').returns(true);
+                command.system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
+                command.system.hook.resolves();
 
-                const task = tasklist[2];
-                expect(task.title).to.equal('Removing related configuration');
+                return getSteps(command.instance, command.ui).then((steps) => {
+                    const task = steps[2];
 
-                task.task();
-
-                expect(stubs.hook.calledOnce).to.be.true;
+                    expect(task.title).to.equal('Removing related configuration');
+                    return task.task();
+                }).then(() => {
+                    expect(existsStub.calledOnce).to.be.true;
+                    expect(command.system.setEnvironment.calledOnce).to.be.true;
+                    expect(command.system.setEnvironment.calledWithExactly(false)).to.be.true;
+                    expect(command.system.hook.calledOnce).to.be.true;
+                    expect(command.system.hook.calledWithExactly(
+                        'uninstall',
+                        {instance: true, dir: '/var/www/ghost'}
+                    )).to.be.true;
+                });
             });
 
-            it('step 4 (remove install)', function () {
-                stubs.ri = sinon.stub();
-                context.system.removeInstance = stubs.ri
-                const task = tasklist[3];
-                expect(task.title).to.equal('Removing Ghost installation');
+            it('step 4 (removing ghost install)', function () {
+                const command = createInstance();
+                command.system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
+                const readdirStub = sandbox.stub(fs, 'readdirSync').returns(fileList);
+                const removeStub = sandbox.stub(fs, 'remove').resolves();
 
-                task.task();
+                return getSteps(command.instance, command.ui).then((steps) => {
+                    const task = steps[3];
 
-                expect(stubs.ri.calledOnce).to.be.true;
-                expect(stubs.remove.calledThrice).to.be.true;
+                    expect(task.title).to.equal('Removing Ghost installation');
+                    return task.task();
+                }).then(() => {
+                    expect(command.system.removeInstance.calledOnce).to.be.true;
+                    expect(command.system.removeInstance.calledWithExactly({instance: true, dir: '/var/www/ghost'})).to.be.true;
+                    expect(readdirStub.calledOnce).to.be.true;
+                    expect(removeStub.callCount).to.equal(fileList.length);
+
+                    fileList.forEach((f) => {
+                        expect(removeStub.calledWithExactly(f)).to.be.true;
+                    });
+                });
             });
         });
     });
