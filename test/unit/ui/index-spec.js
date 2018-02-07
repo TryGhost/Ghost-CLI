@@ -246,32 +246,51 @@ describe('Unit: UI', function () {
         });
     });
 
-    it('confirm calls prompt', function () {
+    describe('confirm', function () {
         const UI = require(modulePath);
-        const ui = new UI();
-        const promptStub = sandbox.stub(ui, 'prompt').resolves();
 
-        const testA = {
-            type: 'confirm',
-            name: 'yes',
-            message: 'Is the sky blue',
-            default: true
-        };
-        const testB = {
-            type: 'confirm',
-            name: 'yes',
-            message: 'Is ghost just a blogging platform',
-            default: undefined
-        };
+        it('returns default answer if allowPrompt is false', function () {
+            const ui = new UI();
+            const promptStub = sandbox.stub(ui, 'prompt').resolves({yes: true});
+            ui.allowPrompt = false;
 
-        return ui.confirm('Is the sky blue', true).then(() => {
-            expect(promptStub.calledOnce).to.be.true;
-            expect(promptStub.calledWithExactly(testA)).to.be.true;
+            return ui.confirm('Some question', false).then((result) => {
+                expect(result).to.be.false;
+                expect(promptStub.called).to.be.false;
+            });
+        });
 
-            return ui.confirm('Is ghost just a blogging platform');
-        }).then(() => {
-            expect(promptStub.calledTwice).to.be.true;
-            expect(promptStub.calledWithExactly(testB)).to.be.true;
+        it('calls prompt and returns result if allowPrompt is true', function () {
+            const ui = new UI();
+            const promptStub = sandbox.stub(ui, 'prompt');
+            promptStub.onFirstCall().resolves({yes: true});
+            promptStub.onSecondCall().resolves({yes: false});
+            ui.allowPrompt = true;
+
+            const testA = {
+                type: 'confirm',
+                name: 'yes',
+                message: 'Is the sky blue',
+                default: true
+            };
+            const testB = {
+                type: 'confirm',
+                name: 'yes',
+                message: 'Is ghost just a blogging platform',
+                default: undefined
+            };
+
+            return ui.confirm('Is the sky blue', true).then((result) => {
+                expect(result).to.be.true;
+                expect(promptStub.calledOnce).to.be.true;
+                expect(promptStub.calledWithExactly(testA)).to.be.true;
+
+                return ui.confirm('Is ghost just a blogging platform');
+            }).then((result) => {
+                expect(result).to.be.false;
+                expect(promptStub.calledTwice).to.be.true;
+                expect(promptStub.calledWithExactly(testB)).to.be.true;
+            });
         });
     });
 

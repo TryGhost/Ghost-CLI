@@ -34,7 +34,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     it('rejects if platform is not linux', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves();
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -54,33 +54,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
         });
     });
 
-    it('does not call confirm if prompt is disabled', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
-
-        const ctx = {
-            ui: {log: logStub, confirm: confirmStub, allowPrompt: false},
-            system: {platform: {linux: false}}
-        };
-
-        return systemStack.task(ctx).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Operating system is not Linux\'');
-            expect(execaStub.called).to.be.false;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/failed with message/);
-            expect(logStub.args[0][0]).to.match(/not Linux/);
-            expect(confirmStub.called).to.be.false;
-        });
-    });
-
     it('does not reject if confirm resolves with true', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves();
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: true});
+        const confirmStub = sandbox.stub().resolves(true);
         const skipStub = sandbox.stub();
 
         const ctx = {
@@ -101,7 +78,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     it('rejects if lsb_release command does not exist', function () {
         const execaStub = sandbox.stub(execa, 'shell').rejects();
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -124,7 +101,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     it('rejects if lsb_release command does not return Ubuntu 16', function () {
         const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: 'Ubuntu 14'});
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -147,7 +124,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     it('groups missing rejected promises for systemd and nginx', function () {
         const execaStub = sandbox.stub(execa, 'shell');
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
         const listrStub = sandbox.stub().rejects({
             errors: [{missing: 'systemd'}, {missing: 'nginx'}]
         });
@@ -177,7 +154,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     it('nginx and systemd checks reject correctly', function () {
         const execaStub = sandbox.stub(execa, 'shell');
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
 
         execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
         execaStub.withArgs('dpkg -l | grep nginx').rejects();
@@ -227,7 +204,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     it('resolves if all stack conditions are met', function () {
         const execaStub = sandbox.stub(execa, 'shell');
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
 
         execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
         const listrStub = sinon.stub().resolves();

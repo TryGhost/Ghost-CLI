@@ -79,7 +79,7 @@ describe('Unit: Doctor Checks > mysql', function () {
     it('calls confirm if execa rejects and allowPrompt is true', function () {
         const execaStub = sandbox.stub(execa, 'shell').rejects();
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: true});
+        const confirmStub = sandbox.stub().resolves(true);
         const skipStub = sandbox.stub();
 
         const ctx = {
@@ -99,7 +99,7 @@ describe('Unit: Doctor Checks > mysql', function () {
     it('rejects if confirm says no', function () {
         const execaStub = sandbox.stub(execa, 'shell').rejects();
         const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: false});
+        const confirmStub = sandbox.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -116,29 +116,6 @@ describe('Unit: Doctor Checks > mysql', function () {
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/MySQL install not found/);
             expect(confirmStub.calledOnce).to.be.true;
-        });
-    });
-
-    it('rejects if allowPrompt is false', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves({yes: true});
-
-        const ctx = {
-            ui: {log: logStub, confirm: confirmStub, allowPrompt: false},
-            system: {platform: {linux: true}}
-        };
-
-        return mysqlCheck.task(ctx).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.equal('MySQL check failed.');
-
-            expect(execaStub.calledOnce).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/MySQL install not found/);
-            expect(confirmStub.calledOnce).to.be.false;
         });
     });
 });
