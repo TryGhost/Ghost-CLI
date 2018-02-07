@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.5.1"></a>
+## [1.5.1](https://github.com/TryGhost/Ghost-CLI/compare/1.5.0...1.5.1) (2018-02-07)
+
+### Bug Fixes
+
+* **doctor:** exclude versions folder for file permissions check ([f1fdd31](https://github.com/TryGhost/Ghost-CLI/commit/f1fdd31))
+* **ui:** disable allowPrompt if stdout is not a TTY ([b08cfa7](https://github.com/TryGhost/Ghost-CLI/commit/b08cfa7))
+* **ui:** make confirm return default value with prompt disabled ([7d652f2](https://github.com/TryGhost/Ghost-CLI/commit/7d652f2))
+* **uninstall:** only use sudo to remove content folder when needed ([5e386d2](https://github.com/TryGhost/Ghost-CLI/commit/5e386d2)), closes [#577](https://github.com/TryGhost/Ghost-CLI/issues/577)
+
 <a name="1.5.0"></a>
 # [1.5.0](https://github.com/TryGhost/Ghost-CLI/compare/1.4.2...1.5.0) (2018-02-07)
 
