@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/TryGhost/Ghost-CLI/compare/1.4.2...1.5.0) (2018-02-07)
+
+### Bug Fixes
+
+* **checks:** show skipped instead of passed for stack & mysql checks ([c4a40a0](https://github.com/TryGhost/Ghost-CLI/commit/c4a40a0))
+* **doctor:** add install-folder-permissions check to start ([a195fc1](https://github.com/TryGhost/Ghost-CLI/commit/a195fc1))
+* **doctor:** improve permission denied error message ([#627](https://github.com/TryGhost/Ghost-CLI/issues/627)) ([9af537e](https://github.com/TryGhost/Ghost-CLI/commit/9af537e))
+* **doctor:** refactor doctor command ([76829e9](https://github.com/TryGhost/Ghost-CLI/commit/76829e9))
+* **doctor:** show help message for install folder checks ([#626](https://github.com/TryGhost/Ghost-CLI/issues/626)) ([0c81bab](https://github.com/TryGhost/Ghost-CLI/commit/0c81bab))
+* **doctor:** skip some doctor checks for local installs post-install ([324a080](https://github.com/TryGhost/Ghost-CLI/commit/324a080))
+* **doctor:** skip validate config check for running instances ([#623](https://github.com/TryGhost/Ghost-CLI/issues/623)) ([a94a987](https://github.com/TryGhost/Ghost-CLI/commit/a94a987))
+* **instance:** query process managers in dev & prod if running not set ([c6b8b40](https://github.com/TryGhost/Ghost-CLI/commit/c6b8b40)), closes [#463](https://github.com/TryGhost/Ghost-CLI/issues/463)
+* **local-process:** error if content folder owned by other user ([707ce6a](https://github.com/TryGhost/Ghost-CLI/commit/707ce6a)), closes [#501](https://github.com/TryGhost/Ghost-CLI/issues/501)
+* **local-process:** make content folder check work in more cases ([710a9d4](https://github.com/TryGhost/Ghost-CLI/commit/710a9d4))
+* **renderer:** only show enabled tasks ([3be25a8](https://github.com/TryGhost/Ghost-CLI/commit/3be25a8))
+* **root-user:** don't check for root user on windows/macos ([3db21d6](https://github.com/TryGhost/Ghost-CLI/commit/3db21d6))
+* **root-user:** improve error messages installs set up with root ([#631](https://github.com/TryGhost/Ghost-CLI/issues/631)) ([b161432](https://github.com/TryGhost/Ghost-CLI/commit/b161432))
+* **root-user:** only skip exiting inside root install ([8fc693a](https://github.com/TryGhost/Ghost-CLI/commit/8fc693a))
+* **setup:** skip ghost user setup if process manager is local ([edce827](https://github.com/TryGhost/Ghost-CLI/commit/edce827))
+* **stop command:** update extension query key ([b8c49bb](https://github.com/TryGhost/Ghost-CLI/commit/b8c49bb))
+* **systemd:** improve systemd precheck error messages ([#628](https://github.com/TryGhost/Ghost-CLI/issues/628)) ([208bb15](https://github.com/TryGhost/Ghost-CLI/commit/208bb15))
+* **update-check:** don't warn for prerelease or build ([05a4171](https://github.com/TryGhost/Ghost-CLI/commit/05a4171))
+
+### Features
+
+* **command:** prevent commands run as root user ([#604](https://github.com/TryGhost/Ghost-CLI/issues/604)) ([01481b0](https://github.com/TryGhost/Ghost-CLI/commit/01481b0))
+* **doctor:** allow extensions to provide doctor checks ([4702ce8](https://github.com/TryGhost/Ghost-CLI/commit/4702ce8))
+* **doctor:** content folder permission checks ([#610](https://github.com/TryGhost/Ghost-CLI/issues/610)) ([0075e77](https://github.com/TryGhost/Ghost-CLI/commit/0075e77))
+* **doctor:** detect incorrect permissions ([#613](https://github.com/TryGhost/Ghost-CLI/issues/613)) ([6b614f7](https://github.com/TryGhost/Ghost-CLI/commit/6b614f7)), closes [#294](https://github.com/TryGhost/Ghost-CLI/issues/294)
+* **doctor:** run all checks and print summary of errors ([ca68049](https://github.com/TryGhost/Ghost-CLI/commit/ca68049))
+* **log:** Log improvements for `ghost update` ([59f5d03](https://github.com/TryGhost/Ghost-CLI/commit/59f5d03))
+* **process:** ensure that Ghost is started ([#612](https://github.com/TryGhost/Ghost-CLI/issues/612)) ([8c68889](https://github.com/TryGhost/Ghost-CLI/commit/8c68889)), closes [#472](https://github.com/TryGhost/Ghost-CLI/issues/472)
+* **ssl:** improve error messages to log original error ([#595](https://github.com/TryGhost/Ghost-CLI/issues/595)) ([509aa5a](https://github.com/TryGhost/Ghost-CLI/commit/509aa5a))
+* **system:** add os and version to System class ([#602](https://github.com/TryGhost/Ghost-CLI/issues/602)) ([bd24652](https://github.com/TryGhost/Ghost-CLI/commit/bd24652))
+* **ui:** add `ghost doctor` reference to error messages ([c25c141](https://github.com/TryGhost/Ghost-CLI/commit/c25c141))
+* **ui:** allow UI error method to handle listr errors ([dc419f9](https://github.com/TryGhost/Ghost-CLI/commit/dc419f9))
+* **update:** run doctor checks on ghost update ([0ca80a7](https://github.com/TryGhost/Ghost-CLI/commit/0ca80a7))
+
 <a name="1.4.2"></a>
 ## [1.4.2](https://github.com/TryGhost/Ghost-CLI/compare/1.4.1...1.4.2) (2018-01-07)
 
