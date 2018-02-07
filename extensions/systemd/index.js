@@ -8,15 +8,16 @@ const cli = require('../../lib');
 const getUid = require('./get-uid');
 
 class SystemdExtension extends cli.Extension {
-    setup(cmd, argv) {
-        const instance = this.system.getInstance();
-
-        if (!argv.local && instance.config.get('process') === 'systemd') {
-            cmd.addStage('systemd', this._setup.bind(this), [], 'Systemd');
-        }
+    setup() {
+        return [{
+            key: 'systemd',
+            description: 'Systemd',
+            enabled: (ctx) => !ctx.argv.local && ctx.instance.config.get('process') === 'systemd',
+            task: this._setup.bind(this)
+        }];
     }
 
-    _setup(argv, ctx, task) {
+    _setup(ctx, task) {
         const uid = getUid(ctx.instance.dir);
 
         if (!uid) {
@@ -27,7 +28,7 @@ class SystemdExtension extends cli.Extension {
         const serviceFilename = `ghost_${ctx.instance.name}.service`;
 
         if (ctx.instance.cliConfig.get('extension.systemd', false) || fs.existsSync(path.join('/lib/systemd/system', serviceFilename))) {
-            this.ui.log('Systemd service has already been set up. Skipping Systemd setup');
+            this.ui.log('Systemd service has already been set up. Skipping Systemd setup', 'yellow');
             return task.skip();
         }
 
