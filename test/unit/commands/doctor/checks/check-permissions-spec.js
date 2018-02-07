@@ -42,7 +42,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ProcessError);
             expect(error.message).to.match(/oops, cmd could not be executed/);
-            expect(execaStub.calledWithExactly('find ./content ./system .ghost-cli *.json -type f ! -perm 664 ! -perm 644')).to.be.true;
+            expect(execaStub.calledWithExactly('find ./  -type f ! -path "./versions/*" ! -perm 664 ! -perm 644')).to.be.true;
         });
     });
 });
