@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../index';
 const Promise = require('bluebird');
+const errors = require('../../../lib/errors');
 
 const NGINX = require(modulePath);
 const testURL = 'http://ghost.dev';
@@ -220,6 +221,36 @@ describe('Unit: Extensions > Nginx', function () {
                 });
             });
         });
+
+        it('returns a ProcessError when symlink command fails', function () {
+            const name = 'ghost.dev.conf';
+            const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
+            ctx.instance.dir = dir;
+            ctx.instance.template = sinon.stub().resolves();
+            const loadStub = sinon.stub().returns('nginx config file');
+            const templateStub = sinon.stub().returns(loadStub);
+            const ext = proxyNginx({
+                'fs-extra': {
+                    existsSync: () => false,
+                    readFileSync: () => 'hello'
+                },
+                'lodash/template': templateStub
+            });
+            const sudo = sinon.stub().rejects({stderr: 'oops'})
+            ext.ui.sudo = sudo;
+
+            return ext.setupNginx(null, ctx, task).then(() => {
+                expect(false, 'Promise should have rejected').to.be.true
+            }).catch((error) => {
+                expect(error).to.exist;
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error.options.stderr).to.be.equal('oops');
+                expect(templateStub.calledOnce).to.be.true;
+                expect(loadStub.calledOnce).to.be.true;
+                expect(sudo.calledOnce).to.be.true;
+                expect(sudo.args[0][0]).to.match(lnExp);
+            });
+        });
     });
 
     describe('setupSSL', function () {
@@ -358,11 +389,12 @@ describe('Unit: Extensions > Nginx', function () {
                     firstSet = true;
                     return tasks[0].task(ctx)
                 }).then(() => {
-                    expect(false, 'Promise should have rejected').to.be.true
+                    expect(false, 'Promise should have rejected').to.be.true;
                 }).catch((err) => {
                     expect(firstSet, `ENOTFOUND Failed: ${err}`).to.be.true;
                     expect(err).to.exist;
-                    expect(err.code).to.equal(DNS.code);
+                    expect(err.options.message).to.match(/Error trying to looking DNS for 'ghost.dev'/);
+                    expect(err.options.err.code).to.equal(DNS.code);
                     expect(log.called).to.be.false;
                     expect(ctx.dnsfail).to.not.exist;
                 });
@@ -622,6 +654,7 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(false, 'A rejection should have happened').to.be.true;
             }).catch((error) => {
                 sinon.assert.callCount(ext.ui.sudo, 4);
+                expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.match(/Nginx config file/);
                 expect(ext.restartNginx.calledOnce).to.be.false;
             });
@@ -654,8 +687,7 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.args[0][0]).to.match(/nginx -s reload/);
                 expect(err).to.be.ok;
-                const expectedError = require('../../../lib/errors');
-                expect(err).to.be.instanceof(expectedError.ProcessError);
+                expect(err).to.be.instanceof(errors.ProcessError);
             });
         });
     });

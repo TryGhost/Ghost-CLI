@@ -72,7 +72,9 @@ class NginxExtension extends cli.Extension {
             '/etc/nginx/sites-available'
         ).then(() => {
             return this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`);
-        }).then(() => this.restartNginx());
+        }).then(() => this.restartNginx()).catch((error) => {
+            return Promise.reject(new cli.errors.ProcessError(error));
+        });
     }
 
     setupSSL(argv, ctx, task) {
@@ -115,7 +117,10 @@ class NginxExtension extends cli.Extension {
                 return Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
                     if (error.code !== 'ENOTFOUND') {
                         // Some other error
-                        return Promise.reject(error);
+                        return Promise.reject(new cli.errors.CliError({
+                            message: `Error trying to looking DNS for '${parsedUrl.hostname}'`,
+                            err: error
+                        }));
                     }
 
                     // DNS entry has not populated yet, log an error and skip rest of the
@@ -222,7 +227,10 @@ class NginxExtension extends cli.Extension {
                     this.ui.sudo(`rm -f /etc/nginx/sites-available/${confFile}`),
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${confFile}`)
                 ]).catch(
-                    () => Promise.reject(new cli.errors.SystemError('Nginx config file link could not be removed, you will need to do this manually.'))
+                    (error) => Promise.reject(new cli.errors.CliError({
+                        message: `Nginx config file link could not be removed, you will need to do this manually for ${confFile}.`,
+                        err: error
+                    }))
                 )
             );
         }
@@ -234,7 +242,10 @@ class NginxExtension extends cli.Extension {
                     this.ui.sudo(`rm -f /etc/nginx/sites-available/${sslConfFile}`),
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${sslConfFile}`)
                 ]).catch(
-                    () => Promise.reject(new cli.errors.SystemError('SSL config file link could not be removed, you will need to do this manually.'))
+                    (error) => Promise.reject(new cli.errors.CliError({
+                        message: `SSL config file link could not be removed, you will need to do this manually for ${sslConfFile}.`,
+                        err: error
+                    }))
                 )
             );
         }
