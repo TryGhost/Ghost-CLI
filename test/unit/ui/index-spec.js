@@ -21,11 +21,48 @@ describe('Unit: UI', function () {
         sandbox.restore();
     });
 
-    it('can be created successfully', function () {
+    describe('constructor', function () {
         const UI = require(modulePath);
-        const ui = new UI();
 
-        expect(ui).to.be.ok;
+        it('works with defaults', function () {
+            const ui = new UI();
+            expect(ui.stdin).to.equal(process.stdin);
+            expect(ui.stdout).to.equal(process.stdout);
+            expect(ui.stderr).to.equal(process.stderr);
+            expect(ui.verbose).to.be.false;
+            expect(ui.allowPrompt).to.be.true;
+        });
+
+        it('works with custom options', function () {
+            const stdin = {stdin: true};
+            const stdout = {stdout: true};
+            const stderr = {stderr: true};
+
+            const ui = new UI({
+                stdin: stdin,
+                stdout: stdout,
+                stderr: stderr,
+                verbose: true,
+                allowPrompt: false
+            });
+
+            expect(ui.stdin).to.equal(stdin);
+            expect(ui.stdout).to.equal(stdout);
+            expect(ui.stderr).to.equal(stderr);
+            expect(ui.verbose).to.be.true;
+            expect(ui.allowPrompt).to.be.false;
+        });
+
+        it('sets allowPrompt to false if process.stdout is not a TTY', function () {
+            const stdout = {stdout: true, isTTY: false};
+            const ui = new UI({
+                allowPrompt: true,
+                stdout: stdout
+            });
+
+            expect(ui.stdout).to.equal(stdout);
+            expect(ui.allowPrompt).to.be.false;
+        });
     });
 
     describe('run', function () {
@@ -171,7 +208,8 @@ describe('Unit: UI', function () {
         const UI = require(modulePath);
 
         it('fails when prompting is disabled', function (done) {
-            const ui = new UI({allowPrompt: false});
+            const ui = new UI();
+            ui.allowPrompt = false;
             const noSpinStub = sandbox.stub(ui, 'noSpin');
 
             try {
@@ -189,7 +227,8 @@ describe('Unit: UI', function () {
         });
 
         it('passes options to prompt method', function () {
-            const ui = new UI({allowPrompt: true});
+            const ui = new UI();
+            ui.allowPrompt = true;
             const noSpinStub = sandbox.stub(ui, 'noSpin').callsFake((fn) => fn());
             const inquirerStub = sandbox.stub(ui, 'inquirer').resolves();
 
