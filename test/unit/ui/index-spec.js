@@ -4,14 +4,23 @@ const chalk = require('chalk');
 const hasAnsi = require('has-ansi');
 const stripAnsi = require('strip-ansi');
 const sinon = require('sinon');
-const proxyquire = require('proxyquire').noCallThru();
+const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
 const EventEmitter = require('events');
 
+const execa = require('execa');
+const Renderer = require('../../../lib/ui/renderer');
+
 const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {
+    const sandbox = sinon.sandbox.create();
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
     it('can be created successfully', function () {
         const UI = require(modulePath);
         const ui = new UI();
@@ -19,62 +28,124 @@ describe('Unit: UI', function () {
         expect(ui).to.be.ok;
     });
 
-    describe('#run', function () {
-        let ui;
+    describe('run', function () {
+        const spinner = {
+            succeed: sandbox.stub(),
+            fail: sandbox.stub()
+        };
 
-        before(function () {
-            const UI = require(modulePath);
-            ui = new UI();
+        const startStub = sandbox.stub().returns(spinner);
+        const oraStub = sandbox.stub().returns({start: startStub});
+        const UI = proxyquire(modulePath, {
+            ora: oraStub
         });
 
-        it('calls a function and returns its response', function () {
-            const testFunc = sinon.stub().returns('a');
+        afterEach(() => {
+            spinner.succeed.reset();
+            spinner.fail.reset();
+            startStub.resetHistory();
+            oraStub.resetHistory();
+        });
 
-            return ui.run(testFunc).then(function (result) {
-                expect(testFunc.calledOnce).to.be.true
-                expect(result, 'run result').to.equal('a');
+        it('with quiet enabled, resolves a static value', function () {
+            const ui = new UI();
+
+            return ui.run('foo', null, {quiet: true}).then((result) => {
+                expect(result).to.equal('foo');
+                expect(oraStub.called).to.be.false;
             });
         });
 
-        it('correctly passes through promise reject values', function (done) {
-            const testFunc = new Promise(function (resolve, reject) {
-                reject(new Error('something went wrong!'));
-            });
+        it('with quiet enabled, resolves the result of a function', function () {
+            const ui = new UI();
+            const testFunc = sandbox.stub().resolves('foo');
 
-            ui.run(testFunc).then(function () {
+            return ui.run(testFunc, null, {quiet: true}).then((result) => {
+                expect(result).to.equal('foo');
+                expect(oraStub.called).to.be.false;
+            });
+        });
+
+        it('with quiet enabled, passes through rejection', function (done) {
+            const ui = new UI();
+            const testFunc = sandbox.stub().rejects(new Error('something went wrong!'));
+
+            ui.run(testFunc, null, {quiet: true}).then(() => {
                 done(new Error('then should not be called'));
-            }).catch(function reject(error) {
-                expect(error, 'run catch error').to.be.ok;
+            }).catch((error) => {
                 expect(error, 'run catch error').to.be.an.instanceOf(Error);
                 expect(error.message, 'run catch error message').to.equal('something went wrong!');
+                expect(testFunc.calledOnce).to.be.true;
+                expect(oraStub.called).to.be.false;
                 done();
+            }).catch(done);
+        });
+
+        it('starts spinner with options, resolves single value', function () {
+            const ui = new UI({stdout: {stdout: true}});
+
+            return ui.run('foo', 'do a thing').then((result) => {
+                expect(result).to.equal('foo');
+                expect(oraStub.calledOnce).to.be.true;
+                expect(oraStub.calledWithExactly({
+                    text: 'do a thing',
+                    spinner: 'hamburger',
+                    stream: {stdout: true}
+                })).to.be.true;
+                expect(startStub.calledOnce).to.be.true;
+                expect(spinner.succeed.calledOnce).to.be.true;
+                expect(ui.spinner, 'spinner is set to null').to.be.null;
             });
         });
 
-        it('quietly calls a function and returns the response', function (done) {
-            const testFun = sinon.stub().returns('Shh');
-            ui.run(testFun, null, {quiet: true}).then((resolver) => {
-                expect(testFun.calledOnce, 'Function called').to.be.true;
-                expect(resolver, 'Returned proper values').to.equal('Shh');
-                done();
+        it('starts spinner with options, resolves function', function () {
+            const ui = new UI({stdout: {stdout: true}});
+            const testFunc = sandbox.stub().resolves('foo');
+
+            return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots'}).then((result) => {
+                expect(result).to.equal('foo');
+                expect(testFunc.calledOnce).to.be.true;
+                expect(oraStub.calledOnce).to.be.true;
+                expect(oraStub.calledWithExactly({
+                    text: 'do a thing',
+                    spinner: 'dots',
+                    stream: {stdout: true}
+                })).to.be.true;
+                expect(startStub.calledOnce).to.be.true;
+                expect(spinner.succeed.calledOnce).to.be.true;
+                expect(ui.spinner, 'spinner is set to null').to.be.null;
             });
         });
 
-        it('quietly passes a promise through', function (done) {
-            const testRet = new Promise(function (resolve) {
-                resolve('tiptoe');
-            });
-            ui.run(testRet, null, {quiet: true}).then((resolved) => {
-                expect(resolved, 'Returned proper values').to.equal('tiptoe');
+        it('starts spinner with options, handles rejection', function (done) {
+            const ui = new UI({stdout: {stdout: true}});
+            const testFunc = sandbox.stub().rejects(new Error('something went wrong!'));
+
+            ui.run(testFunc, 'test').then(() => {
+                done(new Error('then should not be called'));
+            }).catch((error) => {
+                expect(error, 'run catch error').to.be.an.instanceOf(Error);
+                expect(error.message, 'run catch error message').to.equal('something went wrong!');
+                expect(testFunc.calledOnce).to.be.true;
+                expect(oraStub.calledOnce).to.be.true;
+                expect(oraStub.calledWithExactly({
+                    text: 'test',
+                    spinner: 'hamburger',
+                    stream: {stdout: true}
+                })).to.be.true;
+                expect(startStub.calledOnce).to.be.true;
+                expect(spinner.succeed.called).to.be.false;
+                expect(spinner.fail.calledOnce).to.be.true;
+                expect(ui.spinner, 'spinner is set to null').to.be.null;
                 done();
-            });
+            }).catch(done);
         });
     });
 
-    it('#table creates a pretty looking table', function (done) {
+    it('table creates a pretty looking table', function () {
         const UI = require(modulePath);
         const ui = new UI();
-        const ctx = {log: sinon.stub()};
+        const logStub = sandbox.stub(ui, 'log');
         const expectTable = [
             '┌───┬───┬───┐',
             '│ a │ b │ c │',
@@ -87,75 +158,65 @@ describe('Unit: UI', function () {
             '└───┴───┴───┘'
         ];
 
-        ui.table.bind(ctx)(['a','b','c'], [['d','e','f'], ['g','h','i'], ['j','k','l']]);
+        ui.table(['a','b','c'], [['d','e','f'], ['g','h','i'], ['j','k','l']]);
 
-        expect(ctx.log.calledOnce).to.be.true;
+        expect(logStub.calledOnce).to.be.true;
 
         // Clear out all of the escape characters and split by line
-        const actualTable = stripAnsi(ctx.log.firstCall.args[0]).split(/\n/);
+        const actualTable = stripAnsi(logStub.firstCall.args[0]).split(/\n/);
         expect(actualTable).to.deep.equal(expectTable);
-
-        done();
     });
 
-    describe('#prompt', function () {
-        let ui;
-
-        before(function () {
-            const UI = require(modulePath);
-            ui = new UI();
-        });
+    describe('prompt', function () {
+        const UI = require(modulePath);
 
         it('fails when prompting is disabled', function (done) {
-            const ctx = {
-                allowPrompt: false,
-                noSpin: sinon.stub()
-            };
+            const ui = new UI({allowPrompt: false});
+            const noSpinStub = sandbox.stub(ui, 'noSpin');
+
             try {
-                ui.prompt.bind(ctx)({
+                ui.prompt({
                     name: 'test',
                     type: 'input',
                     message: 'Enter anything'
                 });
-                expect(false, 'An error should have been thrown').to.be.true;
-                done();
+                done(new Error('error should have been thrown'));
             } catch (error) {
-                expect(ctx.noSpin.called).to.be.false;
                 expect(error.message).to.match(/Prompts have been disabled/);
+                expect(noSpinStub.called).to.be.false;
                 done();
             }
         });
 
-        it('passes options to prompt method', function (done) {
-            const ctx = {
-                allowPrompt: true,
-                noSpin: sinon.stub().callsFake(run => run()),
-                inquirer: sinon.stub().callsFake((prompts) => prompts)
-            };
+        it('passes options to prompt method', function () {
+            const ui = new UI({allowPrompt: true});
+            const noSpinStub = sandbox.stub(ui, 'noSpin').callsFake((fn) => fn());
+            const inquirerStub = sandbox.stub(ui, 'inquirer').resolves();
+
             const prompt = {
                 name: 'test',
                 type: 'input',
                 message: 'Enter anything'
             };
 
-            ui.prompt.bind(ctx)(prompt);
-
-            expect(ctx.inquirer.called).to.be.true;
-            expect(ctx.noSpin.calledOnce).to.be.true;
-
-            done();
+            return ui.prompt(prompt).then(() => {
+                expect(noSpinStub.calledOnce).to.be.true;
+                expect(inquirerStub.calledOnce).to.be.true;
+                expect(inquirerStub.calledWithExactly(prompt)).to.be.true;
+            });
         });
     });
 
-    it('#confirm calls prompt', function (done) {
+    it('confirm calls prompt', function () {
         const UI = require(modulePath);
         const ui = new UI();
-        const ctx = {prompt: sinon.stub()};
+        const promptStub = sandbox.stub(ui, 'prompt').resolves();
+
         const testA = {
             type: 'confirm',
             name: 'yes',
             message: 'Is the sky blue',
-            default: 'yes'
+            default: true
         };
         const testB = {
             type: 'confirm',
@@ -164,166 +225,158 @@ describe('Unit: UI', function () {
             default: undefined
         };
 
-        ui.confirm.bind(ctx)('Is the sky blue', 'yes');
-        ui.confirm.bind(ctx)('Is ghost just a blogging platform');
-
-        expect(ctx.prompt.calledTwice).to.be.true;
-        expect(ctx.prompt.getCall(0).args[0]).to.deep.equal(testA);
-        expect(ctx.prompt.getCall(1).args[0]).to.deep.equal(testB);
-        done();
-    });
-
-    describe('#listr', function () {
-        it('passes tasks to constructor', function (done) {
-            class Listr {run() {}}
-            const ListrStub = sinon.spy(function () {
-                return sinon.createStubInstance(Listr);
-            });
-            const UI = proxyquire(modulePath, {listr: ListrStub});
-            const ui = new UI();
-            const tasks = ['test','ing','is','necessary'];
-
-            ui.listr(tasks);
-
-            expect(ListrStub.calledWithNew()).to.be.true;
-            expect(ListrStub.firstCall.args[0]).to.deep.equal(tasks);
-            done();
-        });
-
-        it('sets verbose renderer', function (done) {
-            const ctx = {verbose: true};
-            class Listr {run() {}}
-            const ListrStub = sinon.spy(function () {
-                return sinon.createStubInstance(Listr);
-            });
-            const UI = proxyquire(modulePath, {listr: ListrStub});
-            const ui = new UI();
-            const tasks = ['test','ing','is','necessary'];
-
-            ui.listr.bind(ctx)(tasks);
-
-            expect(ListrStub.calledWithNew()).to.be.true;
-            expect(ListrStub.firstCall.args[0]).to.deep.equal(tasks);
-            expect(ListrStub.firstCall.args[1].renderer).to.equal('verbose');
-            done();
-        });
-
-        // @todo: Is this an acceptable way to test
-        it('passes context through', function () {
-            const UI = require(modulePath);
-            const ui = new UI();
-            const context = {
-                write: 'tests',
-                like: 'there\'s',
-                no: 'tomorrow',
-                title: 'context test'
-            };
-            const tasks = [{
-                title: 'test',
-                task: (ctx) => {
-                    expect(ctx).to.deep.equal(context);
-                }
-            }];
-
-            return ui.listr(tasks,context);
-        });
-
-        it('ignores context if requested', function () {
-            const UI = require(modulePath);
-            const ui = new UI();
-            const tasks = [{
-                title: 'test',
-                task: (ctx) => {
-                    expect(ctx).to.be.undefined;
-                }
-            }];
-
-            return ui.listr(tasks,false);
-        });
-    });
-
-    it('#sudo runs a sudo command', function (done) {
-        const shellStub = sinon.stub();
-        const UI = proxyquire(modulePath, {execa: {shell: shellStub}});
-        const ui = new UI();
-
-        const logStub = sinon.stub(ui, 'log');
-        const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
-        const stderr = new EventEmitter();
-
-        const eCall = new RegExp(`sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`);
-
-        const stdin = streamTestUtils.getWritableStream((output) => {
-            expect(output).to.equal('password\n');
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.calledWithExactly('Running sudo command: ghost -v', 'gray')).to.be.true;
-            expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.args[0][0]).to.match(eCall);
-            expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo'});
+        return ui.confirm('Is the sky blue', true).then(() => {
             expect(promptStub.calledOnce).to.be.true;
-            done();
-        });
-        shellStub.returns({stdin: stdin, stderr: stderr});
+            expect(promptStub.calledWithExactly(testA)).to.be.true;
 
-        ui.sudo('ghost -v', {cwd: '/var/foo', sudoArgs: ['-E -u ghost']});
-        stderr.emit('data', '#node-sudo-passwd#');
-    });
-
-    it('#sudo can handle defaults', function () {
-        const shell = Promise.resolve();
-        shell.stderr = {on: () => true};
-
-        const shellStub = sinon.stub().returns(shell);
-
-        const UI = proxyquire(modulePath, {execa: {shell: shellStub}});
-        const ui = new UI();
-
-        ui.log = () => true;
-        ui.prompt = sinon.stub();
-
-        return ui.sudo('echo').then(() => {
-            expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.getCall(0).args[0]).to.match(/#'[ ]{2}echo/);
+            return ui.confirm('Is ghost just a blogging platform');
+        }).then(() => {
+            expect(promptStub.calledTwice).to.be.true;
+            expect(promptStub.calledWithExactly(testB)).to.be.true;
         });
     });
 
-    describe('#noSpin', function () {
-        let ui;
+    describe('listr', function () {
+        it('passes tasks to constructor', function () {
+            const runStub = sandbox.stub().resolves();
+            const ListrStub = sandbox.stub().returns({run: runStub});
+            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const ui = new UI();
+            const tasks = ['test','ing','is','necessary'];
 
-        before(function () {
-            const UI = require(modulePath);
-            ui = new UI();
+            return ui.listr(tasks).then(() => {
+                expect(ListrStub.calledWithNew()).to.be.true;
+                expect(ListrStub.calledWithExactly(tasks, {
+                    renderer: Renderer
+                }));
+                expect(runStub.calledOnce).to.be.true;
+                expect(runStub.calledWithExactly({
+                    ui: ui,
+                    listr: {run: runStub}
+                })).to.be.true;
+            });
         });
 
-        it('stops and later starts an existing spinner', function (done) {
-            const ctx = {
-                spinner: {
-                    stop: sinon.stub(),
-                    start: sinon.stub(),
-                    paused: false
-                }
+        it('sets verbose renderer', function () {
+            const runStub = sandbox.stub().resolves();
+            const ListrStub = sandbox.stub().returns({run: runStub});
+            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const ui = new UI({verbose: true});
+            const tasks = ['test','ing','is','necessary'];
+
+            return ui.listr(tasks, {something: 'foo'}, {exitOnError: false}).then(() => {
+                expect(ListrStub.calledWithNew()).to.be.true;
+                expect(ListrStub.calledWithExactly(tasks, {
+                    renderer: 'verbose',
+                    exitOnError: true
+                }));
+                expect(runStub.calledOnce).to.be.true;
+                expect(runStub.calledWithExactly({
+                    something: 'foo',
+                    ui: ui,
+                    listr: {run: runStub}
+                })).to.be.true;
+            });
+        });
+
+        it('returns listr instance if context is false', function () {
+            const runStub = sandbox.stub().resolves();
+            const ListrStub = sandbox.stub().returns({run: runStub});
+            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const ui = new UI();
+            const tasks = ['test','ing','is','necessary'];
+
+            const result = ui.listr(tasks, false, {exitOnError: false, renderer: 'update'});
+            expect(result).to.deep.equal({run: runStub});
+            expect(ListrStub.calledWithNew()).to.be.true;
+            expect(ListrStub.calledWithExactly(tasks, {
+                renderer: 'update',
+                exitOnError: true
+            }));
+            expect(runStub.called).to.be.false;
+        });
+    });
+
+    describe('sudo', function () {
+        const UI = require(modulePath);
+
+        it('runs a sudo command', function (done) {
+            const shellStub = sandbox.stub(execa, 'shell');
+            const ui = new UI();
+
+            const logStub = sandbox.stub(ui, 'log');
+            const promptStub = sandbox.stub(ui, 'prompt').resolves({password: 'password'});
+            const stderr = new EventEmitter();
+
+            const eCall = new RegExp(`sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`);
+
+            const stdin = streamTestUtils.getWritableStream((output) => {
+                expect(output).to.equal('password\n');
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.calledWithExactly('Running sudo command: ghost -v', 'gray')).to.be.true;
+                expect(shellStub.calledOnce).to.be.true;
+                expect(shellStub.args[0][0]).to.match(eCall);
+                expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo'});
+                expect(promptStub.calledOnce).to.be.true;
+                done();
+            });
+            shellStub.returns({stdin: stdin, stderr: stderr});
+
+            ui.sudo('ghost -v', {cwd: '/var/foo', sudoArgs: ['-E -u ghost']});
+            stderr.emit('data', '#node-sudo-passwd#');
+        });
+
+        it('can handle defaults', function () {
+            const shell = Promise.resolve();
+            shell.stderr = {on: () => true};
+
+            const shellStub = sandbox.stub(execa, 'shell').returns(shell);
+            const ui = new UI();
+
+            sandbox.stub(ui, 'log').returns(true);
+            sandbox.stub(ui, 'prompt');
+
+            return ui.sudo('echo').then(() => {
+                expect(shellStub.calledOnce).to.be.true;
+                expect(shellStub.getCall(0).args[0]).to.match(/#'[ ]{2}echo/);
+            });
+        });
+    });
+
+    describe('noSpin', function () {
+        const UI = require(modulePath);
+
+        it('stops and later starts an existing spinner', function () {
+            const ui = new UI();
+            const spinner = {
+                stop: sandbox.stub(),
+                start: sandbox.stub(),
+                paused: false
             };
-            const callback = sinon.stub().returns('Pancakes');
+            ui.spinner = spinner;
 
-            ui.noSpin.bind(ctx)(callback).then(function (ret) {
+            const callback = sandbox.stub().returns('Pancakes');
+
+            return ui.noSpin(callback).then(function (ret) {
                 expect(ret).to.equal('Pancakes');
                 expect(callback.calledOnce).to.be.true;
-                expect(ctx.spinner.stop.calledOnce).to.be.true;
-                expect(ctx.spinner.start.calledOnce).to.be.true;
-
-                done();
+                expect(spinner.stop.calledOnce).to.be.true;
+                expect(spinner.start.calledOnce).to.be.true;
             });
         });
 
-        it('passes a value through', function (done) {
-            ui.noSpin('Waffles').then(function (ret) {
+        it('passes a value through', function () {
+            const ui = new UI();
+
+            return ui.noSpin('Waffles').then(function (ret) {
                 expect(ret).to.equal('Waffles');
-                done();
             });
         });
     });
 
-    describe('#log', function () {
+    describe('log', function () {
+        const UI = require(modulePath);
+
         it('outputs message without color when no color is supplied', function (done) {
             const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
@@ -349,61 +402,54 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
-            const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('test', 'green');
         });
 
-        it('outputs message to proper stream', function (done) {
-            const ctx = {
-                stdout: {write: sinon.stub()},
-                stderr: {write: sinon.stub()}
-            };
-            const UI = require(modulePath);
-            const ui = new UI();
+        it('outputs message to proper stream', function () {
+            const stdout = {write: sandbox.stub()};
+            const stderr = {write: sandbox.stub()};
 
-            ui.log.bind(ctx)('Error', null, true);
-            ui.log.bind(ctx)('Good', null, false);
+            const ui = new UI({stdout: stdout, stderr: stderr});
 
-            expect(ctx.stdout.write.calledOnce).to.be.true;
-            expect(ctx.stderr.write.calledOnce).to.be.true;
-            expect(ctx.stderr.write.firstCall.args[0]).to.equal('Error\n');
-            expect(ctx.stdout.write.firstCall.args[0]).to.equal('Good\n');
+            ui.log('Error', null, true);
+            ui.log('Good', null, false);
 
-            done();
+            expect(stdout.write.calledOnce).to.be.true;
+            expect(stderr.write.calledOnce).to.be.true;
+            expect(stderr.write.firstCall.args[0]).to.equal('Error\n');
+            expect(stdout.write.firstCall.args[0]).to.equal('Good\n');
         });
 
-        it('resets spinner', function (done) {
-            const UI = require(modulePath);
-            const ui = new UI();
-            const write = sinon.stub()
-            const ctx = {
-                spinner: {
-                    stop: sinon.stub(),
-                    paused: false,
-                    start: sinon.stub()
-                },
-                stdout: {write}
+        it('resets spinner', function () {
+            const stdout = {write: sandbox.stub()};
+            const ui = new UI({stdout: stdout});
+            const spinner = {
+                stop: sandbox.stub(),
+                paused: false,
+                start: sandbox.stub()
             };
+            ui.spinner = spinner;
 
-            ui.log.bind(ctx)('test');
-            ui.log.bind({stdout: {write}})('best');
+            ui.log('test');
 
-            expect(ctx.spinner.stop.calledOnce).to.be.true;
-            expect(ctx.spinner.start.calledOnce).to.be.true;
-            expect(write.calledTwice).to.be.true;
-            expect(write.firstCall.args[0]).to.equal('test\n');
-            expect(write.secondCall.args[0]).to.equal('best\n');
+            ui.spinner = null;
+            ui.log('best');
 
-            done();
+            expect(spinner.stop.calledOnce).to.be.true;
+            expect(spinner.start.calledOnce).to.be.true;
+            expect(stdout.write.calledTwice).to.be.true;
+            expect(stdout.write.args[0][0]).to.equal('test\n');
+            expect(stdout.write.args[1][0]).to.equal('best\n');
         });
     });
 
-    describe('#logVerbose', function () {
+    describe('logVerbose', function () {
+        const UI = require(modulePath);
+
         it('passes through options to log method when verbose is set', function () {
-            const UI = require(modulePath);
             const ui = new UI({verbose: true});
-            const logStub = sinon.stub(ui, 'log');
+            const logStub = sandbox.stub(ui, 'log');
 
             ui.logVerbose('foo', 'green', true);
             expect(logStub.calledOnce).to.be.true;
@@ -411,16 +457,15 @@ describe('Unit: UI', function () {
         });
 
         it('does not call log when verbose is false', function () {
-            const UI = require(modulePath);
             const ui = new UI({verbose: false});
-            const logStub = sinon.stub(ui, 'log');
+            const logStub = sandbox.stub(ui, 'log');
 
             ui.logVerbose('foo', 'green', false);
             expect(logStub.called).to.be.false;
         });
     });
 
-    it('#success outputs message with correct symbols', function (done) {
+    it('success outputs message with correct symbols', function (done) {
         const stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
             expect(output, 'output value').to.equal(`${logSymbols.success} test\n`);
@@ -434,7 +479,7 @@ describe('Unit: UI', function () {
         ui.success('test');
     });
 
-    it('#fail outputs message with correct formatting', function (done) {
+    it('fail outputs message with correct formatting', function (done) {
         const stdout = streamTestUtils.getWritableStream(function (output) {
             expect(output, 'output exists').to.be.ok;
             expect(output, 'output value').to.equal(`${logSymbols.error} test\n`);
@@ -448,83 +493,66 @@ describe('Unit: UI', function () {
         ui.fail('test');
     });
 
-    describe('#error', function () {
-        // @todo: finish and fix this
-        let ui;
-
-        before(function () {
-            const UI = require(modulePath);
-            ui = new UI();
-        });
+    describe('error', function () {
+        const UI = require(modulePath);
+        const errors = require('../../../lib/errors');
 
         describe('handles cliError', function () {
-            const errors = require('../../../lib/errors');
-            it('verbose', function (done) {
-                const system = {writeErrorLog: sinon.stub()};
-                const ctx = {
-                    verbose: true,
-                    log: sinon.stub(),
-                    _formatDebug: sinon.stub().returns('cherries')
-                };
+            it('verbose', function () {
+                const ui = new UI({verbose: true});
+                const system = {writeErrorLog: sandbox.stub()};
+                const log = sandbox.stub(ui, 'log');
+                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
 
                 const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
 
                 errs.forEach((err) => {
-                    ui.error.bind(ctx)(err, system);
+                    ui.error(err, system);
                 });
 
-                expect(ctx.log.called).to.be.true;
-                expect(ctx._formatDebug.calledTwice).to.be.true;
+                expect(log.called).to.be.true;
+                expect(formatDebug.calledTwice).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
-                expect(ctx.log.getCall(0).args[0]).to.match(/Config/);
-                expect(ctx.log.getCall(1).args[0]).to.equal(errs[0].toString(true));
-                expect(ctx.log.getCall(2).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(3).args[0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-                expect(ctx.log.getCall(4).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
-                expect(ctx.log.getCall(5).args[0]).to.match(/Cli/);
-                expect(ctx.log.getCall(6).args[0]).to.equal(errs[1].toString(true));
-                expect(ctx.log.getCall(7).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(8).args[0]).to.match(/Additional log info/);
-
-                done();
+                expect(log.args[0][0]).to.match(/Config/);
+                expect(log.args[1][0]).to.equal(errs[0].toString(true));
+                expect(log.args[2][0]).to.equal('cherries');
+                expect(log.args[3][0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(log.args[5][0]).to.match(/Cli/);
+                expect(log.args[6][0]).to.equal(errs[1].toString(true));
+                expect(log.args[7][0]).to.equal('cherries');
+                expect(log.args[8][0]).to.match(/Additional log info/);
             });
 
-            it('non-verbose', function (done) {
-                const system = {writeErrorLog: sinon.stub()};
-                const ctx = {
-                    verbose: false,
-                    log: sinon.stub(),
-                    _formatDebug: sinon.stub().returns('cherries')
-                };
+            it('non-verbose', function () {
+                const ui = new UI({verbose: false});
+                const system = {writeErrorLog: sandbox.stub()};
+                const log = sandbox.stub(ui, 'log');
+                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
 
                 const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
 
                 errs.forEach((err) => {
-                    ui.error.bind(ctx)(err, system);
+                    ui.error(err, system);
                 });
 
-                // @TODO: Are these expectations really required? They're already tested in verbose
-
-                sinon.assert.callCount(ctx.log,11);
-                expect(ctx._formatDebug.calledTwice).to.be.true;
+                expect(log.callCount).to.equal(11);
+                expect(formatDebug.calledTwice).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
-                expect(ctx.log.firstCall.args[0]).to.match(/Config/);
-                expect(ctx.log.secondCall.args[0]).to.equal(errs[0].toString(false));
-                expect(ctx.log.thirdCall.args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(3).args[0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-                expect(ctx.log.getCall(4).args[0]).to.match(/https:\/\/docs\.ghost\.org\//);
-                expect(ctx.log.getCall(5).args[0]).to.match(/Cli/);
-                expect(ctx.log.getCall(6).args[0]).to.equal(errs[1].toString(false));
-                expect(ctx.log.getCall(7).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(8).args[0]).to.match(/Additional log info/);
-
-                done();
+                expect(log.args[0][0]).to.match(/Config/);
+                expect(log.args[1][0]).to.equal(errs[0].toString(false));
+                expect(log.args[2][0]).to.equal('cherries');
+                expect(log.args[3][0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(log.args[5][0]).to.match(/Cli/);
+                expect(log.args[6][0]).to.equal(errs[1].toString(false));
+                expect(log.args[7][0]).to.equal('cherries');
+                expect(log.args[8][0]).to.match(/Additional log info/);
             });
         });
 
         describe('handles ListrErrors', function () {
             const ListrError = require('listr/lib/listr-error');
-            const errors = require('../../../lib/errors');
 
             it('verbose without log output', function () {
                 const err = new ListrError('Something happened');
@@ -536,26 +564,25 @@ describe('Unit: UI', function () {
                     })
                 ];
 
-                const system = {writeErrorLog: sinon.stub()};
-                const ctx = {
-                    verbose: true,
-                    log: sinon.stub(),
-                    _formatDebug: sinon.stub().returns('cherries')
-                };
+                const ui = new UI({verbose: true});
+                const log = sandbox.stub(ui, 'log');
+                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
 
-                ui.error.call(ctx, err, system);
+                const system = {writeErrorLog: sandbox.stub()};
 
-                expect(ctx.log.callCount).to.equal(8);
-                expect(ctx._formatDebug.calledOnce).to.be.true;
+                ui.error(err, system);
+
+                expect(log.callCount).to.equal(8);
+                expect(formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.called).to.be.false;
-                expect(ctx.log.getCall(0).args[0]).to.match(/One or more errors occurred/);
-                expect(ctx.log.getCall(1).args[0]).to.match(/1\) SystemError/);
-                expect(stripAnsi(ctx.log.getCall(2).args[0])).to.match(/Message: Error 1/);
-                expect(ctx.log.getCall(3).args[0]).to.match(/2\) Task 2/);
-                expect(stripAnsi(ctx.log.getCall(4).args[0])).to.match(/Message: Error 2/);
-                expect(ctx.log.getCall(5).args[0]).to.equal('cherries');
-                expect(stripAnsi(ctx.log.getCall(6).args[0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(ctx.log.getCall(7).args[0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
+                expect(log.args[0][0]).to.match(/One or more errors occurred/);
+                expect(log.args[1][0]).to.match(/1\) SystemError/);
+                expect(stripAnsi(log.args[2][0])).to.match(/Message: Error 1/);
+                expect(log.args[3][0]).to.match(/2\) Task 2/);
+                expect(stripAnsi(log.args[4][0])).to.match(/Message: Error 2/);
+                expect(log.args[5][0]).to.equal('cherries');
+                expect(stripAnsi(log.args[6][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(log.args[7][0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
             });
 
             it('non-verbose with log output', function () {
@@ -568,45 +595,41 @@ describe('Unit: UI', function () {
                     })
                 ];
 
-                const system = {writeErrorLog: sinon.stub()};
-                const ctx = {
-                    verbose: false,
-                    log: sinon.stub(),
-                    _formatDebug: sinon.stub().returns('cherries')
-                };
+                const ui = new UI({verbose: false});
+                const log = sandbox.stub(ui, 'log');
+                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
+                const system = {writeErrorLog: sandbox.stub()};
 
-                ui.error.call(ctx, err, system);
+                ui.error(err, system);
 
-                expect(ctx.log.callCount).to.equal(9);
-                expect(ctx._formatDebug.calledOnce).to.be.true;
+                expect(log.callCount).to.equal(9);
+                expect(formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.called).to.be.true;
-                expect(ctx.log.getCall(0).args[0]).to.match(/One or more errors occurred/);
-                expect(ctx.log.getCall(1).args[0]).to.match(/1\) ProcessError/);
-                expect(stripAnsi(ctx.log.getCall(2).args[0])).to.match(/Message: Error 1/);
-                expect(ctx.log.getCall(3).args[0]).to.match(/2\) Task 2/);
-                expect(stripAnsi(ctx.log.getCall(4).args[0])).to.match(/Message: Error 2/);
-                expect(ctx.log.getCall(5).args[0]).to.equal('cherries');
-                expect(ctx.log.getCall(6).args[0]).to.match(/Additional log info available in/);
-                expect(stripAnsi(ctx.log.getCall(7).args[0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(ctx.log.getCall(8).args[0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
+                expect(log.args[0][0]).to.match(/One or more errors occurred/);
+                expect(log.args[1][0]).to.match(/1\) ProcessError/);
+                expect(stripAnsi(log.args[2][0])).to.match(/Message: Error 1/);
+                expect(log.args[3][0]).to.match(/2\) Task 2/);
+                expect(stripAnsi(log.args[4][0])).to.match(/Message: Error 2/);
+                expect(log.args[5][0]).to.equal('cherries');
+                expect(log.args[6][0]).to.match(/Additional log info available in/);
+                expect(stripAnsi(log.args[7][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(log.args[8][0]).to.match(/Please refer to https:\/\/docs.ghost.org/);
             });
         });
 
         describe('handles generic errors', function () {
-            it('verbosly', function (done) {
-                const system = {writeErrorLog: sinon.stub()};
-                const ctx = {
-                    verbose: true,
-                    log: sinon.stub(),
-                    _formatDebug: sinon.stub()
-                };
+            it('verbosly', function () {
+                const ui = new UI({verbose: true});
+                const log = sandbox.stub(ui, 'log');
+                const formatDebug = sandbox.stub(ui, '_formatDebug');
+                const system = {writeErrorLog: sandbox.stub()};
                 const errs = [new Error('Error 1'), new Error('Error 2'), new Error('Error 3'), new Error('Error 4')];
                 errs[0].code = 404;
                 errs[1].path = '/var/www/ghost/index.js';
                 errs[2].stack = null;
 
                 errs.forEach(function (err) {
-                    ui.error.bind(ctx)(err, system);
+                    ui.error(err, system);
                 });
 
                 const expectedErrors = [
@@ -615,45 +638,41 @@ describe('Unit: UI', function () {
                     `An error occurred.\nMessage: '${errs[2].message}'\n\n`.split('\n'),
                     `An error occurred.\nMessage: '${errs[3].message}'\n\nStack: ${errs[3].stack}\n`.split('\n')
                 ];
-                // Log is called 5 times per run
-                sinon.assert.callCount(ctx.log, 20);
-                sinon.assert.callCount(ctx._formatDebug, 4);
-                sinon.assert.callCount(system.writeErrorLog, 4);
+                expect(log.callCount).to.equal(20);
+                expect(formatDebug.callCount).to.equal(4);
+                expect(system.writeErrorLog.callCount).to.equal(4);
                 expectedErrors.forEach(function (err, i) {
-                    expect(ctx.log.getCall(i * 5 + 2).args[0]).to.match(/Additional log info/);
-                    expect(ctx.log.getCall(i * 5 + 3).args[0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-                    expect(ctx.log.getCall(i * 5 + 4).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                    expect(stripAnsi(ctx.log.getCall(i * 5).args[0]).split(/\n/)).to.deep.equal(err);
+                    expect(log.args[i * 5 + 2][0]).to.match(/Additional log info/);
+                    expect(stripAnsi(log.args[i * 5 + 3][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                    expect(log.args[i * 5 + 4][0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                    expect(stripAnsi(log.args[i * 5][0]).split(/\n/)).to.deep.equal(err);
                 });
-                done();
             });
 
-            it('non-verbose', function (done) {
-                const system = {writeErrorLog: sinon.stub()};
-                const ctx = {
-                    verbose: false,
-                    log: sinon.stub(),
-                    _formatDebug: sinon.stub()
-                };
+            it('non-verbose', function () {
+                const ui = new UI({verbose: false});
+                const log = sandbox.stub(ui, 'log');
+                const formatDebug = sandbox.stub(ui, '_formatDebug');
+                const system = {writeErrorLog: sandbox.stub()};
                 const err = new Error('!!!error!!!');
                 const expectedError = `An error occurred.\nMessage: '${err.message}'\n\n`.split('\n');
 
-                ui.error.bind(ctx)(err, system);
+                ui.error(err, system);
 
-                sinon.assert.callCount(ctx.log, 5);
-                expect(ctx._formatDebug.calledOnce).to.be.true;
+                expect(log.callCount).to.equal(5);
+                expect(formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
-                expect(ctx.log.getCall(2).args[0]).to.match(/Additional log info/);
-                // expect(ctx.log.getCall(3).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                expect(ctx.log.getCall(4).args[0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
-                expect(stripAnsi(ctx.log.getCall(0).args[0]).split(/\n/)).to.deep.equal(expectedError);
-
-                done();
+                expect(log.args[2][0]).to.match(/Additional log info/);
+                expect(stripAnsi(log.args[3][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(log.args[4][0]).to.match(/Please refer to https:\/\/docs\.ghost\.org/);
+                expect(stripAnsi(log.args[0][0]).split(/\n/)).to.deep.equal(expectedError);
             });
         });
 
-        it('handles objects', function (done) {
-            const ctx = {log: sinon.stub(), _formatDebug: sinon.stub()};
+        it('handles objects', function () {
+            const ui = new UI();
+            const log = sandbox.stub(ui, 'log');
+            const formatDebug = sandbox.stub(ui, '_formatDebug');
             const testError = {
                 him: 'her',
                 this: 'that',
@@ -662,38 +681,38 @@ describe('Unit: UI', function () {
             };
             const expectedCall = JSON.stringify(testError);
 
-            ui.error.bind(ctx)(testError);
+            ui.error(testError);
 
-            expect(ctx._formatDebug.calledOnce).to.be.true;
-            sinon.assert.callCount(ctx.log, 2);
-            expect(ctx.log.getCall(0).args[0]).to.deep.equal(expectedCall);
-            expect(ctx.log.getCall(0).args[2]).to.be.true;
-
-            done();
+            expect(formatDebug.calledOnce).to.be.true;
+            expect(log.calledTwice).to.be.true;
+            expect(log.args[0][0]).to.deep.equal(expectedCall);
+            expect(log.args[0][2]).to.be.true;
         });
 
-        it('handles strings', function (done) {
-            const ctx = {log: sinon.stub(), _formatDebug: sinon.stub()};
-            ui.error.bind(ctx)('That\'s a known issue');
+        it('handles strings', function () {
+            const ui = new UI();
+            const log = sandbox.stub(ui, 'log');
+            const formatDebug = sandbox.stub(ui, '_formatDebug');
+            ui.error('That\'s a known issue');
 
-            expect(ctx._formatDebug.calledOnce).to.be.true;
-            sinon.assert.callCount(ctx.log, 2);
-            expect(ctx.log.getCall(0).args[0]).to.match(/error occured/);
-            expect(ctx.log.getCall(1).args[0]).to.match(/Try running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
-            expect(ctx.log.getCall(0).args[2]).to.be.true;
-
-            done();
+            expect(formatDebug.calledOnce).to.be.true;
+            expect(log.calledTwice).to.be.true;
+            expect(log.args[0][0]).to.match(/error occured/);
+            expect(stripAnsi(log.args[1][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+            expect(log.args[0][2]).to.be.true;
         });
 
-        it('works with false', function (done) {
-            const ctx = {log: sinon.stub(), _formatDebug: () => ''};
-            ui.error.bind(ctx)(false);
-            expect(ctx.log.called).to.be.false;
-            done();
+        it('works with false', function () {
+            const ui = new UI();
+            const log = sandbox.stub(ui, 'log');
+            const formatDebug = sandbox.stub(ui, '_formatDebug');
+            ui.error(false);
+            expect(log.called).to.be.false;
+            expect(formatDebug.calledOnce).to.be.true;
         });
     });
 
-    it('#_formatDebug returns a properly formatted value', function (done) {
+    it('_formatDebug returns a properly formatted value', function () {
         const system = {
             cliVersion: '0.9.1.8',
             environment: 'Earth',
@@ -715,7 +734,5 @@ describe('Unit: UI', function () {
         const actual = ui._formatDebug(system).split('\n');
 
         expect(expected).to.deep.equal(actual);
-
-        done();
     });
 });
