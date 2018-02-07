@@ -171,8 +171,10 @@ describe('Unit: Mysql extension', function () {
             return instance.canConnect({}, {}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(Error);
-                expect(error.message).to.equal('ack');
+                expect(error).to.be.an.instanceof(errors.CliError);
+                expect(error.message).to.equal('Error trying to connenct to the MySQL database.');
+                expect(error.options.help).to.equal('You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.');
+                expect(error.options.err.message).to.equal('ack');
                 expect(createConnectionStub.calledOnce).to.be.true;
                 expect(connectStub.calledOnce).to.be.true;
             });
@@ -267,8 +269,9 @@ describe('Unit: Mysql extension', function () {
             return instance.createUser({}, {host: 'localhost'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/Creating new mysql user errored/);
+                expect(error).to.be.an.instanceof(errors.CliError);
+                expect(error.message).to.match(/Creating new MySQL user errored with message:/);
+                expect(error.options.err).to.exist;
                 expect(queryStub.callCount).to.equal(3);
                 expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
                 expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
@@ -281,7 +284,29 @@ describe('Unit: Mysql extension', function () {
             });
         });
 
-        it('rejects with SystemError and ends connection if any query fails', function () {
+        it('catches cli errors and ends connection if any query fails', function () {
+            const logStub = sinon.stub();
+            const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
+            const queryStub = sinon.stub(instance, '_query').resolves();
+            const endStub = sinon.stub();
+            instance.connection = {end: endStub};
+            queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
+            queryStub.onThirdCall().rejects(new errors.CliError({message: 'Oopsi', err: new Error('something failed')}));
+
+            return instance.createUser({}, {host: 'localhost'}).then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.CliError);
+                expect(error.message).to.match(/Creating new MySQL user errored with message:/);
+                expect(queryStub.calledThrice).to.be.true;
+                expect(queryStub.args[2][0]).to.match(/CREATE USER/);
+                expect(logStub.calledThrice).to.be.true;
+                expect(logStub.args[2][0]).to.match(/MySQL: Unable to create custom Ghost user/);
+                expect(endStub.calledOnce).to.be.true;
+            });
+        });
+
+        it('rejects with CliError and ends connection if any query fails', function () {
             const logStub = sinon.stub();
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
             const queryStub = sinon.stub(instance, '_query').rejects();
@@ -291,8 +316,9 @@ describe('Unit: Mysql extension', function () {
             return instance.createUser({}, {host: 'localhost'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/Creating new mysql user errored/);
+                expect(error).to.be.an.instanceof(errors.CliError);
+                expect(error.message).to.match(/MySQL user creation errored with message:/);
+                expect(error.options.err).to.exist;
                 expect(queryStub.calledOnce).to.be.true;
                 expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
                 expect(logStub.calledOnce).to.be.true;
@@ -332,8 +358,9 @@ describe('Unit: Mysql extension', function () {
             return instance.grantPermissions({mysql: {username: 'test'}}, {host: 'localhost', database: 'ghost'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.match(/Granting database permissions errored/);
+                expect(error.options.err).to.exist;
                 expect(queryStub.calledTwice).to.be.true;
                 expect(logStub.calledTwice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/Successfully granted privileges/);

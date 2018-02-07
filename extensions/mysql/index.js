@@ -75,7 +75,11 @@ class MySQLExtension extends cli.Extension {
                 }));
             }
 
-            return Promise.reject(error);
+            return Promise.reject(new cli.errors.CliError({
+                message: 'Error trying to connenct to the MySQL database.',
+                help: 'You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.',
+                err: error
+            }));
         });
     }
 
@@ -120,7 +124,10 @@ class MySQLExtension extends cli.Extension {
                         return tryCreateUser();
                     }
 
-                    return Promise.reject(error);
+                    return Promise.reject(new cli.errors.CliError({
+                        message: `Creating new MySQL user errored with message: ${error.message}`,
+                        err: error
+                    }));
                 });
             };
 
@@ -136,7 +143,14 @@ class MySQLExtension extends cli.Extension {
         }).catch((error) => {
             this.ui.logVerbose('MySQL: Unable to create custom Ghost user', 'red');
             this.connection.end(); // Ensure we end the connection
-            return Promise.reject(new cli.errors.SystemError(`Creating new mysql user errored with message: ${error.message}`));
+            if (error instanceof cli.errors.CliError) {
+                return Promise.reject(error);
+            }
+
+            return Promise.reject(new cli.errors.CliError({
+                message: `MySQL user creation errored with message: ${error.message}`,
+                err: error
+            }));
         });
     }
 
@@ -149,7 +163,10 @@ class MySQLExtension extends cli.Extension {
         }).catch((error) => {
             this.ui.logVerbose('MySQL: Unable either to grant permissions or flush privileges', 'red');
             this.connection.end();
-            return Promise.reject(new cli.errors.SystemError(`Granting database permissions errored with message: ${error.message}`));
+            return Promise.reject(new cli.errors.CliError({
+                message: `Granting database permissions errored with message: ${error.message}`,
+                err: error
+            }));
         });
     }
 
