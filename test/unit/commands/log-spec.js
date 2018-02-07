@@ -59,7 +59,7 @@ describe('Unit: Commands > Log', function () {
             } catch (error) {
                 expect(error).to.be.ok;
                 expect(stubs.cvi.calledOnce).to.be.true;
-                expect(stubs.cvi.getCall(0).args[0]).to.equal('log');
+                expect(stubs.cvi.args[0][0]).to.equal('log');
             }
         });
 
@@ -74,7 +74,7 @@ describe('Unit: Commands > Log', function () {
                 expect(error).to.be.ok;
                 expect(error).to.be.instanceOf(Errors.SystemError);
                 expect(stubs.gi.calledOnce).to.be.true;
-                expect(stubs.gi.getCall(0).args[0]).to.equal('ghost_org');
+                expect(stubs.gi.args[0][0]).to.equal('ghost_org');
             });
         });
 
@@ -156,7 +156,7 @@ describe('Unit: Commands > Log', function () {
                 expect(error.message).to.equal('SHORT_CIRCUIT');
 
                 expect(stubs.es.calledOnce).to.be.true;
-                expect(stubs.es.getCall(0).args[0]).to.equal(expectedFilePath);
+                expect(stubs.es.args[0][0]).to.equal(expectedFilePath);
             }
         });
 
@@ -180,7 +180,7 @@ describe('Unit: Commands > Log', function () {
             return ext.run({name: 'ghost_org', follow: true}).then(() => {
                 expect(stubs.es.calledOnce).to.be.true;
                 expect(stubs.log.calledOnce).to.be.true;
-                expect(stubs.log.getCall(0).args[0]).to.match(/not been created yet/);
+                expect(stubs.log.args[0][0]).to.match(/not been created yet/);
             });
         });
 
@@ -251,9 +251,9 @@ describe('Unit: Commands > Log', function () {
             return ext.run({name: 'ghost_org'}).then(() => {
                 expect(stubs.ll.calledOnce).to.be.true;
                 expect(stubs.write.calledThrice).to.be.true;
-                expect(stubs.write.getCall(0).args[0]).to.equal('a  cat');
-                expect(stubs.write.getCall(1).args[0]).to.equal(' in the hat ate');
-                expect(stubs.write.getCall(2).args[0]).to.equal(' bananas');
+                expect(stubs.write.args[0][0]).to.equal('a  cat');
+                expect(stubs.write.args[1][0]).to.equal(' in the hat ate');
+                expect(stubs.write.args[2][0]).to.equal(' bananas');
             });
         });
 
@@ -281,10 +281,10 @@ describe('Unit: Commands > Log', function () {
             ext.ui = {stdout: true};
             return ext.run({name: 'ghost_org', follow: true}).then(() => {
                 expect(stubs.write.calledThrice).to.be.true;
-                expect(stubs.write.getCall(1).args[0]).to.equal('cherry');
-                expect(stubs.write.getCall(1).args[1]).to.equal('utf8');
-                expect(stubs.write.getCall(2).args[0]).to.equal('Mango');
-                expect(stubs.write.getCall(2).args[1]).to.equal('utf8');
+                expect(stubs.write.args[1][0]).to.equal('cherry');
+                expect(stubs.write.args[1][1]).to.equal('utf8');
+                expect(stubs.write.args[2][0]).to.equal('Mango');
+                expect(stubs.write.args[2][1]).to.equal('utf8');
             });
         });
     });

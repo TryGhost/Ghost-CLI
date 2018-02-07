@@ -260,12 +260,12 @@ describe('Unit: Command > Config', function () {
 
             config.getConfigPrompts.call(ctx, argv);
             expect(getStub.calledOnce).to.be.true;
-            expect(getStub.getCall(0).args[1]).to.match(/_prod/);
+            expect(getStub.args[0][1]).to.match(/_prod/);
 
             ctx.system.development = true;
             config.getConfigPrompts.call(ctx, argv);
             expect(getStub.calledTwice).to.be.true;
-            expect(getStub.getCall(1).args[1]).to.match(/_dev/);
+            expect(getStub.args[1][1]).to.match(/_dev/);
         });
     });
 

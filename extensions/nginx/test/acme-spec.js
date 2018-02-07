@@ -64,9 +64,9 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(emptyStub.calledOnce).to.be.true;
                 expect(gotStub.calledOnce).to.be.true;
                 expect(downloadStub.calledOnce).to.be.true;
-                expect(downloadStub.getCall(0).args[0]).to.equal(dwUrl);
-                expect(sudoStub.getCall(0).args[0]).to.match(/mkdir -p/);
-                expect(sudoStub.getCall(1).args[0]).to.match(/acme\.sh --install/);
+                expect(downloadStub.args[0][0]).to.equal(dwUrl);
+                expect(sudoStub.args[0][0]).to.match(/mkdir -p/);
+                expect(sudoStub.args[1][0]).to.match(/acme\.sh --install/);
             });
         });
 
@@ -175,12 +175,12 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com').then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.getCall(0).args[0]).to.match(expectedSudo);
+                expect(sudoStub.args[0][0]).to.match(expectedSudo);
 
                 return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com', true);
             }).then(() => {
                 expect(sudoStub.calledTwice).to.be.true;
-                expect(sudoStub.getCall(1).args[0]).to.match(/--issue .{0,} --staging/);
+                expect(sudoStub.args[1][0]).to.match(/--issue .{0,} --staging/);
             });
         });
 
@@ -232,7 +232,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.remove('ghost.org', {sudo: sudoStub}).then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.getCall(0).args[0]).to.equal(
+                expect(sudoStub.args[0][0]).to.equal(
                     '/etc/letsencrypt/acme.sh --remove --home /etc/letsencrypt --domain ghost.org'
                 )
             });
@@ -248,7 +248,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.remove('ghost.org', {sudo: sudoStub}, '/home/ghost/.acme.sh').then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.getCall(0).args[0]).to.equal(
+                expect(sudoStub.args[0][0]).to.equal(
                     '/home/ghost/.acme.sh/acme.sh --remove --home /home/ghost/.acme.sh --domain ghost.org'
                 )
             });

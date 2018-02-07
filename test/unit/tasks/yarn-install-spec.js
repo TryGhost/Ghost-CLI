@@ -52,7 +52,7 @@ describe('Unit: Tasks > yarn-install', function () {
             const ctx = {installPath: '/var/www/ghost'};
             expect(listrStub.calledOnce).to.be.true;
 
-            const tasks = listrStub.getCall(0).args[0];
+            const tasks = listrStub.args[0][0];
             expect(tasks).to.have.length(2);
 
             tasks[0].task(ctx);

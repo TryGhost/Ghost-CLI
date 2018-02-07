@@ -37,7 +37,7 @@ describe('Unit: Utils > find-extensions', function () {
     it('calls find-plugins with proper args', function () {
         findExtensions();
         expect(findStub.calledOnce).to.be.true;
-        const args = findStub.getCall(0).args[0];
+        const args = findStub.args[0][0];
 
         const expected = {
             keyword: 'ghost-cli-extension',

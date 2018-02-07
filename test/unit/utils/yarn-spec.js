@@ -150,7 +150,7 @@ describe('Unit: yarn', function () {
             res.then(() => {
                 expect(stubs.observer.complete.called).to.be.false;
                 expect(stubs.observer.error.calledOnce).to.be.true;
-                expect(stubs.observer.error.getCall(0).args[0]).to.equal('test');
+                expect(stubs.observer.error.args[0][0]).to.equal('test');
             });
 
             stubs.proxy.resolve();
@@ -162,9 +162,9 @@ describe('Unit: yarn', function () {
             expect(stubs.proxy).to.be.an('Object');
             stubs.proxy.fn(stubs.observer);
             expect(stubs.stdout.calledOnce).to.be.true;
-            expect(stubs.stdout.getCall(0).args[0]).to.equal('data');
+            expect(stubs.stdout.args[0][0]).to.equal('data');
 
-            const onFn = stubs.stdout.getCall(0).args[1];
+            const onFn = stubs.stdout.args[0][1];
             onFn('\n\n\n');
             onFn('test\n');
             onFn('\nbest\n');
@@ -172,10 +172,10 @@ describe('Unit: yarn', function () {
 
             const next = stubs.observer.next
             expect(next.callCount).to.equal(4);
-            expect(next.getCall(0).args[0]).to.equal('\n\n');
-            expect(next.getCall(1).args[0]).to.equal('test');
-            expect(next.getCall(2).args[0]).to.equal('\nbest');
-            expect(next.getCall(3).args[0]).to.equal('run');
+            expect(next.args[0][0]).to.equal('\n\n');
+            expect(next.args[1][0]).to.equal('test');
+            expect(next.args[2][0]).to.equal('\nbest');
+            expect(next.args[3][0]).to.equal('run');
         });
 
         it('cleans up observer error', function () {

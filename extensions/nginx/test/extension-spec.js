@@ -108,9 +108,9 @@ describe('Unit: Extensions > Nginx', function () {
             ext.setup(cmd, {});
 
             expect(asStub.calledTwice).to.be.true;
-            expect(asStub.getCall(0).args[0]).to.equal('nginx');
-            expect(asStub.getCall(1).args[0]).to.equal('ssl');
-            expect(asStub.getCall(1).args[2]).to.equal('nginx');
+            expect(asStub.args[0][0]).to.equal('nginx');
+            expect(asStub.args[1][0]).to.equal('ssl');
+            expect(asStub.args[1][2]).to.equal('nginx');
         });
     });
 
@@ -139,7 +139,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             expect(ext.isSupported.calledOnce).to.be.true;
             expect(ext.ui.log.calledOnce).to.be.true;
-            expect(ext.ui.log.getCall(0).args[0]).to.match(/not installed/);
+            expect(ext.ui.log.args[0][0]).to.match(/not installed/);
             expect(task.skip.calledOnce).to.be.true;
         });
 
@@ -151,7 +151,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             expect(get.calledOnce).to.be.true;
             expect(log.calledOnce).to.be.true;
-            expect(log.getCall(0).args[0]).to.match(/contains a port/);
+            expect(log.args[0][0]).to.match(/contains a port/);
             expect(task.skip.calledOnce).to.be.true;
         });
 
@@ -165,9 +165,9 @@ describe('Unit: Extensions > Nginx', function () {
             const log = ext.ui.log;
 
             expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.getCall(0).args[0]).to.equal(expectedFile);
+            expect(existsStub.args[0][0]).to.equal(expectedFile);
             expect(log.calledOnce).to.be.true;
-            expect(log.getCall(0).args[0]).to.match(/configuration already found/);
+            expect(log.args[0][0]).to.match(/configuration already found/);
             expect(task.skip.calledOnce).to.be.true;
         });
 
@@ -197,9 +197,9 @@ describe('Unit: Extensions > Nginx', function () {
             return ext.setupNginx(null, ctx, task).then(() => {
                 expect(templateStub.calledOnce).to.be.true;
                 expect(loadStub.calledOnce).to.be.true;
-                expect(loadStub.getCall(0).args[0]).to.deep.equal(expectedConfig);
+                expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
                 expect(sudo.calledOnce).to.be.true;
-                expect(sudo.getCall(0).args[0]).to.match(lnExp);
+                expect(sudo.args[0][0]).to.match(lnExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
 
                 // Testing handling of subdirectory installations
@@ -216,7 +216,7 @@ describe('Unit: Extensions > Nginx', function () {
 
                 return ext.setupNginx(null, ctx, task).then(() => {
                     expect(loadStub.calledOnce).to.be.true;
-                    expect(loadStub.getCall(0).args[0]).to.deep.equal(expectedConfig);
+                    expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
                 });
             });
         });
@@ -244,7 +244,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             expect(stubs.es.calledOnce).to.be.false;
             expect(ext.ui.log.calledOnce).to.be.true;
-            expect(ext.ui.log.getCall(0).args[0]).to.match(/SSL certs cannot be generated for IP addresses/);
+            expect(ext.ui.log.args[0][0]).to.match(/SSL certs cannot be generated for IP addresses/);
             expect(stubs.skip.calledOnce).to.be.true;
         });
 
@@ -256,9 +256,9 @@ describe('Unit: Extensions > Nginx', function () {
             const log = ext.ui.log;
 
             expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.getCall(0).args[0]).to.equal(sslFile);
+            expect(existsStub.args[0][0]).to.equal(sslFile);
             expect(log.calledOnce).to.be.true;
-            expect(log.getCall(0).args[0]).to.match(/SSL has /);
+            expect(log.args[0][0]).to.match(/SSL has /);
             expect(stubs.skip.calledOnce).to.be.true;
         });
 
@@ -267,7 +267,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             expect(stubs.es.calledOnce).to.be.true;
             expect(ext.ui.log.calledOnce).to.be.true;
-            expect(ext.ui.log.getCall(0).args[0]).to.match(/SSL email must be provided/);
+            expect(ext.ui.log.args[0][0]).to.match(/SSL email must be provided/);
             expect(stubs.skip.calledOnce).to.be.true;
         });
 
@@ -287,7 +287,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             expect(stubs.es.calledTwice, '1').to.be.true;
             expect(ext.ui.log.calledOnce, '2').to.be.true;
-            expect(ext.ui.log.getCall(0).args[0]).to.match(/Nginx config file/);
+            expect(ext.ui.log.args[0][0]).to.match(/Nginx config file/);
             expect(stubs.skip.calledOnce, '4').to.be.true;
         });
     });
@@ -307,7 +307,7 @@ describe('Unit: Extensions > Nginx', function () {
             expect(task.skip.called, 'getTasks: task.skip').to.be.false;
             expect(ext.ui.log.called, 'getTasks: ui.log').to.be.false;
             expect(ext.ui.listr.calledOnce, 'getTasks: ui.listr').to.be.true;
-            return ext.ui.listr.getCall(0).args[0];
+            return ext.ui.listr.args[0][0];
         }
 
         beforeEach(function () {
@@ -349,7 +349,7 @@ describe('Unit: Extensions > Nginx', function () {
 
                 return tasks[0].task(ctx).then(() => {
                     expect(log.called).to.be.true;
-                    expect(log.getCall(0).args[0]).to.match(/domain isn't set up correctly/);
+                    expect(log.args[0][0]).to.match(/domain isn't set up correctly/);
                     expect(ctx.dnsfail).to.be.true;
 
                     DNS.code = 'PEACHESARETASTY';
@@ -466,7 +466,7 @@ describe('Unit: Extensions > Nginx', function () {
 
                 return tasks[4].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.getCall(0).args[0]).to.match(/openssl dhparam/);
+                    expect(ext.ui.sudo.args[0][0]).to.match(/openssl dhparam/);
                 });
             });
 
@@ -496,7 +496,7 @@ describe('Unit: Extensions > Nginx', function () {
 
                 return tasks[5].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.getCall(0).args[0]).to.match(expectedSudo);
+                    expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
                 });
             });
 
@@ -539,9 +539,9 @@ describe('Unit: Extensions > Nginx', function () {
                 return tasks[6].task(ctx).then(() => {
                     expect(stubs.template.calledTwice).to.be.true;
                     expect(stubs.templatify.calledOnce).to.be.true;
-                    expect(stubs.templatify.getCall(0).args[0]).to.deep.equal(expectedTemplate);
+                    expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
                     expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.getCall(0).args[0]).to.match(expectedSudo);
+                    expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
                 });
             });
 
@@ -554,7 +554,7 @@ describe('Unit: Extensions > Nginx', function () {
                 return tasks[6].task(ctx).then(() => {
                     expect(stubs.template.calledTwice).to.be.true;
                     expect(stubs.templatify.calledOnce).to.be.true;
-                    expect(stubs.templatify.getCall(0).args[0]).to.deep.equal(expectedTemplate);
+                    expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
                 });
             });
         });
@@ -590,8 +590,8 @@ describe('Unit: Extensions > Nginx', function () {
 
             return ext.uninstall(instance).then(() => {
                 expect(ext.ui.sudo.calledTwice).to.be.true;
-                expect(ext.ui.sudo.getCall(0).args[0]).to.match(sudoExp);
-                expect(ext.ui.sudo.getCall(1).args[0]).to.match(sudoExp);
+                expect(ext.ui.sudo.args[0][0]).to.match(sudoExp);
+                expect(ext.ui.sudo.args[1][0]).to.match(sudoExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
             });
         });
@@ -603,8 +603,8 @@ describe('Unit: Extensions > Nginx', function () {
 
             return ext.uninstall(instance).then(() => {
                 expect(ext.ui.sudo.calledTwice).to.be.true;
-                expect(ext.ui.sudo.getCall(0).args[0]).to.match(sudoExp);
-                expect(ext.ui.sudo.getCall(1).args[0]).to.match(sudoExp);
+                expect(ext.ui.sudo.args[0][0]).to.match(sudoExp);
+                expect(ext.ui.sudo.args[1][0]).to.match(sudoExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
             });
         });
@@ -641,7 +641,7 @@ describe('Unit: Extensions > Nginx', function () {
             ext.restartNginx();
 
             expect(sudo.calledOnce).to.be.true;
-            expect(sudo.getCall(0).args[0]).to.match(/nginx -s reload/);
+            expect(sudo.args[0][0]).to.match(/nginx -s reload/);
         });
 
         it('Throws an Error when nginx does', function () {
@@ -652,7 +652,7 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(false, 'An error should have been thrown').to.be.true;
             }).catch(function (err) {
                 expect(sudo.calledOnce).to.be.true;
-                expect(sudo.getCall(0).args[0]).to.match(/nginx -s reload/);
+                expect(sudo.args[0][0]).to.match(/nginx -s reload/);
                 expect(err).to.be.ok;
                 const expectedError = require('../../../lib/errors');
                 expect(err).to.be.instanceof(expectedError.ProcessError);
@@ -669,7 +669,7 @@ describe('Unit: Extensions > Nginx', function () {
             ext.isSupported();
 
             expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.getCall(0).args[0]).to.match(/dpkg -l \| grep nginx/);
+            expect(shellStub.args[0][0]).to.match(/dpkg -l \| grep nginx/);
         });
 
         it('Returns false when dpkg fails', function () {

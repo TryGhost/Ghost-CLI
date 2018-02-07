@@ -396,7 +396,7 @@ describe('Unit: UI', function () {
 
             return ui.sudo('echo').then(() => {
                 expect(shellStub.calledOnce).to.be.true;
-                expect(shellStub.getCall(0).args[0]).to.match(/#'[ ]{2}echo/);
+                expect(shellStub.args[0][0]).to.match(/#'[ ]{2}echo/);
             });
         });
     });

@@ -51,7 +51,7 @@ describe('Unit: Commands > Stop', function () {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('SHORT_CIRCUIT');
                 expect(pcss.calledOnce).to.be.true;
-                expect(pcss.getCall(0).args[0]).to.equal('../ghost');
+                expect(pcss.args[0][0]).to.equal('../ghost');
             }
         });
 
@@ -85,9 +85,9 @@ describe('Unit: Commands > Stop', function () {
                 expect(name).to.equal('Stopping Ghost');
                 return fn().then(() => {
                     expect(stopStub.calledOnce).to.be.true;
-                    expect(stopStub.getCall(0).args[0]).to.equal(process.cwd());
+                    expect(stopStub.args[0][0]).to.equal(process.cwd());
                     expect(runningStub.calledTwice).to.be.true;
-                    expect(runningStub.getCall(1).args[0]).to.equal(null);
+                    expect(runningStub.args[1][0]).to.equal(null);
                 });
             }
 
@@ -156,10 +156,10 @@ describe('Unit: Commands > Stop', function () {
 
             expect(runStub.callCount).to.equal(8);
             expect(context.run.callCount).to.equal(8);
-            expect(context.run.getCall(0).args[0].quiet).to.be.true;
+            expect(context.run.args[0][0].quiet).to.be.true;
             expect(pcss.callCount).to.equal(9);
-            expect(pcss.getCall(0).args[0]).to.equal('./a');
-            expect(pcss.getCall(8).args[0]).to.equal(process.cwd());
+            expect(pcss.args[0][0]).to.equal('./a');
+            expect(pcss.args[8][0]).to.equal(process.cwd());
         });
     });
 
@@ -173,6 +173,6 @@ describe('Unit: Commands > Stop', function () {
         yargs.option.returns(yargs);
         StopCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
-        expect(yargs.option.getCall(0).args[0]).to.equal('test');
+        expect(yargs.option.args[0][0]).to.equal('test');
     });
 });
