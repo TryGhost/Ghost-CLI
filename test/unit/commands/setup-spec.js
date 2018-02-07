@@ -228,7 +228,7 @@ describe('Unit: Commands > Setup', function () {
             const ui = {
                 run: () => Promise.resolve(),
                 listr: listr,
-                confirm: () => Promise.resolve({yes: false})
+                confirm: () => Promise.resolve(false)
             };
             const argv = {
                 prompt: true,
@@ -273,7 +273,7 @@ describe('Unit: Commands > Setup', function () {
             const ui = {
                 run: () => Promise.resolve(),
                 listr: listr,
-                confirm: () => Promise.resolve({yes: false})
+                confirm: () => Promise.resolve(false)
             };
             const argv = {
                 prompt: true,
@@ -440,7 +440,7 @@ describe('Unit: Commands > Setup', function () {
 
         it('normally prompts to run a stage', function () {
             function confirm(a) {
-                return Promise.resolve({yes: a.indexOf('Z') < 0});
+                return Promise.resolve(a.indexOf('Z') < 0);
             }
             const ui = {
                 run: (a) => a(),
