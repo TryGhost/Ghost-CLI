@@ -7,11 +7,20 @@ const modulePath = '../../../lib/ui/renderer';
 const Renderer = require(modulePath);
 
 describe('Unit: UI > Renderer', function () {
-    it('can be created successfully', function (done) {
-        const rdr = new Renderer();
+    it('can be created successfully, filters tasks', function () {
+        const tasks = [{
+            isEnabled: () => false,
+            name: 'a'
+        }, {
+            isEnabled: () => true,
+            name: 'b'
+        }];
+
+        const rdr = new Renderer(tasks);
 
         expect(rdr).to.be.ok;
-        done();
+        expect(rdr.tasks).to.have.length(1);
+        expect(rdr.tasks[0].name).to.equal('b');
     });
 
     it('constructs a new UI if needed', function (done) {

@@ -48,6 +48,26 @@ describe('Unit: Utils > update-check', function () {
         });
     });
 
+    it('doesn\'t log a message if the type of update is not major, minor, or patch', function () {
+        const pkg = {name: 'ghost', version: '1.0.0'};
+        const updateNotifer = sinon.stub().callsFake((options) => {
+            expect(options).to.exist;
+            expect(options.pkg).to.deep.equal(pkg);
+            expect(options.callback).to.be.a('function');
+            options.callback(null, {type: 'prerelease'});
+        });
+        const logStub = sinon.stub();
+
+        const updateCheck = proxyquire(modulePath, {
+            '../../package.json': pkg,
+            'update-notifier': updateNotifer
+        });
+
+        return updateCheck({log: logStub}).then(() => {
+            expect(logStub.called).to.be.false;
+        });
+    });
+
     it('logs a message if an update is available', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const updateNotifer = sinon.stub().callsFake((options) => {

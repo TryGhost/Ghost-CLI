@@ -45,50 +45,37 @@ describe('Unit: Commands > Uninstall', function () {
             uninstall = new UninstallCommand();
             context = {
                 ui: {
-                    prompt: sinon.stub().resolves({sure: true}),
-                    log: () => true,
+                    confirm: sinon.stub().resolves(true),
+                    log: sinon.stub().resolves(true),
                     listr: sinon.stub().resolves()
                 },
                 system: {getInstance: () => true}
             };
 
             argv = {
-                force: false,
-                prompt: true
+                force: false
             };
-        });
-        it('Doesn\'t prompt if force flag', function () {
-            argv.force = true;
-            return uninstall.run.call(context, argv).then(() => {
-                expect(context.ui.prompt.called).to.be.false;
-                expect(context.ui.listr.calledOnce).to.be.true;
-            });
-        });
-
-        it('Doesn\'t prompt if prompting is disabled', function () {
-            argv.prompt = false;
-            return uninstall.run.call(context, argv).then(() => {
-                expect(context.ui.prompt.called).to.be.false;
-                expect(context.ui.listr.calledOnce).to.be.true;
-            });
         });
 
         it('Normally prompts', function () {
             return uninstall.run.call(context, argv).then(() => {
-                expect(context.ui.prompt.calledOnce).to.be.true;
+                expect(context.ui.confirm.calledOnce).to.be.true;
+                expect(context.ui.log.calledOnce).to.be.true;
                 expect(context.ui.listr.calledOnce).to.be.true;
             });
         });
 
         it('Doesn\'t run when the user backs out', function () {
-            context.ui.prompt = sinon.stub().resolves({sure: false});
+            argv.force = true;
+            context.ui.confirm = sinon.stub().resolves(false);
 
             return uninstall.run.call(context, argv)
                 .then(() => {
                     expect(false, 'Promise should have rejected').to.be.true;
                 })
                 .catch(() => {
-                    expect(context.ui.prompt.calledOnce).to.be.true;
+                    expect(context.ui.confirm.calledOnce).to.be.true;
+                    expect(context.ui.log.called).to.be.false;
                     expect(context.ui.listr.called).to.be.false;
                 });
         });
