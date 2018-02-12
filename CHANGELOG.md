@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.5.2"></a>
+## [1.5.2](https://github.com/TryGhost/Ghost-CLI/compare/1.5.1...1.5.2) (2018-02-12)
+
+### Bug Fixes
+
+* **port-polling:** increase port polling timeout ([#638](https://github.com/TryGhost/Ghost-CLI/issues/638)) ([8804372](https://github.com/TryGhost/Ghost-CLI/commit/8804372))
+
 <a name="1.5.1"></a>
 ## [1.5.1](https://github.com/TryGhost/Ghost-CLI/compare/1.5.0...1.5.1) (2018-02-07)
 
