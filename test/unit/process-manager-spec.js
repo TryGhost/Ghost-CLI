@@ -71,6 +71,7 @@ describe('Unit: Process Manager', function () {
         it('calls portPolling with options', function () {
             const config = getConfigStub();
             config.get.withArgs('server.port').returns(2368);
+            config.get.withArgs('server.host').returns('10.0.1.0');
             portPollingStub.resolves();
 
             const instance = new ProcessManager({}, {}, {config: config});
@@ -78,11 +79,12 @@ describe('Unit: Process Manager', function () {
 
             return instance.ensureStarted({logSuggestion: 'test'}).then(() => {
                 expect(portPollingStub.calledOnce).to.be.true;
-                expect(config.get.calledOnce).to.be.true;
+                expect(config.get.calledTwice).to.be.true;
                 expect(portPollingStub.calledWithExactly({
                     logSuggestion: 'test',
                     stopOnError: true,
-                    port: 2368
+                    port: 2368,
+                    host: '10.0.1.0'
                 })).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
@@ -91,6 +93,7 @@ describe('Unit: Process Manager', function () {
         it('throws error without stopping if stopOnError is false', function () {
             const config = getConfigStub();
             config.get.withArgs('server.port').returns(2368);
+            config.get.withArgs('server.host').returns('localhost');
             portPollingStub.rejects(new Error('test error'));
 
             const instance = new ProcessManager({}, {}, {config: config});
@@ -103,7 +106,8 @@ describe('Unit: Process Manager', function () {
                 expect(portPollingStub.calledOnce).to.be.true;
                 expect(portPollingStub.calledWithExactly({
                     stopOnError: false,
-                    port: 2368
+                    port: 2368,
+                    host: 'localhost'
                 })).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
@@ -112,6 +116,7 @@ describe('Unit: Process Manager', function () {
         it('throws error and calls stop if stopOnError is true', function () {
             const config = getConfigStub();
             config.get.withArgs('server.port').returns(2368);
+            config.get.withArgs('server.host').returns('localhost');
             portPollingStub.rejects(new Error('test error'));
 
             const instance = new ProcessManager({}, {}, {config: config});
@@ -121,11 +126,12 @@ describe('Unit: Process Manager', function () {
                 expect(false, 'Error should have been thrown').to.be.true;
             }).catch((err) => {
                 expect(err.message).to.equal('test error');
-                expect(config.get.calledOnce).to.be.true;
+                expect(config.get.calledTwice).to.be.true;
                 expect(portPollingStub.calledOnce).to.be.true;
                 expect(portPollingStub.calledWithExactly({
                     stopOnError: true,
-                    port: 2368
+                    port: 2368,
+                    host: 'localhost'
                 })).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
             });
@@ -134,6 +140,7 @@ describe('Unit: Process Manager', function () {
         it('throws error and calls stop (swallows stop error) if stopOnError is true', function () {
             const config = getConfigStub();
             config.get.withArgs('server.port').returns(2368);
+            config.get.withArgs('server.host').returns('localhost');
             portPollingStub.rejects(new Error('test error'));
 
             const instance = new ProcessManager({}, {}, {config: config});
@@ -143,11 +150,12 @@ describe('Unit: Process Manager', function () {
                 expect(false, 'Error should have been thrown').to.be.true;
             }).catch((err) => {
                 expect(err.message).to.equal('test error');
-                expect(config.get.calledOnce).to.be.true;
+                expect(config.get.calledTwice).to.be.true;
                 expect(portPollingStub.calledOnce).to.be.true;
                 expect(portPollingStub.calledWithExactly({
                     stopOnError: true,
-                    port: 2368
+                    port: 2368,
+                    host: 'localhost'
                 })).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
             });
