@@ -3,8 +3,11 @@
 const Promise = require('bluebird');
 const mysql = require('mysql');
 const omit = require('lodash/omit');
+const includes = require('lodash/includes');
 const cli = require('../../lib');
 const generator = require('generate-password');
+
+const localhostAliases = ['localhost', '127.0.0.1'];
 
 class MySQLExtension extends cli.Extension {
     setup(cmd, argv) {
@@ -84,6 +87,11 @@ class MySQLExtension extends cli.Extension {
             strict: true
         });
 
+        // This will be the "allowed connections from" host of the mysql user.
+        // If the db connection host is something _other_ than localhost (e.g. a remote db connection)
+        // we want the host to be `%` rather than the db host.
+        const host = !includes(localhostAliases, dbconfig.host) ? '%' : dbconfig.host;
+
         let username;
 
         // Ensure old passwords is set to 0
@@ -103,7 +111,7 @@ class MySQLExtension extends cli.Extension {
                 username = `ghost-${Math.floor(Math.random() * 1000)}`;
 
                 return this._query(
-                    `CREATE USER '${username}'@'${dbconfig.host}' ` +
+                    `CREATE USER '${username}'@'${host}' ` +
                     `IDENTIFIED WITH mysql_native_password AS '${result[0].password}';`
                 ).catch((error) => {
                     // User already exists, run this method again
@@ -121,6 +129,7 @@ class MySQLExtension extends cli.Extension {
             this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
 
             ctx.mysql = {
+                host: host,
                 username: username,
                 password: randomPassword
             };
@@ -132,7 +141,7 @@ class MySQLExtension extends cli.Extension {
     }
 
     grantPermissions(ctx, dbconfig) {
-        return this._query(`GRANT ALL PRIVILEGES ON ${dbconfig.database}.* TO '${ctx.mysql.username}'@'${dbconfig.host}';`).then(() => {
+        return this._query(`GRANT ALL PRIVILEGES ON ${dbconfig.database}.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`).then(() => {
             this.ui.logVerbose(`MySQL: Successfully granted privileges for user "${ctx.mysql.username}"`, 'green');
             return this._query('FLUSH PRIVILEGES;');
         }).then(() => {
