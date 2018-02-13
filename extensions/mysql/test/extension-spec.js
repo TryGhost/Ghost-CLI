@@ -204,6 +204,28 @@ describe('Unit: Mysql extension', function () {
             });
         });
 
+        it('uses % for user host if db host is not localhost or 127.0.0.1', function () {
+            const logStub = sinon.stub();
+            const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
+            const queryStub = sinon.stub(instance, '_query').resolves();
+            queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
+            const ctx = {};
+
+            return instance.createUser(ctx, {host: '117.241.162.107'}).then(() => {
+                expect(queryStub.calledThrice).to.be.true;
+                expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
+                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
+                expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'%' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
+                expect(logStub.calledThrice).to.be.true;
+                expect(logStub.args[0][0]).to.match(/disabled old_password/);
+                expect(logStub.args[1][0]).to.match(/created password hash/);
+                expect(logStub.args[2][0]).to.match(/successfully created new user/);
+                expect(ctx.mysql).to.exist;
+                expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
+                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
+            });
+        });
+
         it('retries creating user if username already exists', function () {
             const logStub = sinon.stub();
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
@@ -288,9 +310,9 @@ describe('Unit: Mysql extension', function () {
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
             const queryStub = sinon.stub(instance, '_query').resolves();
 
-            return instance.grantPermissions({mysql: {username: 'testuser'}}, {host: 'localhost', database: 'ghost'}).then(() => {
+            return instance.grantPermissions({mysql: {username: 'testuser', host: '%'}}, {host: 'localhost', database: 'ghost'}).then(() => {
                 expect(queryStub.calledTwice).to.be.true;
-                expect(queryStub.calledWithExactly('GRANT ALL PRIVILEGES ON ghost.* TO \'testuser\'@\'localhost\';')).to.be.true;
+                expect(queryStub.calledWithExactly('GRANT ALL PRIVILEGES ON ghost.* TO \'testuser\'@\'%\';')).to.be.true;
                 expect(queryStub.calledWithExactly('FLUSH PRIVILEGES;')).to.be.true;
                 expect(logStub.calledTwice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/Successfully granted privileges/);
