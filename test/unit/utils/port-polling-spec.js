@@ -32,7 +32,7 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        sandbox.stub(net, 'connect').returns(netStub);
+        const connectStub = sandbox.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100})
             .then(() => {
@@ -42,6 +42,8 @@ describe('Unit: Utils > portPolling', function () {
                 expect(err.options.suggestion).to.exist;
                 expect(err.message).to.eql('Ghost did not start.');
                 expect(err.err.message).to.eql('whoops');
+                expect(connectStub.callCount).to.equal(4);
+                expect(connectStub.calledWithExactly(1111, 'localhost'), 'uses localhost by default').to.be.true;
                 expect(netStub.destroy.callCount).to.eql(4);
             });
     });
@@ -65,15 +67,17 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        sandbox.stub(net, 'connect').returns(netStub);
+        const connectStub = sandbox.stub(net, 'connect').returns(netStub);
 
-        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150})
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150, host: '0.0.0.0'})
             .then(() => {
                 throw new Error('Expected error');
             })
             .catch((err) => {
                 expect(err.options.suggestion).to.exist;
                 expect(err.message).to.eql('Ghost did not start.');
+                expect(connectStub.calledTwice).to.be.true;
+                expect(connectStub.calledWithExactly(1111, 'localhost'), 'uses localhost if host is 0.0.0.0').to.be.true;
                 expect(netStub.destroy.callCount).to.eql(2);
             });
     });
@@ -97,10 +101,12 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        sandbox.stub(net, 'connect').returns(netStub);
+        const connectStub = sandbox.stub(net, 'connect').returns(netStub);
 
-        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150})
+        return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150, host: '10.0.1.0'})
             .then(() => {
+                expect(connectStub.calledTwice).to.be.true;
+                expect(connectStub.calledWithExactly(1111, '10.0.1.0'), 'uses custom host').to.be.true;
                 expect(netStub.destroy.callCount).to.eql(2);
             })
             .catch((err) => {
