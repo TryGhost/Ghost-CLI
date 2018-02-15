@@ -222,6 +222,38 @@ describe('Unit: Extensions > Nginx', function () {
             });
         });
 
+        it('passes the error if it\'s already a CliError', function () {
+            const name = 'ghost.dev.conf';
+            const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
+            ctx.instance.dir = dir;
+            ctx.instance.template = sinon.stub().resolves();
+            const loadStub = sinon.stub().returns('nginx config file');
+            const templateStub = sinon.stub().returns(loadStub);
+            const ext = proxyNginx({
+                'fs-extra': {
+                    existsSync: () => false,
+                    readFileSync: () => 'hello'
+                },
+                'lodash/template': templateStub
+            });
+            const sudo = sinon.stub().resolves()
+            ext.ui.sudo = sudo;
+            ext.restartNginx = sinon.stub().rejects(new errors.CliError('Did not restart'));
+
+            return ext.setupNginx(null, ctx, task).then(() => {
+                expect(false, 'Promise should have rejected').to.be.true
+            }).catch((error) => {
+                expect(error).to.exist;
+                expect(error).to.be.an.instanceof(errors.CliError);
+                expect(error.message).to.be.equal('Did not restart');
+                expect(templateStub.calledOnce).to.be.true;
+                expect(loadStub.calledOnce).to.be.true;
+                expect(sudo.calledOnce).to.be.true;
+                expect(sudo.args[0][0]).to.match(lnExp);
+                expect(ext.restartNginx.calledOnce).to.be.true;
+            });
+        });
+
         it('returns a ProcessError when symlink command fails', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
@@ -589,6 +621,22 @@ describe('Unit: Extensions > Nginx', function () {
                     expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
                 });
             });
+
+            it('rejects with error if configuration fails', function () {
+                const ext = proxyNginx(proxy);
+                const tasks = getTasks(ext);
+                const sudo = sinon.stub().rejects({stderr: 'oh no!'});
+                ext.ui.sudo = sudo;
+
+                return tasks[6].task(ctx).then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                }).catch((err) => {
+                    expect(stubs.template.calledTwice).to.be.true;
+                    expect(stubs.templatify.calledOnce).to.be.true;
+                    expect(ext.ui.sudo.calledOnce).to.be.true;
+                    expect(err.options.stderr).to.equal('oh no!');
+                });
+            })
         });
         describe('Restart', function () {
             it('Restarts Nginx', function () {
@@ -687,7 +735,7 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.args[0][0]).to.match(/nginx -s reload/);
                 expect(err).to.be.ok;
-                expect(err).to.be.instanceof(errors.ProcessError);
+                expect(err).to.be.instanceof(errors.CliError);
             });
         });
     });

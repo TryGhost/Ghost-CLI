@@ -89,14 +89,24 @@ class SystemdProcessManager extends cli.ProcessManager {
                 // Systemd prints out "inactive" if service isn't running
                 // or "activating" if service hasn't completely started yet
                 if (!error.message.match(/inactive|activating/)) {
-                    return Promise.reject(error);
+                    return Promise.reject(new cli.errors.ProcessError(error));
                 }
                 return Promise.resolve(false);
             });
     }
 
     _precheck() {
-        const uid = getUid(this.instance.dir);
+        let uid;
+
+        // getUid returns either the uid or null, but can also throw an error
+        try {
+            uid = getUid(this.instance.dir);
+        } catch (e) {
+            // getuid throws a ProcessError, we add a message and help and just throw it
+            e.message = 'Systemd process manager has not been set up or is corrupted.';
+            e.options.help = `Run ${chalk.green('ghost setup linux-user systemd')} and try again.`
+            throw e;
+        }
 
         if (!uid) {
             throw new cli.errors.SystemError({
