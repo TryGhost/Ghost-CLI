@@ -17,7 +17,15 @@ class SystemdExtension extends cli.Extension {
     }
 
     _setup(argv, ctx, task) {
-        const uid = getUid(ctx.instance.dir);
+        let uid;
+
+        // getUid returns either the uid or null, but can also throw an error
+        try {
+            uid = getUid(ctx.instance.dir);
+        } catch (e) {
+            this.ui.log('The "ghost" user has not been created, please run `ghost setup linux-user` first', 'yellow');
+            return task.skip();
+        }
 
         if (!uid) {
             this.ui.log('The "ghost" user has not been created, please run `ghost setup linux-user` first', 'yellow');
@@ -41,7 +49,9 @@ class SystemdExtension extends cli.Extension {
             ghost_exec_path: process.argv.slice(0,2).join(' ')
         }), 'systemd service', serviceFilename, '/lib/systemd/system').then(
             () => this.ui.sudo('systemctl daemon-reload')
-        );
+        ).catch((error) => {
+            return Promise.reject(new cli.errors.ProcessError(error));
+        });
     }
 
     uninstall(instance) {

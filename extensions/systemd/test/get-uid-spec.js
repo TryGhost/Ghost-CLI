@@ -6,7 +6,7 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../get-uid';
 
 describe('Unit: Systemd > get-uid util', function () {
-    it('throws error if execa error is not an expected one', function () {
+    it('throws ProcessError if execa error is not an expected one, but is stderr', function () {
         const shellStub = sinon.stub().throws(new Error('some error'));
         const getUid = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
@@ -16,7 +16,8 @@ describe('Unit: Systemd > get-uid util', function () {
             getUid('/some/dir');
             expect(false, 'error should have been thrown').to.be.true;
         } catch (e) {
-            expect(e).to.be.an.instanceof(Error);
+            const errors = require('../../../lib/errors');
+            expect(e).to.be.an.instanceof(errors.ProcessError);
             expect(e.message).to.equal('some error');
             expect(shellStub.calledOnce).to.be.true;
         }

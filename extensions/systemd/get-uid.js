@@ -23,7 +23,9 @@ module.exports = function getUid(dir) {
         return uid;
     } catch (e) {
         if (!e.message.match(/no such user/i)) {
-            throw e;
+            const errors = require('../../lib').errors;
+            // throw the error here so it'll be logged
+            throw new errors.ProcessError(e);
         }
 
         return null;

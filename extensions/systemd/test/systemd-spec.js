@@ -260,7 +260,7 @@ describe('Unit: Systemd > Process Manager', function () {
             });
         });
 
-        it('Passes bad errors through', function () {
+        it('Throws ProcessError for bad errors', function () {
             const ui = {sudo: sinon.stub().rejects(new Error('unknown'))};
             const ext = makeSystemd(null, ui);
             const expectedCmd = 'systemctl is-active ghost_ghost_org';
@@ -269,6 +269,7 @@ describe('Unit: Systemd > Process Manager', function () {
                 expect(false, 'An error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error.message).to.equal('unknown');
+                expect(error).to.be.an.instanceof(errors.ProcessError);
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
             });
@@ -292,6 +293,22 @@ describe('Unit: Systemd > Process Manager', function () {
 
         beforeEach(function () {
             proxyOpts = {'./get-uid': sinon.stub().returns(true)};
+        });
+
+        it('can handle when uid throws error', function () {
+            proxyOpts['./get-uid'] = sinon.stub().throws(new errors.ProcessError({stderr: 'something went wrong'}));
+            const ext = makeSystemd(proxyOpts);
+            try {
+                ext._precheck();
+                expect(false, 'An error should have been thrown').to.be.true;
+            } catch (error) {
+                expect(proxyOpts['./get-uid'].calledOnce).to.be.true;
+                expect(error).to.be.ok;
+                expect(error).to.be.instanceOf(errors.ProcessError);
+                expect(error.message).to.match(/Systemd process manager has not been set up or is corrupted./);
+                expect(error.options.help).to.match(/ghost setup linux-user systemd/);
+                expect(error.options.stderr).to.match(/something went wrong/);
+            }
         });
 
         it('Errors if uid doesn\'t been set', function () {
