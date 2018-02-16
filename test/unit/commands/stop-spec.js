@@ -8,7 +8,7 @@ const errors = require('../../../lib/errors');
 const StopCommand = require(modulePath);
 
 function proxiedCommand() {
-    return new (proxyquire(modulePath, {'../utils/check-valid-install': () => true}))();
+    return new(proxyquire(modulePath, {'../utils/check-valid-install': () => true}))();
 }
 
 describe('Unit: Commands > Stop', function () {
