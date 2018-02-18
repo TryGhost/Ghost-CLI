@@ -30,7 +30,7 @@ describe('Unit: Utils > find-extensions', function () {
 
         findExtensions = proxyquire(modulePath, {
             'find-plugins': findStub,
-            execa: {shellSync: () => ({stdout: '.'})}
+            'global-modules': '.'
         });
     });
 
