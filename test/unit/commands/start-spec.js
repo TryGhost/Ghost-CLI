@@ -219,8 +219,11 @@ describe('Unit: Commands > Start', function () {
         });
     });
 
-    // @todo: Add more tests if necessary
     it('configureOptions loops over extensions', function () {
+        const doctorStub = sinon.stub().returnsArg(1);
+        const StartCommand = proxyquire(modulePath, {
+            './doctor': {configureOptions: doctorStub}
+        });
         const extensions = [{
             config: {options: {start: {test: true}}}
         }, {}];
@@ -230,5 +233,6 @@ describe('Unit: Commands > Start', function () {
         StartCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
         expect(yargs.option.args[0][0]).to.equal('test');
+        expect(doctorStub.calledOnce).to.be.true;
     });
 });

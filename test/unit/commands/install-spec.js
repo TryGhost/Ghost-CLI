@@ -9,9 +9,10 @@ const modulePath = '../../../lib/commands/install';
 const errors = require('../../../lib/errors');
 
 describe('Unit: Commands > Install', function () {
-    it('configureOptions adds setup options as well', function () {
+    it('configureOptions adds setup & doctor options', function () {
         const superStub = sinon.stub().returnsArg(1);
         const setupStub = sinon.stub().returnsArg(1);
+        const doctorStub = sinon.stub().returnsArg(1);
 
         // Needed for extension
         class Command {}
@@ -19,6 +20,7 @@ describe('Unit: Commands > Install', function () {
 
         const InstallCommand = proxyquire(modulePath, {
             './setup': {configureOptions: setupStub},
+            './doctor': {configureOptions: doctorStub},
             '../command': Command
         });
 
@@ -28,6 +30,8 @@ describe('Unit: Commands > Install', function () {
         expect(superStub.calledWithExactly('install', {yargs: true}, [{extensiona: true}])).to.be.true;
         expect(setupStub.calledOnce).to.be.true;
         expect(setupStub.calledWithExactly('setup', {yargs: true}, [{extensiona: true}], true)).to.be.true;
+        expect(doctorStub.calledOnce).to.be.true;
+        expect(doctorStub.calledWithExactly('doctor', {yargs: true}, [{extensiona: true}], true)).to.be.true;
     });
 
     describe('run', function () {

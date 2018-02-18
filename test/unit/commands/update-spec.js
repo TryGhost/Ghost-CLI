@@ -13,6 +13,25 @@ const errors = require('../../../lib/errors');
 const Instance = require('../../../lib/instance');
 
 describe('Unit: Commands > Update', function () {
+    it('configureOptions adds setup & doctor options', function () {
+        const superStub = sinon.stub().returnsArg(1);
+        const doctorStub = sinon.stub().returnsArg(1);
+
+        // Needed for extension
+        class Command {}
+        Command.configureOptions = superStub;
+
+        const InstallCommand = proxyquire(modulePath, {
+            './doctor': {configureOptions: doctorStub},
+            '../command': Command
+        });
+
+        const result = InstallCommand.configureOptions('install', {yargs: true}, [{extensiona: true}]);
+        expect(result).to.deep.equal({yargs: true});
+        expect(superStub.calledOnce).to.be.true;
+        expect(superStub.calledWithExactly('install', {yargs: true}, [{extensiona: true}])).to.be.true;
+    });
+
     describe('run', function () {
         it('doesn\'t run tasks if no new versions are available', function () {
             const UpdateCommand = require(modulePath);
