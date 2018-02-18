@@ -22,17 +22,17 @@ describe('Unit: Commands > Start', function () {
             };
         });
 
-        it('doesn\'t start a running instance', function () {
+        it('gracefully notifies of already running instance', function () {
             const runningStub = sinon.stub().returns(true)
+            const logStub = sinon.stub();
+            const ui = {log: logStub};
+            const start = new StartCommand(ui, mySystem);
             myInstance.running = runningStub;
-            const start = new StartCommand({}, mySystem);
 
             return start.run({}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.match(/^Ghost is already running/);
                 expect(runningStub.calledOnce).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.match(/Ghost is already running!/);
             });
         });
 

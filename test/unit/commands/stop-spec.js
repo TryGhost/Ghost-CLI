@@ -55,18 +55,19 @@ describe('Unit: Commands > Stop', function () {
             }
         });
 
-        it('doesn\'t stop stopped instances', function () {
-            const runningStub = sinon.stub().returns(false);
-            const gIstub = sinon.stub().returns({running: runningStub});
-            const context = {system: {getInstance: gIstub}};
+        it('gracefully notifies of already stopped instance', function () {
+            const runningFake = () => false;
+            const gIfake = () => ({running: runningFake});
+            const logStub = sinon.stub();
             const stop = proxiedCommand();
+            const context = {
+                system: {getInstance: gIfake},
+                ui: {log: logStub}
+            };
 
             return stop.run.call(context, {}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error instanceof errors.SystemError).to.be.true;
-                expect(error.message).to.match(/No running Ghost instance/);
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.match(/Ghost is already stopped!/);
             });
         });
 
