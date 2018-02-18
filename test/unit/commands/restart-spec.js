@@ -4,7 +4,6 @@ const sinon = require('sinon');
 
 const modulePath = '../../../lib/commands/restart';
 const RestartCommand = require(modulePath);
-const Instance = require('../../../lib/instance');
 
 describe('Unit: Command > Restart', function () {
     it('warns of stopped instance and starts instead', function () {
@@ -26,25 +25,23 @@ describe('Unit: Command > Restart', function () {
     });
 
     it('calls process restart method if instance is running', function () {
-        const restartStub = sinon.stub().resolves();
-        class TestInstance extends Instance {
-            get process() { return {restart: restartStub}; }
-            running() { return true; }
-        }
-        const testInstance = new TestInstance();
-        const loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
         const runStub = sinon.stub().resolves();
+        const restartStub = sinon.stub().resolves();
+        const lreStub = sinon.stub();
+        const instance = {
+            process: {restart: restartStub},
+            loadRunningEnvironment: lreStub,
+            running: () => 1
+        };
 
-        const command = new RestartCommand({
-            run: runStub
-        }, {
+        const command = new RestartCommand({run: runStub}, {
             environment: 'testing',
-            getInstance: () => testInstance
+            getInstance: () => instance
         });
 
         return command.run().then(() => {
-            expect(loadRunEnvStub.calledOnce).to.be.true;
-            expect(loadRunEnvStub.args[0][0]).to.be.true;
+            expect(lreStub.calledOnce).to.be.true;
+            expect(lreStub.args[0][0]).to.be.true;
             expect(restartStub.calledOnce).to.be.true;
             expect(restartStub.args[0]).to.deep.equal([process.cwd(), 'testing']);
             expect(runStub.calledOnce).to.be.true;
