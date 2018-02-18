@@ -2,24 +2,26 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
-const RestartCommand = require('../../../lib/commands/restart');
+const modulePath = '../../../lib/commands/restart';
+const RestartCommand = require(modulePath);
 const Instance = require('../../../lib/instance');
 
 describe('Unit: Command > Restart', function () {
-    it('throws error if instance is not running', function () {
-        class TestInstance extends Instance {
-            running() { return false; }
+    it('warns of stopped instance and starts instead', function () {
+        const instance = {running: () => false};
+        const logStub = sinon.stub();
+        const ctx = {
+            ui: {log: logStub},
+            system: {getInstance: () => instance},
+            runCommand: sinon.stub().resolves()
         }
-        const testInstance = new TestInstance();
+        const command = new RestartCommand({}, {});
 
-        const command = new RestartCommand({}, {
-            getInstance: () => testInstance
-        });
-
-        return command.run().then(() => {
-            throw new Error('Run method should have thrown');
-        }).catch((error) => {
-            expect(error.message).to.match(/instance is not currently running/);
+        return command.run.call(ctx).then(() => {
+            expect(ctx.runCommand.calledOnce).to.be.true;
+            expect(ctx.runCommand.args[0][0].description).to.equal('Start an instance of Ghost');
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.args[0][0]).to.match(/not running!/);
         });
     });
 
