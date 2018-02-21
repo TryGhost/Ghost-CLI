@@ -44,9 +44,11 @@ describe('Unit: Utils > checkRootUser', function () {
         expect(exitStub.calledOnce).to.be.false;
     });
 
-    it('shows special message for DigitalOcean One-Click installs', function () {
+    it('shows special message for DigitalOcean One-Click root installs', function () {
         const osStub = sandbox.stub(os, 'platform').returns('linux');
+        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
         const fsStub = sandbox.stub(fs, 'existsSync');
+        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 0});
         const processStub = sandbox.stub(process, 'getuid').returns(0);
         const exitStub = sandbox.stub(process, 'exit').throws();
         const errorStub = sandbox.stub(console, 'error');
@@ -59,7 +61,10 @@ describe('Unit: Utils > checkRootUser', function () {
             throw new Error('should not be thrown');
         } catch (e) {
             expect(e.message).to.not.equal('should not be thrown');
+            expect(cwdStub.calledOnce).to.be.true;
             expect(fsStub.calledWithExactly('/root/.digitalocean_password')).to.be.true;
+            expect(fsStub.calledWithExactly('/var/www/ghost/.ghost-cli')).to.be.true;
+            expect(fsStatStub.calledWithExactly('/var/www/ghost/.ghost-cli')).to.be.true;
             expect(osStub.calledOnce).to.be.true;
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
@@ -68,9 +73,40 @@ describe('Unit: Utils > checkRootUser', function () {
         }
     });
 
-    it('shows special message for DigitalOcean One-Click installs, but doesn\'t exit on `stop`', function () {
+    it('throws error command run with root for non-root installs on a Digitalocean One-Click install', function () {
         const osStub = sandbox.stub(os, 'platform').returns('linux');
+        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
         const fsStub = sandbox.stub(fs, 'existsSync');
+        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 666});
+        const processStub = sandbox.stub(process, 'getuid').returns(0);
+        const exitStub = sandbox.stub(process, 'exit').throws();
+        const errorStub = sandbox.stub(console, 'error');
+
+        fsStub.withArgs('/root/.digitalocean_password').returns(true);
+        fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
+
+        try {
+            checkRootUser('update');
+            throw new Error('should not be thrown');
+        } catch (e) {
+            expect(e.message).to.not.equal('should not be thrown');
+            expect(cwdStub.calledOnce).to.be.true;
+            expect(fsStub.calledWithExactly('/root/.digitalocean_password')).to.be.true;
+            expect(fsStub.calledWithExactly('/var/www/ghost/.ghost-cli')).to.be.true;
+            expect(fsStatStub.calledWithExactly('/var/www/ghost/.ghost-cli')).to.be.true;
+            expect(osStub.calledOnce).to.be.true;
+            expect(processStub.calledOnce).to.be.true;
+            expect(errorStub.calledOnce).to.be.true;
+            expect(exitStub.calledOnce).to.be.true;
+            expect(errorStub.args[0][0]).to.match(/Can't run command as 'root' user/);
+        }
+    });
+
+    it('shows special message for DigitalOcean One-Click root installs, but doesn\'t exit on `stop`', function () {
+        const osStub = sandbox.stub(os, 'platform').returns('linux');
+        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sandbox.stub(fs, 'existsSync');
+        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 0});
         const processStub = sandbox.stub(process, 'getuid').returns(0);
         const exitStub = sandbox.stub(process, 'exit').throws();
         const errorStub = sandbox.stub(console, 'error');
@@ -79,7 +115,10 @@ describe('Unit: Utils > checkRootUser', function () {
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
 
         checkRootUser('stop');
+        expect(cwdStub.calledOnce).to.be.true;
         expect(fsStub.calledWithExactly('/root/.digitalocean_password')).to.be.true;
+        expect(fsStub.calledWithExactly('/var/www/ghost/.ghost-cli')).to.be.true;
+        expect(fsStatStub.calledWithExactly('/var/www/ghost/.ghost-cli')).to.be.true;
         expect(osStub.calledOnce).to.be.true;
         expect(processStub.calledOnce).to.be.true;
         expect(errorStub.calledOnce).to.be.true;
