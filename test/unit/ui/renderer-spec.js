@@ -58,7 +58,9 @@ describe('Unit: UI > Renderer', function () {
         it('subscribes to events', function (done) {
             const ctx = {
                 subscribeToEvents: sinon.stub(),
-                ui: {},
+                ui: {
+                    stdout: {}
+                },
                 options: {},
                 frame: sinon.stub()
             };
