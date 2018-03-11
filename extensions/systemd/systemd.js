@@ -8,7 +8,7 @@ const chalk = require('chalk');
 
 class SystemdProcessManager extends cli.ProcessManager {
     get systemdName() {
-        return `ghost_${this.instance.name}`;
+        return `ghost_${this.instance.name}.service`;
     }
 
     get logSuggestion() {
@@ -60,12 +60,12 @@ class SystemdProcessManager extends cli.ProcessManager {
 
     isEnabled() {
         try {
-            execa.shellSync(`systemctl is-enabled ${this.systemdName}`);
+            execa.shellSync(`sudo systemctl is-enabled ${this.systemdName}`);
             return true;
-        } catch (e) {
+        } catch (err) {
             // Systemd prints out "disabled" if service isn't enabled
             // or "failed to get unit file state" if something else goes wrong
-            if (!e.message.match(/disabled|Failed to get unit file state/)) {
+            if (!err.message.match(/disabled|Failed to get unit file state/)) {
                 throw e;
             }
 
@@ -85,12 +85,12 @@ class SystemdProcessManager extends cli.ProcessManager {
 
     isRunning() {
         try {
-            execa.shellSync(`systemctl is-active ${this.systemdName}`);
+            execa.shellSync(`sudo systemctl is-active ${this.systemdName}`);
             return true;
-        } catch (e) {
+        } catch (err) {
             // Systemd prints out "inactive" if service isn't running
             // or "activating" if service hasn't completely started yet
-            if (!e.message.match(/inactive|activating/)) {
+            if (!err.message.match(/inactive|activating/)) {
                 throw e;
             }
 
@@ -108,7 +108,7 @@ class SystemdProcessManager extends cli.ProcessManager {
             });
         }
 
-        if (fs.existsSync(`/lib/systemd/system/${this.systemdName}.service`)) {
+        if (fs.existsSync(`/lib/systemd/system/${this.systemdName}`)) {
             return;
         }
 
@@ -122,7 +122,7 @@ class SystemdProcessManager extends cli.ProcessManager {
         try {
             execa.shellSync('which systemctl', {stdio: 'ignore'});
             return true;
-        } catch (e) {
+        } catch (err) {
             return false;
         }
     }
