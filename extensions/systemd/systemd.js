@@ -8,7 +8,7 @@ const chalk = require('chalk');
 
 class SystemdProcessManager extends cli.ProcessManager {
     get systemdName() {
-        return `ghost_${this.instance.name}.service`;
+        return `ghost_${this.instance.name}`;
     }
 
     get logSuggestion() {
@@ -62,10 +62,10 @@ class SystemdProcessManager extends cli.ProcessManager {
         try {
             execa.shellSync(`sudo systemctl is-enabled ${this.systemdName}`);
             return true;
-        } catch (err) {
+        } catch (e) {
             // Systemd prints out "disabled" if service isn't enabled
             // or "failed to get unit file state" if something else goes wrong
-            if (!err.message.match(/disabled|Failed to get unit file state/)) {
+            if (!e.message.match(/disabled|Failed to get unit file state/)) {
                 throw e;
             }
 
@@ -87,10 +87,10 @@ class SystemdProcessManager extends cli.ProcessManager {
         try {
             execa.shellSync(`sudo systemctl is-active ${this.systemdName}`);
             return true;
-        } catch (err) {
+        } catch (e) {
             // Systemd prints out "inactive" if service isn't running
             // or "activating" if service hasn't completely started yet
-            if (!err.message.match(/inactive|activating/)) {
+            if (!e.message.match(/inactive|activating/)) {
                 throw e;
             }
 
