@@ -28,7 +28,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         const sudoStub = sinon.stub().resolves();
@@ -55,7 +55,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         const sudoStub = sinon.stub().resolves();
@@ -78,7 +78,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
@@ -100,7 +100,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
@@ -122,7 +122,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
@@ -148,7 +148,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
@@ -175,7 +175,7 @@ describe('Unit: Tasks > Migrate', function () {
 
         const migrate = proxyquire(migratePath, {
             execa: execaStub,
-            '../utils/use-ghost-user': useGhostUserStub
+            '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
         });
 
         return migrate({instance: {config: config, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {

@@ -133,7 +133,7 @@ describe('Unit: Commands > Uninstall', function () {
             it('step 2 (removing content folder)', function () {
                 const useGhostUserStub = sandbox.stub().returns(false);
                 const command = createInstance({
-                    '../utils/use-ghost-user': useGhostUserStub
+                    '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
                 });
                 command.system.getInstance.returns({dir: '/var/www/ghost'});
                 command.ui.sudo.resolves();
