@@ -43,7 +43,7 @@ describe('Unit: Commands > Run', function () {
             const fakeInstance = {config: config, dir: '/var/www/ghost'};
             const getInstanceStub = sandbox.stub().returns(fakeInstance);
             const RunCommand = proxyquire(modulePath, {
-                '../utils/use-ghost-user': useGhostUserStub
+                '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
             const instance = new RunCommand({log: logStub}, {getInstance: getInstanceStub});
             const useGhostUser = sandbox.stub(instance, 'useGhostUser').resolves();
@@ -76,7 +76,7 @@ describe('Unit: Commands > Run', function () {
             const fakeInstance = {config: config, dir: '/var/www/ghost'};
             const getInstanceStub = sandbox.stub().returns(fakeInstance);
             const RunCommand = proxyquire(modulePath, {
-                '../utils/use-ghost-user': useGhostUserStub
+                '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
             const instance = new RunCommand({log: logStub}, {getInstance: getInstanceStub});
             const useGhostUser = sandbox.stub(instance, 'useGhostUser').resolves();
