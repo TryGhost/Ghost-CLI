@@ -30,8 +30,7 @@ function configGet(what) {
 }
 
 const defaultInstance = {
-    running: () => true,
-    loadRunningEnvironment: () => true,
+    running: () => Promise.resolve(true),
     config: {get: configGet},
     dir: '/var/www/ghost'
 };
@@ -78,33 +77,28 @@ describe('Unit: Commands > Log', function () {
             });
         });
 
-        it('Loads the proper environment (running)', function () {
-            // These errors are thrown to stop execution
-            stubs.lre = sinon.stub().throws(new Error('lre'));
-            stubs.running = sinon.stub().returns(true);
+        it('checks if instance is running', function () {
+            stubs.running = sinon.stub().rejects(new Error('running'));
             const ext = proxyLog();
             const instance = {
-                running: stubs.running,
-                loadRunningEnvironment: stubs.lre
+                running: stubs.running
             };
             stubs.gi = sinon.stub().returns(instance);
             ext.system = {getInstance: stubs.gi};
 
-            try {
-                ext.run({name: 'ghost_org'});
+            return ext.run({name: 'ghost_org'}).then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
+            }).catch((error) => {
                 expect(error).to.be.ok;
-                expect(error.message).to.equal('lre');
+                expect(error.message).to.equal('running');
                 expect(stubs.running.calledOnce).to.be.true;
-                expect(stubs.lre.calledOnce).to.be.true;
-            }
+            });
         });
 
         it('Loads the proper environment (not running)', function () {
             // These errors are thrown to stop execution
             stubs.ce = sinon.stub().throws(new Error('ce'));
-            stubs.running = sinon.stub().returns(false);
+            stubs.running = sinon.stub().resolves(false);
             const ext = proxyLog();
             const instance = {
                 running: stubs.running,
@@ -113,22 +107,20 @@ describe('Unit: Commands > Log', function () {
             stubs.gi = sinon.stub().returns(instance);
             ext.system = {getInstance: stubs.gi};
 
-            try {
-                ext.run({name: 'ghost_org'});
+            return ext.run({name: 'ghost_org'}).then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
+            }).catch((error) => {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('ce');
                 expect(stubs.running.calledOnce).to.be.true;
                 expect(stubs.ce.calledOnce).to.be.true;
-            }
+            });
         });
 
         it('Rejects when logging to file is disabled', function () {
             const ext = proxyLog();
             const instance = {
-                running: () => true,
-                loadRunningEnvironment: () => true,
+                running: () => Promise.resolve(true),
                 config: {get: () => ['a', 'b', 'c']}
             };
             ext.system = {getInstance: () => instance};
@@ -146,10 +138,9 @@ describe('Unit: Commands > Log', function () {
             const ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
 
-            try {
-                ext.run({name: 'ghost_org', error: true})
+            ext.run({name: 'ghost_org', error: true}).then(() => {
                 expect(false, 'existsSync should have thrown').to.be.true;
-            } catch (error) {
+            }).catch((error) => {
                 const fileName = 'https___dev_ghost_org_dev.error.log'
                 const expectedFilePath = `/var/www/ghost/content/logs/${fileName}`;
                 expect(error).to.be.ok;
@@ -157,7 +148,7 @@ describe('Unit: Commands > Log', function () {
 
                 expect(stubs.es.calledOnce).to.be.true;
                 expect(stubs.es.args[0][0]).to.equal(expectedFilePath);
-            }
+            });
         });
 
         it('Resolves when log file doesn\'t exist', function () {
@@ -196,13 +187,12 @@ describe('Unit: Commands > Log', function () {
             });
             ext.system = defaultSystem;
 
-            try {
-                ext.run({name: 'ghost_org'});
+            return ext.run({name: 'ghost_org'}).then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
+            }).catch((error) => {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('test error');
-            }
+            });
         });
 
         it('Ignores PrettyStream syntax errors', function () {
@@ -218,13 +208,12 @@ describe('Unit: Commands > Log', function () {
             });
             ext.system = defaultSystem;
 
-            try {
-                ext.run({name: 'ghost_org'});
+            return ext.run({name: 'ghost_org'}).then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
+            }).catch((error) => {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('break the code');
-            }
+            });
         });
 
         it('Writes by line', function () {
@@ -241,8 +230,7 @@ describe('Unit: Commands > Log', function () {
                 'read-last-lines': {read: stubs.ll}
             });
             const instance = {
-                running: () => true,
-                loadRunningEnvironment: () => true,
+                running: () => Promise.resolve(true),
                 config: {get: sinon.stub().callsFake(configGet)},
                 dir: '/var/www/ghost'
             };

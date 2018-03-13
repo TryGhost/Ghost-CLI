@@ -56,7 +56,7 @@ describe('Unit: Commands > Stop', function () {
         });
 
         it('gracefully notifies of already stopped instance', function () {
-            const runningFake = () => false;
+            const runningFake = () => Promise.resolve(false);
             const gIfake = () => ({running: runningFake});
             const logStub = sinon.stub();
             const stop = proxiedCommand();
@@ -74,7 +74,7 @@ describe('Unit: Commands > Stop', function () {
         it('calls process manger stop', function () {
             const stop = proxiedCommand();
             const stopStub = sinon.stub().resolves();
-            const runningStub = sinon.stub().returns(true);
+            const runningStub = sinon.stub().resolves(true);
             const gIstub = sinon.stub().returns({
                 running: runningStub,
                 process: {stop: stopStub},
@@ -105,7 +105,7 @@ describe('Unit: Commands > Stop', function () {
             const sEBstub = sinon.stub().returns(true);
             const disableStub = sinon.stub().resolves();
             const gIstub = sinon.stub().returns({
-                running: () => true,
+                running: () => Promise.resolve(true),
                 process: {
                     disable: disableStub,
                     stop: () => true,

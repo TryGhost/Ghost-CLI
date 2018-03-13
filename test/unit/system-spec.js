@@ -327,25 +327,25 @@ describe('Unit: System', function () {
             const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
             const getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            const instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
-            const instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
+            const instanceA = {running: () => Promise.resolve(true), cwd: '/dir/a', name: 'testa'};
+            const instanceB = {running: () => Promise.resolve(false), cwd: '/dir/b', name: 'testb'};
 
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
 
-            const result = systemInstance.getAllInstances(true);
-
-            expect(result).to.deep.equal([instanceA]);
-            expect(fsStub.calledThrice).to.be.true;
-            expect(getInstanceStub.calledTwice).to.be.true;
-            expect(setStub.calledOnce).to.be.true;
-            expect(setStub.args[0]).to.deep.equal([
-                'instances',
-                {
-                    testa: {cwd: '/dir/a'},
-                    testb: {cwd: '/dir/b'}
-                }
-            ]);
+            return systemInstance.getAllInstances(true).then((result) => {
+                expect(result).to.deep.equal([instanceA]);
+                expect(fsStub.calledThrice).to.be.true;
+                expect(getInstanceStub.calledTwice).to.be.true;
+                expect(setStub.calledOnce).to.be.true;
+                expect(setStub.args[0]).to.deep.equal([
+                    'instances',
+                    {
+                        testa: {cwd: '/dir/a'},
+                        testb: {cwd: '/dir/b'}
+                    }
+                ]);
+            });
         });
 
         it('loads all instances with running false', function () {
@@ -365,18 +365,18 @@ describe('Unit: System', function () {
             const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
             const getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            const instanceA = {running: () => true, cwd: '/dir/a', name: 'testa'};
-            const instanceB = {running: () => false, cwd: '/dir/b', name: 'testb'};
+            const instanceA = {running: () => Promise.resolve(true), cwd: '/dir/a', name: 'testa'};
+            const instanceB = {running: () => Promise.resolve(false), cwd: '/dir/b', name: 'testb'};
 
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
 
-            const result = systemInstance.getAllInstances(false);
-
-            expect(result).to.deep.equal([instanceA, instanceB]);
-            expect(fsStub.calledTwice).to.be.true;
-            expect(getInstanceStub.calledTwice).to.be.true;
-            expect(setStub.called).to.be.false;
+            return systemInstance.getAllInstances(false).then((result) => {
+                expect(result).to.deep.equal([instanceA, instanceB]);
+                expect(fsStub.calledTwice).to.be.true;
+                expect(getInstanceStub.calledTwice).to.be.true;
+                expect(setStub.called).to.be.false;
+            });
         });
     });
 
