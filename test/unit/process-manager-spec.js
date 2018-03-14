@@ -193,6 +193,15 @@ describe('Unit: Process Manager', function () {
         return stop;
     });
 
+    it('base isRunning implementation returns a promise', function () {
+        const ProcessManager = require(modulePath);
+        const instance = new ProcessManager({}, {}, {});
+
+        return instance.isRunning().then((result) => {
+            expect(result).to.be.false;
+        });
+    });
+
     it('base willRun method returns true', function () {
         const ProcessManager = require(modulePath);
         expect(ProcessManager.willRun()).to.be.true;

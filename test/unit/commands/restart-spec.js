@@ -7,7 +7,7 @@ const RestartCommand = require(modulePath);
 
 describe('Unit: Command > Restart', function () {
     it('warns of stopped instance and starts instead', function () {
-        const instance = {running: () => false};
+        const instance = {running: () => Promise.resolve(false)};
         const logStub = sinon.stub();
         const ctx = {
             ui: {log: logStub},
@@ -31,7 +31,7 @@ describe('Unit: Command > Restart', function () {
         const instance = {
             process: {restart: restartStub},
             loadRunningEnvironment: lreStub,
-            running: () => 1
+            running: () => Promise.resolve(true)
         };
 
         const command = new RestartCommand({run: runStub}, {

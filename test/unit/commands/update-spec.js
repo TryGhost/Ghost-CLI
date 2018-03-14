@@ -28,7 +28,7 @@ describe('Unit: Commands > Update', function () {
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(true);
+            fakeInstance.running.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
@@ -69,7 +69,7 @@ describe('Unit: Commands > Update', function () {
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(true);
+            fakeInstance.running.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
@@ -102,7 +102,7 @@ describe('Unit: Commands > Update', function () {
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
+            fakeInstance.running.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
@@ -158,7 +158,7 @@ describe('Unit: Commands > Update', function () {
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(true);
+            fakeInstance.running.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
@@ -214,7 +214,7 @@ describe('Unit: Commands > Update', function () {
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
+            fakeInstance.running.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             sinon.stub(cmdInstance, 'stop').resolves();
@@ -265,7 +265,7 @@ describe('Unit: Commands > Update', function () {
             ui.run.callsFake(fn => fn());
             ui.listr.callsFake((tasks, ctx) => {
                 return Promise.each(tasks, (task) => {
-                    if (task.skip && task.skip(ctx)) {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
                         return;
                     }
 
@@ -278,7 +278,7 @@ describe('Unit: Commands > Update', function () {
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.returns(false);
+            fakeInstance.running.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();

@@ -13,7 +13,7 @@ describe('Unit: Commands > Start', function () {
         beforeEach(function () {
             myInstance = {
                 checkEnvironment: () => true,
-                running: () => false
+                running: () => Promise.resolve(false)
             };
 
             mySystem = {
@@ -23,7 +23,7 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('gracefully notifies of already running instance', function () {
-            const runningStub = sinon.stub().returns(true)
+            const runningStub = sinon.stub().resolves(true)
             const logStub = sinon.stub();
             const ui = {log: logStub};
             const start = new StartCommand(ui, mySystem);
@@ -59,7 +59,7 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('runs instance start', function () {
-            myInstance.running = sinon.stub();
+            myInstance.running = sinon.stub().resolves(false);
             myInstance.process = {start: sinon.stub()};
             mySystem.environment = 'Ghost';
             const ui = {

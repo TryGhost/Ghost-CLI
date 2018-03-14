@@ -78,24 +78,49 @@ describe('Unit: Commands > Uninstall', function () {
                 });
             }
 
-            it('step 1 (stopping ghost)', function () {
+            it('step 1 (stopping ghost) - skips when ghost is not running', function () {
                 const command = createInstance();
                 const instance = {
-                    running: sandbox.stub().returns(false),
+                    running: sandbox.stub().resolves(false),
                     loadRunningEnvironment: sandbox.stub()
                 };
                 const runCommandStub = sandbox.stub(command.instance, 'runCommand').resolves();
+                const skipStub = sandbox.stub();
                 command.system.getInstance.returns(instance);
 
                 return getSteps(command.instance, command.ui).then((steps) => {
                     const task = steps[0];
 
                     expect(task.title).to.equal('Stopping Ghost');
-                    expect(task.skip()).to.be.true;
-                    expect(instance.running.calledOnce).to.be.true;
 
-                    return task.task();
+                    return task.task(null, {skip: skipStub});
                 }).then(() => {
+                    expect(instance.running.calledOnce).to.be.true;
+                    expect(skipStub.calledOnce).to.be.true;
+                    expect(instance.loadRunningEnvironment.calledOnce).to.be.false;
+                    expect(runCommandStub.calledOnce).to.be.false;
+                });
+            });
+
+            it('step 1 (stopping ghost) - doesn\'t skip when ghost is running', function () {
+                const command = createInstance();
+                const instance = {
+                    running: sandbox.stub().resolves(true),
+                    loadRunningEnvironment: sandbox.stub()
+                };
+                const runCommandStub = sandbox.stub(command.instance, 'runCommand').resolves();
+                const skipStub = sandbox.stub();
+                command.system.getInstance.returns(instance);
+
+                return getSteps(command.instance, command.ui).then((steps) => {
+                    const task = steps[0];
+
+                    expect(task.title).to.equal('Stopping Ghost');
+
+                    return task.task(null, {skip: skipStub});
+                }).then(() => {
+                    expect(instance.running.calledOnce).to.be.true;
+                    expect(skipStub.calledOnce).to.be.false;
                     expect(instance.loadRunningEnvironment.calledOnce).to.be.true;
                     expect(runCommandStub.calledOnce).to.be.true;
                     expect(runCommandStub.calledWithExactly(

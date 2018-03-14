@@ -177,10 +177,11 @@ describe('Unit: Instance', function () {
                 get cliConfig() { return {set: setStub, save: saveStub}; }
             }
             const testInstance = new TestInstance({}, {}, '');
-            testInstance.running('testing');
 
-            expect(setStub.calledOnce).to.be.true;
-            expect(saveStub.calledOnce).to.be.true;
+            return testInstance.running('testing').then(() => {
+                expect(setStub.calledOnce).to.be.true;
+                expect(saveStub.calledOnce).to.be.true;
+            });
         });
 
         it('returns false if running property not set in config & neither config exists', function () {
@@ -192,12 +193,13 @@ describe('Unit: Instance', function () {
             const testInstance = new TestInstance({}, {development: true, setEnvironment: setEnvironmentStub}, '');
             const existsStub = sandbox.stub(Config, 'exists').returns(false);
 
-            const running = testInstance.running();
-            expect(running).to.be.false;
-            expect(hasStub.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true)).to.be.true;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.false;
+                expect(hasStub.calledOnce).to.be.true;
+                expect(existsStub.calledTwice).to.be.true;
+                expect(setEnvironmentStub.calledOnce).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly(true)).to.be.true;
+            });
         });
 
         it('queries process manager in production if running not set and prod config exists', function () {
@@ -212,16 +214,16 @@ describe('Unit: Instance', function () {
             const setEnvironmentStub = sandbox.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
 
-            const running = testInstance.running();
-
-            expect(running).to.be.true;
-            expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(configStub.set.calledOnce).to.be.true;
-            expect(configStub.set.calledWithExactly('running', 'production')).to.be.true;
-            expect(configStub.save.calledOnce).to.be.true;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.true;
+                expect(configStub.has.calledOnce).to.be.true;
+                expect(existsStub.calledOnce).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
+                expect(isRunningStub.calledOnce).to.be.true;
+                expect(configStub.set.calledOnce).to.be.true;
+                expect(configStub.set.calledWithExactly('running', 'production')).to.be.true;
+                expect(configStub.save.calledOnce).to.be.true;
+            });
         });
 
         it('queries process manager in dev if prod config not exists and dev config does', function () {
@@ -239,17 +241,17 @@ describe('Unit: Instance', function () {
             existsStub.onFirstCall().returns(false);
             existsStub.onSecondCall().returns(true);
 
-            const running = testInstance.running();
-
-            expect(running).to.be.true;
-            expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(configStub.set.calledOnce).to.be.true;
-            expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
-            expect(configStub.save.calledOnce).to.be.true;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.true;
+                expect(configStub.has.calledOnce).to.be.true;
+                expect(existsStub.calledTwice).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
+                expect(isRunningStub.calledOnce).to.be.true;
+                expect(configStub.set.calledOnce).to.be.true;
+                expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
+                expect(configStub.save.calledOnce).to.be.true;
+            });
         });
 
         it('queries process manager in dev if not running in prod and dev config exists', function () {
@@ -266,17 +268,17 @@ describe('Unit: Instance', function () {
             const setEnvironmentStub = sandbox.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
 
-            const running = testInstance.running();
-
-            expect(running).to.be.true;
-            expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
-            expect(isRunningStub.calledTwice).to.be.true;
-            expect(configStub.set.calledOnce).to.be.true;
-            expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
-            expect(configStub.save.calledOnce).to.be.true;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.true;
+                expect(configStub.has.calledOnce).to.be.true;
+                expect(existsStub.calledTwice).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
+                expect(isRunningStub.calledTwice).to.be.true;
+                expect(configStub.set.calledOnce).to.be.true;
+                expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
+                expect(configStub.save.calledOnce).to.be.true;
+            });
         });
 
         it('returns false if ghost isn\'t running in either environment', function () {
@@ -291,18 +293,18 @@ describe('Unit: Instance', function () {
             const setEnvironmentStub = sandbox.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub, development: false}, '/var/www/ghost');
 
-            const running = testInstance.running();
-
-            expect(running).to.be.false;
-            expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
-            expect(isRunningStub.calledTwice).to.be.true;
-            expect(configStub.set.called).to.be.false;
-            expect(configStub.save.called).to.be.false;
-            expect(setEnvironmentStub.calledThrice).to.be.true;
-            expect(setEnvironmentStub.args[2][0]).to.be.false;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.false;
+                expect(configStub.has.calledOnce).to.be.true;
+                expect(existsStub.calledTwice).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
+                expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
+                expect(isRunningStub.calledTwice).to.be.true;
+                expect(configStub.set.called).to.be.false;
+                expect(configStub.save.called).to.be.false;
+                expect(setEnvironmentStub.calledThrice).to.be.true;
+                expect(setEnvironmentStub.args[2][0]).to.be.false;
+            });
         });
 
         it('loads running environment and checks if process manager returns false', function () {
@@ -315,11 +317,12 @@ describe('Unit: Instance', function () {
             const testInstance = new TestInstance({}, {}, '');
             const loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
 
-            const running = testInstance.running();
-            expect(running).to.be.true;
-            expect(hasStub.calledOnce).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(loadRunEnvStub.calledOnce).to.be.true;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.true;
+                expect(hasStub.calledOnce).to.be.true;
+                expect(isRunningStub.calledOnce).to.be.true;
+                expect(loadRunEnvStub.calledOnce).to.be.true;
+            });
         });
 
         it('sets running to null in cliConfig if process manager\'s isRunning method returns false', function () {
@@ -334,13 +337,14 @@ describe('Unit: Instance', function () {
             const testInstance = new TestInstance({}, {}, '');
             const loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
 
-            const running = testInstance.running();
-            expect(running).to.be.false;
-            expect(hasStub.calledOnce).to.be.true;
-            expect(setStub.calledOnce).to.be.true;
-            expect(saveStub.calledOnce).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(loadRunEnvStub.calledOnce).to.be.true;
+            return testInstance.running().then((running) => {
+                expect(running).to.be.false;
+                expect(hasStub.calledOnce).to.be.true;
+                expect(setStub.calledOnce).to.be.true;
+                expect(saveStub.calledOnce).to.be.true;
+                expect(isRunningStub.calledOnce).to.be.true;
+                expect(loadRunEnvStub.calledOnce).to.be.true;
+            });
         });
     });
 
@@ -437,15 +441,16 @@ describe('Unit: Instance', function () {
             class TestInstance extends Instance {
                 get name() { return 'testing'; }
                 get cliConfig() { return {get: getStub}; }
-                running() { return false; }
+                running() { return Promise.resolve(false); }
             }
             const testInstance = new TestInstance({}, {}, '');
-            const result = testInstance.summary();
 
-            expect(result.running).to.be.false;
-            expect(result.name).to.equal('testing');
-            expect(result.version).to.equal('1.0.0');
-            expect(result.mode).to.be.undefined;
+            return testInstance.summary().then((result) => {
+                expect(result.running).to.be.false;
+                expect(result.name).to.equal('testing');
+                expect(result.version).to.equal('1.0.0');
+                expect(result.mode).to.be.undefined;
+            });
         });
 
         it('loads running environment and returns full object if running is true', function () {
@@ -459,17 +464,16 @@ describe('Unit: Instance', function () {
                 get cliConfig() { return {get: cliGetStub}; }
                 get config() { return {get: getStub}; }
                 get process() { return {name: 'local'}; }
-                running() { return true; }
+                running() { return Promise.resolve(true); }
             }
             const testInstance = new TestInstance({}, {environment: 'testing'}, '');
-            const loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
 
-            const result = testInstance.summary();
-            expect(loadRunEnvStub.calledOnce).to.be.true;
-            expect(result.running).to.be.true;
-            expect(result.name).to.equal('testing');
-            expect(result.mode).to.equal('testing');
-            expect(result.url).to.equal('localhost');
+            return testInstance.summary().then((result) => {
+                expect(result.running).to.be.true;
+                expect(result.name).to.equal('testing');
+                expect(result.mode).to.equal('testing');
+                expect(result.url).to.equal('localhost');
+            });
         });
     });
 
