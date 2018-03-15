@@ -119,15 +119,14 @@ class MySQLExtension extends cli.Extension {
                     `IDENTIFIED WITH mysql_native_password AS '${result[0].password}';`
                 ).catch((error) => {
                     // User already exists, run this method again
-                    if (error.errno === 1396) {
+                    if (error.err && error.err.errno === 1396) {
                         this.ui.logVerbose('MySQL: user exists, re-trying user creation with new username', 'yellow');
                         return tryCreateUser();
                     }
 
-                    return Promise.reject(new cli.errors.CliError({
-                        message: `Creating new MySQL user errored with message: ${error.message}`,
-                        err: error
-                    }));
+                    error.message = `Creating new MySQL user errored with message: ${error.message}`;
+
+                    return Promise.reject(error);
                 });
             };
 
@@ -143,14 +142,10 @@ class MySQLExtension extends cli.Extension {
         }).catch((error) => {
             this.ui.logVerbose('MySQL: Unable to create custom Ghost user', 'red');
             this.connection.end(); // Ensure we end the connection
-            if (error instanceof cli.errors.CliError) {
-                return Promise.reject(error);
-            }
 
-            return Promise.reject(new cli.errors.CliError({
-                message: `MySQL user creation errored with message: ${error.message}`,
-                err: error
-            }));
+            error.message = `Creating new MySQL user errored with message: ${error.message}`;
+
+            return Promise.reject(error);
         });
     }
 
@@ -163,16 +158,27 @@ class MySQLExtension extends cli.Extension {
         }).catch((error) => {
             this.ui.logVerbose('MySQL: Unable either to grant permissions or flush privileges', 'red');
             this.connection.end();
-            return Promise.reject(new cli.errors.CliError({
-                message: `Granting database permissions errored with message: ${error.message}`,
-                err: error
-            }));
+
+            error.message = `Granting database permissions errored with message: ${error.message}`;
+
+            return Promise.reject(error);
         });
     }
 
     _query(queryString) {
         this.ui.logVerbose(`MySQL: running query > ${queryString}`, 'gray');
-        return Promise.fromCallback(cb => this.connection.query(queryString, cb));
+        return Promise.fromCallback(cb => this.connection.query(queryString, cb))
+            .catch((error) => {
+                if (error instanceof (cli.errors.CliError)) {
+                    return Promise.reject(error);
+                }
+
+                return Promise.reject(new cli.errors.CliError({
+                    message: error.message,
+                    context: queryString,
+                    err: error
+                }));
+            });
     }
 }
 
