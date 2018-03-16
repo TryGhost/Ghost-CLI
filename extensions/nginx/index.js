@@ -238,7 +238,7 @@ class NginxExtension extends cli.Extension {
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${confFile}`)
                 ]).catch(
                     (error) => Promise.reject(new cli.errors.CliError({
-                        message: `Nginx config file link could not be removed, you will need to do this manually for ${confFile}.`,
+                        message: `Nginx config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${confFile}.`,
                         help: `Try running 'rm -f /etc/nginx/sites-available/${confFile} && rm -f /etc/nginx/sites-enabled/${confFile}'`,
                         err: error
                     }))
@@ -254,7 +254,7 @@ class NginxExtension extends cli.Extension {
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${sslConfFile}`)
                 ]).catch(
                     (error) => Promise.reject(new cli.errors.CliError({
-                        message: `SSL config file link could not be removed, you will need to do this manually for ${sslConfFile}.`,
+                        message: `SSL config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${sslConfFile}.`,
                         help: `Try running 'rm -f /etc/nginx/sites-available/${sslConfFile} && rm -f /etc/nginx/sites-enabled/${sslConfFile}'`,
                         err: error
                     }))
