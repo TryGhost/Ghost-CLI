@@ -59,18 +59,17 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     isEnabled() {
-        try {
-            execa.shellSync(`systemctl is-enabled ${this.systemdName}`);
-            return true;
-        } catch (e) {
-            // Systemd prints out "disabled" if service isn't enabled
-            // or "failed to get unit file state" if something else goes wrong
-            if (!e.message.match(/disabled|Failed to get unit file state/)) {
-                throw e;
-            }
+        return this.ui.sudo(`systemctl is-enabled ${this.systemdName}`)
+            .then(() => Promise.resolve(true))
+            .catch((error) => {
+                // Systemd prints out "disabled" if service isn't enabled
+                // or "failed to get unit file state" if something else goes wrong
+                if (!error.message.match(/disabled|Failed to get unit file state/)) {
+                    return Promise.reject(error);
+                }
 
-            return false;
-        }
+                return Promise.resolve(false);
+            });
     }
 
     enable() {

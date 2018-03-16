@@ -160,45 +160,42 @@ describe('Unit: Systemd > Process Manager', function () {
     });
 
     describe('isEnabled', function () {
-        let execaStub;
-
-        beforeEach(function () {
-            execaStub = sinon.stub();
-        });
-
-        it('Calls execa', function () {
+        it('Returns true if process manager is enabled', function () {
+            const ui = {sudo: sinon.stub().resolves()};
             const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
-            const ext = makeSystemd({execa: {shellSync: execaStub}});
+            const ext = makeSystemd(null, ui);
 
-            expect(ext.isEnabled()).to.be.true;
-            expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.args[0][0]).to.equal(expectedCmd);
+            ext.isEnabled().then((result) => {
+                expect(result).to.be.true;
+                expect(ui.sudo.calledOnce).to.be.true;
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+            });
         });
 
         it('Passes bad errors through', function () {
-            execaStub = sinon.stub().throws(new Error('ponies'));
-            const ext = makeSystemd({execa: {shellSync: execaStub}});
+            const ui = {sudo: sinon.stub().rejects(new Error('unknown'))};
+            const ext = makeSystemd(null, ui);
+            const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
 
-            try {
-                ext.isEnabled();
+            ext.isEnabled().then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
-                expect(execaStub.calledOnce).to.be.true;
-                expect(error.message).to.equal('ponies');
-            }
+            }).catch((error) => {
+                expect(error.message).to.equal('unknown');
+                expect(ui.sudo.calledOnce).to.be.true;
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+            });
         });
 
-        it('Doesn\'t pass disabled errors through', function () {
-            let execaStub = sinon.stub().throws(new Error('disabled'));
-            const proxyOpts = {execa: {shellSync: execaStub}};
-            let ext = makeSystemd(proxyOpts);
+        it('Doesn\'t pass stopped errors through', function () {
+            const ui = {sudo: sinon.stub().rejects(new Error('disabled'))};
+            const ext = makeSystemd(null, ui);
+            const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
 
-            expect(ext.isEnabled()).to.be.false;
-
-            execaStub = sinon.stub().throws(new Error('Failed to get unit file state'));
-            ext = makeSystemd(proxyOpts);
-
-            expect(ext.isEnabled()).to.be.false;
+            ext.isEnabled().then((result) => {
+                expect(result).to.be.false;
+                expect(ui.sudo.calledOnce).to.be.true;
+                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+            });
         });
     });
 
