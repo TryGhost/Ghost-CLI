@@ -53,25 +53,6 @@ describe('Unit: Systemd > Extension', function () {
     });
 
     describe('setup stage', function () {
-        it('can handle getUid error', function () {
-            const uidStub = sinon.stub().throws(new errors.ProcessError({stderr: 'something went wrong'}));
-
-            const SystemdExtension = proxyquire(modulePath, {
-                './get-uid': uidStub
-            });
-
-            const logStub = sinon.stub();
-            const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub}, {}, {}, path.join(__dirname, '..'));
-
-            testInstance._setup({}, {instance: {dir: '/some/dir'}}, {skip: skipStub});
-            expect(uidStub.calledOnce).to.be.true;
-            expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/"ghost" user has not been created/);
-            expect(skipStub.calledOnce).to.be.true;
-        });
-
         it('skips stage if ghost user hasn\'t been set up', function () {
             const uidStub = sinon.stub().returns(false);
 

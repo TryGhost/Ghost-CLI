@@ -126,7 +126,7 @@ class NginxExtension extends cli.Extension {
                     if (error.code !== 'ENOTFOUND') {
                         // Some other error
                         return Promise.reject(new cli.errors.CliError({
-                            message: `Error trying to looking DNS for '${parsedUrl.hostname}'`,
+                            message: `Error trying to lookup DNS for '${parsedUrl.hostname}'`,
                             err: error
                         }));
                     }

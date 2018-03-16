@@ -22,12 +22,10 @@ module.exports = function getUid(dir) {
 
         return uid;
     } catch (e) {
-        if (!e.message.match(/no such user/i)) {
-            const errors = require('../../lib').errors;
-            // throw the error here so it'll be logged
-            throw new errors.ProcessError(e);
-        }
-
+        // CASE: the ghost user doesn't exist, hence can't be used
+        // We just return null and not doing anything with the error,
+        // as it would either mean, that the user doesn't exist (this
+        // is exactly what we want to know), or the command is not by the OS
         return null;
     }
 };

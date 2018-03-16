@@ -96,18 +96,9 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     _precheck() {
-        let uid;
+        const uid = getUid(this.instance.dir);
 
-        // getUid returns either the uid or null, but can also throw an error
-        try {
-            uid = getUid(this.instance.dir);
-        } catch (e) {
-            // getuid throws a ProcessError, we add a message and help and just throw it
-            e.message = 'Systemd process manager has not been set up or is corrupted.';
-            e.options.help = `Run ${chalk.green('ghost setup linux-user systemd')} and try again.`
-            throw e;
-        }
-
+        // getUid returns either the uid or null
         if (!uid) {
             throw new cli.errors.SystemError({
                 message: 'Systemd process manager has not been set up or is corrupted.',
