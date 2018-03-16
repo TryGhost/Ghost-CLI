@@ -84,18 +84,16 @@ class SystemdProcessManager extends cli.ProcessManager {
     }
 
     isRunning() {
-        try {
-            execa.shellSync(`systemctl is-active ${this.systemdName}`);
-            return true;
-        } catch (e) {
-            // Systemd prints out "inactive" if service isn't running
-            // or "activating" if service hasn't completely started yet
-            if (!e.message.match(/inactive|activating/)) {
-                throw e;
-            }
-
-            return false;
-        }
+        return this.ui.sudo(`systemctl is-active ${this.systemdName}`)
+            .then(() => Promise.resolve(true))
+            .catch ((error) => {
+                // Systemd prints out "inactive" if service isn't running
+                // or "activating" if service hasn't completely started yet
+                if (!error.message.match(/inactive|activating/)) {
+                    return Promise.reject(error);
+                }
+                return Promise.resolve(false);
+            });
     }
 
     _precheck() {
