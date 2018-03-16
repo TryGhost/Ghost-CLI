@@ -295,23 +295,7 @@ describe('Unit: Systemd > Process Manager', function () {
             proxyOpts = {'./get-uid': sinon.stub().returns(true)};
         });
 
-        it('can handle when uid throws error', function () {
-            proxyOpts['./get-uid'] = sinon.stub().throws(new errors.ProcessError({stderr: 'something went wrong'}));
-            const ext = makeSystemd(proxyOpts);
-            try {
-                ext._precheck();
-                expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
-                expect(proxyOpts['./get-uid'].calledOnce).to.be.true;
-                expect(error).to.be.ok;
-                expect(error).to.be.instanceOf(errors.ProcessError);
-                expect(error.message).to.match(/Systemd process manager has not been set up or is corrupted./);
-                expect(error.options.help).to.match(/ghost setup linux-user systemd/);
-                expect(error.options.stderr).to.match(/something went wrong/);
-            }
-        });
-
-        it('Errors if uid doesn\'t been set', function () {
+        it('Errors if uid hasn\'t been set', function () {
             proxyOpts['./get-uid'] = sinon.stub().returns(null);
             const ext = makeSystemd(proxyOpts);
             try {

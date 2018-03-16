@@ -425,7 +425,7 @@ describe('Unit: Extensions > Nginx', function () {
                 }).catch((err) => {
                     expect(firstSet, `ENOTFOUND Failed: ${err}`).to.be.true;
                     expect(err).to.exist;
-                    expect(err.options.message).to.match(/Error trying to looking DNS for 'ghost.dev'/);
+                    expect(err.options.message).to.match(/Error trying to lookup DNS for 'ghost.dev'/);
                     expect(err.options.err.code).to.equal(DNS.code);
                     expect(log.called).to.be.false;
                     expect(ctx.dnsfail).to.not.exist;
