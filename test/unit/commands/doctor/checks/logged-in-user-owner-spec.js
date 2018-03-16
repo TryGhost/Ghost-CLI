@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const fs = require('fs');
 
 const errors = require('../../../../../lib/errors');
-const ghostUser = require('../../../../../lib/utils/use-ghost-user');
 
 const loggedInUserOwner = require('../../../../../lib/commands/doctor/checks/logged-in-user-owner');
 
@@ -21,126 +20,75 @@ describe('Unit: Doctor Checks > loggedInUserOwner', function () {
         }), 'false if platform is not linux').to.be.false;
     });
 
-    describe('Ghost user', function () {
-        it('rejects if user is logged in as ghost and ghost owns content folder', function () {
-            const uidStub = sandbox.stub(process, 'getuid').returns(1002);
-            const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1002]);
-            const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns({uid: 1002, guid: 1002});
-            const fsStub = sandbox.stub(fs, 'lstatSync');
+    it('rejects if current user is not owner and not in the same group as owner', function () {
+        const uidStub = sandbox.stub(process, 'getuid').returns(1000);
+        const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
+        const fsStub = sandbox.stub(fs, 'lstatSync');
 
-            fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
-            fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
+        fsStub.onFirstCall().returns({uid: 1001, gid: 1001});
+        fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
 
-            try {
-                loggedInUserOwner.task()
-                expect(false, 'error should have been thrown').to.be.true;
-            } catch (error) {
-                expect(error).to.exist;
-                expect(uidStub.calledOnce).to.be.true;
-                expect(gidStub.calledOnce).to.be.true;
-                expect(ghostUserStub.calledOnce).to.be.true;
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/You can't use Ghost with the ghost user./);
-            }
-        });
-
-        it('resolves if user is logged in as ghost but ghost doesn\'t own the content folder', function () {
-            const uidStub = sandbox.stub(process, 'getuid').returns(1002);
-            const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1002]);
-            const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns({uid: 1002, guid: 1002});
-            const fsStub = sandbox.stub(fs, 'lstatSync');
-
-            fsStub.onFirstCall().returns({uid: 1002, gid: 1002});
-            fsStub.onSecondCall().returns({uid: 1001, gid: 1001});
-
+        try {
             loggedInUserOwner.task();
+            expect(false, 'error should have been thrown').to.be.true;
+        } catch (error) {
+            expect(error).to.exist;
             expect(uidStub.calledOnce).to.be.true;
             expect(gidStub.calledOnce).to.be.true;
-            expect(ghostUserStub.calledOnce).to.be.true;
-        });
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.match(/Your current user is not the owner of the Ghost directory and also not part of the same group./);
+        }
     });
 
-    describe('Other users', function () {
-        it('rejects if current user is not owner and not in the same group as owner', function () {
-            const uidStub = sandbox.stub(process, 'getuid').returns(1000);
-            const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
-            const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns({uid: 1002, guid: 1002});
-            const fsStub = sandbox.stub(fs, 'lstatSync');
+    it('shows a warning message, if user is logged in as different user than owner, but same group', function () {
+        const uidStub = sandbox.stub(process, 'getuid').returns(1001);
+        const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
+        const fsStub = sandbox.stub(fs, 'lstatSync');
+        const logStub = sandbox.stub();
 
-            fsStub.onFirstCall().returns({uid: 1001, gid: 1001});
-            fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
+        const ctx = {
+            ui: {log: logStub}
+        };
 
-            try {
-                loggedInUserOwner.task();
-                expect(false, 'error should have been thrown').to.be.true;
-            } catch (error) {
-                expect(error).to.exist;
-                expect(uidStub.calledOnce).to.be.true;
-                expect(gidStub.calledOnce).to.be.true;
-                expect(ghostUserStub.calledOnce).to.be.true;
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/Your current user is not the owner of the Ghost directory and also not part of the same group./);
-            }
-        });
+        fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
+        fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
 
-        it('shows a warning message, if user is logged in as different user than owner, but same group', function () {
-            const uidStub = sandbox.stub(process, 'getuid').returns(1001);
-            const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
-            const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns({uid: 1002, guid: 1002});
-            const fsStub = sandbox.stub(fs, 'lstatSync');
-            const logStub = sandbox.stub();
+        loggedInUserOwner.task(ctx);
+        expect(uidStub.calledOnce).to.be.true;
+        expect(gidStub.calledOnce).to.be.true;
+        expect(logStub.calledOnce).to.be.true;
+        expect(logStub.args[0][0]).to.match(/The current user is not the owner of the Ghost directory. This might cause problems./);
+    });
 
-            const ctx = {
-                ui: {log: logStub}
-            };
+    it('resolves if current user is also the owner', function () {
+        const uidStub = sandbox.stub(process, 'getuid').returns(1000);
+        const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
+        const fsStub = sandbox.stub(fs, 'lstatSync');
+        const logStub = sandbox.stub();
 
-            fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
-            fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
+        const ctx = {
+            ui: {log: logStub}
+        };
 
-            loggedInUserOwner.task(ctx);
-            expect(uidStub.calledOnce).to.be.true;
-            expect(gidStub.calledOnce).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/The current user is not the owner of the Ghost directory. This might cause problems./);
-            expect(ghostUserStub.calledOnce).to.be.true;
-        });
+        fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
+        fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
 
-        it('resolves if current user is also the owner', function () {
-            const uidStub = sandbox.stub(process, 'getuid').returns(1000);
-            const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
-            // Ghost user doesn't exist this time
-            const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns(false);
-            const fsStub = sandbox.stub(fs, 'lstatSync');
-            const logStub = sandbox.stub();
+        loggedInUserOwner.task(ctx);
+        expect(uidStub.calledOnce).to.be.true;
+        expect(gidStub.calledOnce).to.be.true;
+        expect(logStub.calledOnce).to.be.false;
+    });
 
-            const ctx = {
-                ui: {log: logStub}
-            };
+    it('rejects and passes the error if ghostUser util throws error', function () {
+        const uidStub = sandbox.stub(process, 'getuid').returns(1000);
+        const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
+        const fsStub = sandbox.stub(fs, 'lstatSync');
 
-            fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
-            fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
+        fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
+        fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
 
-            loggedInUserOwner.task(ctx);
-            expect(uidStub.calledOnce).to.be.true;
-            expect(gidStub.calledOnce).to.be.true;
-            expect(logStub.calledOnce).to.be.false;
-            expect(ghostUserStub.calledOnce).to.be.true;
-        });
-
-        it('rejects and passes the error if ghostUser util throws error', function () {
-            const uidStub = sandbox.stub(process, 'getuid').returns(1000);
-            const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
-            // getGhostUid throws error this time
-            const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns(false);
-            const fsStub = sandbox.stub(fs, 'lstatSync');
-
-            fsStub.onFirstCall().returns({uid: 1000, gid: 1000});
-            fsStub.onSecondCall().returns({uid: 1002, gid: 1002});
-
-            loggedInUserOwner.task();
-            expect(uidStub.calledOnce).to.be.true;
-            expect(gidStub.calledOnce).to.be.true;
-            expect(ghostUserStub.calledOnce).to.be.true;
-        });
+        loggedInUserOwner.task();
+        expect(uidStub.calledOnce).to.be.true;
+        expect(gidStub.calledOnce).to.be.true;
     });
 });
