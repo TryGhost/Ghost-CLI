@@ -100,33 +100,121 @@ describe('Unit: Commands > Stop', function () {
             return stop.run.call(context, {});
         });
 
-        it('disables extensions if it needs to', function () {
-            class ProcessManager {}
-            const sEBstub = sinon.stub().returns(true);
-            const disableStub = sinon.stub().resolves();
-            const gIstub = sinon.stub().returns({
-                running: () => Promise.resolve(true),
-                process: {
-                    disable: disableStub,
-                    stop: () => true,
-                    isEnabled: () => true
-                },
-                loadRunningEnvironment: () => true
-            });
-            const context = {
-                system: {getInstance: gIstub},
-                ui: {run: () => Promise.resolve()}
-            };
-            ProcessManager.supportsEnableBehavior = sEBstub;
-            const StopCommand = proxyquire(modulePath, {
-                '../utils/check-valid-install': () => true,
-                '../process-manager': ProcessManager
-            });
-            const stop = new StopCommand();
+        describe('handles disabling', function () {
+            it('skips disabling if disable flag is not set', function () {
+                const instance = {
+                    running: () => Promise.resolve(true),
+                    process: {
+                        enable: () => Promise.resolve(),
+                        disable: sinon.stub().resolves(),
+                        stop: sinon.stub().resolves(),
+                        isEnabled: sinon.stub().resolves(true)
+                    },
+                    loadRunningEnvironment: () => true
+                };
+                const system = {
+                    getInstance: () => instance
+                };
+                const ui = {
+                    run: sinon.stub().resolves()
+                };
 
-            return stop.run.call(context, {disable: true}).then(() => {
-                expect(sEBstub.calledOnce).to.be.true;
-                expect(disableStub.calledOnce).to.be.true;
+                const StopCommand = proxyquire(modulePath, {
+                    '../utils/check-valid-install': () => true
+                });
+                const stop = new StopCommand(ui, system);
+
+                return stop.run({disable: false}).then(() => {
+                    expect(instance.process.isEnabled.called).to.be.false;
+                    expect(ui.run.calledOnce).to.be.true;
+                });
+            });
+
+            it('skips disabling if process manager doesn\'t support enable behavior', function () {
+                const instance = {
+                    running: () => Promise.resolve(true),
+                    process: {
+                        stop: sinon.stub().resolves(),
+                        isEnabled: sinon.stub().resolves(false)
+                    },
+                    loadRunningEnvironment: () => true
+                };
+                const system = {
+                    getInstance: () => instance
+                };
+                const ui = {
+                    run: sinon.stub().resolves()
+                };
+
+                const StopCommand = proxyquire(modulePath, {
+                    '../utils/check-valid-install': () => true
+                });
+                const stop = new StopCommand(ui, system);
+
+                return stop.run({disable: true}).then(() => {
+                    expect(ui.run.calledOnce).to.be.true;
+                    expect(instance.process.isEnabled.called).to.be.false;
+                });
+            });
+
+            it('skips disabling if isEnabled returns false', function () {
+                const instance = {
+                    running: () => Promise.resolve(true),
+                    process: {
+                        enable: () => Promise.resolve(),
+                        disable: sinon.stub().resolves(),
+                        stop: sinon.stub().resolves(),
+                        isEnabled: sinon.stub().resolves(false)
+                    },
+                    loadRunningEnvironment: () => true
+                };
+                const system = {
+                    getInstance: () => instance
+                };
+                const ui = {
+                    run: sinon.stub().resolves()
+                };
+
+                const StopCommand = proxyquire(modulePath, {
+                    '../utils/check-valid-install': () => true
+                });
+                const stop = new StopCommand(ui, system);
+
+                return stop.run({disable: true}).then(() => {
+                    expect(instance.process.isEnabled.calledOnce).to.be.true;
+                    expect(instance.process.disable.called).to.be.false;
+                    expect(ui.run.calledOnce).to.be.true;
+                });
+            });
+
+            it('disables if necessary', function () {
+                const instance = {
+                    running: () => Promise.resolve(true),
+                    process: {
+                        enable: () => Promise.resolve(),
+                        disable: sinon.stub().resolves(),
+                        stop: sinon.stub().resolves(),
+                        isEnabled: sinon.stub().resolves(true)
+                    },
+                    loadRunningEnvironment: () => true
+                };
+                const system = {
+                    getInstance: () => instance
+                };
+                const ui = {
+                    run: sinon.stub().callsFake(fn => Promise.resolve(fn()))
+                };
+
+                const StopCommand = proxyquire(modulePath, {
+                    '../utils/check-valid-install': () => true
+                });
+                const stop = new StopCommand(ui, system);
+
+                return stop.run({disable: true}).then(() => {
+                    expect(instance.process.isEnabled.calledOnce).to.be.true;
+                    expect(instance.process.disable.calledOnce).to.be.true;
+                    expect(ui.run.calledTwice).to.be.true;
+                });
             });
         });
     });

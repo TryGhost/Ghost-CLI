@@ -94,16 +94,19 @@ describe('Unit: Commands > Start', function () {
         describe('enables instance if needed', function () {
             it('normal conditions', function () {
                 const ui = {
-                    run: sinon.stub().resolves(),
+                    run: sinon.stub(),
                     listr: () => Promise.resolve()
                 };
+                ui.run.onFirstCall().resolves();
+                ui.run.onSecondCall().callsFake((fn) => Promise.resolve(fn()));
                 myInstance.process = {
-                    isEnabled: sinon.stub().returns(false),
-                    enable: sinon.stub(),
+                    isEnabled: sinon.stub().resolves(false),
+                    enable: sinon.stub().resolves(),
                     disable: 'yes'
                 };
                 const start = new StartCommand(ui, mySystem);
                 const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+
                 return start.run({quiet: true, enable: true}).then(() => {
                     const ie = myInstance.process.isEnabled;
                     const enable = myInstance.process.enable;
@@ -120,8 +123,8 @@ describe('Unit: Commands > Start', function () {
                     listr: () => Promise.resolve()
                 };
                 myInstance.process = {
-                    isEnabled: sinon.stub().returns(true),
-                    enable: sinon.stub(),
+                    isEnabled: sinon.stub().resolves(true),
+                    enable: sinon.stub().resolves(),
                     disable: 'yes'
                 };
                 const start = new StartCommand(ui, mySystem);
@@ -142,16 +145,38 @@ describe('Unit: Commands > Start', function () {
                     listr: () => Promise.resolve()
                 };
                 myInstance.process = {
-                    isEnabled: sinon.stub().returns(true),
-                    enable: sinon.stub()
+                    isEnabled: sinon.stub().resolves(true),
+                    enable: sinon.stub().resolves()
                 };
                 const start = new StartCommand(ui, mySystem);
                 const runCommandStub = sinon.stub(start, 'runCommand').resolves();
                 return start.run({quiet: true, enable: true}).then(() => {
                     const ie = myInstance.process.isEnabled;
                     const enable = myInstance.process.enable;
-                    expect(ie.called).to.be.false;
                     expect(runCommandStub.calledOnce).to.be.true;
+                    expect(ie.called).to.be.false;
+                    expect(enable.called).to.be.false;
+                    expect(ui.run.calledOnce).to.be.true;
+                });
+            });
+
+            it('not when enabled flag is false', function () {
+                const ui = {
+                    run: sinon.stub().resolves(),
+                    listr: () => Promise.resolve()
+                };
+                myInstance.process = {
+                    isEnabled: sinon.stub().resolves(true),
+                    enable: sinon.stub().resolves(),
+                    disable: sinon.stub().resolves()
+                };
+                const start = new StartCommand(ui, mySystem);
+                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+                return start.run({quiet: true, enable: false}).then(() => {
+                    const ie = myInstance.process.isEnabled;
+                    const enable = myInstance.process.enable;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(ie.called).to.be.false;
                     expect(enable.called).to.be.false;
                     expect(ui.run.calledOnce).to.be.true;
                 });
