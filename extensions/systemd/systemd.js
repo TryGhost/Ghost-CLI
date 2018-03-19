@@ -60,7 +60,7 @@ class SystemdProcessManager extends cli.ProcessManager {
 
     isEnabled() {
         try {
-            execa.shellSync(`systemctl is-enabled ${this.systemdName}`);
+            execa.shellSync(`sudo systemctl is-enabled ${this.systemdName}`);
             return true;
         } catch (e) {
             // Systemd prints out "disabled" if service isn't enabled
@@ -85,7 +85,7 @@ class SystemdProcessManager extends cli.ProcessManager {
 
     isRunning() {
         try {
-            execa.shellSync(`systemctl is-active ${this.systemdName}`);
+            execa.shellSync(`sudo systemctl is-active ${this.systemdName}`);
             return true;
         } catch (e) {
             // Systemd prints out "inactive" if service isn't running
@@ -108,7 +108,7 @@ class SystemdProcessManager extends cli.ProcessManager {
             });
         }
 
-        if (fs.existsSync(`/lib/systemd/system/${this.systemdName}.service`)) {
+        if (fs.existsSync(`/lib/systemd/system/${this.systemdName}`)) {
             return;
         }
 
@@ -122,7 +122,7 @@ class SystemdProcessManager extends cli.ProcessManager {
         try {
             execa.shellSync('which systemctl', {stdio: 'ignore'});
             return true;
-        } catch (e) {
+        } catch (err) {
             return false;
         }
     }
