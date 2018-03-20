@@ -5,8 +5,7 @@ const proxyquire = require('proxyquire');
 const Errors = require('../../../lib/errors');
 
 const modulePath = '../../../lib/commands/log';
-
-const psModule = 'ghost-ignition/lib/logging/PrettyStream';
+const psModule = '../ui/pretty-stream';
 
 function proxyLog(proxyOptions) {
     let Log;
