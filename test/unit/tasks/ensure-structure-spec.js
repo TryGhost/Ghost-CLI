@@ -20,7 +20,8 @@ describe('Unit: Tasks > ensure-structure', function () {
         'content/themes',
         'content/data',
         'content/images',
-        'content/logs'
+        'content/logs',
+        'content/settings'
     ];
 
     expectedFiles.forEach((file) => {
