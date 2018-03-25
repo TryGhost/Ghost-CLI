@@ -6,7 +6,6 @@ const os = require('os');
 const modulePath = '../../lib/system';
 const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
-const Process = require('../../lib/process-manager');
 
 function stubGlobalConfig(SystemClass, configDefinition, ui, extensions) {
     class TestSystemClass extends SystemClass {
@@ -463,17 +462,14 @@ describe('Unit: System', function () {
         });
 
         it('returns local process manager if discovered process manager does not inherit from process', function () {
-            class TestProcess {}
-
             const System = proxyquire(modulePath, {
-                './utils/local-process': {localProcessManager: true},
-                './test-process': TestProcess
+                './utils/local-process': {localProcessManager: true}
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
             const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
-                    test: './test-process'
+                    test: '../test/fixtures/classes/test-invalid-process'
                 });
 
             const processManager = systemInstance.getProcessManager('test');
@@ -485,17 +481,14 @@ describe('Unit: System', function () {
         });
 
         it('returns local process manager if discovered process manager is missing methods', function () {
-            class TestProcess extends Process {}
-
             const System = proxyquire(modulePath, {
-                './utils/local-process': {localProcessManager: true},
-                './test-process': TestProcess
+                './utils/local-process': {localProcessManager: true}
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
             const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
-                    test: './test-process'
+                    test: '../test/fixtures/classes/test-process-missing-methods'
                 });
 
             const processManager = systemInstance.getProcessManager('test');
@@ -507,23 +500,16 @@ describe('Unit: System', function () {
         });
 
         it('returns local process manager if discovered process manager wont run on the system', function () {
-            class TestProcess extends Process {
-                static willRun() {
-                    return false;
-                }
-            }
-
             const isValidStub = sinon.stub().returns(true);
             const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true},
-                './test-process': TestProcess,
                 './process-manager': {isValid: isValidStub}
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
             const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
-                    test: './test-process'
+                    test: '../test/fixtures/classes/test-process-wont-run'
                 });
 
             const processManager = systemInstance.getProcessManager('test');
@@ -536,23 +522,18 @@ describe('Unit: System', function () {
         });
 
         it('returns process manager class if is valid and will run', function () {
-            class TestProcess extends Process {
-                static willRun() {
-                    return true;
-                }
-            }
+            const TestProcess = require('../fixtures/classes/test-valid-process');
 
             const isValidStub = sinon.stub().returns(true);
             const System = proxyquire(modulePath, {
                 './utils/local-process': {localProcessManager: true},
-                './test-process': TestProcess,
                 './process-manager': {isValid: isValidStub}
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
             const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
                 .returns({
-                    test: './test-process'
+                    test: '../test/fixtures/classes/test-valid-process'
                 });
 
             const processManager = systemInstance.getProcessManager('test');
