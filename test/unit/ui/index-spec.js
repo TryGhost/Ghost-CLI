@@ -574,7 +574,7 @@ describe('Unit: UI', function () {
                 expect(log.args[0][0]).to.match(/Config/);
                 expect(log.args[1][0]).to.equal(errs[0].toString(true));
                 expect(log.args[2][0]).to.equal('cherries');
-                expect(log.args[3][0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(stripAnsi(log.args[3][0])).to.match(/\nTry running ghost doctor to check your system for known issues./);
                 expect(log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
                 expect(log.args[5][0]).to.match(/Cli/);
                 expect(log.args[6][0]).to.equal(errs[1].toString(true));
@@ -600,7 +600,7 @@ describe('Unit: UI', function () {
                 expect(log.args[0][0]).to.match(/Config/);
                 expect(log.args[1][0]).to.equal(errs[0].toString(false));
                 expect(log.args[2][0]).to.equal('cherries');
-                expect(log.args[3][0]).to.match(/\nTry running \u001b\[36mghost doctor\u001b\[39m to check your system for known issues./);
+                expect(stripAnsi(log.args[3][0])).to.match(/\nTry running ghost doctor to check your system for known issues./);
                 expect(log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
                 expect(log.args[5][0]).to.match(/Cli/);
                 expect(log.args[6][0]).to.equal(errs[1].toString(false));
