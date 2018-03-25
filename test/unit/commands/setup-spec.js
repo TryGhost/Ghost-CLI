@@ -101,6 +101,15 @@ describe('Unit: Commands > Setup', function () {
             } catch (error) {
                 expect(error.message).to.equal('Take a break');
                 expect(argVSpy).to.deep.equal(argvB);
+                argVSpy = {local: true, start: false};
+            }
+
+            try {
+                setup.run(argVSpy);
+                expect(false, 'An error should have been thrown').to.be.true;
+            } catch (error) {
+                expect(error.message).to.equal('Take a break');
+                expect(argVSpy).to.deep.equal(Object.assign(argvB, {start: false}));
             }
         });
 
@@ -452,7 +461,7 @@ describe('Unit: Commands > Setup', function () {
             const system = {hook: () => Promise.resolve()};
             const setup = new SetupCommand(ui, system);
             let tasks;
-            setup.runCommand = () => Promise.resolve();
+            const runCommand = sinon.stub(setup, 'runCommand').resolves();
 
             setup.addStage('zest', () => true, null, 'Zesty');
             setup.addStage('test', () => true, null, 'Test');
@@ -470,6 +479,7 @@ describe('Unit: Commands > Setup', function () {
                 expect(ui.confirm.calledTwice).to.be.true;
                 expect(ui.confirm.args[0][0]).to.match(/Zesty/);
                 expect(ui.confirm.args[1][0]).to.match(/Test/);
+                expect(runCommand.calledOnce).to.be.true;
             });
         });
     });
