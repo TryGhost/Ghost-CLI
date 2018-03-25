@@ -24,17 +24,23 @@ class NginxExtension extends cli.Extension {
         }];
     }
 
-    setup(cmd, argv) {
-        // ghost setup --local, skip
-        if (argv.local) {
-            return;
-        }
+    setup() {
+        const enabled = (ctx) => !ctx.argv.local;
 
-        cmd.addStage('nginx', this.setupNginx.bind(this), null, 'Nginx');
-        cmd.addStage('ssl', this.setupSSL.bind(this), 'nginx', 'SSL');
+        return [{
+            key: 'nginx',
+            description: 'Nginx',
+            enabled: enabled,
+            task: this.setupNginx.bind(this)
+        }, {
+            key: 'ssl',
+            description: 'SSL',
+            enabled: enabled,
+            task: this.setupSSL.bind(this)
+        }];
     }
 
-    setupNginx(argv, ctx, task) {
+    setupNginx(ctx, task) {
         if (!this.isSupported()) {
             this.ui.log('Nginx is not installed. Skipping Nginx setup.', 'yellow');
             return task.skip();
@@ -75,7 +81,7 @@ class NginxExtension extends cli.Extension {
         }).then(() => this.restartNginx());
     }
 
-    setupSSL(argv, ctx, task) {
+    setupSSL(ctx, task) {
         const parsedUrl = url.parse(ctx.instance.config.get('url'));
         const confFile = `${parsedUrl.hostname}-ssl.conf`;
 
@@ -89,7 +95,7 @@ class NginxExtension extends cli.Extension {
             return task.skip();
         }
 
-        if (!argv.prompt && !argv.sslemail) {
+        if (!ctx.argv.prompt && !ctx.argv.sslemail) {
             this.ui.log('SSL email must be provided via the --sslemail option, skipping SSL setup', 'yellow');
             return task.skip();
         }
@@ -136,15 +142,15 @@ class NginxExtension extends cli.Extension {
             task: () => {
                 let promise;
 
-                if (argv.sslemail) {
-                    promise = Promise.resolve(argv.sslemail);
+                if (ctx.argv.sslemail) {
+                    promise = Promise.resolve(ctx.argv.sslemail);
                 } else {
                     promise = this.ui.prompt({
                         name: 'email',
                         type: 'input',
                         message: 'Enter your email (used for Let\'s Encrypt notifications)',
                         validate: value => Boolean(value) || 'You must supply an email'
-                    }).then(answer => { argv.sslemail = answer.email; });
+                    }).then(answer => { ctx.argv.sslemail = answer.email; });
                 }
 
                 return promise;
@@ -156,7 +162,7 @@ class NginxExtension extends cli.Extension {
         }, {
             title: 'Getting SSL Certificate from Let\'s Encrypt',
             skip: (ctx) => ctx.dnsfail,
-            task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, argv.sslemail, argv.sslstaging)
+            task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, ctx.argv.sslemail, ctx.argv.sslstaging)
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: (ctx) => ctx.dnsfail || fs.existsSync(dhparamFile),

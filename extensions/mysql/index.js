@@ -10,18 +10,19 @@ const generator = require('generate-password');
 const localhostAliases = ['localhost', '127.0.0.1'];
 
 class MySQLExtension extends cli.Extension {
-    setup(cmd, argv) {
-        // Case 1: ghost install local OR ghost setup --local
-        // Case 2: ghost install --db sqlite3
-        // Skip in both cases
-        if (argv.local || argv.db === 'sqlite3') {
-            return;
-        }
-
-        cmd.addStage('mysql', this.setupMySQL.bind(this), [], '"ghost" mysql user');
+    setup() {
+        return [{
+            key: 'mysql',
+            description: '"ghost" mysql user',
+            // Case 1: ghost install local OR ghost setup --local
+            // Case 2: ghost install --db sqlite3
+            // Skip in both cases
+            enabled: (ctx) => !ctx.argv.local && ctx.argv.db !== 'sqlite3',
+            task: this.setupMySQL.bind(this)
+        }];
     }
 
-    setupMySQL(argv, ctx, task) {
+    setupMySQL(ctx, task) {
         const dbconfig = ctx.instance.config.get('database.connection');
 
         if (dbconfig.user !== 'root') {
