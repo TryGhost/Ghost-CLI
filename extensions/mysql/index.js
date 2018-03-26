@@ -76,7 +76,7 @@ class MySQLExtension extends cli.Extension {
             }
 
             return Promise.reject(new cli.errors.CliError({
-                message: 'Error trying to connenct to the MySQL database.',
+                message: 'Error trying to connect to the MySQL database.',
                 help: 'You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.',
                 err: error
             }));
