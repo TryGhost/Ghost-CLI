@@ -20,6 +20,12 @@ describe('Unit: Doctor Checks > loggedInUserOwner', function () {
         }), 'false if platform is not linux').to.be.false;
     });
 
+    it('skip works', function () {
+        expect(loggedInUserOwner.skip({
+            instance: {process: {name: 'local'}}
+        }), 'true if local process manager').to.be.true;
+    });
+
     it('rejects if current user is not owner and not in the same group as owner', function () {
         const uidStub = sandbox.stub(process, 'getuid').returns(1000);
         const gidStub = sandbox.stub(process, 'getgroups').returns([30, 1000]);
