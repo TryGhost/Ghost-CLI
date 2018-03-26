@@ -172,7 +172,7 @@ describe('Unit: Mysql extension', function () {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.equal('Error trying to connenct to the MySQL database.');
+                expect(error.message).to.equal('Error trying to connect to the MySQL database.');
                 expect(error.options.help).to.equal('You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.');
                 expect(error.options.err.message).to.equal('ack');
                 expect(createConnectionStub.calledOnce).to.be.true;
