@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.6.0"></a>
+# [1.6.0](https://github.com/TryGhost/Ghost-CLI/compare/1.5.2...1.6.0) (2018-03-26)
+
+### Bug Fixes
+
+* **help:** don't show aliases on help output ([2f67058](https://github.com/TryGhost/Ghost-CLI/commit/2f67058))
+* **ls:** show more helpful message when no ghost instances found ([#682](https://github.com/TryGhost/Ghost-CLI/issues/682)) ([b250953](https://github.com/TryGhost/Ghost-CLI/commit/b250953))
+* **mysql:** use % during user creation if remote db host ([791301a](https://github.com/TryGhost/Ghost-CLI/commit/791301a)), closes [#642](https://github.com/TryGhost/Ghost-CLI/issues/642)
+* **port-polling:** connect over custom host if custom host is specified ([7d0c330](https://github.com/TryGhost/Ghost-CLI/commit/7d0c330)), closes [#643](https://github.com/TryGhost/Ghost-CLI/issues/643)
+* **setup:** fix start/no-start option ([46d64f8](https://github.com/TryGhost/Ghost-CLI/commit/46d64f8)), closes [#615](https://github.com/TryGhost/Ghost-CLI/issues/615)
+* **systemd:** run `isEnabled()` as sudo ([5552a0e](https://github.com/TryGhost/Ghost-CLI/commit/5552a0e))
+* **systemd:** run `isRunning()` as sudo ([bf1a20e](https://github.com/TryGhost/Ghost-CLI/commit/bf1a20e))
+* **utils:** differentiate root command error messages for DO ([a69ccc6](https://github.com/TryGhost/Ghost-CLI/commit/a69ccc6))
+
+### Features
+
+* **colors:** expose color-free logging option ([#653](https://github.com/TryGhost/Ghost-CLI/issues/653)) ([ba58fab](https://github.com/TryGhost/Ghost-CLI/commit/ba58fab)), closes [#457](https://github.com/TryGhost/Ghost-CLI/issues/457)
+* **doctor:** check current user and dir owner ([9fbd3fd](https://github.com/TryGhost/Ghost-CLI/commit/9fbd3fd))
+* **doctor:** check memory before running memory-intensive tasks ([a852cdd](https://github.com/TryGhost/Ghost-CLI/commit/a852cdd))
+* **doctor:** prevent installations with ghost user ([dde6bf0](https://github.com/TryGhost/Ghost-CLI/commit/dde6bf0))
+* **doctor:** skip user owner check for local process ([cdc9c31](https://github.com/TryGhost/Ghost-CLI/commit/cdc9c31))
+* **doctor:** split check for ghost user and owner in two ([d893c16](https://github.com/TryGhost/Ghost-CLI/commit/d893c16))
+* **doctor:** use new getGhostUid util ([f43b721](https://github.com/TryGhost/Ghost-CLI/commit/f43b721))
+* **mem-check:** add skip flag ([6ccf6be](https://github.com/TryGhost/Ghost-CLI/commit/6ccf6be))
+* **process:** allow process.isEnabled to return a promise ([#674](https://github.com/TryGhost/Ghost-CLI/issues/674)) ([c93124b](https://github.com/TryGhost/Ghost-CLI/commit/c93124b))
+* **process-manager:** allow process isRunning to return a promise ([#669](https://github.com/TryGhost/Ghost-CLI/issues/669)) ([29b4a0b](https://github.com/TryGhost/Ghost-CLI/commit/29b4a0b))
+* **state commands:** gracefully exit in noop situations ([e6e1ada](https://github.com/TryGhost/Ghost-CLI/commit/e6e1ada))
+* **utils:** split use-ghost-user in two fn ([e8e2fb4](https://github.com/TryGhost/Ghost-CLI/commit/e8e2fb4))
+
+### Performance Improvements
+
+* **bootstrap:** swap out `npm root` call for global-modules dep ([6184667](https://github.com/TryGhost/Ghost-CLI/commit/6184667))
+
 <a name="1.5.2"></a>
 ## [1.5.2](https://github.com/TryGhost/Ghost-CLI/compare/1.5.1...1.5.2) (2018-02-12)
 
