@@ -79,6 +79,7 @@
     "stat-mode": "0.2.2",
     "strip-ansi": "4.0.0",
     "symlink-or-copy": "1.2.0",
+    "systeminformation": "3.37.8",
     "tail": "1.2.3",
     "update-notifier": "2.3.0",
     "validator": "7.2.0",
