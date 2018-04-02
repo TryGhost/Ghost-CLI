@@ -19,7 +19,7 @@
 - [Complete Setup Guide](https://docs.ghost.org/v1/docs/install)
 - [Command Reference](https://docs.ghost.org/v1/docs/ghost-cli)
 - [Troubleshooting Guide](https://docs.ghost.org/v1/docs/troubleshooting#section-cli-errors)
-- [Slack community](https://slack.ghost.org)
+- [Forum](https://forum.ghost.org)
 
 ## Project Goals
 
@@ -51,7 +51,7 @@ The secondary focus is on improving the CLI itself. We want to ensure that the U
 
 - Issues which affect many users with our recommended stack are given first priority
 - Issues which affect small numbers of users are prioritised based on the impact vs the difficulty - i.e. quick fixes will be prioritised, complex issues may be closed and labelled with `later` & `recommended-stack`.
-- Issues around documented & understood environment or configuration issues will be closed and labelled with `known-issue`, users will be directed to the docs & slack. 
+- Issues around documented & understood environment or configuration issues will be closed and labelled with `known-issue`, users will be directed to the docs & forum. 
 - Issues that request modifications in order to support other stacks stack will be closed and labelled with `later` & `other-stack`. 
 - Issues proposing new features or enhancements will be labelled as such, and in most cases also closed with `later`.
 
@@ -61,7 +61,8 @@ We aren't able to provide support in GitHub, but we do keep track of common issu
 
 The documentation for Ghost-CLI can be found at https://docs.ghost.org and includes an extensive [troubleshooting section](https://docs.ghost.org/docs/troubleshooting). 
 
-Community support can be found in the #help channel of our [Slack community](https://slack.ghost.org).
+Community support can be found in our [forum](https://forum.ghost.org).
+
 
 ## Developer Setup (for contributing)
 

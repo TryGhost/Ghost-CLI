@@ -14,7 +14,7 @@ Once you've implemented the feature or fixed the issue, please make sure:
 
 Then submit a PR and one of the core team will review it!
 
-If you have any questions, feel free to drop by our [slack channel](https://slack.ghost.org)! We'd be happy to help 😄
+If you have any questions, feel free to drop by our [forum](https://forum.ghost.org)! We'd be happy to help 😄
 
 #### Note: If you wish to implement a new feature, it would be wise to open an issue about it beforehand. That way the Core Team can make comments and ensure that the feature is in the best interests and direction of the CLI.
 

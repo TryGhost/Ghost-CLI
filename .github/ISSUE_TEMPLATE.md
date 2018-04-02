@@ -1,6 +1,6 @@
 Welcome to Ghost-CLI's GitHub repo! 👋🎉
 
-Do you need help or have a question? Please come chat in Slack: https://slack.ghost.org/ 👫.
+Do you need help or have a question? Please come chat in our forum: https://forum.ghost.org 👫.
 
 Docs: https://docs.ghost.org 📖.
 
@@ -50,7 +50,7 @@ This is automatically output by Ghost-CLI if an error occurs, please copy & past
 
 Please fill out this checklist to acknowledge that you followed the requirements to submit a bug report.
 
-- [ ] Tried to find help in Slack & Docs
+- [ ] Tried to find help in the forum & docs
 - [ ] Checked for existing issues
 - [ ] Attached log file
 - [ ] Provided technical details incl. operating system
