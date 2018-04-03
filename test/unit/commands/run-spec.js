@@ -2,7 +2,6 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const configStub = require('../../utils/config-stub');
 const EventEmitter = require('events');
 
 const modulePath = '../../../lib/commands/run';
@@ -35,12 +34,10 @@ describe('Unit: Commands > Run', function () {
             }
         });
 
-        it('sets paths.contentPath if it is not already set in config, and calls useDirect if useGhostUser returns false', function () {
+        it('calls useDirect if useGhostUser returns false', function () {
             const logStub = sandbox.stub();
             const useGhostUserStub = sandbox.stub().returns(false);
-            const config = configStub();
-            config.has.returns(false);
-            const fakeInstance = {config: config, dir: '/var/www/ghost'};
+            const fakeInstance = {dir: '/var/www/ghost'};
             const getInstanceStub = sandbox.stub().returns(fakeInstance);
             const RunCommand = proxyquire(modulePath, {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
@@ -55,11 +52,6 @@ describe('Unit: Commands > Run', function () {
                 process.stdin.isTTY = oldIsTTY;
                 expect(logStub.called).to.be.false;
                 expect(getInstanceStub.calledOnce).to.be.true;
-                expect(config.has.calledOnce).to.be.true;
-                expect(config.has.calledWithExactly('paths.contentPath')).to.be.true;
-                expect(config.set.calledOnce).to.be.true;
-                expect(config.set.calledWithExactly('paths.contentPath', '/var/www/ghost/content')).to.be.true;
-                expect(config.save.calledOnce).to.be.true;
 
                 expect(useGhostUserStub.calledOnce).to.be.true;
                 expect(useGhostUser.called).to.be.false;
@@ -68,12 +60,10 @@ describe('Unit: Commands > Run', function () {
             });
         });
 
-        it('doesn\'t set paths.contentPath if it is  set in cofig, and calls useGhostUser if useGhostUser util returns false', function () {
+        it('calls useGhostUser if useGhostUser util returns false', function () {
             const logStub = sandbox.stub();
             const useGhostUserStub = sandbox.stub().returns(true);
-            const config = configStub();
-            config.has.returns(true);
-            const fakeInstance = {config: config, dir: '/var/www/ghost'};
+            const fakeInstance = {dir: '/var/www/ghost'};
             const getInstanceStub = sandbox.stub().returns(fakeInstance);
             const RunCommand = proxyquire(modulePath, {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
@@ -88,10 +78,6 @@ describe('Unit: Commands > Run', function () {
                 process.stdin.isTTY = oldIsTTY;
                 expect(logStub.called).to.be.false;
                 expect(getInstanceStub.calledOnce).to.be.true;
-                expect(config.has.called).to.be.true;
-                expect(config.has.calledWithExactly('paths.contentPath')).to.be.true;
-                expect(config.set.called).to.be.false;
-                expect(config.save.called).to.be.false;
 
                 expect(useGhostUserStub.calledOnce).to.be.true;
                 expect(useDirect.called).to.be.false;
