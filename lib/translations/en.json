@@ -1,0 +1,54 @@
+{
+  "aliases": {
+    "global": {
+      "color": "[--no-color] Allow/Disallow colorful logging",
+      "development": "Run in development mode",
+      "prompt": "[--no-prompt] Allow/Disallow UI prompting",
+      "verbose": "Enable verbose output"
+    }
+  },
+  "command": {
+    "errors": {
+      "commandNotFound": "Unrecognized command: '{name}'. Run `ghost help` for usage.",
+      "doesNotInherit": "Provided command class does not extend the Command class",
+      "descriptionNotProvided": "Command {name} must have a description!",
+      "extensionDoesNotInherit": "Command class for {name} does not inherit from Ghost-CLI's command class.",
+      "runNotImplemented": "Command must implement run function"
+    }
+  },
+  "epilogue": "For more information, see our docs at https://docs.ghost.org/v1/docs/ghost-cli",
+  "errors": {
+    "anErrorOccurred": "An error occurred.",
+    "configErrorDetected": "Error detected in the {environment} configuration.\n\n",
+    "configErrorRemedy": "Run `{command}` for each key to fix the issue.\n",
+    "errorRunningCommand": "Error occurred running command: '{name}'",
+    "exitCode": "Exit code: {code}\n\n",
+    "noMoreMemory": "Process was killed, meaning your system ran out of memory.\nYou should either increase the amount of RAM in your system, or add swap space.\n\n",
+    "troubleshootingHelp": "Please refer to https://docs.ghost.org/v1/docs/troubleshooting#section-cli-errors for troubleshooting."
+  },
+  "extension": {
+    "mainFileMissing": "Extension '{name}' has a main entry, but no such file exists",
+    "mainDoesNotExtend": "Extension '{name}' supplied a main file, but it is not a valid Extension subclass"
+  },
+  "instance": {
+    "ask": {
+      "continue": "No, continue",
+      "confirmedEdit": "Edit the generated file",
+      "edit": "Edit the file before generation",
+      "message": "Would you like to view or edit the {descriptor} file?",
+      "view": "View the file"
+    },
+    "notRunning": "This instance is not running.",
+    "switchingToDevelopmentMode": "Found a development config but not a production config, running in development mode instead",
+    "templateGenerated": "Creating {descriptor} file at {tmplFile}"
+  },
+  "processManager": {
+    "errors": {
+      "doesNotExist": "Process manager '{name}' does not exist, defaulting to 'local'",
+      "doesNotInherit": "does not inherit from base class",
+      "fallingBack": "Process manager '{name}' {msg}, defaulting to 'local'",
+      "fieldsMissing": "missing required fields: {fields}",
+      "systemIncompatible": "Process manager '{name}' will not run on this system, defaulting to 'local'"
+    }
+  }
+}
