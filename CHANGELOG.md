@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.7.0"></a>
+# [1.7.0](https://github.com/TryGhost/Ghost-CLI/compare/1.6.0...1.7.0) (2018-04-10)
+
+### Bug Fixes
+
+* **doctor:** Use systeminformation for memory availability ([1395646](https://github.com/TryGhost/Ghost-CLI/commit/1395646))
+* **run:** Don't set contentPath in config when running ([f9c6711](https://github.com/TryGhost/Ghost-CLI/commit/f9c6711))
+
+### Features
+
+* **install:** create content/settings folder ([276b146](https://github.com/TryGhost/Ghost-CLI/commit/276b146))
+* **migrations:** add core migration to create content/settings folder ([1d562e7](https://github.com/TryGhost/Ghost-CLI/commit/1d562e7))
+
 <a name="1.6.0"></a>
 # [1.6.0](https://github.com/TryGhost/Ghost-CLI/compare/1.5.2...1.6.0) (2018-03-26)
 
