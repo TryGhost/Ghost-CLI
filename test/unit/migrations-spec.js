@@ -2,26 +2,57 @@
 
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const createConfig = require('../utils/config-stub');
+
+const fs = require('fs-extra');
+const ghostUser = require('../../lib/utils/use-ghost-user');
 
 const migrations = require('../../lib/migrations');
 
 describe('Unit: Migrations', function () {
+    const sandbox = sinon.sandbox.create();
+
+    afterEach(() => {
+        sandbox.restore();
+    });
+
     describe('ensureSettingsFolder', function () {
-        const setupEnv = require('../utils/env');
-        const path = require('path');
-        const fs = require('fs');
+        it('if ghost user owns directory, runs `sudo mkdir` as ghost user', function () {
+            const ghostUserStub = sandbox.stub(ghostUser, 'shouldUseGhostUser').returns(true);
+            const sudoStub = sandbox.stub().resolves();
+            const config = createConfig();
+            config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
 
-        it('creates settings folder if not existent', function () {
-            const env = setupEnv();
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-            const ensureSettingsFolder = migrations[0].task;
+            const context = {
+                instance: {config: config},
+                ui: {sudo: sudoStub}
+            };
 
-            ensureSettingsFolder();
-            expect(cwdStub.calledOnce).to.be.true;
-            expect(fs.existsSync(path.join(env.dir, 'content/settings'))).to.be.true;
+            return migrations[0].task(context).then(() => {
+                expect(ghostUserStub.calledOnce).to.be.true;
+                expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
+                expect(sudoStub.calledOnce).to.be.true;
+                expect(sudoStub.calledWithExactly(
+                    'mkdir /var/www/ghost/content/settings',
+                    {sudoArgs: '-E -u ghost'}
+                )).to.be.true;
+            });
+        });
 
-            cwdStub.restore();
-            env.cleanup();
+        it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
+            const ghostUserStub = sandbox.stub(ghostUser, 'shouldUseGhostUser').returns(false);
+            const fsStub = sandbox.stub(fs, 'ensureDirSync');
+            const config = createConfig();
+            config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
+
+            const context = {instance: {config: config}};
+
+            return migrations[0].task(context).then(() => {
+                expect(ghostUserStub.calledOnce).to.be.true;
+                expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
+                expect(fsStub.calledOnce).to.be.true;
+                expect(fsStub.calledWithExactly('/var/www/ghost/content/settings')).to.be.true;
+            });
         });
     });
 });
