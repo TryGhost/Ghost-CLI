@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.7.1"></a>
+## [1.7.1](https://github.com/TryGhost/Ghost-CLI/compare/1.7.0...1.7.1) (2018-04-11)
+
+### Bug Fixes
+
+* **migrations:** Use proper permissions to create content/settings folder ([#703](https://github.com/TryGhost/Ghost-CLI/issues/703)) ([9b0b0c5](https://github.com/TryGhost/Ghost-CLI/commit/9b0b0c5))
+
 <a name="1.7.0"></a>
 # [1.7.0](https://github.com/TryGhost/Ghost-CLI/compare/1.6.0...1.7.0) (2018-04-10)
 
