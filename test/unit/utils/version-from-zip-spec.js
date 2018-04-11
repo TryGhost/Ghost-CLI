@@ -106,7 +106,7 @@ describe('Unit: Utils > versionFromZip', function () {
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.equal('Zip file contains a Ghost version incompatible with this version of the CLI.');
-            expect(error.options.help).to.equal('Required: v^0.0.1, current: v1.7.0');
+            expect(error.options.help).to.match(/Required: v\^0\.0\.1, current: v/);
             expect(error.options.suggestion).to.equal('npm install -g ghost-cli@latest');
         });
     });
