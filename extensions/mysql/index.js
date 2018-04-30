@@ -3,7 +3,6 @@
 const Promise = require('bluebird');
 const mysql = require('mysql');
 const omit = require('lodash/omit');
-const includes = require('lodash/includes');
 const cli = require('../../lib');
 const generator = require('generate-password');
 
@@ -94,7 +93,7 @@ class MySQLExtension extends cli.Extension {
         // This will be the "allowed connections from" host of the mysql user.
         // If the db connection host is something _other_ than localhost (e.g. a remote db connection)
         // we want the host to be `%` rather than the db host.
-        const host = !includes(localhostAliases, dbconfig.host) ? '%' : dbconfig.host;
+        const host = !localhostAliases.includes(dbconfig.host) ? '%' : dbconfig.host;
 
         let username;
 
