@@ -4214,9 +4214,9 @@ symlink-or-copy@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.2.0.tgz#5d49108e2ab824a34069b68974486c290020b393"
 
-systeminformation@3.38.0:
-  version "3.38.0"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-3.38.0.tgz#ea7b09ef9f4f34dbb594ac8b88269faa826c009f"
+systeminformation@3.40.0:
+  version "3.40.0"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-3.40.0.tgz#ad8b6caad55be9917b6918ed85a3a742539a149e"
 
 table@4.0.2:
   version "4.0.2"
