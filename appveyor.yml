@@ -6,7 +6,7 @@ clone_depth: 1
 
 environment:
   matrix:
-    - nodejs_version: "4.8"
+    - nodejs_version: "8.9"
 
 platform:
   - x64
@@ -22,7 +22,7 @@ branches:
 install:
   # Let's try to get things working
   # Install Node 4 ---------------------------------------------------------
-  - ps: Install-Product node 4.8
+  - ps: Install-Product node 8.9
   # Installation, deps -----------------------------------------------------
   - yarn install --no-progress --no-emojis
   - npm link # yarn link doesn't seem to work
