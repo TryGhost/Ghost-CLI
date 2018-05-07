@@ -5,6 +5,7 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../../../lib/commands/start';
 const StartCommand = require(modulePath);
+const sandbox = sinon.sandbox.create();
 
 describe('Unit: Commands > Start', function () {
     describe('run', function () {
@@ -13,13 +14,18 @@ describe('Unit: Commands > Start', function () {
         beforeEach(function () {
             myInstance = {
                 checkEnvironment: () => true,
-                running: () => Promise.resolve(false)
+                running: () => Promise.resolve(false),
+                config: {get: sandbox.stub()}
             };
 
             mySystem = {
                 getInstance: () => myInstance,
                 environment: 'production'
             };
+        });
+
+        afterEach(function () {
+            sandbox.restore();
         });
 
         it('gracefully notifies of already running instance', function () {
@@ -184,7 +190,7 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('is normally loud', function () {
-            myInstance.config = {get: () => ''};
+            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
             myInstance.process = {};
             const ui = {
                 run: () => Promise.resolve(),
@@ -195,13 +201,66 @@ describe('Unit: Commands > Start', function () {
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.calledOnce).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/You can access your blog/);
+                expect(ui.log.calledTwice).to.be.true;
+                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
+                expect(ui.log.args[0][0]).to.include('https://my-amazing.blog.com');
+                expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
+                expect(ui.log.args[1][0]).to.include('https://my-amazing.blog.com/ghost');
+            });
+        });
+
+        it('shows custom admin url', function () {
+            const oldArgv = process.argv;
+            process.argv = ['', '', 'start']
+            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
+            myInstance.config.get.withArgs('admin.url').returns('https://admin.my-amazing.blog.com');
+            myInstance.process = {};
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: () => Promise.resolve(),
+                log: sinon.stub()
+            };
+            const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+            return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(ui.log.calledTwice).to.be.true;
+                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
+                expect(ui.log.args[0][0]).to.include('https://my-amazing.blog.com');
+                expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
+                expect(ui.log.args[1][0]).to.include('https://admin.my-amazing.blog.com/ghost');
+
+                process.argv = oldArgv;
+            });
+        });
+
+        it('shows different message after fresh install', function () {
+            const oldArgv = process.argv;
+            process.argv = ['', '', 'install']
+            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
+            myInstance.process = {};
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: () => Promise.resolve(),
+                log: sinon.stub()
+            };
+            const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+            return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(ui.log.calledTwice).to.be.true;
+                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
+                expect(ui.log.args[0][0]).to.include('https://my-amazing.blog.com');
+                expect(ui.log.args[1][0]).to.match(/Next, go to to your admin interface at /);
+                expect(ui.log.args[1][0]).to.include('https://my-amazing.blog.com/ghost');
+
+                process.argv = oldArgv;
             });
         });
 
         it('warns of direct mail transport', function () {
-            myInstance.config = {get: () => 'Direct'};
+            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
+            myInstance.config.get.withArgs('mail.transport').returns('Direct');
             myInstance.process = {};
             const ui = {
                 run: () => Promise.resolve(),
@@ -212,9 +271,9 @@ describe('Unit: Commands > Start', function () {
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.calledThrice).to.be.true;
-                expect(ui.log.args[1][0]).to.match(/Ghost uses direct mail/);
-                expect(ui.log.args[2][0]).to.match(/alternative email method/);
+                expect(ui.log.callCount).to.equal(4);
+                expect(ui.log.args[2][0]).to.match(/Ghost uses direct mail/);
+                expect(ui.log.args[3][0]).to.match(/alternative email method/);
             });
         });
     });
