@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.7.3"></a>
+## [1.7.3](https://github.com/TryGhost/Ghost-CLI/compare/1.7.2...1.7.3) (2018-05-10)
+
+### Bug Fixes
+
+* **doctor:** skip install dir checks for local installs ([#712](https://github.com/TryGhost/Ghost-CLI/issues/712)) ([4715aae](https://github.com/TryGhost/Ghost-CLI/commit/4715aae)), closes [#711](https://github.com/TryGhost/Ghost-CLI/issues/711)
+
+### Features
+
+* **start:** direct user to admin interface ([2850af3](https://github.com/TryGhost/Ghost-CLI/commit/2850af3)), closes [#665](https://github.com/TryGhost/Ghost-CLI/issues/665)
+
 <a name="1.7.2"></a>
 ## [1.7.2](https://github.com/TryGhost/Ghost-CLI/compare/1.7.1...1.7.2) (2018-05-01)
 ### Bug Fixes
