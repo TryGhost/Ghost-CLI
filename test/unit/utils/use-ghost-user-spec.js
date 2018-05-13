@@ -8,15 +8,13 @@ const execa = require('execa');
 const fs = require('fs');
 
 describe('Unit: Utils > ghostUser', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('shouldUseGhostUser', function () {
         it('returns false if platform is not linux', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('darwin');
+            const platformStub = sinon.stub(os, 'platform').returns('darwin');
 
             const result = ghostUser.shouldUseGhostUser();
 
@@ -25,8 +23,8 @@ describe('Unit: Utils > ghostUser', function () {
         });
 
         it('returns false if no ghost user found', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
-            const execaStub = sandbox.stub(execa, 'shellSync').throws(new Error('no such user'));
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
+            const execaStub = sinon.stub(execa, 'shellSync').throws(new Error('no such user'));
 
             const result = ghostUser.shouldUseGhostUser();
 
@@ -36,9 +34,9 @@ describe('Unit: Utils > ghostUser', function () {
         });
 
         it('returns false if the ghost owner/group is not the owner of the content folder', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
-            const execaStub = sandbox.stub(execa, 'shellSync').returns({stdout: '50'});
-            const fsStub = sandbox.stub(fs, 'lstatSync').returns({uid: 30, gid: 30});
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
+            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: '50'});
+            const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 30, gid: 30});
 
             const result = ghostUser.shouldUseGhostUser('/some-dir/content');
             expect(result).to.be.false;
@@ -49,9 +47,9 @@ describe('Unit: Utils > ghostUser', function () {
         });
 
         it('returns false if the current user is ghost', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
-            const execaStub = sandbox.stub(execa, 'shellSync').returns({stdout: '50'});
-            const fsStub = sandbox.stub(fs, 'lstatSync').returns({uid: 50, gid: 50});
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
+            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: '50'});
+            const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 50, gid: 50});
 
             const originalGetuid = process.getuid;
             process.getuid = sinon.stub().returns(50);
@@ -67,9 +65,9 @@ describe('Unit: Utils > ghostUser', function () {
         });
 
         it('returns true if user is not ghost', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
-            const execaStub = sandbox.stub(execa, 'shellSync').returns({stdout: '50'});
-            const fsStub = sandbox.stub(fs, 'lstatSync').returns({uid: 50, gid: 50});
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
+            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: '50'});
+            const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 50, gid: 50});
 
             const originalGetuid = process.getuid;
             process.getuid = sinon.stub().returns(0);
@@ -87,7 +85,7 @@ describe('Unit: Utils > ghostUser', function () {
 
     describe('getGhostUid', function () {
         it('returns false if platform is not linux', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('darwin');
+            const platformStub = sinon.stub(os, 'platform').returns('darwin');
 
             const result = ghostUser.getGhostUid();
 
@@ -96,8 +94,8 @@ describe('Unit: Utils > ghostUser', function () {
         });
 
         it('returns uid and guid object', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
-            const execaStub = sandbox.stub(execa, 'shellSync').returns({stdout: 501});
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
+            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: 501});
 
             const result = ghostUser.getGhostUid();
             expect(result).to.be.an('object');
@@ -108,8 +106,8 @@ describe('Unit: Utils > ghostUser', function () {
         });
 
         it('returns false if "no such user" error is thrown', function () {
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
-            const execaStub = sandbox.stub(execa, 'shellSync').throws(new Error('no such user'));
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
+            const execaStub = sinon.stub(execa, 'shellSync').throws(new Error('no such user'));
 
             const result = ghostUser.getGhostUid();
             expect(result).to.be.false;

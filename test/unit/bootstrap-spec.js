@@ -10,10 +10,8 @@ const yargs = require('yargs');
 const modulePath = '../../lib/bootstrap';
 
 describe('Unit: Bootstrap', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('discoverCommands', function () {
@@ -114,19 +112,10 @@ describe('Unit: Bootstrap', function () {
     describe('process rejection handler', function () {
         require(modulePath);
 
-        let sandbox;
         let consoleStub;
 
-        before(function () {
-            sandbox = sinon.sandbox.create();
-        });
-
         beforeEach(function () {
-            consoleStub = sandbox.stub(console, 'warn');
-        });
-
-        afterEach(function () {
-            sandbox.restore();
+            consoleStub = sinon.stub(console, 'warn');
         });
 
         it('is registered', function () {
@@ -179,10 +168,10 @@ describe('Unit: Bootstrap', function () {
         const bootstrap = require(modulePath);
 
         it('throws an error and returns if the command doesn\'t inherit the base command', function () {
-            const errorStub = sandbox.stub(console, 'error');
+            const errorStub = sinon.stub(console, 'error');
             const commandPath = path.join(__dirname, '../fixtures/classes/test-invalid-command');
             const TestInvalidCommand = require(commandPath);
-            const configureStub = sandbox.stub();
+            const configureStub = sinon.stub();
             TestInvalidCommand.configure = configureStub;
 
             bootstrap.loadCommand('invalid', commandPath, {}, [], []);
@@ -192,10 +181,10 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('calls configure on command class with passed properties', function () {
-            const errorStub = sandbox.stub(console, 'error');
+            const errorStub = sinon.stub(console, 'error');
             const commandPath = path.join(__dirname, '../fixtures/classes/test-valid-command');
             const TestValidCommand = require(commandPath);
-            const configureStub = sandbox.stub(TestValidCommand, 'configure');
+            const configureStub = sinon.stub(TestValidCommand, 'configure');
 
             const yargs = {yargs: true};
             const aliases = ['foo', 'bar'];
@@ -221,18 +210,18 @@ describe('Unit: Bootstrap', function () {
         let bootstrap;
 
         beforeEach(function () {
-            findExtensionsStub = sandbox.stub().returns([]);
+            findExtensionsStub = sinon.stub().returns([]);
             bootstrap = proxyquire(modulePath, {
                 './utils/find-extensions': findExtensionsStub
             });
-            discoverCommands = sandbox.stub(bootstrap, 'discoverCommands');
-            loadCommand = sandbox.stub(bootstrap, 'loadCommand');
+            discoverCommands = sinon.stub(bootstrap, 'discoverCommands');
+            loadCommand = sinon.stub(bootstrap, 'loadCommand');
 
             yargsStubs = {};
 
             Object.keys(yargs).forEach((key) => {
                 if (typeof yargs[key] === 'function') {
-                    yargsStubs[key] = sandbox.stub(yargs, key).returns(yargs);
+                    yargsStubs[key] = sinon.stub(yargs, key).returns(yargs);
                 }
             });
         });
@@ -240,8 +229,8 @@ describe('Unit: Bootstrap', function () {
         it('errors if no command name matches', function () {
             this.timeout(10000); // this test can take awhile depending on the system
 
-            const error = sandbox.stub(console, 'error');
-            const exit = sandbox.stub(process, 'exit');
+            const error = sinon.stub(console, 'error');
+            const exit = sinon.stub(process, 'exit');
 
             discoverCommands.returns({
                 ls: path.resolve(__dirname, '../../lib/commands/ls')
@@ -259,7 +248,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('loads all commands if the first arg is help', function () {
-            const error = sandbox.stub(console, 'error');
+            const error = sinon.stub(console, 'error');
             discoverCommands.returns({
                 ls: path.resolve(__dirname, '../../lib/commands/ls'),
                 log: path.resolve(__dirname, '../../lib/commands/log'),
@@ -284,7 +273,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('loads one single command if found', function () {
-            const error = sandbox.stub(console, 'error');
+            const error = sinon.stub(console, 'error');
             discoverCommands.returns({
                 ls: path.resolve(__dirname, '../../lib/commands/ls'),
                 log: path.resolve(__dirname, '../../lib/commands/log'),

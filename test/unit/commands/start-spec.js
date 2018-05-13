@@ -5,7 +5,6 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../../../lib/commands/start';
 const StartCommand = require(modulePath);
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: Commands > Start', function () {
     describe('run', function () {
@@ -15,7 +14,7 @@ describe('Unit: Commands > Start', function () {
             myInstance = {
                 checkEnvironment: () => true,
                 running: () => Promise.resolve(false),
-                config: {get: sandbox.stub()}
+                config: {get: sinon.stub()}
             };
 
             mySystem = {
@@ -25,7 +24,7 @@ describe('Unit: Commands > Start', function () {
         });
 
         afterEach(function () {
-            sandbox.restore();
+            sinon.restore();
         });
 
         it('gracefully notifies of already running instance', function () {

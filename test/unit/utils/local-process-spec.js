@@ -11,15 +11,13 @@ const childProcess = require('child_process');
 const modulePath = '../../../lib/utils/local-process';
 
 describe('Unit: Utils > local-process', function () {
-    const sandbox = sinon.sandbox.create();
-
     before(() => {
         process.send = process.send || (() => {});
     });
 
     afterEach(() => {
         // This is here so we at least have a function to stub out
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('willRun returns true', function () {
@@ -28,7 +26,7 @@ describe('Unit: Utils > local-process', function () {
     });
 
     it('success works', function () {
-        const successStub = sandbox.stub(process, 'send');
+        const successStub = sinon.stub(process, 'send');
         const LocalProcess = require(modulePath);
 
         const instance = new LocalProcess({}, {}, {});
@@ -39,7 +37,7 @@ describe('Unit: Utils > local-process', function () {
     });
 
     it('error works', function () {
-        const errorStub = sandbox.stub(process, 'send');
+        const errorStub = sinon.stub(process, 'send');
         const LocalProcess = require(modulePath);
 
         const instance = new LocalProcess({}, {}, {});
@@ -51,7 +49,7 @@ describe('Unit: Utils > local-process', function () {
 
     describe('isRunning', function () {
         it('returns false if pidfile doesn\'t exist', function () {
-            const existsStub = sandbox.stub(fs, 'existsSync').returns(false);
+            const existsStub = sinon.stub(fs, 'existsSync').returns(false);
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
             const result = instance.isRunning('/var/www/ghost');
@@ -61,10 +59,10 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('fetches pid from file, removes pidfile and returns false if not running', function () {
-            const existsStub = sandbox.stub(fs, 'existsSync').returns(true);
-            const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sandbox.stub(fs, 'removeSync');
-            const isRunningStub = sandbox.stub().returns(false);
+            const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
+            const removeStub = sinon.stub(fs, 'removeSync');
+            const isRunningStub = sinon.stub().returns(false);
 
             const LocalProcess = proxyquire(modulePath, {
                 'is-running': isRunningStub
@@ -81,10 +79,10 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('fetches pid from file, returns true if running', function () {
-            const existsStub = sandbox.stub(fs, 'existsSync').returns(true);
-            const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sandbox.stub(fs, 'removeSync');
-            const isRunningStub = sandbox.stub().returns(true);
+            const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
+            const removeStub = sinon.stub(fs, 'removeSync');
+            const isRunningStub = sinon.stub().returns(true);
 
             const LocalProcess = proxyquire(modulePath, {
                 'is-running': isRunningStub
@@ -106,7 +104,7 @@ describe('Unit: Utils > local-process', function () {
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
 
-            const checkStub = sandbox.stub(instance, '_checkContentFolder').returns(false);
+            const checkStub = sinon.stub(instance, '_checkContentFolder').returns(false);
 
             instance.start('/var/www/ghost', 'development').then(() => {
                 done(new Error('start should have rejected'));
@@ -122,12 +120,12 @@ describe('Unit: Utils > local-process', function () {
         it('writes pid to file, rejects on error event', function (done) {
             const cp = new EventEmitter();
             cp.pid = 42;
-            const spawnStub = sandbox.stub(childProcess, 'spawn').returns(cp);
-            const writeFileStub = sandbox.stub(fs, 'writeFileSync');
+            const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
+            const writeFileStub = sinon.stub(fs, 'writeFileSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const checkStub = sandbox.stub(instance, '_checkContentFolder').returns(true);
+            const checkStub = sinon.stub(instance, '_checkContentFolder').returns(true);
             const startPromise = instance.start('/var/www/ghost', 'production');
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
@@ -148,13 +146,13 @@ describe('Unit: Utils > local-process', function () {
         it('writes pid to file, rejects on exit event', function (done) {
             const cp = new EventEmitter();
             cp.pid = 42;
-            const spawnStub = sandbox.stub(childProcess, 'spawn').returns(cp);
-            const writeFileStub = sandbox.stub(fs, 'writeFileSync');
-            const removeStub = sandbox.stub(fs, 'removeSync');
+            const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
+            const writeFileStub = sinon.stub(fs, 'writeFileSync');
+            const removeStub = sinon.stub(fs, 'removeSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const checkStub = sandbox.stub(instance, '_checkContentFolder').returns(true);
+            const checkStub = sinon.stub(instance, '_checkContentFolder').returns(true);
             const startPromise = instance.start('/var/www/ghost', 'production');
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
@@ -176,13 +174,13 @@ describe('Unit: Utils > local-process', function () {
         it('writes pid to file, rejects on message event with error', function (done) {
             const cp = new EventEmitter();
             cp.pid = 42;
-            const spawnStub = sandbox.stub(childProcess, 'spawn').returns(cp);
-            const writeFileStub = sandbox.stub(fs, 'writeFileSync');
-            const removeStub = sandbox.stub(fs, 'removeSync');
+            const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
+            const writeFileStub = sinon.stub(fs, 'writeFileSync');
+            const removeStub = sinon.stub(fs, 'removeSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const checkStub = sandbox.stub(instance, '_checkContentFolder').returns(true);
+            const checkStub = sinon.stub(instance, '_checkContentFolder').returns(true);
             const startPromise = instance.start('/var/www/ghost', 'production');
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
@@ -204,15 +202,15 @@ describe('Unit: Utils > local-process', function () {
         it('writes pid to file, resolves on start message', function (done) {
             const cp = new EventEmitter();
             cp.pid = 42;
-            cp.unref = sandbox.stub();
-            cp.disconnect = sandbox.stub();
+            cp.unref = sinon.stub();
+            cp.disconnect = sinon.stub();
 
-            const spawnStub = sandbox.stub(childProcess, 'spawn').returns(cp);
-            const writeFileStub = sandbox.stub(fs, 'writeFileSync');
+            const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
+            const writeFileStub = sinon.stub(fs, 'writeFileSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const checkStub = sandbox.stub(instance, '_checkContentFolder').returns(true);
+            const checkStub = sinon.stub(instance, '_checkContentFolder').returns(true);
             const startPromise = instance.start('/var/www/ghost', 'production');
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
@@ -231,8 +229,8 @@ describe('Unit: Utils > local-process', function () {
 
     describe('stop', function () {
         it('returns if pidfile not found', function () {
-            const readFileStub = sandbox.stub(fs, 'readFileSync').throws({code: 'ENOENT'});
-            const fkillStub = sandbox.stub();
+            const readFileStub = sinon.stub(fs, 'readFileSync').throws({code: 'ENOENT'});
+            const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -246,8 +244,8 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('rejects if any unexpected error occurs during reading of pidfile', function (done) {
-            const readFileStub = sandbox.stub(fs, 'readFileSync').throws(new Error('test error'));
-            const fkillStub = sandbox.stub();
+            const readFileStub = sinon.stub(fs, 'readFileSync').throws(new Error('test error'));
+            const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -266,9 +264,9 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('calls fkill and removes pidfile', function () {
-            const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sandbox.stub(fs, 'removeSync');
-            const fkillStub = sandbox.stub().resolves();
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
+            const removeStub = sinon.stub(fs, 'removeSync');
+            const fkillStub = sinon.stub().resolves();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -285,9 +283,9 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('resolves if process didn\'t exist', function () {
-            const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sandbox.stub(fs, 'removeSync');
-            const fkillStub = sandbox.stub().rejects(new Error('No such process: 42'));
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
+            const removeStub = sinon.stub(fs, 'removeSync');
+            const fkillStub = sinon.stub().rejects(new Error('No such process: 42'));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -304,9 +302,9 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('rejects with an unknown error from fkill', function (done) {
-            const readFileStub = sandbox.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sandbox.stub(fs, 'removeSync');
-            const fkillStub = sandbox.stub().callsFake(() => Promise.reject(new Error('no idea')));
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
+            const removeStub = sinon.stub(fs, 'removeSync');
+            const fkillStub = sinon.stub().callsFake(() => Promise.reject(new Error('no idea')));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -333,14 +331,14 @@ describe('Unit: Utils > local-process', function () {
         let modeStub;
 
         beforeEach(() => {
-            modeStub = sandbox.stub();
+            modeStub = sinon.stub();
             LocalProcess = proxyquire(modulePath, {
                 'stat-mode': modeStub
             });
         });
 
         it('skips if windows', function () {
-            const statStub = sandbox.stub(fs, 'lstatSync');
+            const statStub = sinon.stub(fs, 'lstatSync');
             const instance = new LocalProcess({}, {
                 platform: {windows: true}
             }, {});
@@ -354,8 +352,8 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('returns true if getuid and lstatSync match', function () {
-            const statStub = sandbox.stub(fs, 'lstatSync').returns({uid: 1});
-            const uidStub = sandbox.stub(process, 'getuid').returns(1);
+            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 1});
+            const uidStub = sinon.stub(process, 'getuid').returns(1);
             modeStub.returns({others: {write: false, read: false}});
 
             const instance = new LocalProcess({}, {
@@ -371,8 +369,8 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('returns true if getuid and lstatSync don\'t match, but current user has read&write permissions', function () {
-            const statStub = sandbox.stub(fs, 'lstatSync').returns({uid: 2});
-            const uidStub = sandbox.stub(process, 'getuid').returns(1);
+            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2});
+            const uidStub = sinon.stub(process, 'getuid').returns(1);
             modeStub.returns({others: {write: true, read: true}});
 
             const instance = new LocalProcess({}, {
@@ -388,8 +386,8 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('returns false if getuid and lstatSync don\'t match, and current user doesn\'t have read&write permissions', function () {
-            const statStub = sandbox.stub(fs, 'lstatSync').returns({uid: 2});
-            const uidStub = sandbox.stub(process, 'getuid').returns(1);
+            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2});
+            const uidStub = sinon.stub(process, 'getuid').returns(1);
             modeStub.returns({others: {write: false, read: false}});
 
             const instance = new LocalProcess({}, {

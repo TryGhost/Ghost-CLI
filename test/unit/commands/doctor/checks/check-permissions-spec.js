@@ -8,14 +8,12 @@ const errors = require('../../../../../lib/errors');
 const checkPermissions = require('../../../../../lib/commands/doctor/checks/check-permissions');
 
 describe('Unit: Doctor Checks > Util > checkPermissions', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('falls back to check owner permissions if not specified', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: ''});
+        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: ''});
 
         return checkPermissions().then(() => {
             expect(execaStub.calledWithExactly('find ./content ! -group ghost ! -user ghost')).to.be.true;
@@ -23,7 +21,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
     });
 
     it('rejects with error if no Ghost can\'t access files', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects({stderr: 'Permission denied'});
+        const execaStub = sinon.stub(execa, 'shell').rejects({stderr: 'Permission denied'});
 
         return checkPermissions('folder').then(() => {
             expect(false, 'error should have been thrown').to.be.true;
@@ -35,7 +33,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
     });
 
     it('rejects with error if execa command fails', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
+        const execaStub = sinon.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
 
         return checkPermissions('files').then(() => {
             expect(false, 'error should have been thrown').to.be.true;

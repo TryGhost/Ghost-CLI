@@ -7,10 +7,8 @@ const ghostUser = require('../../../../../lib/utils/use-ghost-user');
 const loggedInUser = require('../../../../../lib/commands/doctor/checks/logged-in-user');
 
 describe('Unit: Doctor Checks > loggedInUser', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('enabled works', function () {
@@ -43,8 +41,8 @@ describe('Unit: Doctor Checks > loggedInUser', function () {
     });
 
     it('rejects if user name is ghost', function () {
-        const processStub = sandbox.stub(process, 'getuid').returns(501);
-        const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns({uid: 501, guid: 501});
+        const processStub = sinon.stub(process, 'getuid').returns(501);
+        const ghostUserStub = sinon.stub(ghostUser, 'getGhostUid').returns({uid: 501, guid: 501});
 
         try {
             loggedInUser.task();
@@ -57,8 +55,8 @@ describe('Unit: Doctor Checks > loggedInUser', function () {
     });
 
     it('passes if user name is not ghost', function () {
-        const processStub = sandbox.stub(process, 'getuid').returns(1000);
-        const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns(false);
+        const processStub = sinon.stub(process, 'getuid').returns(1000);
+        const ghostUserStub = sinon.stub(ghostUser, 'getGhostUid').returns(false);
 
         try {
             loggedInUser.task();
@@ -70,8 +68,8 @@ describe('Unit: Doctor Checks > loggedInUser', function () {
     });
 
     it('passes if ghost user exists but not currently used', function () {
-        const processStub = sandbox.stub(process, 'getuid').returns(1000);
-        const ghostUserStub = sandbox.stub(ghostUser, 'getGhostUid').returns({uid: 501, guid: 501});
+        const processStub = sinon.stub(process, 'getuid').returns(1000);
+        const ghostUserStub = sinon.stub(ghostUser, 'getGhostUid').returns({uid: 501, guid: 501});
 
         try {
             loggedInUser.task();

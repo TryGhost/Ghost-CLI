@@ -7,10 +7,8 @@ const getConfigStub = require('../utils/config-stub');
 const modulePath = '../../lib/process-manager';
 
 describe('Unit: Process Manager', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('isValid', function () {
@@ -59,7 +57,7 @@ describe('Unit: Process Manager', function () {
     });
 
     describe('ensureStarted', function () {
-        const portPollingStub = sandbox.stub();
+        const portPollingStub = sinon.stub();
         const ProcessManager = proxyquire(modulePath, {
             './utils/port-polling': portPollingStub
         });
@@ -75,7 +73,7 @@ describe('Unit: Process Manager', function () {
             portPollingStub.resolves();
 
             const instance = new ProcessManager({}, {}, {config: config});
-            const stopStub = sandbox.stub(instance, 'stop').resolves();
+            const stopStub = sinon.stub(instance, 'stop').resolves();
 
             return instance.ensureStarted({logSuggestion: 'test'}).then(() => {
                 expect(portPollingStub.calledOnce).to.be.true;
@@ -97,7 +95,7 @@ describe('Unit: Process Manager', function () {
             portPollingStub.rejects(new Error('test error'));
 
             const instance = new ProcessManager({}, {}, {config: config});
-            const stopStub = sandbox.stub(instance, 'stop').resolves();
+            const stopStub = sinon.stub(instance, 'stop').resolves();
 
             return instance.ensureStarted({stopOnError: false}).then(() => {
                 expect(false, 'Error should have been thrown').to.be.true;
@@ -120,7 +118,7 @@ describe('Unit: Process Manager', function () {
             portPollingStub.rejects(new Error('test error'));
 
             const instance = new ProcessManager({}, {}, {config: config});
-            const stopStub = sandbox.stub(instance, 'stop').resolves();
+            const stopStub = sinon.stub(instance, 'stop').resolves();
 
             return instance.ensureStarted({}).then(() => {
                 expect(false, 'Error should have been thrown').to.be.true;
@@ -144,7 +142,7 @@ describe('Unit: Process Manager', function () {
             portPollingStub.rejects(new Error('test error'));
 
             const instance = new ProcessManager({}, {}, {config: config});
-            const stopStub = sandbox.stub(instance, 'stop').rejects(new Error('test error 2'));
+            const stopStub = sinon.stub(instance, 'stop').rejects(new Error('test error 2'));
 
             return instance.ensureStarted().then(() => {
                 expect(false, 'Error should have been thrown').to.be.true;
@@ -165,8 +163,8 @@ describe('Unit: Process Manager', function () {
     it('restart base implementation calls start and stop methods', function () {
         const ProcessManager = require(modulePath);
         const instance = new ProcessManager({}, {}, {});
-        const startStub = sandbox.stub(instance, 'start').resolves();
-        const stopStub = sandbox.stub(instance, 'stop').resolves();
+        const startStub = sinon.stub(instance, 'start').resolves();
+        const stopStub = sinon.stub(instance, 'stop').resolves();
 
         return instance.restart().then(() => {
             expect(stopStub.calledOnce).to.be.true;

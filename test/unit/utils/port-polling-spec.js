@@ -4,11 +4,10 @@ const sinon = require('sinon');
 const net = require('net');
 
 const portPolling = require('../../../lib/utils/port-polling');
-const sandbox = sinon.sandbox.create();
 
 describe('Unit: Utils > portPolling', function () {
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('port is missing', function () {
@@ -22,17 +21,17 @@ describe('Unit: Utils > portPolling', function () {
     });
 
     it('Ghost does never start', function () {
-        const netStub = sandbox.stub();
+        const netStub = sinon.stub();
 
-        netStub.setTimeout = sandbox.stub();
-        netStub.destroy = sandbox.stub();
+        netStub.setTimeout = sinon.stub();
+        netStub.destroy = sinon.stub();
         netStub.on = function (event, cb) {
             if (event === 'error') {
                 cb(new Error('whoops'));
             }
         };
 
-        const connectStub = sandbox.stub(net, 'connect').returns(netStub);
+        const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100})
             .then(() => {
@@ -49,10 +48,10 @@ describe('Unit: Utils > portPolling', function () {
     });
 
     it('Ghost does start, but falls over', function () {
-        const netStub = sandbox.stub();
+        const netStub = sinon.stub();
 
-        netStub.setTimeout = sandbox.stub();
-        netStub.destroy = sandbox.stub();
+        netStub.setTimeout = sinon.stub();
+        netStub.destroy = sinon.stub();
 
         let i = 0;
         netStub.on = function (event, cb) {
@@ -67,7 +66,7 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        const connectStub = sandbox.stub(net, 'connect').returns(netStub);
+        const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150, host: '0.0.0.0'})
             .then(() => {
@@ -83,10 +82,10 @@ describe('Unit: Utils > portPolling', function () {
     });
 
     it('Ghost does start', function () {
-        const netStub = sandbox.stub();
+        const netStub = sinon.stub();
 
-        netStub.setTimeout = sandbox.stub();
-        netStub.destroy = sandbox.stub();
+        netStub.setTimeout = sinon.stub();
+        netStub.destroy = sinon.stub();
 
         let i = 0;
         netStub.on = function (event, cb) {
@@ -101,7 +100,7 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        const connectStub = sandbox.stub(net, 'connect').returns(netStub);
+        const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: 150, host: '10.0.1.0'})
             .then(() => {
@@ -115,10 +114,10 @@ describe('Unit: Utils > portPolling', function () {
     });
 
     it('Ghost does start, skip delay on connect', function () {
-        const netStub = sandbox.stub();
+        const netStub = sinon.stub();
 
-        netStub.setTimeout = sandbox.stub();
-        netStub.destroy = sandbox.stub();
+        netStub.setTimeout = sinon.stub();
+        netStub.destroy = sinon.stub();
 
         netStub.on = function (event, cb) {
             expect(event).to.not.eql('close');
@@ -128,7 +127,7 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        sandbox.stub(net, 'connect').returns(netStub);
+        sinon.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, delayOnConnectInMS: false})
             .then(() => {
@@ -140,10 +139,10 @@ describe('Unit: Utils > portPolling', function () {
     });
 
     it('socket times out', function () {
-        const netStub = sandbox.stub();
+        const netStub = sinon.stub();
 
-        netStub.setTimeout = sandbox.stub();
-        netStub.destroy = sandbox.stub();
+        netStub.setTimeout = sinon.stub();
+        netStub.destroy = sinon.stub();
 
         netStub.on = function (event, cb) {
             if (event === 'timeout') {
@@ -151,7 +150,7 @@ describe('Unit: Utils > portPolling', function () {
             }
         };
 
-        sandbox.stub(net, 'connect').returns(netStub);
+        sinon.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 3, timeoutInMS: 100, socketTimeoutInMS: 300})
             .then(() => {
@@ -165,10 +164,10 @@ describe('Unit: Utils > portPolling', function () {
     });
 
     it('Ghost connects, but socket times out kicks in', function () {
-        const netStub = sandbox.stub();
+        const netStub = sinon.stub();
 
-        netStub.setTimeout = sandbox.stub();
-        netStub.destroy = sandbox.stub();
+        netStub.setTimeout = sinon.stub();
+        netStub.destroy = sinon.stub();
 
         const events = {};
         netStub.on = function (event, cb) {
@@ -183,7 +182,7 @@ describe('Unit: Utils > portPolling', function () {
             events[event] = cb;
         };
 
-        sandbox.stub(net, 'connect').returns(netStub);
+        sinon.stub(net, 'connect').returns(netStub);
 
         return portPolling({port: 1111, maxTries: 2, timeoutInMS: 100, socketTimeoutInMS: 300})
             .then(() => {

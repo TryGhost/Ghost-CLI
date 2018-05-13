@@ -18,10 +18,8 @@ function stubGlobalConfig(SystemClass, configDefinition, ui, extensions) {
 }
 
 describe('Unit: System', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('cliVersion getter caches', function () {
@@ -66,7 +64,7 @@ describe('Unit: System', function () {
         const System = require(modulePath);
 
         it('platform getter works for linux & caches', function () {
-            const osStub = sandbox.stub(os, 'platform').returns('linux');
+            const osStub = sinon.stub(os, 'platform').returns('linux');
             const instance = new System({}, []);
             const platform = instance.platform;
 
@@ -88,7 +86,7 @@ describe('Unit: System', function () {
         });
 
         it('platform getter works for macos', function () {
-            const osStub = sandbox.stub(os, 'platform').returns('darwin');
+            const osStub = sinon.stub(os, 'platform').returns('darwin');
             const instance = new System({}, []);
             const platform = instance.platform;
 
@@ -101,7 +99,7 @@ describe('Unit: System', function () {
         });
 
         it('platform getter works for windows', function () {
-            const osStub = sandbox.stub(os, 'platform').returns('win32');
+            const osStub = sinon.stub(os, 'platform').returns('win32');
             const instance = new System({}, []);
             const platform = instance.platform;
 
@@ -115,12 +113,6 @@ describe('Unit: System', function () {
     });
 
     describe('operatingSystem getter', function () {
-        const sandbox = sinon.sandbox.create();
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
         it('caches and returns the correct OS', function () {
             const getOsStub = sinon.stub().returns({
                 os: 'Ubuntu',
@@ -131,7 +123,7 @@ describe('Unit: System', function () {
             });
 
             const instance = new System({}, []);
-            const platformStub = sandbox.stub(os, 'platform').returns('linux');
+            const platformStub = sinon.stub(os, 'platform').returns('linux');
             const operatingSystem = instance.operatingSystem;
 
             expect(platformStub.calledOnce).to.be.true;

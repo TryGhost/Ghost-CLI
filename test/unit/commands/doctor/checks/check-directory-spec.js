@@ -9,15 +9,13 @@ const errors = require('../../../../../lib/errors');
 const modulePath = '../../../../../lib/commands/doctor/checks/check-directory';
 
 describe('Unit: Doctor Checks > checkDirectoryAndAbove', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('returns if directory is root', function () {
-        const lstatStub = sandbox.stub(fs, 'lstat').resolves();
-        const isRootStub = sandbox.stub().returns(true);
+        const lstatStub = sinon.stub(fs, 'lstat').resolves();
+        const isRootStub = sinon.stub().returns(true);
 
         const checkDirectoryAndAbove = proxyquire(modulePath, {
             'path-is-root': isRootStub
@@ -31,9 +29,9 @@ describe('Unit: Doctor Checks > checkDirectoryAndAbove', function () {
     });
 
     it('recursively goes back to root if read is set to true', function () {
-        const lstatStub = sandbox.stub(fs, 'lstat').resolves({stats: true});
-        const isRootStub = sandbox.stub();
-        const modeStub = sandbox.stub().returns({others: {read: true}});
+        const lstatStub = sinon.stub(fs, 'lstat').resolves({stats: true});
+        const isRootStub = sinon.stub();
+        const modeStub = sinon.stub().returns({others: {read: true}});
         isRootStub.onFirstCall().returns(false);
         isRootStub.onSecondCall().returns(false);
         isRootStub.onThirdCall().returns(true);
@@ -57,9 +55,9 @@ describe('Unit: Doctor Checks > checkDirectoryAndAbove', function () {
     });
 
     it('recursively goes back to root if read is set to true', function () {
-        const lstatStub = sandbox.stub(fs, 'lstat').resolves({stats: true});
-        const isRootStub = sandbox.stub();
-        const modeStub = sandbox.stub().returns({others: {read: true}});
+        const lstatStub = sinon.stub(fs, 'lstat').resolves({stats: true});
+        const isRootStub = sinon.stub();
+        const modeStub = sinon.stub().returns({others: {read: true}});
         isRootStub.onFirstCall().returns(false);
         isRootStub.onSecondCall().returns(false);
         isRootStub.onThirdCall().returns(true);
@@ -83,9 +81,9 @@ describe('Unit: Doctor Checks > checkDirectoryAndAbove', function () {
     });
 
     it('throws error if a directory isn\'t readable by others', function () {
-        const lstatStub = sandbox.stub(fs, 'lstat').resolves({stats: true});
-        const isRootStub = sandbox.stub();
-        const modeStub = sandbox.stub();
+        const lstatStub = sinon.stub(fs, 'lstat').resolves({stats: true});
+        const isRootStub = sinon.stub();
+        const modeStub = sinon.stub();
 
         isRootStub.onFirstCall().returns(false);
         isRootStub.onSecondCall().returns(false);

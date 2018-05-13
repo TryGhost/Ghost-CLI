@@ -10,16 +10,14 @@ const ghostUser = require('../../lib/utils/use-ghost-user');
 const migrations = require('../../lib/migrations');
 
 describe('Unit: Migrations', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('ensureSettingsFolder', function () {
         it('if ghost user owns directory, runs `sudo mkdir` as ghost user', function () {
-            const ghostUserStub = sandbox.stub(ghostUser, 'shouldUseGhostUser').returns(true);
-            const sudoStub = sandbox.stub().resolves();
+            const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(true);
+            const sudoStub = sinon.stub().resolves();
             const config = createConfig();
             config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
 
@@ -40,8 +38,8 @@ describe('Unit: Migrations', function () {
         });
 
         it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
-            const ghostUserStub = sandbox.stub(ghostUser, 'shouldUseGhostUser').returns(false);
-            const fsStub = sandbox.stub(fs, 'ensureDirSync');
+            const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(false);
+            const fsStub = sinon.stub(fs, 'ensureDirSync');
             const config = createConfig();
             config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
 

@@ -18,10 +18,8 @@ const fileList = [
 ]
 
 describe('Unit: Commands > Uninstall', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     function createInstance(proxied) {
@@ -81,11 +79,11 @@ describe('Unit: Commands > Uninstall', function () {
             it('step 1 (stopping ghost) - skips when ghost is not running', function () {
                 const command = createInstance();
                 const instance = {
-                    running: sandbox.stub().resolves(false),
-                    loadRunningEnvironment: sandbox.stub()
+                    running: sinon.stub().resolves(false),
+                    loadRunningEnvironment: sinon.stub()
                 };
-                const runCommandStub = sandbox.stub(command.instance, 'runCommand').resolves();
-                const skipStub = sandbox.stub();
+                const runCommandStub = sinon.stub(command.instance, 'runCommand').resolves();
+                const skipStub = sinon.stub();
                 command.system.getInstance.returns(instance);
 
                 return getSteps(command.instance, command.ui).then((steps) => {
@@ -105,11 +103,11 @@ describe('Unit: Commands > Uninstall', function () {
             it('step 1 (stopping ghost) - doesn\'t skip when ghost is running', function () {
                 const command = createInstance();
                 const instance = {
-                    running: sandbox.stub().resolves(true),
-                    loadRunningEnvironment: sandbox.stub()
+                    running: sinon.stub().resolves(true),
+                    loadRunningEnvironment: sinon.stub()
                 };
-                const runCommandStub = sandbox.stub(command.instance, 'runCommand').resolves();
-                const skipStub = sandbox.stub();
+                const runCommandStub = sinon.stub(command.instance, 'runCommand').resolves();
+                const skipStub = sinon.stub();
                 command.system.getInstance.returns(instance);
 
                 return getSteps(command.instance, command.ui).then((steps) => {
@@ -131,7 +129,7 @@ describe('Unit: Commands > Uninstall', function () {
             });
 
             it('step 2 (removing content folder)', function () {
-                const useGhostUserStub = sandbox.stub().returns(false);
+                const useGhostUserStub = sinon.stub().returns(false);
                 const command = createInstance({
                     '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
                 });
@@ -155,7 +153,7 @@ describe('Unit: Commands > Uninstall', function () {
 
             it('step 3 (removing related configuration)', function () {
                 const command = createInstance();
-                const existsStub = sandbox.stub(fs, 'existsSync').returns(true);
+                const existsStub = sinon.stub(fs, 'existsSync').returns(true);
                 command.system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
                 command.system.hook.resolves();
 
@@ -179,8 +177,8 @@ describe('Unit: Commands > Uninstall', function () {
             it('step 4 (removing ghost install)', function () {
                 const command = createInstance();
                 command.system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
-                const readdirStub = sandbox.stub(fs, 'readdirSync').returns(fileList);
-                const removeStub = sandbox.stub(fs, 'remove').resolves();
+                const readdirStub = sinon.stub(fs, 'readdirSync').returns(fileList);
+                const removeStub = sinon.stub(fs, 'remove').resolves();
 
                 return getSteps(command.instance, command.ui).then((steps) => {
                     const task = steps[3];
