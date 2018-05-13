@@ -7,15 +7,13 @@ const fs = require('fs');
 const checkRootUser = require('../../../lib/utils/check-root-user');
 
 describe('Unit: Utils > checkRootUser', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('skips check if run on windows', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('win32');
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
+        const osStub = sinon.stub(os, 'platform').returns('win32');
+        const processStub = sinon.stub(process, 'getuid').returns(0);
 
         checkRootUser('install');
         expect(osStub.calledOnce).to.be.true;
@@ -23,8 +21,8 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('skips check if run on macos', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('darwin');
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
+        const osStub = sinon.stub(os, 'platform').returns('darwin');
+        const processStub = sinon.stub(process, 'getuid').returns(0);
 
         checkRootUser('doctor');
         expect(osStub.calledOnce).to.be.true;
@@ -32,10 +30,10 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('skips check if command run as non root user', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const processStub = sandbox.stub(process, 'getuid').returns(501);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const processStub = sinon.stub(process, 'getuid').returns(501);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         checkRootUser('update');
         expect(osStub.calledOnce).to.be.true;
@@ -45,13 +43,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('shows special message for DigitalOcean One-Click root installs', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 0});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 0});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(true);
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
@@ -74,13 +72,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('throws error command run with root for non-root installs on a Digitalocean One-Click install', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 666});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 666});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(true);
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
@@ -103,13 +101,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('shows special message for DigitalOcean One-Click root installs, but doesn\'t exit on `stop`', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 0});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 0});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(true);
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
@@ -127,13 +125,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('shows special message for root installs', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 0});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 0});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(false);
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
@@ -156,13 +154,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('shows special message for root installs, but doesn\'t exit on `start`', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 0});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 0});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(false);
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
@@ -180,13 +178,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('throws error command run with root for non-root installs', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/ghost');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 501});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 501});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(false);
         fsStub.withArgs('/var/www/ghost/.ghost-cli').returns(true);
@@ -207,13 +205,13 @@ describe('Unit: Utils > checkRootUser', function () {
     });
 
     it('throws error command run with root outside of valid ghost installation', function () {
-        const osStub = sandbox.stub(os, 'platform').returns('linux');
-        const cwdStub = sandbox.stub(process, 'cwd').returns('/var/www/');
-        const fsStub = sandbox.stub(fs, 'existsSync');
-        const fsStatStub = sandbox.stub(fs, 'statSync').returns({uid: 501});
-        const processStub = sandbox.stub(process, 'getuid').returns(0);
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const osStub = sinon.stub(os, 'platform').returns('linux');
+        const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/');
+        const fsStub = sinon.stub(fs, 'existsSync');
+        const fsStatStub = sinon.stub(fs, 'statSync').returns({uid: 501});
+        const processStub = sinon.stub(process, 'getuid').returns(0);
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         fsStub.withArgs('/root/.digitalocean_password').returns(false);
         fsStub.withArgs('/var/www/.ghost-cli').returns(false);

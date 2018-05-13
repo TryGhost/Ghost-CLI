@@ -6,17 +6,16 @@ const os = require('os');
 const getOS = require('../../../lib/utils/get-os');
 
 describe('Unit: Utils > getOS', function () {
-    const sandbox = sinon.sandbox.create();
     let platformStub, versionStub, execaStub;
 
     beforeEach(function () {
-        versionStub = sandbox.stub(os, 'release');
-        execaStub = sandbox.stub(execa, 'shellSync');
-        platformStub = sandbox.stub(os, 'platform');
+        versionStub = sinon.stub(os, 'release');
+        execaStub = sinon.stub(execa, 'shellSync');
+        platformStub = sinon.stub(os, 'platform');
     });
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('returns correct Linux OS', function () {

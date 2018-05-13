@@ -9,10 +9,8 @@ const errors = require('../../../../../lib/errors');
 const mysqlCheck = require('../../../../../lib/commands/doctor/checks/mysql');
 
 describe('Unit: Doctor Checks > mysql', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('enabled', function () {
@@ -56,7 +54,7 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('appends sbin to path if platform is linux', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub(execa, 'shell').resolves();
         const ctx = {system: {platform: {linux: true}}};
 
         return mysqlCheck.task(ctx).then(() => {
@@ -67,7 +65,7 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('does not append sbin to path if platform is not linux', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub(execa, 'shell').resolves();
         const ctx = {system: {platform: {linux: false}}};
 
         return mysqlCheck.task(ctx).then(() => {
@@ -77,10 +75,10 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('calls confirm if execa rejects and allowPrompt is true', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(true);
-        const skipStub = sandbox.stub();
+        const execaStub = sinon.stub(execa, 'shell').rejects();
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(true);
+        const skipStub = sinon.stub();
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -97,9 +95,9 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('rejects if confirm says no', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
+        const execaStub = sinon.stub(execa, 'shell').rejects();
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},

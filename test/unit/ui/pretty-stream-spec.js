@@ -8,16 +8,14 @@ const streams = require('stream');
 const PrettyStream = require('../../../lib/ui/pretty-stream');
 
 describe('Unit: UI > PrettyStream', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('write', function () {
         it('stringifies data if data is a non-buffer object', function () {
             // Stub the prototype of the Transform class
-            const writeStub = sandbox.stub(streams.Transform.prototype, 'write');
+            const writeStub = sinon.stub(streams.Transform.prototype, 'write');
             const testObject = {foo: 'bar', baz: 'bat'};
 
             const stream = new PrettyStream();
@@ -33,7 +31,7 @@ describe('Unit: UI > PrettyStream', function () {
 
         it('passes through buffer objects without stringifying', function () {
             // Stub the prototype of the Transform class
-            const writeStub = sandbox.stub(streams.Transform.prototype, 'write');
+            const writeStub = sinon.stub(streams.Transform.prototype, 'write');
             const testBuffer = new Buffer('some test string', 'utf8');
 
             const stream = new PrettyStream();
@@ -45,7 +43,7 @@ describe('Unit: UI > PrettyStream', function () {
 
         it('passes through normal data', function () {
             // Stub the prototype of the Transform class
-            const writeStub = sandbox.stub(streams.Transform.prototype, 'write');
+            const writeStub = sinon.stub(streams.Transform.prototype, 'write');
             const testData = 'a test string';
 
             const stream = new PrettyStream();

@@ -35,15 +35,13 @@ describe('Unit: Commands > Install', function () {
     });
 
     describe('run', function () {
-        const sandbox = sinon.sandbox.create();
-
         afterEach(() => {
-            sandbox.restore();
+            sinon.restore();
         })
 
         it('creates dir and changes into it if --dir option is passed', function () {
-            const chdirStub = sandbox.stub(process, 'chdir').throws();
-            const ensureDirStub = sandbox.stub();
+            const chdirStub = sinon.stub(process, 'chdir').throws();
+            const ensureDirStub = sinon.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {ensureDirSync: ensureDirStub}
@@ -62,7 +60,7 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('rejects if directory is not empty', function () {
-            const readdirStub = sandbox.stub().returns([
+            const readdirStub = sinon.stub().returns([
                 '.ghost-cli',
                 'README.md'
             ]);
@@ -82,15 +80,15 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('calls install checks first', function () {
-            const readdirStub = sandbox.stub().returns(['ghost-cli-debug-1234.log']);
-            const listrStub = sandbox.stub().rejects();
+            const readdirStub = sinon.stub().returns(['ghost-cli-debug-1234.log']);
+            const listrStub = sinon.stub().rejects();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 './doctor': {doctorCommand: true}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {});
-            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({argv: true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
@@ -106,17 +104,17 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('runs local install when command is `ghost install local`', function () {
-            const readdirStub = sandbox.stub().returns([]);
-            const listrStub = sandbox.stub();
+            const readdirStub = sinon.stub().returns([]);
+            const listrStub = sinon.stub();
             listrStub.onFirstCall().resolves();
             listrStub.onSecondCall().rejects();
-            const setEnvironmentStub = sandbox.stub();
+            const setEnvironmentStub = sinon.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
-            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: 'local', zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
@@ -135,17 +133,17 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('runs local install when command is `ghost install <version> --local`', function () {
-            const readdirStub = sandbox.stub().returns([]);
-            const listrStub = sandbox.stub();
+            const readdirStub = sinon.stub().returns([]);
+            const listrStub = sinon.stub();
             listrStub.onFirstCall().resolves();
             listrStub.onSecondCall().rejects();
-            const setEnvironmentStub = sandbox.stub();
+            const setEnvironmentStub = sinon.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
-            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: '1.5.0', local: true, zip: ''}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
@@ -164,10 +162,10 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
-            const readdirStub = sandbox.stub().returns([]);
-            const yarnInstallStub = sandbox.stub().resolves();
-            const ensureStructureStub = sandbox.stub().resolves();
-            const listrStub = sandbox.stub().callsFake((tasks, ctx) => {
+            const readdirStub = sinon.stub().returns([]);
+            const yarnInstallStub = sinon.stub().resolves();
+            const ensureStructureStub = sinon.stub().resolves();
+            const listrStub = sinon.stub().callsFake((tasks, ctx) => {
                 return Promise.each(tasks, task => task.task(ctx, {}));
             });
 
@@ -177,8 +175,8 @@ describe('Unit: Commands > Install', function () {
                 '../tasks/ensure-structure': ensureStructureStub
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0'});
-            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
-            const versionStub = sandbox.stub(testInstance, 'version').resolves();
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
+            const versionStub = sinon.stub(testInstance, 'version').resolves();
             const linkStub = sinon.stub(testInstance, 'link').resolves();
             const casperStub = sinon.stub(testInstance, 'casper').resolves();
 
@@ -195,16 +193,16 @@ describe('Unit: Commands > Install', function () {
         });
 
         it('sets local and runs setup command if setup is true', function () {
-            const readdirStub = sandbox.stub().returns([]);
-            const listrStub = sandbox.stub().resolves();
-            const setEnvironmentStub = sandbox.stub();
+            const readdirStub = sinon.stub().returns([]);
+            const listrStub = sinon.stub().resolves();
+            const setEnvironmentStub = sinon.stub();
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},
                 './setup': {SetupCommand: true}
             });
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
-            const runCommandStub = sandbox.stub(testInstance, 'runCommand').resolves();
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: 'local', setup: true, zip: ''}).then(() => {
                 expect(readdirStub.calledOnce).to.be.true;

@@ -10,11 +10,10 @@ const check = require('../../../../../lib/commands/doctor/checks/validate-config
 const validateConfig = check.task;
 
 describe('Unit: Doctor Checks > validateConfig', function () {
-    const sandbox = sinon.sandbox.create();
     let env;
 
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
 
         if (env) {
             env.cleanup();
@@ -23,15 +22,15 @@ describe('Unit: Doctor Checks > validateConfig', function () {
     });
 
     it('skips if instance not set', function () {
-        const skipStub = sandbox.stub();
+        const skipStub = sinon.stub();
 
         validateConfig({instance: null}, {skip: skipStub});
         expect(skipStub.calledOnce).to.be.true;
     });
 
     it('skips check, when instance is currently running', function () {
-        const runningStub = sandbox.stub().resolves(true);
-        const skipStub = sandbox.stub();
+        const runningStub = sinon.stub().resolves(true);
+        const skipStub = sinon.stub();
 
         return validateConfig({instance: {running: runningStub}}, {skip: skipStub}).then(() => {
             expect(runningStub.calledOnce).to.be.true;
@@ -41,8 +40,8 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
     it('rejects if environment is passed and no config exists for that environment', function () {
         env = setupEnv();
-        const cwdStub = sandbox.stub(process, 'cwd').returns(env.dir);
-        const runningStub = sandbox.stub().resolves(false);
+        const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+        const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
@@ -60,8 +59,8 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
     it('rejects if environment is passed and the config file is not valid json', function () {
         env = setupEnv({files: [{path: 'config.testing.json', contents: 'not json'}]});
-        const cwdStub = sandbox.stub(process, 'cwd').returns(env.dir);
-        const runningStub = sandbox.stub().resolves(false);
+        const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+        const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
@@ -80,10 +79,10 @@ describe('Unit: Doctor Checks > validateConfig', function () {
     it('rejects with error if config values does not pass', function () {
         const config = {server: {port: 2368}};
         env = setupEnv({files: [{path: 'config.testing.json', content: config, json: true}]});
-        const urlStub = sandbox.stub(advancedOpts.url, 'validate').returns('Invalid URL');
-        const portStub = sandbox.stub(advancedOpts.port, 'validate').returns('Port is in use');
-        sandbox.stub(process, 'cwd').returns(env.dir);
-        const runningStub = sandbox.stub().resolves(false);
+        const urlStub = sinon.stub(advancedOpts.url, 'validate').returns('Invalid URL');
+        const portStub = sinon.stub(advancedOpts.port, 'validate').returns('Port is in use');
+        sinon.stub(process, 'cwd').returns(env.dir);
+        const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
@@ -103,10 +102,10 @@ describe('Unit: Doctor Checks > validateConfig', function () {
     it('passes if all validate functions return true', function () {
         const config = {server: {port: 2368}};
         const env = setupEnv({files: [{path: 'config.testing.json', content: config, json: true}]});
-        const urlStub = sandbox.stub(advancedOpts.url, 'validate').returns(true);
-        const portStub = sandbox.stub(advancedOpts.port, 'validate').returns(true);
-        sandbox.stub(process, 'cwd').returns(env.dir);
-        const runningStub = sandbox.stub().resolves(false);
+        const urlStub = sinon.stub(advancedOpts.url, 'validate').returns(true);
+        const portStub = sinon.stub(advancedOpts.port, 'validate').returns(true);
+        sinon.stub(process, 'cwd').returns(env.dir);
+        const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},

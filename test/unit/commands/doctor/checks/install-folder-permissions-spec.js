@@ -9,14 +9,12 @@ const errors = require('../../../../../lib/errors');
 const modulePath = '../../../../../lib/commands/doctor/checks/install-folder-permissions';
 
 describe('Unit: Doctor Checks > installFolderPermissions', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('throws error if current directory is not writable', function () {
-        const accessStub = sandbox.stub(fs, 'access').rejects();
+        const accessStub = sinon.stub(fs, 'access').rejects();
         const installFolderPermissions = require(modulePath).task;
 
         return installFolderPermissions({}).then(() => {
@@ -30,8 +28,8 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
     });
 
     it('skips checking parent folder permissions if ctx.local is set', function () {
-        const accessStub = sandbox.stub(fs, 'access').resolves();
-        const checkDirectoryStub = sandbox.stub().resolves();
+        const accessStub = sinon.stub(fs, 'access').resolves();
+        const checkDirectoryStub = sinon.stub().resolves();
         const installFolderPermissions = proxyquire(modulePath, {
             './check-directory': checkDirectoryStub
         }).task;
@@ -43,8 +41,8 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
     });
 
     it('skips checking parent folder permissions if local process manager is used', function () {
-        const accessStub = sandbox.stub(fs, 'access').resolves();
-        const checkDirectoryStub = sandbox.stub().resolves();
+        const accessStub = sinon.stub(fs, 'access').resolves();
+        const checkDirectoryStub = sinon.stub().resolves();
         const installFolderPermissions = proxyquire(modulePath, {
             './check-directory': checkDirectoryStub
         }).task;
@@ -56,8 +54,8 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
     });
 
     it('skips checking parent folder permissions if os is not linux', function () {
-        const accessStub = sandbox.stub(fs, 'access').resolves();
-        const checkDirectoryStub = sandbox.stub().resolves();
+        const accessStub = sinon.stub(fs, 'access').resolves();
+        const checkDirectoryStub = sinon.stub().resolves();
         const installFolderPermissions = proxyquire(modulePath, {
             './check-directory': checkDirectoryStub
         }).task;
@@ -71,8 +69,8 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
     });
 
     it('skips checking parent folder permissions if --no-setup-linux-user is passed', function () {
-        const accessStub = sandbox.stub(fs, 'access').resolves();
-        const checkDirectoryStub = sandbox.stub().resolves();
+        const accessStub = sinon.stub(fs, 'access').resolves();
+        const checkDirectoryStub = sinon.stub().resolves();
         const installFolderPermissions = proxyquire(modulePath, {
             './check-directory': checkDirectoryStub
         }).task;
@@ -86,8 +84,8 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
     });
 
     it('runs checkParentAndAbove if local not set and platform is linux', function () {
-        const accessStub = sandbox.stub(fs, 'access').resolves();
-        const checkDirectoryStub = sandbox.stub().resolves();
+        const accessStub = sinon.stub(fs, 'access').resolves();
+        const checkDirectoryStub = sinon.stub().resolves();
         const installFolderPermissions = proxyquire(modulePath, {
             './check-directory': checkDirectoryStub
         }).task;

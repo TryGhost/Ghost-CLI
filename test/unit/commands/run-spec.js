@@ -8,15 +8,13 @@ const modulePath = '../../../lib/commands/run';
 const errors = require('../../../lib/errors');
 
 describe('Unit: Commands > Run', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('run', function () {
         it('logs if stdin is tty', function () {
-            const logStub = sandbox.stub().throws(new Error('throw me'));
+            const logStub = sinon.stub().throws(new Error('throw me'));
             const RunCommand = require(modulePath);
             const instance = new RunCommand({log: logStub}, {});
             const oldIsTTY = process.stdin.isTTY;
@@ -35,16 +33,16 @@ describe('Unit: Commands > Run', function () {
         });
 
         it('calls useDirect if useGhostUser returns false', function () {
-            const logStub = sandbox.stub();
-            const useGhostUserStub = sandbox.stub().returns(false);
+            const logStub = sinon.stub();
+            const useGhostUserStub = sinon.stub().returns(false);
             const fakeInstance = {dir: '/var/www/ghost'};
-            const getInstanceStub = sandbox.stub().returns(fakeInstance);
+            const getInstanceStub = sinon.stub().returns(fakeInstance);
             const RunCommand = proxyquire(modulePath, {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
             const instance = new RunCommand({log: logStub}, {getInstance: getInstanceStub});
-            const useGhostUser = sandbox.stub(instance, 'useGhostUser').resolves();
-            const useDirect = sandbox.stub(instance, 'useDirect').resolves();
+            const useGhostUser = sinon.stub(instance, 'useGhostUser').resolves();
+            const useDirect = sinon.stub(instance, 'useDirect').resolves();
             const oldIsTTY = process.stdin.isTTY;
             process.stdin.isTTY = false;
 
@@ -61,16 +59,16 @@ describe('Unit: Commands > Run', function () {
         });
 
         it('calls useGhostUser if useGhostUser util returns false', function () {
-            const logStub = sandbox.stub();
-            const useGhostUserStub = sandbox.stub().returns(true);
+            const logStub = sinon.stub();
+            const useGhostUserStub = sinon.stub().returns(true);
             const fakeInstance = {dir: '/var/www/ghost'};
-            const getInstanceStub = sandbox.stub().returns(fakeInstance);
+            const getInstanceStub = sinon.stub().returns(fakeInstance);
             const RunCommand = proxyquire(modulePath, {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
             const instance = new RunCommand({log: logStub}, {getInstance: getInstanceStub});
-            const useGhostUser = sandbox.stub(instance, 'useGhostUser').resolves();
-            const useDirect = sandbox.stub(instance, 'useDirect').resolves();
+            const useGhostUser = sinon.stub(instance, 'useGhostUser').resolves();
+            const useDirect = sinon.stub(instance, 'useDirect').resolves();
             const oldIsTTY = process.stdin.isTTY;
             process.stdin.isTTY = false;
 
@@ -89,14 +87,14 @@ describe('Unit: Commands > Run', function () {
 
     it('useGhostUser spawns child process and handles events correctly', function () {
         const childStub = new EventEmitter();
-        const spawnStub = sandbox.stub().returns(childStub);
+        const spawnStub = sinon.stub().returns(childStub);
         const RunCommand = proxyquire(modulePath, {
             child_process: {spawn: spawnStub}
         });
-        const failStub = sandbox.stub();
-        const logStub = sandbox.stub()
+        const failStub = sinon.stub();
+        const logStub = sinon.stub()
         const instance = new RunCommand({fail: failStub, log: logStub}, {});
-        const exitStub = sandbox.stub(process, 'exit');
+        const exitStub = sinon.stub(process, 'exit');
 
         instance.useGhostUser({dir: '/var/www/ghost'});
 
@@ -148,15 +146,15 @@ describe('Unit: Commands > Run', function () {
         this.timeout(5000);
 
         const childStub = new EventEmitter();
-        const spawnStub = sandbox.stub().returns(childStub);
+        const spawnStub = sinon.stub().returns(childStub);
         const RunCommand = proxyquire(modulePath, {
             child_process: {spawn: spawnStub}
         });
-        const failStub = sandbox.stub();
+        const failStub = sinon.stub();
         const instance = new RunCommand({fail: failStub}, {});
-        const successStub = sandbox.stub();
-        const errorStub = sandbox.stub();
-        const exitStub = sandbox.stub(process, 'exit');
+        const successStub = sinon.stub();
+        const errorStub = sinon.stub();
+        const exitStub = sinon.stub(process, 'exit');
 
         instance.useDirect({dir: '/var/www/ghost', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
 
@@ -215,7 +213,7 @@ describe('Unit: Commands > Run', function () {
             const instance = new RunCommand({}, {});
             const err = new Error();
             err.code = 'EPERM';
-            const killStub = sandbox.stub().throws(err);
+            const killStub = sinon.stub().throws(err);
             instance.child = {kill: killStub};
             instance.sudo = true;
 
@@ -227,7 +225,7 @@ describe('Unit: Commands > Run', function () {
             const instance = new RunCommand({}, {});
             const err = new Error();
             err.code = 'EPERM';
-            const killStub = sandbox.stub().throws(err);
+            const killStub = sinon.stub().throws(err);
             instance.child = {kill: killStub};
             instance.sudo = false;
 
@@ -245,7 +243,7 @@ describe('Unit: Commands > Run', function () {
             const instance = new RunCommand({}, {});
             const err = new Error('yikes');
             err.code = 'ENOTFOUND';
-            const killStub = sandbox.stub().throws(err);
+            const killStub = sinon.stub().throws(err);
             instance.child = {kill: killStub};
             instance.sudo = true;
 

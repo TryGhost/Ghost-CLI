@@ -7,18 +7,16 @@ const checkValidInstall = require('../../../lib/utils/check-valid-install');
 const fs = require('fs-extra');
 
 describe('Unit: Utils > checkValidInstall', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     })
 
     it('throws error if config.js present', function () {
-        const existsStub = sandbox.stub(fs, 'existsSync');
+        const existsStub = sinon.stub(fs, 'existsSync');
         existsStub.withArgs(sinon.match(/config\.js/)).returns(true);
 
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         try {
             checkValidInstall('test');
@@ -34,16 +32,16 @@ describe('Unit: Utils > checkValidInstall', function () {
     });
 
     it('throws error if within a Ghost git clone', function () {
-        const existsStub = sandbox.stub(fs, 'existsSync');
-        const readJsonStub = sandbox.stub(fs, 'readJsonSync');
+        const existsStub = sinon.stub(fs, 'existsSync');
+        const readJsonStub = sinon.stub(fs, 'readJsonSync');
 
         existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
         existsStub.withArgs(sinon.match(/package\.json/)).returns(true);
         existsStub.withArgs(sinon.match(/Gruntfile\.js/)).returns(true);
         readJsonStub.returns({name: 'ghost'});
 
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         try {
             checkValidInstall('test');
@@ -59,14 +57,14 @@ describe('Unit: Utils > checkValidInstall', function () {
     });
 
     it('throws error if above two conditions don\'t exit and .ghost-cli file is missing', function () {
-        const existsStub = sandbox.stub(fs, 'existsSync');
+        const existsStub = sinon.stub(fs, 'existsSync');
 
         existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
         existsStub.withArgs(sinon.match(/package\.json/)).returns(false);
         existsStub.withArgs(sinon.match(/\.ghost-cli/)).returns(false);
 
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         try {
             checkValidInstall('test');
@@ -82,14 +80,14 @@ describe('Unit: Utils > checkValidInstall', function () {
     });
 
     it('doesn\'t do anything if all conditions return false', function () {
-        const existsStub = sandbox.stub(fs, 'existsSync');
+        const existsStub = sinon.stub(fs, 'existsSync');
 
         existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
         existsStub.withArgs(sinon.match(/package\.json/)).returns(false);
         existsStub.withArgs(sinon.match(/\.ghost-cli/)).returns(true);
 
-        const exitStub = sandbox.stub(process, 'exit').throws();
-        const errorStub = sandbox.stub(console, 'error');
+        const exitStub = sinon.stub(process, 'exit').throws();
+        const errorStub = sinon.stub(console, 'error');
 
         checkValidInstall('test');
         expect(existsStub.calledThrice).to.be.true;

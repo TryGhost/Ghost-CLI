@@ -15,10 +15,8 @@ const Renderer = require('../../../lib/ui/renderer');
 const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('constructor', function () {
@@ -67,12 +65,12 @@ describe('Unit: UI', function () {
 
     describe('run', function () {
         const spinner = {
-            succeed: sandbox.stub(),
-            fail: sandbox.stub()
+            succeed: sinon.stub(),
+            fail: sinon.stub()
         };
 
-        const startStub = sandbox.stub().returns(spinner);
-        const oraStub = sandbox.stub().returns({start: startStub});
+        const startStub = sinon.stub().returns(spinner);
+        const oraStub = sinon.stub().returns({start: startStub});
         const UI = proxyquire(modulePath, {
             ora: oraStub
         });
@@ -95,7 +93,7 @@ describe('Unit: UI', function () {
 
         it('with quiet enabled, resolves the result of a function', function () {
             const ui = new UI();
-            const testFunc = sandbox.stub().resolves('foo');
+            const testFunc = sinon.stub().resolves('foo');
 
             return ui.run(testFunc, null, {quiet: true}).then((result) => {
                 expect(result).to.equal('foo');
@@ -105,7 +103,7 @@ describe('Unit: UI', function () {
 
         it('with quiet enabled, passes through rejection', function (done) {
             const ui = new UI();
-            const testFunc = sandbox.stub().rejects(new Error('something went wrong!'));
+            const testFunc = sinon.stub().rejects(new Error('something went wrong!'));
 
             ui.run(testFunc, null, {quiet: true}).then(() => {
                 done(new Error('then should not be called'));
@@ -137,7 +135,7 @@ describe('Unit: UI', function () {
 
         it('starts spinner with options, resolves function', function () {
             const ui = new UI({stdout: {stdout: true}});
-            const testFunc = sandbox.stub().resolves('foo');
+            const testFunc = sinon.stub().resolves('foo');
 
             return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots'}).then((result) => {
                 expect(result).to.equal('foo');
@@ -156,7 +154,7 @@ describe('Unit: UI', function () {
 
         it('starts spinner with options, handles rejection', function (done) {
             const ui = new UI({stdout: {stdout: true}});
-            const testFunc = sandbox.stub().rejects(new Error('something went wrong!'));
+            const testFunc = sinon.stub().rejects(new Error('something went wrong!'));
 
             ui.run(testFunc, 'test').then(() => {
                 done(new Error('then should not be called'));
@@ -182,7 +180,7 @@ describe('Unit: UI', function () {
     it('table creates a pretty looking table', function () {
         const UI = require(modulePath);
         const ui = new UI();
-        const logStub = sandbox.stub(ui, 'log');
+        const logStub = sinon.stub(ui, 'log');
         const expectTable = [
             '┌───┬───┬───┐',
             '│ a │ b │ c │',
@@ -210,7 +208,7 @@ describe('Unit: UI', function () {
         it('fails when prompting is disabled', function (done) {
             const ui = new UI();
             ui.allowPrompt = false;
-            const noSpinStub = sandbox.stub(ui, 'noSpin');
+            const noSpinStub = sinon.stub(ui, 'noSpin');
 
             try {
                 ui.prompt({
@@ -229,8 +227,8 @@ describe('Unit: UI', function () {
         it('passes options to prompt method', function () {
             const ui = new UI();
             ui.allowPrompt = true;
-            const noSpinStub = sandbox.stub(ui, 'noSpin').callsFake((fn) => fn());
-            const inquirerStub = sandbox.stub(ui, 'inquirer').resolves();
+            const noSpinStub = sinon.stub(ui, 'noSpin').callsFake((fn) => fn());
+            const inquirerStub = sinon.stub(ui, 'inquirer').resolves();
 
             const prompt = {
                 name: 'test',
@@ -251,7 +249,7 @@ describe('Unit: UI', function () {
 
         it('returns default answer if allowPrompt is false', function () {
             const ui = new UI();
-            const promptStub = sandbox.stub(ui, 'prompt').resolves({yes: true});
+            const promptStub = sinon.stub(ui, 'prompt').resolves({yes: true});
             ui.allowPrompt = false;
 
             return ui.confirm('Some question', false).then((result) => {
@@ -262,7 +260,7 @@ describe('Unit: UI', function () {
 
         it('calls prompt and returns result if allowPrompt is true', function () {
             const ui = new UI();
-            const promptStub = sandbox.stub(ui, 'prompt');
+            const promptStub = sinon.stub(ui, 'prompt');
             promptStub.onFirstCall().resolves({yes: true});
             promptStub.onSecondCall().resolves({yes: false});
             ui.allowPrompt = true;
@@ -296,8 +294,8 @@ describe('Unit: UI', function () {
 
     describe('listr', function () {
         it('passes tasks to constructor', function () {
-            const runStub = sandbox.stub().resolves();
-            const ListrStub = sandbox.stub().returns({run: runStub});
+            const runStub = sinon.stub().resolves();
+            const ListrStub = sinon.stub().returns({run: runStub});
             const UI = proxyquire(modulePath, {listr: ListrStub});
             const ui = new UI();
             const tasks = ['test','ing','is','necessary'];
@@ -316,8 +314,8 @@ describe('Unit: UI', function () {
         });
 
         it('sets verbose renderer', function () {
-            const runStub = sandbox.stub().resolves();
-            const ListrStub = sandbox.stub().returns({run: runStub});
+            const runStub = sinon.stub().resolves();
+            const ListrStub = sinon.stub().returns({run: runStub});
             const UI = proxyquire(modulePath, {listr: ListrStub});
             const ui = new UI({verbose: true});
             const tasks = ['test','ing','is','necessary'];
@@ -338,8 +336,8 @@ describe('Unit: UI', function () {
         });
 
         it('returns listr instance if context is false', function () {
-            const runStub = sandbox.stub().resolves();
-            const ListrStub = sandbox.stub().returns({run: runStub});
+            const runStub = sinon.stub().resolves();
+            const ListrStub = sinon.stub().returns({run: runStub});
             const UI = proxyquire(modulePath, {listr: ListrStub});
             const ui = new UI();
             const tasks = ['test','ing','is','necessary'];
@@ -359,11 +357,11 @@ describe('Unit: UI', function () {
         const UI = require(modulePath);
 
         it('runs a sudo command', function (done) {
-            const shellStub = sandbox.stub(execa, 'shell');
+            const shellStub = sinon.stub(execa, 'shell');
             const ui = new UI();
 
-            const logStub = sandbox.stub(ui, 'log');
-            const promptStub = sandbox.stub(ui, 'prompt').resolves({password: 'password'});
+            const logStub = sinon.stub(ui, 'log');
+            const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
             const stderr = new EventEmitter();
 
             const eCall = new RegExp(`sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`);
@@ -388,11 +386,11 @@ describe('Unit: UI', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};
 
-            const shellStub = sandbox.stub(execa, 'shell').returns(shell);
+            const shellStub = sinon.stub(execa, 'shell').returns(shell);
             const ui = new UI();
 
-            sandbox.stub(ui, 'log').returns(true);
-            sandbox.stub(ui, 'prompt');
+            sinon.stub(ui, 'log').returns(true);
+            sinon.stub(ui, 'prompt');
 
             return ui.sudo('echo').then(() => {
                 expect(shellStub.calledOnce).to.be.true;
@@ -407,13 +405,13 @@ describe('Unit: UI', function () {
         it('stops and later starts an existing spinner', function () {
             const ui = new UI();
             const spinner = {
-                stop: sandbox.stub(),
-                start: sandbox.stub(),
+                stop: sinon.stub(),
+                start: sinon.stub(),
                 paused: false
             };
             ui.spinner = spinner;
 
-            const callback = sandbox.stub().returns('Pancakes');
+            const callback = sinon.stub().returns('Pancakes');
 
             return ui.noSpin(callback).then(function (ret) {
                 expect(ret).to.equal('Pancakes');
@@ -465,8 +463,8 @@ describe('Unit: UI', function () {
         });
 
         it('outputs message to proper stream', function () {
-            const stdout = {write: sandbox.stub()};
-            const stderr = {write: sandbox.stub()};
+            const stdout = {write: sinon.stub()};
+            const stderr = {write: sinon.stub()};
 
             const ui = new UI({stdout: stdout, stderr: stderr});
 
@@ -480,12 +478,12 @@ describe('Unit: UI', function () {
         });
 
         it('resets spinner', function () {
-            const stdout = {write: sandbox.stub()};
+            const stdout = {write: sinon.stub()};
             const ui = new UI({stdout: stdout});
             const spinner = {
-                stop: sandbox.stub(),
+                stop: sinon.stub(),
                 paused: false,
-                start: sandbox.stub()
+                start: sinon.stub()
             };
             ui.spinner = spinner;
 
@@ -507,7 +505,7 @@ describe('Unit: UI', function () {
 
         it('passes through options to log method when verbose is set', function () {
             const ui = new UI({verbose: true});
-            const logStub = sandbox.stub(ui, 'log');
+            const logStub = sinon.stub(ui, 'log');
 
             ui.logVerbose('foo', 'green', true);
             expect(logStub.calledOnce).to.be.true;
@@ -516,7 +514,7 @@ describe('Unit: UI', function () {
 
         it('does not call log when verbose is false', function () {
             const ui = new UI({verbose: false});
-            const logStub = sandbox.stub(ui, 'log');
+            const logStub = sinon.stub(ui, 'log');
 
             ui.logVerbose('foo', 'green', false);
             expect(logStub.called).to.be.false;
@@ -558,9 +556,9 @@ describe('Unit: UI', function () {
         describe('handles cliError', function () {
             it('verbose', function () {
                 const ui = new UI({verbose: true});
-                const system = {writeErrorLog: sandbox.stub()};
-                const log = sandbox.stub(ui, 'log');
-                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
+                const system = {writeErrorLog: sinon.stub()};
+                const log = sinon.stub(ui, 'log');
+                const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
 
                 const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
 
@@ -584,9 +582,9 @@ describe('Unit: UI', function () {
 
             it('non-verbose', function () {
                 const ui = new UI({verbose: false});
-                const system = {writeErrorLog: sandbox.stub()};
-                const log = sandbox.stub(ui, 'log');
-                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
+                const system = {writeErrorLog: sinon.stub()};
+                const log = sinon.stub(ui, 'log');
+                const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
 
                 const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
 
@@ -623,10 +621,10 @@ describe('Unit: UI', function () {
                 ];
 
                 const ui = new UI({verbose: true});
-                const log = sandbox.stub(ui, 'log');
-                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
+                const log = sinon.stub(ui, 'log');
+                const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
 
-                const system = {writeErrorLog: sandbox.stub()};
+                const system = {writeErrorLog: sinon.stub()};
 
                 ui.error(err, system);
 
@@ -654,9 +652,9 @@ describe('Unit: UI', function () {
                 ];
 
                 const ui = new UI({verbose: false});
-                const log = sandbox.stub(ui, 'log');
-                const formatDebug = sandbox.stub(ui, '_formatDebug').returns('cherries');
-                const system = {writeErrorLog: sandbox.stub()};
+                const log = sinon.stub(ui, 'log');
+                const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
+                const system = {writeErrorLog: sinon.stub()};
 
                 ui.error(err, system);
 
@@ -678,9 +676,9 @@ describe('Unit: UI', function () {
         describe('handles generic errors', function () {
             it('verbosly', function () {
                 const ui = new UI({verbose: true});
-                const log = sandbox.stub(ui, 'log');
-                const formatDebug = sandbox.stub(ui, '_formatDebug');
-                const system = {writeErrorLog: sandbox.stub()};
+                const log = sinon.stub(ui, 'log');
+                const formatDebug = sinon.stub(ui, '_formatDebug');
+                const system = {writeErrorLog: sinon.stub()};
                 const errs = [new Error('Error 1'), new Error('Error 2'), new Error('Error 3'), new Error('Error 4')];
                 errs[0].code = 404;
                 errs[1].path = '/var/www/ghost/index.js';
@@ -709,9 +707,9 @@ describe('Unit: UI', function () {
 
             it('non-verbose', function () {
                 const ui = new UI({verbose: false});
-                const log = sandbox.stub(ui, 'log');
-                const formatDebug = sandbox.stub(ui, '_formatDebug');
-                const system = {writeErrorLog: sandbox.stub()};
+                const log = sinon.stub(ui, 'log');
+                const formatDebug = sinon.stub(ui, '_formatDebug');
+                const system = {writeErrorLog: sinon.stub()};
                 const err = new Error('!!!error!!!');
                 const expectedError = `An error occurred.\nMessage: '${err.message}'\n\n`.split('\n');
 
@@ -729,8 +727,8 @@ describe('Unit: UI', function () {
 
         it('handles objects', function () {
             const ui = new UI();
-            const log = sandbox.stub(ui, 'log');
-            const formatDebug = sandbox.stub(ui, '_formatDebug');
+            const log = sinon.stub(ui, 'log');
+            const formatDebug = sinon.stub(ui, '_formatDebug');
             const testError = {
                 him: 'her',
                 this: 'that',
@@ -749,8 +747,8 @@ describe('Unit: UI', function () {
 
         it('handles strings', function () {
             const ui = new UI();
-            const log = sandbox.stub(ui, 'log');
-            const formatDebug = sandbox.stub(ui, '_formatDebug');
+            const log = sinon.stub(ui, 'log');
+            const formatDebug = sinon.stub(ui, '_formatDebug');
             ui.error('That\'s a known issue');
 
             expect(formatDebug.calledOnce).to.be.true;
@@ -762,8 +760,8 @@ describe('Unit: UI', function () {
 
         it('works with false', function () {
             const ui = new UI();
-            const log = sandbox.stub(ui, 'log');
-            const formatDebug = sandbox.stub(ui, '_formatDebug');
+            const log = sinon.stub(ui, 'log');
+            const formatDebug = sinon.stub(ui, '_formatDebug');
             ui.error(false);
             expect(log.called).to.be.false;
             expect(formatDebug.calledOnce).to.be.true;

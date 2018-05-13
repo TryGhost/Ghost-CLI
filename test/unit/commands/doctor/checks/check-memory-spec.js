@@ -8,10 +8,8 @@ const errors = require('../../../../../lib/errors');
 const modulePath = '../../../../../lib/commands/doctor/checks/check-memory';
 
 describe('Unit: Doctor Checks > Memory', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('exports proper task', function () {
@@ -35,7 +33,7 @@ describe('Unit: Doctor Checks > Memory', function () {
     });
 
     it('uses systeminformation to determine memory availability', function () {
-        const memStub = sandbox.stub(sysinfo, 'mem').rejects(new Error('systeminformation'));
+        const memStub = sinon.stub(sysinfo, 'mem').rejects(new Error('systeminformation'));
         const memCheck = require(modulePath);
 
         return memCheck.task().catch(error => {
@@ -46,7 +44,7 @@ describe('Unit: Doctor Checks > Memory', function () {
     });
 
     it('fails if not enough memory is available', function () {
-        const memStub = sandbox.stub(sysinfo, 'mem').resolves({available: 10});
+        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 10});
         const memCheck = require(modulePath);
 
         return memCheck.task().catch((error) => {
@@ -57,7 +55,7 @@ describe('Unit: Doctor Checks > Memory', function () {
     });
 
     it('passes if there is enough memory', function () {
-        const memStub = sandbox.stub(sysinfo, 'mem').resolves({available: 157286400});
+        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 157286400});
         const memCheck = require(modulePath);
 
         return memCheck.task().then(() => {

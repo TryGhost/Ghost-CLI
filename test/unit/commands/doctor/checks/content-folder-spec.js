@@ -8,11 +8,10 @@ const errors = require('../../../../../lib/errors');
 const contentFolderPermissions = require('../../../../../lib/commands/doctor/checks/content-folder');
 
 describe('Unit: Doctor Checks > Checking content folder ownership', function () {
-    const sandbox = sinon.sandbox.create();
     const shouldUseGhostUserStub = sinon.stub();
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('exports tasks', function () {
@@ -26,7 +25,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
 
     it('skips when content folder is not owned by ghost', function () {
         shouldUseGhostUserStub.returns(false);
-        const execaStub = sandbox.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub(execa, 'shell').resolves();
 
         expect(contentFolderPermissions).to.exist;
         expect(contentFolderPermissions.enabled(), 'skips if no Ghost user should be used').to.be.false;
@@ -34,7 +33,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if folders have incorrect permissions', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: './content/images\n./content/apps\n./content/themes'});
+        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: './content/images\n./content/apps\n./content/themes'});
 
         shouldUseGhostUserStub.returns(true);
 
@@ -50,7 +49,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if files have incorrect permissions', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: './content/images/test.jpg'});
+        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: './content/images/test.jpg'});
 
         shouldUseGhostUserStub.returns(true);
 
@@ -66,7 +65,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('passes if all folders have the correct permissions', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: ''});
+        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: ''});
 
         shouldUseGhostUserStub.returns(true);
 
@@ -76,7 +75,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if execa command fails', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
+        const execaStub = sinon.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
 
         shouldUseGhostUserStub.returns(true);
 

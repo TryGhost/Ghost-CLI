@@ -6,6 +6,10 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../../lib/command';
 
 describe('Unit: Command', function () {
+    afterEach(() => {
+        sinon.restore();
+    });
+
     describe('configure', function () {
         const Command = require(modulePath);
 
@@ -167,14 +171,8 @@ describe('Unit: Command', function () {
     });
 
     describe('_run', function () {
-        const sandbox = sinon.sandbox.create();
-
-        afterEach(function () {
-            sandbox.restore();
-        });
-
         it('calls checkValidInstall when global option is not set', function () {
-            const checkValidInstall = sandbox.stub();
+            const checkValidInstall = sinon.stub();
             const Command = proxyquire(modulePath, {
                 './utils/check-valid-install': checkValidInstall
             });
@@ -193,7 +191,7 @@ describe('Unit: Command', function () {
         });
 
         it('will not run command when executed as root user', function () {
-            const checkRootUserStub = sandbox.stub();
+            const checkRootUserStub = sinon.stub();
             const Command = proxyquire(modulePath, {
                 './utils/check-root-user': checkRootUserStub
             });
@@ -212,7 +210,7 @@ describe('Unit: Command', function () {
         });
 
         it('doesn\'t check for root when command allows root', function () {
-            const checkRootUserStub = sandbox.stub().throws('let them be freeee');
+            const checkRootUserStub = sinon.stub().throws('let them be freeee');
             class ShortCircuit {
                 constructor() {
                     throw new Error('you shall not pass');
@@ -237,9 +235,9 @@ describe('Unit: Command', function () {
         });
 
         it('loads system and ui dependencies, calls run method', function () {
-            const uiStub = sandbox.stub().returns({ui: true});
-            const setEnvironmentStub = sandbox.stub();
-            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const uiStub = sinon.stub().returns({ui: true});
+            const setEnvironmentStub = sinon.stub();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -249,7 +247,7 @@ describe('Unit: Command', function () {
             class TestCommand extends Command {}
             TestCommand.global = true;
 
-            const runStub = sandbox.stub(TestCommand.prototype, 'run');
+            const runStub = sinon.stub(TestCommand.prototype, 'run');
 
             return TestCommand._run('test', {
                 verbose: true,
@@ -271,9 +269,9 @@ describe('Unit: Command', function () {
         });
 
         it('binds cleanup handler if cleanup method is defined', function () {
-            const uiStub = sandbox.stub().returns({ui: true});
-            const setEnvironmentStub = sandbox.stub();
-            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const uiStub = sinon.stub().returns({ui: true});
+            const setEnvironmentStub = sinon.stub();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -285,8 +283,8 @@ describe('Unit: Command', function () {
             }
             TestCommand.global = true;
 
-            const runStub = sandbox.stub(TestCommand.prototype, 'run');
-            const onStub = sandbox.stub(process, 'on').returnsThis();
+            const runStub = sinon.stub(TestCommand.prototype, 'run');
+            const onStub = sinon.stub(process, 'on').returnsThis();
             const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
@@ -315,10 +313,10 @@ describe('Unit: Command', function () {
         });
 
         it('runs updateCheck if checkVersion property is true on command class', function () {
-            const uiStub = sandbox.stub().returns({ui: true});
-            const setEnvironmentStub = sandbox.stub();
-            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
-            const updateCheckStub = sandbox.stub().resolves();
+            const uiStub = sinon.stub().returns({ui: true});
+            const setEnvironmentStub = sinon.stub();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
+            const updateCheckStub = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -330,7 +328,7 @@ describe('Unit: Command', function () {
             TestCommand.global = true;
             TestCommand.checkVersion = true;
 
-            const runStub = sandbox.stub(TestCommand.prototype, 'run');
+            const runStub = sinon.stub(TestCommand.prototype, 'run');
             const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
@@ -358,10 +356,10 @@ describe('Unit: Command', function () {
         });
 
         it('catches errors, passes them to ui error method, then exits', function () {
-            const errorStub = sandbox.stub();
-            const uiStub = sandbox.stub().returns({error: errorStub});
-            const setEnvironmentStub = sandbox.stub();
-            const systemStub = sandbox.stub().returns({setEnvironment: setEnvironmentStub});
+            const errorStub = sinon.stub();
+            const uiStub = sinon.stub().returns({error: errorStub});
+            const setEnvironmentStub = sinon.stub();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -375,10 +373,10 @@ describe('Unit: Command', function () {
             }
             TestCommand.global = true;
 
-            const runStub = sandbox.spy(TestCommand.prototype, 'run');
+            const runStub = sinon.spy(TestCommand.prototype, 'run');
             const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'production';
-            const exitStub = sandbox.stub(process, 'exit');
+            const exitStub = sinon.stub(process, 'exit');
 
             return TestCommand._run('test', {
                 verbose: false,

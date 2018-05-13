@@ -8,10 +8,8 @@ const errors = require('../../../../../lib/errors');
 const systemStack = require('../../../../../lib/commands/doctor/checks/system-stack');
 
 describe('Unit: Doctor Checks > systemStack', function () {
-    const sandbox = sinon.sandbox.create();
-
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('enabled works', function () {
@@ -32,9 +30,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('rejects if platform is not linux', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
+        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -55,10 +53,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('does not reject if confirm resolves with true', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(true);
-        const skipStub = sandbox.stub();
+        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(true);
+        const skipStub = sinon.stub();
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -76,9 +74,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('rejects if lsb_release command does not exist', function () {
-        const execaStub = sandbox.stub(execa, 'shell').rejects();
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
+        const execaStub = sinon.stub(execa, 'shell').rejects();
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -99,9 +97,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('rejects if lsb_release command does not return Ubuntu 16', function () {
-        const execaStub = sandbox.stub(execa, 'shell').resolves({stdout: 'Ubuntu 14'});
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
+        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: 'Ubuntu 14'});
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
 
         const ctx = {
             ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
@@ -122,10 +120,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('groups missing rejected promises for systemd and nginx', function () {
-        const execaStub = sandbox.stub(execa, 'shell');
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
-        const listrStub = sandbox.stub().rejects({
+        const execaStub = sinon.stub(execa, 'shell');
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
+        const listrStub = sinon.stub().rejects({
             errors: [{missing: 'systemd'}, {missing: 'nginx'}]
         });
 
@@ -152,15 +150,15 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('nginx and systemd checks reject correctly', function () {
-        const execaStub = sandbox.stub(execa, 'shell');
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
+        const execaStub = sinon.stub(execa, 'shell');
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
 
         execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
         execaStub.withArgs('dpkg -l | grep nginx').rejects();
         execaStub.withArgs('dpkg -l | grep systemd').rejects();
 
-        const listrStub = sandbox.stub().callsFake(function (tasks, ctx, opts) {
+        const listrStub = sinon.stub().callsFake(function (tasks, ctx, opts) {
             expect(opts.renderer).to.equal('verbose');
 
             const systemdCheck = tasks.find(task => task.title.match(/systemd/));
@@ -202,9 +200,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('resolves if all stack conditions are met', function () {
-        const execaStub = sandbox.stub(execa, 'shell');
-        const logStub = sandbox.stub();
-        const confirmStub = sandbox.stub().resolves(false);
+        const execaStub = sinon.stub(execa, 'shell');
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
 
         execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
         const listrStub = sinon.stub().resolves();

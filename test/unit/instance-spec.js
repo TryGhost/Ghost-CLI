@@ -11,14 +11,8 @@ const Config = require('../../lib/utils/config');
 const ProcessManager = require('../../lib/process-manager');
 
 describe('Unit: Instance', function () {
-    let sandbox;
-
-    before(function () {
-        sandbox = sinon.sandbox.create();
-    });
-
     afterEach(function () {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('cliConfig getter', function () {
@@ -46,7 +40,7 @@ describe('Unit: Instance', function () {
 
     describe('name getter', function () {
         it('returns name value in cliConfig if it exists', function () {
-            const getStub = sandbox.stub().withArgs('name').returns('testing');
+            const getStub = sinon.stub().withArgs('name').returns('testing');
             class TestInstance extends Instance {
                 get cliConfig() { return {get: getStub} }
             }
@@ -58,8 +52,8 @@ describe('Unit: Instance', function () {
         });
 
         it('looks for value in environment config if cliConfig value doesn\'t exist', function () {
-            const cliConfigGetStub = sandbox.stub().withArgs('name').returns(null);
-            const configGetStub = sandbox.stub().withArgs('pname').returns('testing');
+            const cliConfigGetStub = sinon.stub().withArgs('name').returns(null);
+            const configGetStub = sinon.stub().withArgs('pname').returns('testing');
             class TestInstance extends Instance {
                 get cliConfig() { return {get: cliConfigGetStub}; }
                 get config() { return {get: configGetStub}; }
@@ -75,8 +69,8 @@ describe('Unit: Instance', function () {
 
     describe('name setter', function () {
         it('sets name into cliConfig and saves it', function () {
-            const setStub = sandbox.stub().withArgs('name', 'testing').returnsThis();
-            const saveStub = sandbox.stub().returnsThis();
+            const setStub = sinon.stub().withArgs('name', 'testing').returnsThis();
+            const saveStub = sinon.stub().returnsThis();
             class TestInstance extends Instance {
                 get cliConfig() { return {set: setStub, save: saveStub} }
             }
@@ -126,7 +120,7 @@ describe('Unit: Instance', function () {
 
     describe('process getter', function () {
         it('returns cached process instance if it exists', function () {
-            const getStub = sandbox.stub().withArgs('process', 'local').returns('local');
+            const getStub = sinon.stub().withArgs('process', 'local').returns('local');
             class TestInstance extends Instance {
                 get config() { return {get: getStub}; }
             }
@@ -144,8 +138,8 @@ describe('Unit: Instance', function () {
         });
 
         it('loads new instance if cached one is available but the name is different', function () {
-            const getStub = sandbox.stub().withArgs('process', 'local').returns('local');
-            const procManagerStub = sandbox.stub().withArgs('local').returns({Class: ProcessManager});
+            const getStub = sinon.stub().withArgs('process', 'local').returns('local');
+            const procManagerStub = sinon.stub().withArgs('local').returns({Class: ProcessManager});
             class TestInstance extends Instance {
                 get config() { return {get: getStub}; }
             }
@@ -171,8 +165,8 @@ describe('Unit: Instance', function () {
 
     describe('running', function () {
         it('sets running property in cliConfig', function () {
-            const setStub = sandbox.stub().withArgs('running', 'testing').returnsThis();
-            const saveStub = sandbox.stub();
+            const setStub = sinon.stub().withArgs('running', 'testing').returnsThis();
+            const saveStub = sinon.stub();
             class TestInstance extends Instance {
                 get cliConfig() { return {set: setStub, save: saveStub}; }
             }
@@ -185,13 +179,13 @@ describe('Unit: Instance', function () {
         });
 
         it('returns false if running property not set in config & neither config exists', function () {
-            const hasStub = sandbox.stub().withArgs('running').returns(false);
+            const hasStub = sinon.stub().withArgs('running').returns(false);
             class TestInstance extends Instance {
                 get cliConfig() { return {has: hasStub} }
             }
-            const setEnvironmentStub = sandbox.stub();
+            const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {development: true, setEnvironment: setEnvironmentStub}, '');
-            const existsStub = sandbox.stub(Config, 'exists').returns(false);
+            const existsStub = sinon.stub(Config, 'exists').returns(false);
 
             return testInstance.running().then((running) => {
                 expect(running).to.be.false;
@@ -204,14 +198,14 @@ describe('Unit: Instance', function () {
 
         it('queries process manager in production if running not set and prod config exists', function () {
             const configStub = createConfigStub();
-            const isRunningStub = sandbox.stub().returns(true);
+            const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
                 get cliConfig() { return configStub; }
                 get process() { return {isRunning: isRunningStub}; }
             }
 
-            const existsStub = sandbox.stub(Config, 'exists').returns(true);
-            const setEnvironmentStub = sandbox.stub();
+            const existsStub = sinon.stub(Config, 'exists').returns(true);
+            const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
 
             return testInstance.running().then((running) => {
@@ -228,14 +222,14 @@ describe('Unit: Instance', function () {
 
         it('queries process manager in dev if prod config not exists and dev config does', function () {
             const configStub = createConfigStub();
-            const isRunningStub = sandbox.stub().returns(true);
+            const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
                 get cliConfig() { return configStub; }
                 get process() { return {isRunning: isRunningStub}; }
             }
 
-            const existsStub = sandbox.stub(Config, 'exists');
-            const setEnvironmentStub = sandbox.stub();
+            const existsStub = sinon.stub(Config, 'exists');
+            const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
 
             existsStub.onFirstCall().returns(false);
@@ -256,7 +250,7 @@ describe('Unit: Instance', function () {
 
         it('queries process manager in dev if not running in prod and dev config exists', function () {
             const configStub = createConfigStub();
-            const isRunningStub = sandbox.stub();
+            const isRunningStub = sinon.stub();
             isRunningStub.onFirstCall().returns(false);
             isRunningStub.onSecondCall().returns(true);
             class TestInstance extends Instance {
@@ -264,8 +258,8 @@ describe('Unit: Instance', function () {
                 get process() { return {isRunning: isRunningStub}; }
             }
 
-            const existsStub = sandbox.stub(Config, 'exists').returns(true);
-            const setEnvironmentStub = sandbox.stub();
+            const existsStub = sinon.stub(Config, 'exists').returns(true);
+            const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
 
             return testInstance.running().then((running) => {
@@ -283,14 +277,14 @@ describe('Unit: Instance', function () {
 
         it('returns false if ghost isn\'t running in either environment', function () {
             const configStub = createConfigStub();
-            const isRunningStub = sandbox.stub().returns(false);
+            const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
                 get cliConfig() { return configStub; }
                 get process() { return {isRunning: isRunningStub}; }
             }
 
-            const existsStub = sandbox.stub(Config, 'exists').returns(true);
-            const setEnvironmentStub = sandbox.stub();
+            const existsStub = sinon.stub(Config, 'exists').returns(true);
+            const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub, development: false}, '/var/www/ghost');
 
             return testInstance.running().then((running) => {
@@ -308,14 +302,14 @@ describe('Unit: Instance', function () {
         });
 
         it('loads running environment and checks if process manager returns false', function () {
-            const hasStub = sandbox.stub().withArgs('running').returns(true);
-            const isRunningStub = sandbox.stub().returns(true);
+            const hasStub = sinon.stub().withArgs('running').returns(true);
+            const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
                 get cliConfig() { return {has: hasStub}; }
                 get process() { return {isRunning: isRunningStub} }
             }
             const testInstance = new TestInstance({}, {}, '');
-            const loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
+            const loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
 
             return testInstance.running().then((running) => {
                 expect(running).to.be.true;
@@ -326,16 +320,16 @@ describe('Unit: Instance', function () {
         });
 
         it('sets running to null in cliConfig if process manager\'s isRunning method returns false', function () {
-            const hasStub = sandbox.stub().withArgs('running').returns(true);
-            const setStub = sandbox.stub().withArgs('running', null).returnsThis();
-            const saveStub = sandbox.stub().returnsThis();
-            const isRunningStub = sandbox.stub().returns(false);
+            const hasStub = sinon.stub().withArgs('running').returns(true);
+            const setStub = sinon.stub().withArgs('running', null).returnsThis();
+            const saveStub = sinon.stub().returnsThis();
+            const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
                 get cliConfig() { return {has: hasStub, set: setStub, save: saveStub}; }
                 get process() { return {isRunning: isRunningStub}; }
             }
             const testInstance = new TestInstance({}, {}, '');
-            const loadRunEnvStub = sandbox.stub(testInstance, 'loadRunningEnvironment');
+            const loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
 
             return testInstance.running().then((running) => {
                 expect(running).to.be.false;
@@ -350,8 +344,8 @@ describe('Unit: Instance', function () {
 
     describe('checkEnvironment', function () {
         it('doesn\'t do anything if environment is not production', function () {
-            const logStub = sandbox.stub();
-            const environmentStub = sandbox.stub();
+            const logStub = sinon.stub();
+            const environmentStub = sinon.stub();
             const testInstance = new Instance({log: logStub}, {
                 setEnvironment: environmentStub,
                 production: false,
@@ -364,9 +358,9 @@ describe('Unit: Instance', function () {
         });
 
         it('doesn\'t do anything if config.development.json doesn\'t exist', function () {
-            const logStub = sandbox.stub();
-            const environmentStub = sandbox.stub();
-            const existsStub = sandbox.stub(Config, 'exists').withArgs('/path/config.development.json').returns(false);
+            const logStub = sinon.stub();
+            const environmentStub = sinon.stub();
+            const existsStub = sinon.stub(Config, 'exists').withArgs('/path/config.development.json').returns(false);
             const testInstance = new Instance({log: logStub}, {
                 setEnvironment: environmentStub,
                 production: true,
@@ -380,9 +374,9 @@ describe('Unit: Instance', function () {
         });
 
         it('logs and sets environment if not production, config.dev exists, and config.production doesn\'t exist', function () {
-            const logStub = sandbox.stub();
-            const environmentStub = sandbox.stub();
-            const existsStub = sandbox.stub(Config, 'exists');
+            const logStub = sinon.stub();
+            const environmentStub = sinon.stub();
+            const existsStub = sinon.stub(Config, 'exists');
             existsStub.withArgs('/path/config.development.json').returns(true);
             existsStub.withArgs('/path/config.production.json').returns(false);
             const testInstance = new Instance({log: logStub}, {
@@ -403,7 +397,7 @@ describe('Unit: Instance', function () {
 
     describe('loadRunningEnvironment', function () {
         it('throws error if instance is not running', function () {
-            const getStub = sandbox.stub().withArgs('running').returns(null);
+            const getStub = sinon.stub().withArgs('running').returns(null);
             class TestInstance extends Instance {
                 get cliConfig() { return {get: getStub}; }
             }
@@ -419,8 +413,8 @@ describe('Unit: Instance', function () {
         });
 
         it('calls setEnvironment and passes through variables', function () {
-            const getStub = sandbox.stub().withArgs('running').returns('development');
-            const envStub = sandbox.stub();
+            const getStub = sinon.stub().withArgs('running').returns('development');
+            const envStub = sinon.stub();
             class TestInstance extends Instance {
                 get cliConfig() { return {get: getStub}; }
             }
@@ -437,7 +431,7 @@ describe('Unit: Instance', function () {
 
     describe('summary', function () {
         it('returns shortened object if running is false', function () {
-            const getStub = sandbox.stub().withArgs('active-version').returns('1.0.0');
+            const getStub = sinon.stub().withArgs('active-version').returns('1.0.0');
             class TestInstance extends Instance {
                 get name() { return 'testing'; }
                 get cliConfig() { return {get: getStub}; }
@@ -454,8 +448,8 @@ describe('Unit: Instance', function () {
         });
 
         it('loads running environment and returns full object if running is true', function () {
-            const cliGetStub = sandbox.stub().withArgs('active-version').returns('1.0.0');
-            const getStub = sandbox.stub();
+            const cliGetStub = sinon.stub().withArgs('active-version').returns('1.0.0');
+            const getStub = sinon.stub();
             getStub.withArgs('url').returns('localhost');
             getStub.withArgs('server.port').returns(1234);
 
@@ -479,13 +473,13 @@ describe('Unit: Instance', function () {
 
     describe('template', function () {
         it('immediately calls _generateTemplate if ui.allowPrompt is false', function () {
-            const promptStub = sandbox.stub().resolves();
+            const promptStub = sinon.stub().resolves();
             const testInstance = new Instance({
                 prompt: promptStub,
                 allowPrompt: false,
                 verbose: true
             }, {}, '');
-            const generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+            const generateStub = sinon.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.true;
@@ -496,13 +490,13 @@ describe('Unit: Instance', function () {
         });
 
         it('immediately calls _generateTemplate if ui.verbose is false', function () {
-            const promptStub = sandbox.stub().resolves();
+            const promptStub = sinon.stub().resolves();
             const testInstance = new Instance({
                 prompt: promptStub,
                 allowPrompt: true,
                 verbose: false
             }, {}, '');
-            const generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+            const generateStub = sinon.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.true;
@@ -513,13 +507,13 @@ describe('Unit: Instance', function () {
         });
 
         it('immediately calls _generateTemplate if ui.allowPrompt and ui.verbose is false', function () {
-            const promptStub = sandbox.stub().resolves();
+            const promptStub = sinon.stub().resolves();
             const testInstance = new Instance({
                 prompt: promptStub,
                 allowPrompt: true,
                 verbose: false
             }, {}, '');
-            const generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+            const generateStub = sinon.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.true;
@@ -530,9 +524,9 @@ describe('Unit: Instance', function () {
         });
 
         it('generates template if the choice is to continue (with --verbose)', function () {
-            const promptStub = sandbox.stub().resolves({choice: 'continue'});
+            const promptStub = sinon.stub().resolves({choice: 'continue'});
             const testInstance = new Instance({prompt: promptStub, allowPrompt: true, verbose: true}, {} , '');
-            const generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+            const generateStub = sinon.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.true;
@@ -543,12 +537,12 @@ describe('Unit: Instance', function () {
         });
 
         it('logs and calls template method again if choice is view (with --verbose)', function () {
-            const promptStub = sandbox.stub();
+            const promptStub = sinon.stub();
             promptStub.onCall(0).resolves({choice: 'view'});
             promptStub.onCall(1).resolves({choice: 'continue'});
-            const logStub = sandbox.stub();
+            const logStub = sinon.stub();
             const testInstance = new Instance({log: logStub, prompt: promptStub, allowPrompt: true, verbose: true}, {}, '');
-            const generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+            const generateStub = sinon.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.true;
@@ -561,11 +555,11 @@ describe('Unit: Instance', function () {
         });
 
         it('opens editor and generates template with contents if choice is edit (with --verbose)', function () {
-            const promptStub = sandbox.stub();
+            const promptStub = sinon.stub();
             promptStub.onCall(0).resolves({choice: 'edit'});
             promptStub.onCall(1).resolves({contents: 'some edited contents'});
             const testInstance = new Instance({prompt: promptStub, allowPrompt: true, verbose: true}, {}, '');
-            const generateStub = sandbox.stub(testInstance, '_generateTemplate').resolves(true);
+            const generateStub = sinon.stub(testInstance, '_generateTemplate').resolves(true);
 
             return testInstance.template('some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
                 expect(result).to.be.true;
@@ -579,7 +573,7 @@ describe('Unit: Instance', function () {
     describe('_generateTemplate', function () {
         it('writes out template to correct directory but doesn\'t link if no dir is passed', function () {
             const dir = tmp.dirSync({unsafeCleanup: true}).name;
-            const successStub = sandbox.stub();
+            const successStub = sinon.stub();
             const testInstance = new Instance({success: successStub}, {}, dir);
 
             return testInstance._generateTemplate('some contents', 'a file', 'file.txt').then((result) => {
@@ -593,8 +587,8 @@ describe('Unit: Instance', function () {
 
         it('writes out template and links it correctly if dir is passed', function () {
             const dir = tmp.dirSync({unsafeCleanup: true}).name;
-            const sudoStub = sandbox.stub().resolves();
-            const successStub = sandbox.stub();
+            const sudoStub = sinon.stub().resolves();
+            const successStub = sinon.stub();
             const testInstance = new Instance({sudo: sudoStub, success: successStub}, {}, dir);
 
             return testInstance._generateTemplate('some contents', 'a file', 'file.txt', '/another/dir').then((result) => {
