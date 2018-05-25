@@ -18,23 +18,6 @@ function fakeListr(tasks, ctx) {
 }
 
 describe('Unit: Tasks > linux', function () {
-    it('rejects if execa error message is not an expected one', function () {
-        const shellStub = sinon.stub().throws(new Error('unexpected'));
-        const linux = proxyquire(modulePath, {
-            execa: {shellSync: shellStub}
-        });
-        const listrStub = sinon.stub();
-        return linux({ui: {listr: listrStub}}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(Error);
-            expect(error.message).to.equal('unexpected');
-            expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.calledWithExactly('id ghost')).to.be.true;
-            expect(listrStub.called).to.be.false;
-        });
-    });
-
     it('skips creating user if user already exists', function () {
         const shellStub = sinon.stub();
         const linux = proxyquire(modulePath, {
@@ -53,7 +36,7 @@ describe('Unit: Tasks > linux', function () {
         });
     });
 
-    it('creates creating user if user already exists', function () {
+    it('creates user if user doesn\'t exist', function () {
         const shellStub = sinon.stub().throws(new Error('No such user'));
         const linux = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
