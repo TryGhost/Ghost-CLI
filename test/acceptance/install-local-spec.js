@@ -1,6 +1,6 @@
 'use strict';
 
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const fs  = require('fs-extra');
 
 const AcceptanceTest = require('../utils/acceptance-test');

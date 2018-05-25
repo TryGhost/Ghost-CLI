@@ -3,22 +3,19 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 
 const errors = require('../../../../../lib/errors');
-const setupEnv = require('../../../../utils/env');
+const {setupTestFolder, cleanupTestFolders} = require('../../../../utils/test-folder');
 const advancedOpts = require('../../../../../lib/commands/config/advanced');
 
 const check = require('../../../../../lib/commands/doctor/checks/validate-config');
 const validateConfig = check.task;
 
 describe('Unit: Doctor Checks > validateConfig', function () {
-    let env;
-
     afterEach(function () {
         sinon.restore();
+    });
 
-        if (env) {
-            env.cleanup();
-            env = null;
-        }
+    after(() => {
+        cleanupTestFolders();
     });
 
     it('skips if instance not set', function () {
@@ -39,7 +36,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
     });
 
     it('rejects if environment is passed and no config exists for that environment', function () {
-        env = setupEnv();
+        const env = setupTestFolder();
         const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
@@ -58,7 +55,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
     });
 
     it('rejects if environment is passed and the config file is not valid json', function () {
-        env = setupEnv({files: [{path: 'config.testing.json', contents: 'not json'}]});
+        const env = setupTestFolder({files: [{path: 'config.testing.json', contents: 'not json'}]});
         const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
@@ -78,7 +75,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
     it('rejects with error if config values does not pass', function () {
         const config = {server: {port: 2368}};
-        env = setupEnv({files: [{path: 'config.testing.json', content: config, json: true}]});
+        const env = setupTestFolder({files: [{path: 'config.testing.json', content: config, json: true}]});
         const urlStub = sinon.stub(advancedOpts.url, 'validate').returns('Invalid URL');
         const portStub = sinon.stub(advancedOpts.port, 'validate').returns('Port is in use');
         sinon.stub(process, 'cwd').returns(env.dir);
@@ -101,7 +98,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
     it('passes if all validate functions return true', function () {
         const config = {server: {port: 2368}};
-        const env = setupEnv({files: [{path: 'config.testing.json', content: config, json: true}]});
+        const env = setupTestFolder({files: [{path: 'config.testing.json', content: config, json: true}]});
         const urlStub = sinon.stub(advancedOpts.url, 'validate').returns(true);
         const portStub = sinon.stub(advancedOpts.port, 'validate').returns(true);
         sinon.stub(process, 'cwd').returns(env.dir);

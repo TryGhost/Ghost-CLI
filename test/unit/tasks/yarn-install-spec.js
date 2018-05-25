@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const Promise = require('bluebird');
-const setupEnv = require('../../utils/env');
+const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const path = require('path');
 const fs = require('fs');
 
@@ -11,6 +11,10 @@ const modulePath = '../../../lib/tasks/yarn-install';
 const errors = require('../../../lib/errors');
 
 describe('Unit: Tasks > yarn-install', function () {
+    after(() => {
+        cleanupTestFolders();
+    });
+
     it('base function calls subtasks and yarn util', function () {
         const yarnStub = sinon.stub().resolves();
         const yarnInstall = proxyquire(modulePath, {
@@ -216,7 +220,7 @@ describe('Unit: Tasks > yarn-install', function () {
         });
 
         it('creates dir, decompresses and maps files', function () {
-            const env = setupEnv();
+            const env = setupTestFolder();
             const downloadStub = sinon.stub().resolves({downloadedData: true});
             const shasumStub = sinon.stub().returns('asdf1234');
             const decompressStub = sinon.stub().resolves();

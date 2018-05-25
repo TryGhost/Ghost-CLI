@@ -4,6 +4,8 @@ const tmp = require('tmp');
 const path = require('path');
 const isObject = require('lodash/isObject');
 
+const currentTestFolders = {};
+
 const builtin = {
     full: {
         dirs: ['versions/1.0.0', 'content'],
@@ -35,7 +37,7 @@ const builtin = {
     }
 };
 
-module.exports = function setupEnv(typeOrDefinition, dir) {
+function setupTestFolder(typeOrDefinition, dir) {
     typeOrDefinition = typeOrDefinition || {}; // default to empty object
 
     const setup = isObject(typeOrDefinition) ? typeOrDefinition : builtin[typeOrDefinition];
@@ -64,10 +66,22 @@ module.exports = function setupEnv(typeOrDefinition, dir) {
         });
     }
 
-    return {
+    const testFolder = {
         dir: dir,
         cleanup: () => {
             fs.removeSync(dir);
+            delete currentTestFolders[dir];
         }
-    }
-};
+    };
+
+    currentTestFolders[dir] = testFolder;
+    return testFolder;
+}
+
+function cleanupTestFolders() {
+    Object.keys(currentTestFolders).forEach((key) => {
+        currentTestFolders[key].cleanup();
+    });
+}
+
+module.exports = {setupTestFolder, cleanupTestFolders};
