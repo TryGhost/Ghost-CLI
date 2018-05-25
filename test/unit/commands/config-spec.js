@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const proxyquire = require('proxyquire').noCallThru();
@@ -11,6 +11,34 @@ const modulePath = '../../../lib/commands/config';
 const advancedModulePath = '../../../lib/commands/config/advanced';
 
 describe('Unit: Command > Config', function () {
+    it('configureSubcommands works', function () {
+        const yargsStub = {};
+        yargsStub.command = sinon.stub().returns(yargsStub);
+        const extensions = [{extensionA: true}];
+
+        const ConfigCommand = require(modulePath);
+        const runStub = sinon.stub(ConfigCommand, '_run');
+        ConfigCommand.configureSubcommands('config', yargsStub, extensions);
+
+        expect(yargsStub.command.calledTwice).to.be.true;
+
+        const command1 = yargsStub.command.args[0][0];
+        expect(command1.command).to.equal('get <key>')
+        expect(command1.handler).to.be.a('function');
+        command1.handler({args: true});
+        expect(runStub.calledOnce).to.be.true;
+        expect(runStub.calledWithExactly('config get', {args: true}, extensions)).to.be.true;
+
+        runStub.reset();
+
+        const command2 = yargsStub.command.args[1][0];
+        expect(command2.command).to.equal('set <key> <value>')
+        expect(command2.handler).to.be.a('function');
+        command2.handler({args: true});
+        expect(runStub.calledOnce).to.be.true;
+        expect(runStub.calledWithExactly('config set', {args: true}, extensions)).to.be.true;
+    });
+
     it('constructs instance', function () {
         const instanceStub = sinon.stub().returns({instance: true});
         const ConfigCommand = require(modulePath);
@@ -303,14 +331,16 @@ describe('Unit: Command > Config', function () {
             const getInstanceStub = sinon.stub().returns(
                 {checkEnvironment: checkEnvironmentStub, config: instanceConfig}
             );
+            const logStub = sinon.stub();
 
-            const config = new ConfigCommand({}, {getInstance: getInstanceStub});
+            const config = new ConfigCommand({log: logStub}, {getInstance: getInstanceStub});
 
             return config.run({key: 'url', value: 'http://localhost:2368'}).then(() => {
                 expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(setStub.calledOnce).to.be.true;
                 expect(saveStub.calledOnce).to.be.true;
                 expect(setStub.args[0]).to.deep.equal(['url', 'http://localhost:2368']);
+                expect(logStub.calledOnce).to.be.true;
             });
         });
 
