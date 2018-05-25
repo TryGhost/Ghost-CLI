@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const configStub = require('../../utils/config-stub');
-const setupEnv = require('../../utils/env');
+const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const Promise = require('bluebird');
 const path = require('path');
 const fs = require('fs-extra');
@@ -13,6 +13,10 @@ const errors = require('../../../lib/errors');
 const Instance = require('../../../lib/instance');
 
 describe('Unit: Commands > Update', function () {
+    after(() => {
+        cleanupTestFolders();
+    });
+
     it('configureOptions adds setup & doctor options', function () {
         const superStub = sinon.stub().returnsArg(1);
         const doctorStub = sinon.stub().returnsArg(1);
@@ -339,7 +343,7 @@ describe('Unit: Commands > Update', function () {
                 '../tasks/yarn-install': yarnInstallStub
             });
             const instance = new UpdateCommand({}, {});
-            const env = setupEnv();
+            const env = setupTestFolder();
             const ctx = {
                 installPath: path.join(env.dir, 'versions/1.0.0'),
                 version: '1.0.0'
@@ -349,7 +353,6 @@ describe('Unit: Commands > Update', function () {
             return instance.downloadAndUpdate(ctx, task).then(() => {
                 expect(yarnInstallStub.calledOnce).to.be.true;
                 expect(task.title).to.equal('Downloading and updating Ghost to v1.0.0');
-                env.cleanup();
             });
         });
 
@@ -363,7 +366,7 @@ describe('Unit: Commands > Update', function () {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.0', 'current']]
             };
-            const env = setupEnv(envCfg);
+            const env = setupTestFolder(envCfg);
             const ctx = {
                 installPath: path.join(env.dir, 'versions/1.0.1'),
                 force: false
@@ -376,8 +379,6 @@ describe('Unit: Commands > Update', function () {
                 expect(fs.existsSync(ctx.installPath)).to.be.true;
                 expect(yarnInstallStub.called).to.be.false;
                 expect(task.skip.calledOnce).to.be.true;
-
-                env.cleanup();
             });
         });
 
@@ -391,7 +392,7 @@ describe('Unit: Commands > Update', function () {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.0', 'current']]
             };
-            const env = setupEnv(envCfg);
+            const env = setupTestFolder(envCfg);
             const ctx = {
                 installPath: path.join(env.dir, 'versions/1.0.1'),
                 force: true
@@ -402,8 +403,6 @@ describe('Unit: Commands > Update', function () {
             return instance.downloadAndUpdate(ctx, {}).then(() => {
                 expect(fs.existsSync(ctx.installPath)).to.be.false;
                 expect(yarnInstallStub.calledOnce).to.be.true;
-
-                env.cleanup();
             });
         });
     });
@@ -480,7 +479,7 @@ describe('Unit: Commands > Update', function () {
                 'versions/1.5.1',
                 'versions/1.5.2'
             ];
-            const env = setupEnv({dirs: dirs});
+            const env = setupTestFolder({dirs: dirs});
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
@@ -493,8 +492,6 @@ describe('Unit: Commands > Update', function () {
                 dirs.forEach((version) => {
                     expect(fs.existsSync(path.join(env.dir, version))).to.be.true;
                 });
-
-                env.cleanup();
             });
         });
 
@@ -512,7 +509,7 @@ describe('Unit: Commands > Update', function () {
                     'versions/1.5.0'
                 ]
             };
-            const env = setupEnv(envCfg);
+            const env = setupTestFolder(envCfg);
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
@@ -540,8 +537,6 @@ describe('Unit: Commands > Update', function () {
                 removedVersions.forEach((version) => {
                     expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.false;
                 });
-
-                env.cleanup();
             });
         });
     });
@@ -665,7 +660,7 @@ describe('Unit: Commands > Update', function () {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.0', 'current']]
             }
-            const env = setupEnv(envCfg);
+            const env = setupTestFolder(envCfg);
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
             const config = configStub();
             config.get.withArgs('active-version').returns('1.0.0');
@@ -686,7 +681,6 @@ describe('Unit: Commands > Update', function () {
             expect(config.save.calledOnce).to.be.true;
 
             cwdStub.restore();
-            env.cleanup();
         });
 
         it('does things correctly with rollback', function () {
@@ -695,7 +689,7 @@ describe('Unit: Commands > Update', function () {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.1', 'current']]
             }
-            const env = setupEnv(envCfg);
+            const env = setupTestFolder(envCfg);
             const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
             const config = configStub();
             config.get.withArgs('active-version').returns('1.0.1');
@@ -716,7 +710,6 @@ describe('Unit: Commands > Update', function () {
             expect(config.save.calledOnce).to.be.true;
 
             cwdStub.restore();
-            env.cleanup();
         });
     });
 });

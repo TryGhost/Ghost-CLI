@@ -27,7 +27,7 @@ const cp = require('child_process');
 const tmp = require('tmp');
 const find = require('lodash/find');
 const path = require('path');
-const env = require('./env');
+const {setupTestFolder} = require('./test-folder');
 
 global.Promise = require('bluebird');
 
@@ -41,7 +41,7 @@ module.exports = class AcceptanceTest {
     }
 
     setup(type) {
-        this.cleanupDir = env(type, this.dir).cleanup;
+        this.cleanupDir = setupTestFolder(type, this.dir).cleanup;
     }
 
     path(file) {

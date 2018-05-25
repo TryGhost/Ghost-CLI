@@ -1,7 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const env = require('../utils/env');
+const {setupTestFolder, cleanupTestFolders} = require('../utils/test-folder');
 const path = require('path');
 const proxyquire = require('proxyquire');
 
@@ -14,12 +14,16 @@ describe('Unit: Bootstrap', function () {
         sinon.restore();
     });
 
+    after(() => {
+        cleanupTestFolders();
+    });
+
     describe('discoverCommands', function () {
         const bootstrap = require(modulePath);
 
         it('loads basic command names into commands object', function () {
             let commands = {};
-            const testEnv = env({
+            const testEnv = setupTestFolder({
                 dirs: ['commands/test3'],
                 files: [{
                     path: 'commands/test.js',
@@ -47,7 +51,7 @@ describe('Unit: Bootstrap', function () {
 
         it('returns unmodified commands object if no commands dir exists for an extension', function () {
             let commands = {};
-            const testEnv = env({});
+            const testEnv = setupTestFolder({});
 
             commands = bootstrap.discoverCommands(commands, testEnv.dir, 'testing');
 
@@ -56,7 +60,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('ignores non-js files or folders without an index.js', function () {
-            const testEnv = env({
+            const testEnv = setupTestFolder({
                 dirs: ['commands/test2', 'commands/test3'],
                 files: [{
                     path: 'commands/test.js',
@@ -85,7 +89,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('namespaces a command with the extension name if another command exists with the same basename', function () {
-            const testEnv = env({
+            const testEnv = setupTestFolder({
                 dirs: ['commands/test2'],
                 files: [{
                     path: 'commands/test.js',
