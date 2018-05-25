@@ -66,6 +66,41 @@ describe('Unit: Tasks > yarn-install', function () {
         });
     });
 
+    it('catches errors from yarn and cleans up install folder', function () {
+        const yarnStub = sinon.stub().rejects(new Error('an error occurred'));
+        const yarnInstall = proxyquire(modulePath, {
+            '../utils/yarn': yarnStub
+        });
+        const subTasks = yarnInstall.subTasks;
+        const env = setupTestFolder();
+        const ctx = {installPath: env.dir};
+        const listrStub = sinon.stub().callsFake((tasks) => {
+            expect(tasks).to.have.length(3);
+
+            return Promise.each(tasks, (task) => task.task(ctx));
+        });
+
+        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const downloadTaskStub = sinon.stub(subTasks, 'download');
+
+        return yarnInstall({listr: listrStub}).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error.message).to.equal('an error occurred');
+            expect(listrStub.calledOnce).to.be.true;
+            expect(distTaskStub.calledOnce).to.be.true;
+            expect(downloadTaskStub.calledOnce).to.be.true;
+            expect(yarnStub.calledOnce).to.be.true;
+            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
+            expect(yarnStub.args[0][1]).to.deep.equal({
+                cwd: env.dir,
+                env: {NODE_ENV: 'production'},
+                observe: true
+            });
+            expect(fs.existsSync(env.dir)).to.be.false;
+        });
+    });
+
     describe('dist subtask', function () {
         it('rejects if yarn util returns invalid json', function () {
             const yarnStub = sinon.stub().resolves({stdout: 'not json'});
@@ -251,6 +286,35 @@ describe('Unit: Tasks > yarn-install', function () {
                 const files = [{path: 'package/index.js'}, {path: 'package/package.json'}, {path: 'package/yarn.lock'}];
                 const mapResult = files.map(decompressStub.args[0][2].map);
                 expect(mapResult).to.deep.equal([{path: 'index.js'}, {path: 'package.json'}, {path: 'yarn.lock'}]);
+            });
+        });
+
+        it('catches errors from decompress and cleans up the install folder', function () {
+            const env = setupTestFolder();
+            const downloadStub = sinon.stub().resolves({downloadedData: true});
+            const shasumStub = sinon.stub().returns('asdf1234');
+            const decompressStub = sinon.stub().rejects(new Error('an error occurred'));
+            const downloadTask = proxyquire(modulePath, {
+                download: downloadStub,
+                shasum: shasumStub,
+                decompress: decompressStub
+            }).subTasks.download;
+            const ctx = {
+                tarball: 'something.tgz',
+                shasum: 'asdf1234',
+                installPath: path.join(env.dir, 'versions/1.0.0')
+            };
+
+            return downloadTask(ctx).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error.message).to.equal('an error occurred');
+                expect(downloadStub.calledOnce).to.be.true;
+                expect(downloadStub.calledWithExactly('something.tgz'));
+                expect(shasumStub.calledOnce).to.be.true;
+                expect(shasumStub.calledWithExactly({downloadedData: true})).to.be.true;
+                expect(decompressStub.calledOnce).to.be.true;
+                expect(fs.existsSync(ctx.installPath)).to.be.false;
             });
         });
     });
