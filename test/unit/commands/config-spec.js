@@ -272,7 +272,7 @@ describe('Unit: Command > Config', function () {
     describe('run', function () {
         const ConfigCommand = require(modulePath);
 
-        it('outputs key if key defined and value is not', function () {
+        it('outputs key if action is defined and key, value are not', function () {
             const logStub = sinon.stub();
             const checkEnvironmentStub = sinon.stub();
             const instanceConfig = new Config('config.json');
@@ -283,19 +283,19 @@ describe('Unit: Command > Config', function () {
 
             const config = new ConfigCommand({log: logStub}, {getInstance: getInstanceStub});
 
-            return config.run({key: 'url'}).then(() => {
+            return config.run({action: 'url'}).then(() => {
                 expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(logStub.calledOnce).to.be.true;
                 expect(logStub.args[0][0]).to.equal('http://localhost:2368');
 
-                return config.run({key: 'nope'});
+                return config.run({action: 'nope'});
             }).then(() => {
                 expect(checkEnvironmentStub.calledTwice).to.be.true;
                 expect(logStub.calledOnce).to.be.true;
             });
         });
 
-        it('sets value if both key and value defined', function () {
+        it('sets value if action and key are defined, value is not', function () {
             const checkEnvironmentStub = sinon.stub();
             const instanceConfig = new Config('config.json');
             const setStub = sinon.stub(instanceConfig, 'set').returns(instanceConfig);
@@ -306,11 +306,117 @@ describe('Unit: Command > Config', function () {
 
             const config = new ConfigCommand({}, {getInstance: getInstanceStub});
 
-            return config.run({key: 'url', value: 'http://localhost:2368'}).then(() => {
+            return config.run({action: 'url', key: 'http://localhost:2368'}).then(() => {
                 expect(checkEnvironmentStub.calledOnce).to.be.true;
                 expect(setStub.calledOnce).to.be.true;
                 expect(saveStub.calledOnce).to.be.true;
                 expect(setStub.args[0]).to.deep.equal(['url', 'http://localhost:2368']);
+            });
+        });
+
+        it('noop: action is "set", key is defined, value is not', function () {
+            const checkEnvironmentStub = sinon.stub();
+            const instanceConfig = new Config('config.json');
+            const setStub = sinon.stub(instanceConfig, 'set').returns(instanceConfig);
+            const saveStub = sinon.stub(instanceConfig, 'save');
+            const getInstanceStub = sinon.stub().returns(
+                {checkEnvironment: checkEnvironmentStub, config: instanceConfig}
+            );
+
+            const config = new ConfigCommand({}, {getInstance: getInstanceStub});
+
+            return config.run({action: 'set', key: 'url'}).then(() => {
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
+                expect(setStub.called).to.be.false;
+                expect(saveStub.called).to.be.false;
+            });
+        });
+
+        it('outputs key if action is "get", key is defined, and value are not', function () {
+            const logStub = sinon.stub();
+            const checkEnvironmentStub = sinon.stub();
+            const instanceConfig = new Config('config.json');
+            const getInstanceStub = sinon.stub().returns(
+                {checkEnvironment: checkEnvironmentStub, config: instanceConfig}
+            );
+            instanceConfig.set('url', 'http://localhost:2368');
+
+            const config = new ConfigCommand({log: logStub}, {getInstance: getInstanceStub});
+
+            return config.run({action: 'get', key: 'url'}).then(() => {
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.equal('http://localhost:2368');
+
+                return config.run({action: 'get', key: 'nope'});
+            }).then(() => {
+                expect(checkEnvironmentStub.calledTwice).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+            });
+        });
+
+        it('outputs key if action is "get", key, value are defined', function () {
+            const logStub = sinon.stub();
+            const checkEnvironmentStub = sinon.stub();
+            const instanceConfig = new Config('config.json');
+            const getInstanceStub = sinon.stub().returns(
+                {checkEnvironment: checkEnvironmentStub, config: instanceConfig}
+            );
+            instanceConfig.set('url', 'http://localhost:2368');
+
+            const setStub = sinon.stub(instanceConfig, 'set').returns(instanceConfig);
+            const config = new ConfigCommand({log: logStub}, {getInstance: getInstanceStub});
+
+            return config.run({action: 'get', key: 'url', value: 'don\'tcare'}).then(() => {
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.equal('http://localhost:2368');
+                expect(setStub.called).to.be.false;
+
+                return config.run({action: 'GET', key: 'nope', value: 'don\'tcare'});
+            }).then(() => {
+                expect(checkEnvironmentStub.calledTwice).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+                expect(setStub.called).to.be.false;
+            });
+        });
+
+        it('sets value if action is "set" and key, value are defined', function () {
+            const checkEnvironmentStub = sinon.stub();
+            const instanceConfig = new Config('config.json');
+            const setStub = sinon.stub(instanceConfig, 'set').returns(instanceConfig);
+            const saveStub = sinon.stub(instanceConfig, 'save');
+            const getInstanceStub = sinon.stub().returns(
+                {checkEnvironment: checkEnvironmentStub, config: instanceConfig}
+            );
+
+            const config = new ConfigCommand({}, {getInstance: getInstanceStub});
+
+            return config.run({action: 'SET', key: 'url', value: 'http://localhost:2368'}).then(() => {
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
+                expect(setStub.calledOnce).to.be.true;
+                expect(saveStub.calledOnce).to.be.true;
+                expect(setStub.args[0]).to.deep.equal(['url', 'http://localhost:2368']);
+            });
+        });
+
+        it('rejects if action is not "set" or "get", value is defined', function () {
+            const logStub = sinon.stub();
+            const checkEnvironmentStub = sinon.stub();
+            const instanceConfig = new Config('config.json');
+            const setStub = sinon.stub(instanceConfig, 'set').returns(instanceConfig);
+            const getInstanceStub = sinon.stub().returns(
+                {checkEnvironment: checkEnvironmentStub, config: instanceConfig}
+            );
+            instanceConfig.set('url', 'http://localhost:2368');
+
+            const config = new ConfigCommand({log: logStub}, {getInstance: getInstanceStub});
+
+            return config.run({action: 'sleep', key: 'url', value: 'don\'tcare'}).catch(() => {
+                expect(checkEnvironmentStub.calledOnce).to.be.true;
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.equal('Unknown action "sleep". Try "set" or "get"');
+                expect(setStub.called).to.be.false;
             });
         });
 
