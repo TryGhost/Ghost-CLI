@@ -39,26 +39,6 @@ describe('Unit: Commands > Install', function () {
             sinon.restore();
         })
 
-        it('creates dir and changes into it if --dir option is passed', function () {
-            const chdirStub = sinon.stub(process, 'chdir').throws();
-            const ensureDirStub = sinon.stub();
-
-            const InstallCommand = proxyquire(modulePath, {
-                'fs-extra': {ensureDirSync: ensureDirStub}
-            });
-            const testInstance = new InstallCommand({}, {});
-
-            try {
-                testInstance.run({dir: '/some/dir'});
-            } catch (e) {
-                // ignore error, chdir is supposed to throw the error
-                expect(ensureDirStub.calledOnce).to.be.true;
-                expect(ensureDirStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(chdirStub.calledOnce).to.be.true;
-                expect(chdirStub.calledWithExactly('/some/dir')).to.be.true;
-            }
-        });
-
         it('rejects if directory is not empty', function () {
             const readdirStub = sinon.stub().returns([
                 '.ghost-cli',
