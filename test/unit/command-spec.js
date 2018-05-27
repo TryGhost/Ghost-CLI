@@ -234,6 +234,47 @@ describe('Unit: Command', function () {
             }
         });
 
+        it('Changes directory if needed', function () {
+            sinon.stub(process, 'exit').throws(new Error('exit_stub'));
+            const outStub = sinon.stub(process.stderr, 'write');
+            const chdirStub = sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
+            const Command = require(modulePath);
+            class TestCommand extends Command {}
+
+            try {
+                TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
+                throw new Error('Should have errored');
+            } catch (error) {
+                expect(error).to.be.ok;
+                expect(error.message).to.equal('exit_stub');
+                expect(chdirStub.calledOnce).to.be.true;
+                expect(chdirStub.args[0][0]).to.equal('/path/to/ghost');
+                expect(outStub.calledOnce).to.be.true;
+                expect(outStub.args[0][0]).to.match(/chdir_stub/);
+            }
+        });
+
+        it('Creates & changes into directory if needed', function () {
+            sinon.stub(process.stderr, 'write');
+            sinon.stub(process, 'exit').throws(new Error('exit_stub'));
+            sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
+            const fs = require('fs-extra');
+            const fsStub = sinon.stub(fs, 'ensureDirSync');
+            const Command = require(modulePath);
+            class TestCommand extends Command {}
+            TestCommand.ensureDir = true;
+
+            try {
+                TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
+                throw new Error('Should have errored');
+            } catch (error) {
+                expect(error).to.be.ok;
+                expect(error.message).to.equal('exit_stub');
+                expect(fsStub.calledOnce).to.be.true;
+                expect(fsStub.args[0][0]).to.equal('/path/to/ghost');
+            }
+        });
+
         it('loads system and ui dependencies, calls run method', function () {
             const uiStub = sinon.stub().returns({ui: true});
             const setEnvironmentStub = sinon.stub();
