@@ -156,7 +156,7 @@ describe('Unit: Command > Config', function () {
             return config.handleAdvancedOptions({url: 'http://localhost:2368/', port: 1234}).then(() => {
                 expect(getInstanceStub.calledOnce).to.be.true;
                 expect(save.calledOnce).to.be.true;
-                expect(instanceConfig.get('url')).to.equal('http://localhost:1234/');
+                expect(instanceConfig.get('url')).to.equal('http://localhost:2368/');
                 expect(instanceConfig.get('server.port')).to.equal(1234);
             });
         });
