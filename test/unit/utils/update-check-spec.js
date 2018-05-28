@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 const stripAnsi = require('strip-ansi');
@@ -7,80 +7,49 @@ const stripAnsi = require('strip-ansi');
 const modulePath = '../../../lib/utils/update-check';
 
 describe('Unit: Utils > update-check', function () {
-    it('rejects error if updateNotifier has an error', function (done) {
+    it('rejects error if latestVersion has an error', function (done) {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const testError = new Error('update check');
-        const updateNotifer = sinon.stub().callsFake((options) => {
-            expect(options).to.exist;
-            expect(options.pkg).to.deep.equal(pkg);
-            expect(options.callback).to.be.a('function');
-            options.callback(testError, null);
-        });
+        const latestVersion = sinon.stub().rejects(testError);
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
-            'update-notifier': updateNotifer
+            'latest-version': latestVersion
         });
 
         updateCheck().catch((err) => {
             expect(err.message).to.equal(testError.message);
+            expect(latestVersion.calledOnce).to.be.true;
+            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
             done();
         });
     });
 
-    it('resolves immediately if there are no updates', function () {
+    it('doesn\'t do anything if there are no updates', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
-        const updateNotifer = sinon.stub().callsFake((options) => {
-            expect(options).to.exist;
-            expect(options.pkg).to.deep.equal(pkg);
-            expect(options.callback).to.be.a('function');
-            options.callback(null, {type: 'latest'});
-        });
+        const latestVersion = sinon.stub().resolves('1.0.0');
         const logStub = sinon.stub();
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
-            'update-notifier': updateNotifer
+            'latest-version': latestVersion
         });
 
         return updateCheck({log: logStub}).then(() => {
             expect(logStub.called).to.be.false;
-        });
-    });
-
-    it('doesn\'t log a message if the type of update is not major, minor, or patch', function () {
-        const pkg = {name: 'ghost', version: '1.0.0'};
-        const updateNotifer = sinon.stub().callsFake((options) => {
-            expect(options).to.exist;
-            expect(options.pkg).to.deep.equal(pkg);
-            expect(options.callback).to.be.a('function');
-            options.callback(null, {type: 'prerelease'});
-        });
-        const logStub = sinon.stub();
-
-        const updateCheck = proxyquire(modulePath, {
-            '../../package.json': pkg,
-            'update-notifier': updateNotifer
-        });
-
-        return updateCheck({log: logStub}).then(() => {
-            expect(logStub.called).to.be.false;
+            expect(latestVersion.calledOnce).to.be.true;
+            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
     });
 
     it('logs a message if an update is available', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
-        const updateNotifer = sinon.stub().callsFake((options) => {
-            expect(options).to.exist;
-            expect(options.pkg).to.deep.equal(pkg);
-            expect(options.callback).to.be.a('function');
-            options.callback(null, {type: 'minor'});
-        });
+        const latestVersion = sinon.stub().resolves('1.1.0');
         const logStub = sinon.stub();
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
-            'update-notifier': updateNotifer
+            'latest-version': latestVersion
         });
 
         return updateCheck({log: logStub}).then(() => {
@@ -89,6 +58,9 @@ describe('Unit: Utils > update-check', function () {
             const log = logStub.args[0][0];
 
             expect(stripAnsi(log)).to.match(/You are running an outdated version of Ghost-CLI/);
+
+            expect(latestVersion.calledOnce).to.be.true;
+            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
     });
 });
