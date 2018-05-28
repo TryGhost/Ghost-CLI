@@ -17,7 +17,6 @@ cache:
 
 install:
   - yarn
-  - yarn add --force sqlite3 # fix sqlite caching issues
 
 script:
   - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
