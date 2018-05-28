@@ -1,9 +1,10 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const Promise = require('bluebird');
 const path = require('path');
+const configStub = require('../../utils/config-stub');
 
 const modulePath = '../../../lib/commands/setup';
 const SetupCommand = proxyquire(modulePath, {os: {platform: () => 'linux'}});
@@ -223,12 +224,17 @@ describe('Unit: Commands > Setup', function () {
         it('Initial stage is setup properly', function () {
             const listr = sinon.stub().resolves();
             const aIstub = sinon.stub();
+            const config = configStub();
+            config.get.withArgs('url').returns('https://ghost.org');
+            config.has.returns(false);
+
             const system = {
                 getInstance: () => {
                     return {
                         checkEnvironment: () => true,
                         apples: true,
-                        config: {get: () => 'https://ghost.org'}
+                        config,
+                        dir: '/var/www/ghost'
                     };
                 },
                 addInstance: aIstub,
@@ -262,18 +268,28 @@ describe('Unit: Commands > Setup', function () {
                 expect(ctx.instance.name).to.equal('ghost-org');
                 expect(aIstub.calledOnce).to.be.true;
                 expect(aIstub.args[0][0]).to.deep.equal(ctx.instance);
+
+                expect(config.has.calledOnce).to.be.true;
+                expect(config.set.calledOnce).to.be.true;
+                expect(config.set.calledWithExactly('paths.contentPath', '/var/www/ghost/content')).to.be.true;
+                expect(config.save.calledOnce).to.be.true;
             });
         });
 
         it('Initial stage is setup properly, sanitizes pname argument', function () {
             const listr = sinon.stub().resolves();
             const aIstub = sinon.stub();
+            const config = configStub();
+            config.get.withArgs('url').returns('https://ghost.org');
+            config.has.returns(true);
+
             const system = {
                 getInstance: () => {
                     return {
                         checkEnvironment: () => true,
                         apples: true,
-                        config: {get: () => 'https://ghost.org'}
+                        config,
+                        dir: '/var/www/ghost'
                     };
                 },
                 addInstance: aIstub,
@@ -308,6 +324,9 @@ describe('Unit: Commands > Setup', function () {
                 expect(ctx.instance.name).to.equal('example-com');
                 expect(aIstub.calledOnce).to.be.true;
                 expect(aIstub.args[0][0]).to.deep.equal(ctx.instance);
+                expect(config.has.calledOnce).to.be.true;
+                expect(config.set.called).to.be.false;
+                expect(config.save.called).to.be.false;
             });
         });
 
