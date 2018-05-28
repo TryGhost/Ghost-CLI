@@ -2,11 +2,11 @@
 
 const fs = require('fs');
 const execa = require('execa');
-const cli = require('../../lib');
 const getUid = require('./get-uid');
 const chalk = require('chalk');
+const {ProcessManager, errors} = require('../../lib');
 
-class SystemdProcessManager extends cli.ProcessManager {
+class SystemdProcessManager extends ProcessManager {
     get systemdName() {
         return `ghost_${this.instance.name}`;
     }
@@ -25,11 +25,11 @@ class SystemdProcessManager extends cli.ProcessManager {
                 });
             })
             .catch((error) => {
-                if (error instanceof cli.errors.CliError) {
+                if (error instanceof errors.CliError) {
                     throw error;
                 }
 
-                throw new cli.errors.ProcessError(error);
+                throw new errors.ProcessError(error);
             });
     }
 
@@ -37,7 +37,7 @@ class SystemdProcessManager extends cli.ProcessManager {
         this._precheck();
 
         return this.ui.sudo(`systemctl stop ${this.systemdName}`)
-            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            .catch((error) => Promise.reject(new errors.ProcessError(error)));
     }
 
     restart() {
@@ -50,11 +50,11 @@ class SystemdProcessManager extends cli.ProcessManager {
                 });
             })
             .catch((error) => {
-                if (error instanceof cli.errors.CliError) {
+                if (error instanceof errors.CliError) {
                     throw error;
                 }
 
-                throw new cli.errors.ProcessError(error);
+                throw new errors.ProcessError(error);
             });
     }
 
@@ -74,12 +74,12 @@ class SystemdProcessManager extends cli.ProcessManager {
 
     enable() {
         return this.ui.sudo(`systemctl enable ${this.systemdName} --quiet`)
-            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            .catch((error) => Promise.reject(new errors.ProcessError(error)));
     }
 
     disable() {
         return this.ui.sudo(`systemctl disable ${this.systemdName} --quiet`)
-            .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+            .catch((error) => Promise.reject(new errors.ProcessError(error)));
     }
 
     isRunning() {
@@ -89,7 +89,7 @@ class SystemdProcessManager extends cli.ProcessManager {
                 // Systemd prints out "inactive" if service isn't running
                 // or "activating" if service hasn't completely started yet
                 if (!error.message.match(/inactive|activating/)) {
-                    return Promise.reject(new cli.errors.ProcessError(error));
+                    return Promise.reject(new errors.ProcessError(error));
                 }
                 return Promise.resolve(false);
             });
@@ -100,7 +100,7 @@ class SystemdProcessManager extends cli.ProcessManager {
 
         // getUid returns either the uid or null
         if (!uid) {
-            throw new cli.errors.SystemError({
+            throw new errors.SystemError({
                 message: 'Systemd process manager has not been set up or is corrupted.',
                 help: `Run ${chalk.green('ghost setup linux-user systemd')} and try again.`
             });
@@ -110,10 +110,14 @@ class SystemdProcessManager extends cli.ProcessManager {
             return;
         }
 
-        throw new cli.errors.SystemError({
+        throw new errors.SystemError({
             message: 'Systemd process manager has not been set up or is corrupted.',
             help: `Run ${chalk.green('ghost setup systemd')} and try again.`
         });
+    }
+
+    createGhostUser() {
+        return true;
     }
 
     static willRun() {

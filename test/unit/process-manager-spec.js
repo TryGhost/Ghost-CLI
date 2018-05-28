@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const getConfigStub = require('../utils/config-stub');
@@ -198,6 +198,12 @@ describe('Unit: Process Manager', function () {
         return instance.isRunning().then((result) => {
             expect(result).to.be.false;
         });
+    });
+
+    it('base createGhostUser function returns false', function () {
+        const ProcessManager = require(modulePath);
+        const instance = new ProcessManager({}, {}, {});
+        expect(instance.createGhostUser()).to.be.false;
     });
 
     it('base willRun method returns true', function () {

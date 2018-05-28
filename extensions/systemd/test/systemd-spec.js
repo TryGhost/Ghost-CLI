@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
@@ -337,6 +337,12 @@ describe('Unit: Systemd > Process Manager', function () {
                 expect(error.options.help).to.match(/ghost setup systemd/);
             }
         });
+    });
+
+    it('createGhostUser returns true', function () {
+        const Systemd = require(modulePath);
+        const instance = new Systemd({}, {}, {});
+        expect(instance.createGhostUser()).to.be.true;
     });
 
     describe('willRun', function () {
