@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.8.0"></a>
+# 1.8.0 (2018-05-29)
+
+### Bug Fixes
+
+* **buster:** make buster a global command ([#735](https://github.com/TryGhost/Ghost-CLI/issues/735)) ([9cb99b0](https://github.com/TryGhost/Ghost-CLI/commit/9cb99b0))
+* **config:** don't overwrite url port if port is manually specified ([b094495](https://github.com/TryGhost/Ghost-CLI/commit/b094495)), closes [#592](https://github.com/TryGhost/Ghost-CLI/issues/592)
+* **doctor:** ensure folder check considers setuid, setgid, and sticky bits ([#729](https://github.com/TryGhost/Ghost-CLI/issues/729)) ([a0a31a9](https://github.com/TryGhost/Ghost-CLI/commit/a0a31a9)), closes [#724](https://github.com/TryGhost/Ghost-CLI/issues/724)
+* **extensions:** fix error when global modules folder doesn't exist ([78bb197](https://github.com/TryGhost/Ghost-CLI/commit/78bb197)), closes [#723](https://github.com/TryGhost/Ghost-CLI/issues/723)
+* **linux:** remove strict no such user error message checking ([0552372](https://github.com/TryGhost/Ghost-CLI/commit/0552372)), closes [#676](https://github.com/TryGhost/Ghost-CLI/issues/676)
+* **migrate:** move setting of content-path to setup ([1752cc8](https://github.com/TryGhost/Ghost-CLI/commit/1752cc8)), closes [#708](https://github.com/TryGhost/Ghost-CLI/issues/708)
+* **migrate:** remove unnecessary config overwrite during db migrations ([610143b](https://github.com/TryGhost/Ghost-CLI/commit/610143b)), closes [#708](https://github.com/TryGhost/Ghost-CLI/issues/708)
+* **update-check:** swap out update-notifier for simpler check ([e11e8b8](https://github.com/TryGhost/Ghost-CLI/commit/e11e8b8)), closes [#675](https://github.com/TryGhost/Ghost-CLI/issues/675)
+* **yarn-install:** remove folder on ghost download error ([c96a768](https://github.com/TryGhost/Ghost-CLI/commit/c96a768)), closes [#726](https://github.com/TryGhost/Ghost-CLI/issues/726)
+
+### Features
+
+* **config:** add config get & set subcommands ([687c499](https://github.com/TryGhost/Ghost-CLI/commit/687c499))
+
 <a name="1.7.3"></a>
 ## [1.7.3](https://github.com/TryGhost/Ghost-CLI/compare/1.7.2...1.7.3) (2018-05-10)
 
