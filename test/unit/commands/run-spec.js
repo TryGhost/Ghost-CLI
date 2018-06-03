@@ -191,7 +191,7 @@ describe('Unit: Commands > Run', function () {
             try {
                 expect(successStub.called).to.be.false;
                 expect(errorStub.calledOnce).to.be.true;
-                expect(errorStub.calledWithExactly('oops I did it again')).to.be.true;
+                expect(errorStub.calledWithExactly({message: 'oops I did it again'})).to.be.true;
                 done();
             } catch (e) {
                 done(e);

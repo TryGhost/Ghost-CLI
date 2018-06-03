@@ -196,7 +196,7 @@ describe('Unit: Utils > local-process', function () {
                 done();
             });
 
-            cp.emit('message', {error: 'Test Error Message'});
+            cp.emit('message', {error: true, message: 'Test Error Message'});
         });
 
         it('writes pid to file, resolves on start message', function (done) {
