@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.8.1"></a>
+## 1.8.1 (2018-06-05)
+
+### Bug Fixes
+
+* **run:** local process manager forwards Ghost error message correctly ([abaf834](https://github.com/TryGhost/Ghost-CLI/commit/abaf834)), closes [#742](https://github.com/TryGhost/Ghost-CLI/issues/742)
+
 <a name="1.8.0"></a>
 # 1.8.0 (2018-05-29)
 
