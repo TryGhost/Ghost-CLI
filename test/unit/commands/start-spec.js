@@ -208,6 +208,26 @@ describe('Unit: Commands > Start', function () {
             });
         });
 
+        it('is normally loud', function () {
+            myInstance.config.get.withArgs('url').returns('https://my-amazing.site/blog');
+            myInstance.process = {};
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: () => Promise.resolve(),
+                log: sinon.stub()
+            };
+            const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+            return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(ui.log.calledTwice).to.be.true;
+                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
+                expect(ui.log.args[0][0]).to.include('https://my-amazing.site/blog');
+                expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
+                expect(ui.log.args[1][0]).to.include('https://my-amazing.site/blog/ghost/');
+            });
+        });
+
         it('shows custom admin url', function () {
             const oldArgv = process.argv;
             process.argv = ['', '', 'start']
