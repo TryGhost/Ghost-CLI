@@ -218,7 +218,7 @@ describe('Unit: Command', function () {
             }
             const Command = proxyquire(modulePath, {
                 './utils/check-root-user': checkRootUserStub,
-                './ui': ShortCircuit
+                './system': ShortCircuit
             });
 
             const TestCommand = class extends Command {};
@@ -226,7 +226,7 @@ describe('Unit: Command', function () {
             TestCommand.allowRoot = true;
 
             try {
-                TestCommand._run('test', {});
+                TestCommand._run('test', {dir: '.'});
             } catch (e) {
                 expect(e).to.exist;
                 expect(e.message).to.equal('you shall not pass');
