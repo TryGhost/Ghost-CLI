@@ -11,6 +11,14 @@ if (argv.length === 0) {
     process.exit(1);
 }
 
+const debug = require('debug')('ghost-cli:bin');
+
+debug('Starting Ghost-CLI');
+
 const yargs = require('yargs');
+debug('args parser loaded');
+
 const bootstrap = require('../lib/bootstrap');
+debug('bootstrap loaded');
+
 bootstrap.run(argv, yargs);
