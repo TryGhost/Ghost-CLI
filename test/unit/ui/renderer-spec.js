@@ -1,10 +1,10 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const stripAnsi = require('strip-ansi');
-const proxyquire = require('proxyquire').noCallThru();
-const modulePath = '../../../lib/ui/renderer';
-const Renderer = require(modulePath);
+
+const createRenderer = require('../../../lib/ui/renderer');
+const {Renderer} = createRenderer;
 
 describe('Unit: UI > Renderer', function () {
     it('can be created successfully, filters tasks', function () {
@@ -16,26 +16,24 @@ describe('Unit: UI > Renderer', function () {
             name: 'b'
         }];
 
-        const rdr = new Renderer(tasks);
+        const rdr = new Renderer({ui: true}, tasks);
 
         expect(rdr).to.be.ok;
+        expect(rdr.ui).to.deep.equal({ui: true});
         expect(rdr.tasks).to.have.length(1);
         expect(rdr.tasks[0].name).to.equal('b');
     });
 
-    it('constructs a new UI if needed', function (done) {
-        class UI {}
-        const uiStub = sinon.spy(function () {
-            return sinon.createStubInstance(UI);
-        });
-        const Rdr = proxyquire(modulePath,{'./index': uiStub});
+    it('createRenderer creates a subclass correctly', function () {
+        const RendererSubclass = createRenderer({uiObject: true});
+        const isEnabled = () => true;
 
-        Rdr.ui = null;
-        const rdr = new Rdr();
+        expect(RendererSubclass.prototype).to.be.an.instanceof(Renderer);
 
-        expect(uiStub.calledWithNew()).to.be.true;
-        expect(rdr).to.be.ok;
-        done();
+        const renderer = new RendererSubclass([{task: true, isEnabled}]);
+
+        expect(renderer.ui).to.deep.equal({uiObject: true});
+        expect(renderer.tasks).to.deep.equal([{task: true, isEnabled}]);
     });
 
     describe('#render', function () {
@@ -78,283 +76,234 @@ describe('Unit: UI > Renderer', function () {
     });
 
     describe('#subscribeToEvents', function () {
-        let rdr;
+        const isEnabled = () => true;
 
-        before(function () {
-            rdr = new Renderer();
+        it('calls subscribe on every task', function () {
+            const tasks = [
+                {subscribe: sinon.stub(), isEnabled},
+                {subscribe: sinon.stub(), isEnabled}
+            ];
+
+            const renderer = new Renderer({}, tasks);
+            renderer.subscribeToEvents();
+
+            expect(tasks[0].subscribe.calledOnce).to.be.true;
+            expect(tasks[1].subscribe.calledOnce).to.be.true;
         });
 
-        it('calls subscribe on every task', function (done) {
-            const ctx = {
-                tasks: [
-                    {subscribe: sinon.stub()},
-                    {subscribe: sinon.stub()}
-                ]
+        it('callback does nothing when event is not state', function () {
+            const subStub = sinon.stub();
+            const renderer = new Renderer({}, [{subscribe: subStub, isEnabled}]);
+            const spinner = {
+                succeed: sinon.stub(),
+                info: sinon.stub(),
+                fail: sinon.stub()
             };
 
-            rdr.subscribeToEvents.bind(ctx)();
-
-            expect(ctx.tasks[0].subscribe.calledOnce).to.be.true;
-            expect(ctx.tasks[1].subscribe.calledOnce).to.be.true;
-
-            done();
-        });
-
-        it('callback does nothing when event is not state', function (done) {
-            const subStub = sinon.stub()
-            const ctx = {
-                tasks: [{subscribe: subStub}],
-                spinner: {
-                    succeed: sinon.stub(),
-                    info: sinon.stub(),
-                    fail: sinon.stub()
-                }
-            };
-
-            rdr.subscribeToEvents.bind(ctx)();
+            renderer.spinner = spinner;
+            renderer.subscribeToEvents();
 
             expect(subStub.calledOnce).to.be.true;
+
             // execute the callback
             subStub.firstCall.args[0]({type: 'EVENT'});
 
-            expect(ctx.spinner.succeed.called).to.be.false;
-            expect(ctx.spinner.info.called).to.be.false;
-            expect(ctx.spinner.fail.called).to.be.false;
-
-            done();
+            expect(spinner.succeed.called).to.be.false;
+            expect(spinner.info.called).to.be.false;
+            expect(spinner.fail.called).to.be.false;
         });
 
-        it('succeed spinner called when task completes', function (done) {
+        it('succeed spinner called when task completes', function () {
             const subStub = sinon.stub();
-            const completeStub = sinon.stub().returns(true);
-            const skipStub = sinon.stub().returns(false);
-            const failStub = sinon.stub().returns(false);
-            const ctx = {
-                tasks: [{
-                    subscribe: subStub,
-                    isCompleted: completeStub,
-                    isSkipped: skipStub,
-                    hasFailed: failStub
-                }],
-                spinner: {
-                    succeed: sinon.stub(),
-                    info: sinon.stub(),
-                    fail: sinon.stub()
-                }
-            };
+            const renderer = new Renderer({}, [{
+                subscribe: subStub,
+                isCompleted: () => true,
+                isSkipped: () => false,
+                hasFailed: () => false,
+                isEnabled
+            }]);
 
-            rdr.subscribeToEvents.bind(ctx)();
+            const spinner = {
+                succeed: sinon.stub(),
+                info: sinon.stub(),
+                fail: sinon.stub()
+            };
+            renderer.spinner = spinner;
+            renderer.subscribeToEvents();
 
             expect(subStub.calledOnce).to.be.true;
             // update values and execute callback
-            subStub.firstCall.args[0].bind(ctx)({type: 'STATE'});
+            subStub.firstCall.args[0]({type: 'STATE'});
 
-            expect(ctx.spinner.succeed.called).to.be.true;
-            expect(ctx.spinner.info.called).to.be.false;
-            expect(ctx.spinner.fail.called).to.be.false;
-
-            done();
+            expect(spinner.succeed.called).to.be.true;
+            expect(spinner.info.called).to.be.false;
+            expect(spinner.fail.called).to.be.false;
         });
 
-        it('info spinner called when task skips', function (done) {
+        it('info spinner called when task skips', function () {
             const subStub = sinon.stub();
-            const completeStub = sinon.stub().returns(false);
-            const skipStub = sinon.stub().returns(true);
-            const failStub = sinon.stub().returns(false);
-            const ctx = {
-                tasks: [{
-                    subscribe: subStub,
-                    isCompleted: completeStub,
-                    isSkipped: skipStub,
-                    hasFailed: failStub
-                }],
-                spinner: {
-                    succeed: sinon.stub(),
-                    info: sinon.stub(),
-                    fail: sinon.stub()
-                }
-            };
+            const renderer = new Renderer({}, [{
+                subscribe: subStub,
+                isCompleted: () => false,
+                isSkipped: () => true,
+                hasFailed: () => false,
+                isEnabled
+            }]);
 
-            rdr.subscribeToEvents.bind(ctx)();
+            const spinner = {
+                succeed: sinon.stub(),
+                info: sinon.stub(),
+                fail: sinon.stub()
+            };
+            renderer.spinner = spinner;
+            renderer.subscribeToEvents();
 
             expect(subStub.calledOnce).to.be.true;
             // update values and execute callback
-            subStub.firstCall.args[0].bind(ctx)({type: 'STATE'});
+            subStub.firstCall.args[0]({type: 'STATE'});
 
-            expect(ctx.spinner.succeed.called).to.be.false;
-            expect(ctx.spinner.info.called).to.be.true;
-            expect(ctx.spinner.fail.called).to.be.false;
-
-            done();
+            expect(spinner.succeed.called).to.be.false;
+            expect(spinner.info.called).to.be.true;
+            expect(spinner.fail.called).to.be.false;
         });
 
-        it('fail spinner called when task failed', function (done) {
+        it('fail spinner called when task failed', function () {
             const subStub = sinon.stub();
-            const completeStub = sinon.stub().returns(false);
-            const skipStub = sinon.stub().returns(false);
-            const failStub = sinon.stub().returns(true);
-            const ctx = {
-                tasks: [{
-                    subscribe: subStub,
-                    isCompleted: completeStub,
-                    isSkipped: skipStub,
-                    hasFailed: failStub
-                }],
-                spinner: {
-                    succeed: sinon.stub(),
-                    info: sinon.stub(),
-                    fail: sinon.stub()
-                }
-            };
+            const renderer = new Renderer({}, [{
+                subscribe: subStub,
+                isCompleted: () => false,
+                isSkipped: () => false,
+                hasFailed: () => true,
+                isEnabled
+            }]);
 
-            rdr.subscribeToEvents.bind(ctx)();
+            const spinner = {
+                succeed: sinon.stub(),
+                info: sinon.stub(),
+                fail: sinon.stub()
+            };
+            renderer.spinner = spinner;
+            renderer.subscribeToEvents();
 
             expect(subStub.calledOnce).to.be.true;
             // update values and execute callback
-            subStub.firstCall.args[0].bind(ctx)({type: 'STATE'});
+            subStub.firstCall.args[0]({type: 'STATE'});
 
-            expect(ctx.spinner.succeed.called).to.be.false;
-            expect(ctx.spinner.info.called).to.be.false;
-            expect(ctx.spinner.fail.called).to.be.true;
-
-            done();
+            expect(spinner.succeed.called).to.be.false;
+            expect(spinner.info.called).to.be.false;
+            expect(spinner.fail.called).to.be.true;
         });
     });
 
     describe('#frame', function () {
-        let rdr;
+        const isEnabled = () => true;
 
-        before(function () {
-            rdr = new Renderer();
-        });
+        it('basic call works', function () {
+            const renderer = new Renderer({}, [
+                {isPending: sinon.stub().returns(false), name: '1', isEnabled},
+                {isPending: sinon.stub().returns(true), name: '2', isEnabled},
+                {isPending: sinon.stub().returns(false), name: '3', isEnabled},
+                {isPending: sinon.stub().returns(false), name: '4', isEnabled},
+                {isPending: sinon.stub().returns(true), name: '5', isEnabled},
+                {isPending: sinon.stub().returns(true), name: '6', isEnabled},
+                {isPending: sinon.stub().returns(false), name: '7', isEnabled}
+            ]);
+            const start = sinon.stub();
+            const buildText = sinon.stub(renderer, 'buildText').callsFake(({name}) => name);
 
-        it('basic call works', function (done) {
-            const ctx = {
-                tasks: [
-                    {isPending: sinon.stub().returns(false), name: '1'},
-                    {isPending: sinon.stub().returns(true), name: '2'},
-                    {isPending: sinon.stub().returns(false), name: '3'},
-                    {isPending: sinon.stub().returns(false), name: '4'},
-                    {isPending: sinon.stub().returns(true), name: '5'},
-                    {isPending: sinon.stub().returns(true), name: '6'},
-                    {isPending: sinon.stub().returns(false), name: '7'}
-                ],
-                spinner: {
-                    start: sinon.stub(),
-                    paused: false
-                },
-                previousFrame: '',
-                buildText: sinon.stub().callsFake((res) => res.name)
-            };
+            renderer.previousFrame = '';
+            renderer.spinner = {start, paused: false};
 
-            rdr.frame.bind(ctx)();
-
-            ctx.tasks.forEach(function (task) {
-                expect(task.isPending.calledOnce).to.be.true;
+            renderer.frame();
+            renderer.tasks.forEach(({isPending}) => {
+                expect(isPending.calledOnce).to.be.true;
             });
-            expect(ctx.buildText.calledThrice).to.be.true;
-            expect(ctx.spinner.start.calledOnce).to.be.true;
-            expect(ctx.spinner.start.firstCall.args[0]).to.equal('2 | 5 | 6');
 
-            done();
+            expect(buildText.calledThrice).to.be.true;
+            expect(start.calledOnce).to.be.true;
+            expect(start.firstCall.args[0]).to.equal('2 | 5 | 6');
         });
 
-        it('spinner does nothing with no tasks', function (done) {
-            const ctx = {
-                tasks: [],
-                spinner: {
-                    start: sinon.stub(),
-                    paused: false
-                },
-                buildText: sinon.stub().callsFake((ret) => ret.name)
-            };
+        it('spinner does nothing with no tasks', function () {
+            const renderer = new Renderer({}, []);
+            const start = sinon.stub();
+            const buildText = sinon.stub(renderer, 'buildText').callsFake(({name}) => name);
 
-            rdr.frame.bind(ctx)();
+            renderer.spinner = {start, paused: false};
+            renderer.frame();
 
-            expect(ctx.spinner.start.called).to.be.false;
-            done();
+            expect(start.called).to.be.false;
+            expect(buildText.called).to.be.false;
         });
 
-        it('spinner does nothing when text doesn\'t change', function (done) {
-            const ctx = {
-                tasks: [{
-                    isPending: sinon.stub().returns(true),
-                    name: 'a'
-                }],
-                spinner: {
-                    paused: false,
-                    spin: sinon.stub()
-                },
-                previousFrame: 'a',
-                buildText: sinon.stub().callsFake((ret)=>ret.name)
-            };
+        it('spinner does nothing when text doesn\'t change', function () {
+            const tasks = [{
+                isPending: sinon.stub().returns(true),
+                name: 'a',
+                isEnabled
+            }];
+            const renderer = new Renderer({}, tasks);
+            const spin = sinon.stub();
+            const buildText = sinon.stub(renderer, 'buildText').callsFake(({name}) => name);
 
-            rdr.frame.bind(ctx)();
+            renderer.spinner = {spin, paused: false};
+            renderer.previousFrame = 'a';
+            renderer.frame();
 
-            expect(ctx.tasks[0].isPending.calledOnce).to.be.true;
-            expect(ctx.buildText.calledOnce).to.be.true;
-            expect(ctx.spinner.spin.called).to.be.false;
-
-            done();
+            expect(tasks[0].isPending.calledOnce).to.be.true;
+            expect(buildText.calledOnce).to.be.true;
+            expect(spin.called).to.be.false;
         });
 
-        it('spinner does nothing when paused', function (done) {
-            const ctx = {
-                tasks: [{
-                    isPending: sinon.stub().returns(true),
-                    name: 'a'
-                }],
-                spinner: {
-                    paused: true,
-                    spin: sinon.stub()
-                },
-                previousFrame: 'b',
-                buildText: sinon.stub().callsFake((ret)=>ret.name)
-            };
+        it('spinner does nothing when paused', function () {
+            const tasks = [{
+                isPending: sinon.stub().returns(true),
+                name: 'b',
+                isEnabled
+            }];
+            const renderer = new Renderer({}, tasks);
+            const spin = sinon.stub();
+            const buildText = sinon.stub(renderer, 'buildText').callsFake(({name}) => name);
 
-            rdr.frame.bind(ctx)();
+            renderer.spinner = {spin, paused: true};
+            renderer.previousFrame = 'a';
+            renderer.frame();
 
-            expect(ctx.tasks[0].isPending.calledOnce).to.be.true;
-            expect(ctx.buildText.calledOnce).to.be.true;
-            expect(ctx.spinner.spin.called).to.be.false;
-
-            done();
+            expect(tasks[0].isPending.calledOnce).to.be.true;
+            expect(buildText.calledOnce).to.be.true;
+            expect(spin.called).to.be.false;
         });
     });
 
     describe('#buildText', function () {
-        let rdr;
+        const renderer = new Renderer();
 
-        before(function () {
-            rdr = new Renderer();
-        });
-
-        it('no subtasks, yes output', function (done) {
+        it('no subtasks, yes output', function () {
             const task = {
                 hasSubtasks: sinon.stub().returns(false),
                 output: '     my \n name \n is \n not \n important \n   ',
                 title: 'Dino'
             };
 
-            const ret = rdr.buildText(task);
+            const ret = renderer.buildText(task);
+
+            expect(task.hasSubtasks.calledOnce).to.be.true;
             expect(stripAnsi(ret)).to.equal('Dino >  important');
-            done();
         });
 
-        it('no subtasks, no output', function (done) {
+        it('no subtasks, no output', function () {
             const task = {
                 hasSubtasks: sinon.stub().returns(false),
                 title: 'Dinos'
             };
-            const ret = rdr.buildText(task);
+
+            const ret = renderer.buildText(task);
 
             expect(task.hasSubtasks.calledOnce).to.be.true;
             expect(ret).to.equal('Dinos');
-
-            done();
         });
 
-        it('handles subtasks', function (done) {
+        it('handles subtasks', function () {
             const task = {
                 hasSubtasks: sinon.stub().returns(true),
                 subtasks: [{
@@ -369,7 +318,7 @@ describe('Unit: UI > Renderer', function () {
                 title: 'Animal'
             };
 
-            const ret = rdr.buildText(task);
+            const ret = renderer.buildText(task);
 
             expect(task.hasSubtasks.calledOnce).to.be.true;
             expect(task.subtasks[0].isPending.calledOnce).to.be.true;
@@ -377,57 +326,45 @@ describe('Unit: UI > Renderer', function () {
             expect(task.subtasks[1].isPending.calledOnce).to.be.true;
             expect(task.subtasks[1].hasSubtasks.called).to.be.false;
             expect(stripAnsi(ret)).to.equal('Animal > Pig');
-
-            done();
         });
     });
 
     describe('#end', function () {
-        let rdr;
-
-        before(function () {
-            rdr = new Renderer();
+        afterEach(() => {
+            sinon.restore();
         });
 
-        it('clears its interval', function (done) {
-            const ctx = {id: 100};
-            const clrStub = sinon.stub(global,'clearInterval');
+        it('clears its interval', function () {
+            const renderer = new Renderer();
+            renderer.id = 100;
+            const clrStub = sinon.stub(global, 'clearInterval');
 
-            rdr.end.bind(ctx)();
+            renderer.end();
 
-            expect(ctx.id).to.be.undefined;
+            expect(renderer.id).to.be.undefined;
             expect(clrStub.called).to.be.true;
             expect(clrStub.firstCall.args[0]).to.equal(100);
-
-            clrStub.restore();
-
-            done();
         });
 
-        it('doesn\'t clear nonexistant ids', function (done) {
-            const clrStub = sinon.stub(global,'clearInterval');
+        it('doesn\'t clear nonexistant ids', function () {
+            const renderer = new Renderer();
+            const clrStub = sinon.stub(global, 'clearInterval');
 
-            rdr.end();
+            renderer.end();
 
             expect(clrStub.called).to.be.false;
-            clrStub.restore();
-            done();
         });
 
-        it('removes spinner', function (done) {
-            const spStub = sinon.stub();
-            const ctx = {
-                spinner: {stop: spStub},
-                ui: {spinner: true}
-            };
+        it('removes spinner', function () {
+            const renderer = new Renderer({spinner: true});
+            const stop = sinon.stub();
 
-            rdr.end.bind(ctx)();
+            renderer.spinner = {stop};
+            renderer.end();
 
-            expect(spStub.calledOnce).to.be.true;
-            expect(ctx.spinner).to.be.null;
-            expect(ctx.ui.spinner).to.be.null;
-
-            done();
+            expect(stop.calledOnce).to.be.true;
+            expect(renderer.spinner).to.be.null;
+            expect(renderer.ui.spinner).to.be.null;
         });
     });
 });
