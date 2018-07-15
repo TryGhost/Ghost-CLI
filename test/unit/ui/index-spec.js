@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const chalk = require('chalk');
 const hasAnsi = require('has-ansi');
 const stripAnsi = require('strip-ansi');
@@ -10,7 +10,6 @@ const streamTestUtils = require('../../utils/stream');
 const EventEmitter = require('events');
 
 const execa = require('execa');
-const Renderer = require('../../../lib/ui/renderer');
 
 const modulePath = '../../../lib/ui';
 
@@ -296,14 +295,19 @@ describe('Unit: UI', function () {
         it('passes tasks to constructor', function () {
             const runStub = sinon.stub().resolves();
             const ListrStub = sinon.stub().returns({run: runStub});
-            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const createRendererStub = sinon.stub().returns({RendererClass: true});
+            const UI = proxyquire(modulePath, {
+                listr: ListrStub,
+                './renderer': createRendererStub
+            });
             const ui = new UI();
             const tasks = ['test','ing','is','necessary'];
 
             return ui.listr(tasks).then(() => {
                 expect(ListrStub.calledWithNew()).to.be.true;
+                expect(createRendererStub.calledOnce).to.be.true;
                 expect(ListrStub.calledWithExactly(tasks, {
-                    renderer: Renderer
+                    renderer: {RendererClass: true}
                 }));
                 expect(runStub.calledOnce).to.be.true;
                 expect(runStub.calledWithExactly({
@@ -316,12 +320,17 @@ describe('Unit: UI', function () {
         it('sets verbose renderer', function () {
             const runStub = sinon.stub().resolves();
             const ListrStub = sinon.stub().returns({run: runStub});
-            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const createRendererStub = sinon.stub().returns({RendererClass: true});
+            const UI = proxyquire(modulePath, {
+                listr: ListrStub,
+                './renderer': createRendererStub
+            });
             const ui = new UI({verbose: true});
             const tasks = ['test','ing','is','necessary'];
 
             return ui.listr(tasks, {something: 'foo'}, {exitOnError: false}).then(() => {
                 expect(ListrStub.calledWithNew()).to.be.true;
+                expect(createRendererStub.called).to.be.false;
                 expect(ListrStub.calledWithExactly(tasks, {
                     renderer: 'verbose',
                     exitOnError: true
