@@ -1,5 +1,5 @@
 ---
-name: "\U0001F4A1 Anything else"
+name: "\U0001F4A1Anything else"
 about: "For help, support, questions & ideas - please use https://forum.ghost.org
   \U0001F46B"
 
