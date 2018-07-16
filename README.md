@@ -31,13 +31,7 @@ In order to keep these goals obtainable & maintainable by Ghost's small team, we
 
 ### Recommended stack
 
-* Ubuntu 16.04
-* MySQL
-* NGINX
-* Systemd
-* Node v6 installed via NodeSource
-* At least 1GB memory (swap can be used)
-* A non-root user for running ghost commands
+We officially recommend the stack [described here](https://docs.ghost.org/docs/install#section-pre-requisites) for production installs.
 
 The team behind Ghost CLI _only_ supports this stack. This restriction is very deliberate, as every additional option for configuration or divergent piece of code required to support an additional environment creates exponential complexity and maintenance overhead. 
 
