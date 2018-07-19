@@ -190,6 +190,7 @@ describe('Unit: Command > Config', function () {
             expect(result[0].name).to.equal('url');
             expect(result[0].validate('http://localhost:2368')).to.be.true;
             expect(result[0].validate('notaurl')).to.match(/Invalid URL/);
+            expect(result[0].validate('https://localhost:2368/ghost')).to.match(/path that ends with `ghost`/);
         });
 
         it('returns db prompts if db arg not provided', function () {
@@ -471,6 +472,7 @@ describe('Unit: Command > Config', function () {
             expect(advancedOptions.url.validate('http://localhost:2368')).to.be.true;
             expect(advancedOptions.url.validate('localhost:2368')).to.match(/Invalid URL/);
             expect(advancedOptions.url.validate('not even remotely a URL')).to.match(/Invalid URL/);
+            expect(advancedOptions.url.validate('http://localhost:2368/ghost')).to.match(/path that ends with `ghost`/);
 
             // Check transform function
             expect(advancedOptions.url.transform('http://MyUpperCaseUrl.com')).to.equal('http://myuppercaseurl.com');
