@@ -183,14 +183,13 @@ describe('Unit: Command > Config', function () {
         });
 
         it('returns url prompt with validator if url is not provided and db is sqlite3', function () {
+            const expectedValidator = require('../../../lib/utils/validate-instance-url')
             const argv = {db: 'sqlite3'};
             const result = config.getConfigPrompts(argv);
 
             expect(result).to.have.length(1);
             expect(result[0].name).to.equal('url');
-            expect(result[0].validate('http://localhost:2368')).to.be.true;
-            expect(result[0].validate('notaurl')).to.match(/Invalid URL/);
-            expect(result[0].validate('https://localhost:2368/ghost')).to.match(/path that ends with `ghost`/);
+            expect(result[0].validate).to.equal(expectedValidator);
         });
 
         it('returns db prompts if db arg not provided', function () {
@@ -466,13 +465,11 @@ describe('Unit: Command > Config', function () {
     describe('advanced options', function () {
         it('url', function () {
             const advancedOptions = require(advancedModulePath);
+            const expectedValidator = require('../../../lib/utils/validate-instance-url');
             expect(advancedOptions.url).to.exist;
 
             // Check validate function
-            expect(advancedOptions.url.validate('http://localhost:2368')).to.be.true;
-            expect(advancedOptions.url.validate('localhost:2368')).to.match(/Invalid URL/);
-            expect(advancedOptions.url.validate('not even remotely a URL')).to.match(/Invalid URL/);
-            expect(advancedOptions.url.validate('http://localhost:2368/ghost')).to.match(/path that ends with `ghost`/);
+            expect(advancedOptions.url.validate).to.equal(expectedValidator);
 
             // Check transform function
             expect(advancedOptions.url.transform('http://MyUpperCaseUrl.com')).to.equal('http://myuppercaseurl.com');
