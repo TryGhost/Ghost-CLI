@@ -11,14 +11,16 @@ describe('Unit: Utils > update-check', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const testError = new Error('update check');
         const latestVersion = sinon.stub().rejects(testError);
+        const ui = {run: sinon.stub().callsFake(fn => fn())}
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
             'latest-version': latestVersion
         });
 
-        updateCheck().catch((err) => {
+        updateCheck(ui).catch((err) => {
             expect(err.message).to.equal(testError.message);
+            expect(ui.run.calledOnce).to.be.true;
             expect(latestVersion.calledOnce).to.be.true;
             expect(latestVersion.calledWithExactly('ghost')).to.be.true;
             done();
@@ -28,15 +30,19 @@ describe('Unit: Utils > update-check', function () {
     it('doesn\'t do anything if there are no updates', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const latestVersion = sinon.stub().resolves('1.0.0');
-        const logStub = sinon.stub();
+        const ui = {
+            run: sinon.stub().callsFake(fn => fn()),
+            log: sinon.stub()
+        };
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
             'latest-version': latestVersion
         });
 
-        return updateCheck({log: logStub}).then(() => {
-            expect(logStub.called).to.be.false;
+        return updateCheck(ui).then(() => {
+            expect(ui.run.calledOnce).to.be.true;
+            expect(ui.log.called).to.be.false;
             expect(latestVersion.calledOnce).to.be.true;
             expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
@@ -45,17 +51,22 @@ describe('Unit: Utils > update-check', function () {
     it('logs a message if an update is available', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const latestVersion = sinon.stub().resolves('1.1.0');
-        const logStub = sinon.stub();
+        const ui = {
+            run: sinon.stub().callsFake(fn => fn()),
+            log: sinon.stub()
+        };
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
             'latest-version': latestVersion
         });
 
-        return updateCheck({log: logStub}).then(() => {
-            expect(logStub.calledOnce).to.be.true;
+        return updateCheck(ui).then(() => {
+            expect(ui.run.calledOnce).to.be.true;
+            expect(ui.log.calledOnce).to.be.true;
 
-            const log = logStub.args[0][0];
+
+            const log = ui.log.args[0][0];
 
             expect(stripAnsi(log)).to.match(/You are running an outdated version of Ghost-CLI/);
 
