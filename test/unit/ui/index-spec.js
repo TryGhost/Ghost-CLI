@@ -65,7 +65,8 @@ describe('Unit: UI', function () {
     describe('run', function () {
         const spinner = {
             succeed: sinon.stub(),
-            fail: sinon.stub()
+            fail: sinon.stub(),
+            stop: sinon.stub()
         };
 
         const startStub = sinon.stub().returns(spinner);
@@ -77,6 +78,7 @@ describe('Unit: UI', function () {
         afterEach(() => {
             spinner.succeed.reset();
             spinner.fail.reset();
+            spinner.stop.reset();
             startStub.resetHistory();
             oraStub.resetHistory();
         });
@@ -147,6 +149,26 @@ describe('Unit: UI', function () {
                 })).to.be.true;
                 expect(startStub.calledOnce).to.be.true;
                 expect(spinner.succeed.calledOnce).to.be.true;
+                expect(ui.spinner, 'spinner is set to null').to.be.null;
+            });
+        });
+
+        it('starts spinner with options, handles clear option', function () {
+            const ui = new UI({stdout: {stdout: true}});
+            const testFunc = sinon.stub().resolves('foo');
+
+            return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots', clear: true}).then((result) => {
+                expect(result).to.equal('foo');
+                expect(testFunc.calledOnce).to.be.true;
+                expect(oraStub.calledOnce).to.be.true;
+                expect(oraStub.calledWithExactly({
+                    text: 'do a thing',
+                    spinner: 'dots',
+                    stream: {stdout: true}
+                })).to.be.true;
+                expect(startStub.calledOnce).to.be.true;
+                expect(spinner.stop.calledOnce).to.be.true;
+                expect(spinner.succeed.called).to.be.false;
                 expect(ui.spinner, 'spinner is set to null').to.be.null;
             });
         });
