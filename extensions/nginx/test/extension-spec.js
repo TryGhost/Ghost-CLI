@@ -653,6 +653,18 @@ describe('Unit: Extensions > Nginx', function () {
     describe('uninstall hook', function () {
         const instance = {config: {get: () => 'http://ghost.dev'}};
         const testEs = (val) => (new RegExp(/-ssl/)).test(val);
+
+        it('returns if no url exists in config', function () {
+            const config = {get: () => undefined};
+            const existsSync = sinon.stub().returns(false);
+            const ext = proxyNginx({'fs-extra': {existsSync}});
+
+            return ext.uninstall({config}).then(() => {
+                expect(existsSync.called).to.be.false;
+                expect(ext.restartNginx.called).to.be.false;
+            });
+        });
+
         it('Leaves nginx alone when no config file exists', function () {
             const esStub = sinon.stub().returns(false);
             const ext = proxyNginx({'fs-extra': {existsSync: esStub}});

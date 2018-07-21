@@ -223,8 +223,14 @@ class NginxExtension extends cli.Extension {
         }], false);
     }
 
-    uninstall(instance) {
-        const parsedUrl = url.parse(instance.config.get('url'));
+    uninstall({config}) {
+        const instanceUrl = config.get('url');
+
+        if (!instanceUrl) {
+            return Promise.resolve();
+        }
+
+        const parsedUrl = url.parse(instanceUrl);
         const confFile = `${parsedUrl.hostname}.conf`;
         const sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
 
