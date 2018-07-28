@@ -84,11 +84,20 @@ class SystemdProcessManager extends ProcessManager {
             .catch((error) => {
                 // Systemd prints out "inactive" if service isn't running
                 // or "activating" if service hasn't completely started yet
-                if (!error.message.match(/inactive|activating/)) {
-                    throw new ProcessError(error);
+                if (error.stdout && error.stdout.match(/inactive|activating/)) {
+                    return false;
                 }
 
-                return false;
+                // Systemd service is in "failed" state, meaning Ghost failed to start.
+                // In this case, we should reset the failed state and return false, so that
+                // the user gets the chance to try starting again
+                if (error.stdout && error.stdout.match(/failed/)) {
+                    return this.ui.sudo(`systemctl reset-failed ${this.systemdName}`)
+                        .then(() => false)
+                        .catch((error) => { throw new ProcessError(error); });
+                }
+
+                throw new ProcessError(error);
             });
     }
 

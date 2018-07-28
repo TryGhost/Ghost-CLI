@@ -261,8 +261,8 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Throws ProcessError for bad errors', function () {
-            const ui = {sudo: sinon.stub().rejects(new Error('unknown'))};
-            const ext = makeSystemd(null, ui);
+            const sudo = sinon.stub().rejects(new Error('unknown'));
+            const ext = makeSystemd(null, {sudo});
             const expectedCmd = 'systemctl is-active ghost_ghost_org';
 
             ext.isRunning().then(() => {
@@ -270,20 +270,57 @@ describe('Unit: Systemd > Process Manager', function () {
             }).catch((error) => {
                 expect(error.message).to.equal('unknown');
                 expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(sudo.calledOnce).to.be.true;
+                expect(sudo.calledWithExactly(expectedCmd)).to.be.true;
             });
         });
 
         it('Doesn\'t pass stopped errors through', function () {
-            const ui = {sudo: sinon.stub().rejects(new Error('inactive'))};
-            const ext = makeSystemd(null, ui);
+            const sudo = sinon.stub().rejects(Object.assign(new Error(), {stdout: 'inactive'}));
+            const ext = makeSystemd(null, {sudo});
             const expectedCmd = 'systemctl is-active ghost_ghost_org';
 
             ext.isRunning().then((result) => {
                 expect(result).to.be.false;
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(sudo.calledOnce).to.be.true;
+                expect(sudo.calledWithExactly(expectedCmd)).to.be.true;
+            });
+        });
+
+        it('calls reset-failed if service is failed and returns false', function () {
+            const sudo = sinon.stub();
+            sudo.onFirstCall().rejects(Object.assign(new Error(), {stdout: 'failed'}));
+            sudo.onSecondCall().resolves();
+
+            const ext = makeSystemd(null, {sudo});
+            const expectedCmd = 'systemctl is-active ghost_ghost_org';
+            const resetCmd = 'systemctl reset-failed ghost_ghost_org';
+
+            ext.isRunning().then((result) => {
+                expect(result).to.be.false;
+                expect(sudo.calledTwice).to.be.true;
+                expect(sudo.firstCall.calledWithExactly(expectedCmd));
+                expect(sudo.secondCall.calledWithExactly(resetCmd));
+            });
+        });
+
+        it('calls reset-failed if services is failed and passes errors through', function () {
+            const sudo = sinon.stub();
+            sudo.onFirstCall().rejects(Object.assign(new Error(), {stdout: 'failed'}));
+            sudo.onSecondCall().rejects(new Error('uh oh'));
+
+            const ext = makeSystemd(null, {sudo});
+            const expectedCmd = 'systemctl is-active ghost_ghost_org';
+            const resetCmd = 'systemctl reset-failed ghost_ghost_org';
+
+            ext.isRunning().then(() => {
+                expect(false, 'An error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error.message).to.equal('uh oh');
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(sudo.calledTwice).to.be.true;
+                expect(sudo.firstCall.calledWithExactly(expectedCmd)).to.be.true;
+                expect(sudo.secondCall.calledWithExactly(resetCmd)).to.be.true;
             });
         });
     });
