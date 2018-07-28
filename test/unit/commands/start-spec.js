@@ -1,4 +1,4 @@
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const createConfigStub = require('../../utils/config-stub');
@@ -9,7 +9,6 @@ const UI = require('../../../lib/ui');
 const DoctorCommand = require('../../../lib/commands/doctor');
 
 const modulePath = '../../../lib/commands/start';
-const StartCommand = require(modulePath);
 
 function getStubs(dir, environment = undefined) {
     const ui = new UI({});
@@ -170,7 +169,7 @@ describe('Unit: Commands > Start', function () {
             config: {options: {start: {test: true}}}
         }, {}];
 
-        const yargs = {option: sinon.stub(), epilogue: () => true};
+        const yargs = {option: sinon.stub(), epilogue: () => true, usage: () => true};
         yargs.option.returns(yargs);
         StartCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
