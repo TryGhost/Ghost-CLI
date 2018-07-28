@@ -488,7 +488,7 @@ describe('Unit: Commands > Setup', function () {
             config: {options: {setup: {test: true}}}
         }, {}];
 
-        const yargs = {option: sinon.stub(), epilogue: () => true};
+        const yargs = {option: sinon.stub(), epilogue: () => true, usage: () => true};
         yargs.option.returns(yargs);
         SetupCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
