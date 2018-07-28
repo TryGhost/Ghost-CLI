@@ -112,7 +112,7 @@ describe('Unit: Commands > Stop', function () {
             config: {options: {stop: {test: true}}}
         }, {}];
 
-        const yargs = {option: sinon.stub(), epilogue: () => true};
+        const yargs = {option: sinon.stub(), epilogue: noop};
         yargs.option.returns(yargs);
         StopCommand.configureOptions.call({options: {}}, 'Test', yargs, extensions, true);
         expect(yargs.option.called).to.be.true;
