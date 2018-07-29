@@ -56,4 +56,4 @@ describe('Unit: Utils > getInstance', function () {
         expect(stubs.chdir.calledOnce).to.to.true;
         expect(stubs.chdir.calledWithExactly(dir)).to.be.true;
     });
-})
+});
