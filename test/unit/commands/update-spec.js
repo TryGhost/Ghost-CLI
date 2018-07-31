@@ -712,7 +712,7 @@ describe('Unit: Commands > Update', function () {
             return instance.version(context).then((result) => {
                 expect(result).to.be.true;
                 expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, '1.0.0', true)).to.be.true;
+                expect(resolveVersion.calledWithExactly(null, '1.0.0', true, false)).to.be.true;
                 expect(context.version).to.equal('1.0.1');
                 expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
             });
@@ -740,7 +740,7 @@ describe('Unit: Commands > Update', function () {
                 expect(result).to.be.true;
                 expect(resolveVersion.called).to.be.false;
                 expect(zipVersion.calledOnce).to.be.true;
-                expect(zipVersion.calledWithExactly('/some/zip/file.zip', '1.0.0')).to.be.true;
+                expect(zipVersion.calledWithExactly('/some/zip/file.zip', '1.0.0', false)).to.be.true;
                 expect(context.version).to.equal('1.1.0');
                 expect(context.installPath).to.equal('/var/www/ghost/versions/1.1.0');
             });
@@ -763,7 +763,7 @@ describe('Unit: Commands > Update', function () {
             return instance.version(context).then((result) => {
                 expect(result).to.be.false;
                 expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, null, false)).to.be.true;
+                expect(resolveVersion.calledWithExactly(null, '1.0.0', false, true)).to.be.true;
             });
         });
 
@@ -791,7 +791,7 @@ describe('Unit: Commands > Update', function () {
                 expect(error).to.be.an.instanceof(Error);
                 expect(error.message).to.equal('something bad');
                 expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, null, false)).to.be.true;
+                expect(resolveVersion.calledWithExactly(null, '1.0.0', false, true)).to.be.true;
             });
         });
     });

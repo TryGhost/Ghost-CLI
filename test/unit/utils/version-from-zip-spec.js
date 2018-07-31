@@ -114,7 +114,7 @@ describe('Unit: Utils > versionFromZip', function () {
     it('rejects if update version passed and zip version < update version', function () {
         const versionFromZip = require(modulePath);
 
-        return versionFromZip(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0').then(() => {
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', true).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
