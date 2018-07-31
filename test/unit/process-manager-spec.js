@@ -67,12 +67,15 @@ describe('Unit: Process Manager', function () {
         });
 
         it('calls portPolling with options', function () {
+            const cliConfig = getConfigStub();
             const config = getConfigStub();
+
+            cliConfig.get.withArgs('active-version').returns('1.25.0');
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('10.0.1.0');
             portPollingStub.resolves();
 
-            const instance = new ProcessManager({}, {}, {config: config});
+            const instance = new ProcessManager({}, {}, {config, cliConfig});
             const stopStub = sinon.stub(instance, 'stop').resolves();
 
             return instance.ensureStarted({logSuggestion: 'test'}).then(() => {
@@ -82,19 +85,23 @@ describe('Unit: Process Manager', function () {
                     logSuggestion: 'test',
                     stopOnError: true,
                     port: 2368,
-                    host: '10.0.1.0'
+                    host: '10.0.1.0',
+                    useNetServer: false
                 })).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
         });
 
         it('throws error without stopping if stopOnError is false', function () {
+            const cliConfig = getConfigStub();
             const config = getConfigStub();
+
+            cliConfig.get.withArgs('active-version').returns('1.25.0');
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('localhost');
             portPollingStub.rejects(new Error('test error'));
 
-            const instance = new ProcessManager({}, {}, {config: config});
+            const instance = new ProcessManager({}, {}, {config, cliConfig});
             const stopStub = sinon.stub(instance, 'stop').resolves();
 
             return instance.ensureStarted({stopOnError: false}).then(() => {
@@ -105,19 +112,23 @@ describe('Unit: Process Manager', function () {
                 expect(portPollingStub.calledWithExactly({
                     stopOnError: false,
                     port: 2368,
-                    host: 'localhost'
+                    host: 'localhost',
+                    useNetServer: false
                 })).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
         });
 
         it('throws error and calls stop if stopOnError is true', function () {
+            const cliConfig = getConfigStub();
             const config = getConfigStub();
+
+            cliConfig.get.withArgs('active-version').returns('1.25.0');
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('localhost');
             portPollingStub.rejects(new Error('test error'));
 
-            const instance = new ProcessManager({}, {}, {config: config});
+            const instance = new ProcessManager({}, {}, {config, cliConfig});
             const stopStub = sinon.stub(instance, 'stop').resolves();
 
             return instance.ensureStarted({}).then(() => {
@@ -129,19 +140,23 @@ describe('Unit: Process Manager', function () {
                 expect(portPollingStub.calledWithExactly({
                     stopOnError: true,
                     port: 2368,
-                    host: 'localhost'
+                    host: 'localhost',
+                    useNetServer: false
                 })).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
             });
         });
 
         it('throws error and calls stop (swallows stop error) if stopOnError is true', function () {
+            const cliConfig = getConfigStub();
             const config = getConfigStub();
+
+            cliConfig.get.withArgs('active-version').returns('1.25.0');
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('localhost');
             portPollingStub.rejects(new Error('test error'));
 
-            const instance = new ProcessManager({}, {}, {config: config});
+            const instance = new ProcessManager({}, {}, {config, cliConfig});
             const stopStub = sinon.stub(instance, 'stop').rejects(new Error('test error 2'));
 
             return instance.ensureStarted().then(() => {
@@ -153,7 +168,8 @@ describe('Unit: Process Manager', function () {
                 expect(portPollingStub.calledWithExactly({
                     stopOnError: true,
                     port: 2368,
-                    host: 'localhost'
+                    host: 'localhost',
+                    useNetServer: false
                 })).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
             });

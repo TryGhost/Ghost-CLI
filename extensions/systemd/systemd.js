@@ -21,8 +21,27 @@ class SystemdProcessManager extends ProcessManager {
         this._precheck();
         const {logSuggestion} = this;
 
-        return this.ui.sudo(`systemctl start ${this.systemdName}`)
-            .then(() => this.ensureStarted({logSuggestion}))
+        const portfinder = require('portfinder');
+        const socketAddress = {
+            port: null,
+            host: 'localhost'
+        };
+
+        return portfinder.getPortPromise()
+            .then((port) => {
+                socketAddress.port = port;
+                this.instance.config.set('bootstrap-socket', socketAddress);
+                return this.instance.config.save();
+            })
+            .then(() => {
+                return this.ui.sudo(`systemctl start ${this.systemdName}`)
+            })
+            .then(() => {
+                return this.ensureStarted({
+                    logSuggestion,
+                    socketAddress
+                });
+            })
             .catch((error) => {
                 if (error instanceof CliError) {
                     throw error;
@@ -43,8 +62,27 @@ class SystemdProcessManager extends ProcessManager {
         this._precheck();
         const {logSuggestion} = this;
 
-        return this.ui.sudo(`systemctl restart ${this.systemdName}`)
-            .then(() => this.ensureStarted({logSuggestion}))
+        const portfinder = require('portfinder');
+        const socketAddress = {
+            port: null,
+            host: 'localhost'
+        };
+
+        return portfinder.getPortPromise()
+            .then((port) => {
+                socketAddress.port = port;
+                this.instance.config.set('bootstrap-socket', socketAddress);
+                return this.instance.config.save();
+            })
+            .then(() => {
+                return this.ui.sudo(`systemctl restart ${this.systemdName}`)
+            })
+            .then(() => {
+                return this.ensureStarted({
+                    logSuggestion,
+                    socketAddress
+                });
+            })
             .catch((error) => {
                 if (error instanceof CliError) {
                     throw error;
