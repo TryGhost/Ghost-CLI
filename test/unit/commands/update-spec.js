@@ -37,6 +37,130 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('run', function () {
+        it('doesn\'t run database migrations if active blog version is ^2.0.0', function () {
+            const migrateStub = sinon.stub().resolves();
+            const UpdateCommand = proxyquire(modulePath, {
+                '../tasks/migrate': migrateStub
+            });
+            const config = configStub();
+            config.get.withArgs('cli-version').returns('1.8.0');
+            config.get.withArgs('active-version').returns('2.0.0');
+            const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
+            const system = {getInstance: sinon.stub()};
+
+            ui.run.callsFake(fn => fn());
+            ui.listr.callsFake((tasks, ctx) => {
+                return Promise.each(tasks, (task) => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
+
+                    return task.task(ctx);
+                });
+            });
+
+            class TestInstance extends Instance {
+                get cliConfig() { return config; }
+            }
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            fakeInstance.running.resolves(true);
+            const cmdInstance = new UpdateCommand(ui, system);
+
+            const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
+            const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
+            const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate').resolves();
+            const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions').resolves();
+            const linkStub = sinon.stub(cmdInstance, 'link').resolves();
+            const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
+
+            return cmdInstance.run({version: '2.0.1', force: false, zip: ''}).then(() => {
+                expect(runCommandStub.calledTwice).to.be.true;
+                expect(ui.run.calledOnce).to.be.true;
+                expect(versionStub.calledOnce).to.be.true;
+                expect(versionStub.args[0][0]).to.deep.equal({
+                    version: '2.0.1',
+                    force: false,
+                    instance: fakeInstance,
+                    activeVersion: '2.0.0',
+                    zip: ''
+                });
+                expect(ui.log.calledOnce).to.be.false;
+                expect(ui.listr.calledOnce).to.be.true;
+                expect(removeOldVersionsStub.calledOnce).to.be.true;
+                expect(stopStub.calledOnce).to.be.true;
+                expect(linkStub.calledOnce).to.be.true;
+                expect(downloadStub.calledOnce).to.be.true;
+                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
+                expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
+
+                expect(migrateStub.called).to.be.false;
+            });
+        });
+
+        it('doesn\'t run database migrations if version to migrate to is ^2.0.0', function () {
+            const migrateStub = sinon.stub().resolves();
+            const UpdateCommand = proxyquire(modulePath, {
+                '../tasks/migrate': migrateStub
+            });
+            const config = configStub();
+            config.get.withArgs('cli-version').returns('1.8.0');
+            config.get.withArgs('active-version').returns('1.25.0');
+            const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
+            const system = {getInstance: sinon.stub()};
+
+            ui.run.callsFake(fn => fn());
+            ui.listr.callsFake((tasks, ctx) => {
+                return Promise.each(tasks, (task) => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
+
+                    return task.task(ctx);
+                });
+            });
+
+            class TestInstance extends Instance {
+                get cliConfig() { return config; }
+            }
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            fakeInstance.running.resolves(true);
+            const cmdInstance = new UpdateCommand(ui, system);
+
+            const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
+            const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
+            const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate').resolves();
+            const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions').resolves();
+            const linkStub = sinon.stub(cmdInstance, 'link').resolves();
+            const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
+
+            return cmdInstance.run({version: '2.0.0', force: false, zip: ''}).then(() => {
+                expect(runCommandStub.calledTwice).to.be.true;
+                expect(ui.run.calledOnce).to.be.true;
+                expect(versionStub.calledOnce).to.be.true;
+                expect(versionStub.args[0][0]).to.deep.equal({
+                    version: '2.0.0',
+                    force: false,
+                    instance: fakeInstance,
+                    activeVersion: '1.25.0',
+                    zip: ''
+                });
+                expect(ui.log.calledOnce).to.be.false;
+                expect(ui.listr.calledOnce).to.be.true;
+                expect(removeOldVersionsStub.calledOnce).to.be.true;
+                expect(stopStub.calledOnce).to.be.true;
+                expect(linkStub.calledOnce).to.be.true;
+                expect(downloadStub.calledOnce).to.be.true;
+                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
+                expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
+
+                expect(migrateStub.called).to.be.false;
+            });
+        });
+
         it('doesn\'t run tasks if no new versions are available', function () {
             const UpdateCommand = require(modulePath);
             const config = configStub();

@@ -5,6 +5,7 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../systemd';
 const errors = require('../../../lib/errors');
+const configStub = require('../../../test/utils/config-stub');
 const Systemd = require(modulePath);
 
 const instance = {
@@ -30,6 +31,7 @@ describe('Unit: Systemd > Process Manager', function () {
         let ext, ui;
 
         beforeEach(function () {
+            instance.config = configStub();
             ui = {sudo: sinon.stub().resolves()},
             ext = new Systemd(ui, null, instance);
             ext.ensureStarted = sinon.stub().resolves();

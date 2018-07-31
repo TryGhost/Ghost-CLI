@@ -221,10 +221,19 @@ describe('Unit: Commands > Setup', function () {
             });
         });
 
-        it('Initial stage is setup properly', function () {
-            const listr = sinon.stub().resolves();
+        it('Initial stage is setup properly, but skips db migrations', function () {
+            const migrateStub = sinon.stub().resolves();
+            const SetupCommand = proxyquire(modulePath, {
+                '../tasks/migrate': migrateStub
+            });
+
+            const listr = sinon.stub();
             const aIstub = sinon.stub();
             const config = configStub();
+            const cliConfigStub = configStub();
+
+            cliConfigStub.get.withArgs('active-version').returns('2.0.0');
+
             config.get.withArgs('url').returns('https://ghost.org');
             config.has.returns(false);
 
@@ -234,7 +243,59 @@ describe('Unit: Commands > Setup', function () {
                         checkEnvironment: () => true,
                         apples: true,
                         config,
-                        dir: '/var/www/ghost'
+                        dir: '/var/www/ghost',
+                        cliConfig: cliConfigStub
+                    };
+                },
+                addInstance: aIstub,
+                hook: () => Promise.resolve()
+            };
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: listr,
+                confirm: () => Promise.resolve(false)
+            };
+            const argv = {
+                prompt: true,
+                'setup-linux-user': false
+            };
+
+            ui.listr.callsFake((tasks, ctx) => {
+                return Promise.each(tasks, (task) => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
+
+                    return task.task(ctx);
+                });
+            });
+
+            const setup = new SetupCommand(ui, system);
+            return setup.run(argv).then(() => {
+                expect(listr.calledOnce).to.be.true;
+                expect(migrateStub.called).to.be.false;
+            });
+        });
+
+        it('Initial stage is setup properly', function () {
+            const listr = sinon.stub().resolves();
+            const aIstub = sinon.stub();
+            const config = configStub();
+            const cliConfigStub = configStub();
+
+            cliConfigStub.get.withArgs('active-version').returns('1.25.0');
+
+            config.get.withArgs('url').returns('https://ghost.org');
+            config.has.returns(false);
+
+            const system = {
+                getInstance: () => {
+                    return {
+                        checkEnvironment: () => true,
+                        apples: true,
+                        config,
+                        dir: '/var/www/ghost',
+                        cliConfig: cliConfigStub
                     };
                 },
                 addInstance: aIstub,
@@ -258,7 +319,7 @@ describe('Unit: Commands > Setup', function () {
                 expect(tasks[0].title).to.equal('Setting up instance');
                 tasks.forEach(function (task) {
                     expect(task.title).to.not.match(/database migrations/);
-                })
+                });
 
                 const ctx = {};
                 tasks[0].task(ctx);
@@ -348,7 +409,8 @@ describe('Unit: Commands > Setup', function () {
                     log: stubs.log
                 };
                 system = {
-                    hook: () => Promise.resolve()
+                    hook: () => Promise.resolve(),
+                    getInstance: sinon.stub()
                 };
             });
 
@@ -451,7 +513,10 @@ describe('Unit: Commands > Setup', function () {
                 listr: sinon.stub().resolves()
             };
             const skipStub = sinon.stub();
-            const system = {hook: () => Promise.resolve()};
+            const system = {
+                hook: () => Promise.resolve(),
+                getInstance: sinon.stub()
+            };
             const setup = new SetupCommand(ui, system);
             setup.runCommand = () => Promise.resolve();
             setup.addStage('zest', () => true, null, 'Zesty');
@@ -477,7 +542,10 @@ describe('Unit: Commands > Setup', function () {
                 confirm: sinon.stub().callsFake(confirm)
             };
             const skipStub = sinon.stub();
-            const system = {hook: () => Promise.resolve()};
+            const system = {
+                hook: () => Promise.resolve(),
+                getInstance: sinon.stub()
+            };
             const setup = new SetupCommand(ui, system);
             let tasks;
             const runCommand = sinon.stub(setup, 'runCommand').resolves();
