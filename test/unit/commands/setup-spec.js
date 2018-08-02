@@ -222,9 +222,13 @@ describe('Unit: Commands > Setup', function () {
         });
 
         it('Initial stage is setup properly, but skips db migrations', function () {
-            const migrateStub = sinon.stub().resolves();
+            const migratorStub = {
+                migrate: sinon.stub().resolves(),
+                rollback: sinon.stub().resolves()
+            };
+
             const SetupCommand = proxyquire(modulePath, {
-                '../tasks/migrate': migrateStub
+                '../tasks/migrator': migratorStub
             });
 
             const listr = sinon.stub();
@@ -273,7 +277,8 @@ describe('Unit: Commands > Setup', function () {
             const setup = new SetupCommand(ui, system);
             return setup.run(argv).then(() => {
                 expect(listr.calledOnce).to.be.true;
-                expect(migrateStub.called).to.be.false;
+                expect(migratorStub.migrate.called).to.be.false;
+                expect(migratorStub.rollback.called).to.be.false;
             });
         });
 
