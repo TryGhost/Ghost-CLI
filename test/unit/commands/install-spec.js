@@ -96,7 +96,7 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: 'local', zip: ''}).then(() => {
+            return testInstance.run({version: 'local', zip: '', v1: true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
@@ -105,7 +105,8 @@ describe('Unit: Commands > Install', function () {
                 expect(listrStub.args[0][1]).to.deep.equal({
                     version: null,
                     cliVersion: '1.0.0',
-                    zip: ''
+                    zip: '',
+                    v1: true
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
@@ -125,7 +126,7 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: '1.5.0', local: true, zip: ''}).then(() => {
+            return testInstance.run({version: '1.5.0', local: true, zip: '', v1: false}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
@@ -134,7 +135,8 @@ describe('Unit: Commands > Install', function () {
                 expect(listrStub.args[0][1]).to.deep.equal({
                     version: '1.5.0',
                     cliVersion: '1.0.0',
-                    zip: ''
+                    zip: '',
+                    v1: false
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
