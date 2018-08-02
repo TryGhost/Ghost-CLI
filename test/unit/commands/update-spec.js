@@ -17,6 +17,10 @@ describe('Unit: Commands > Update', function () {
         cleanupTestFolders();
     });
 
+    afterEach(() => {
+        sinon.restore();
+    });
+
     it('configureOptions adds setup & doctor options', function () {
         const superStub = sinon.stub().returnsArg(1);
         const doctorStub = sinon.stub().returnsArg(1);
@@ -77,7 +81,7 @@ describe('Unit: Commands > Update', function () {
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
 
-            return cmdInstance.run({version: '2.0.1', force: false, zip: ''}).then(() => {
+            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false}).then(() => {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
@@ -86,7 +90,8 @@ describe('Unit: Commands > Update', function () {
                     force: false,
                     instance: fakeInstance,
                     activeVersion: '2.0.0',
-                    zip: ''
+                    zip: '',
+                    v1: false
                 });
                 expect(ui.log.calledOnce).to.be.false;
                 expect(ui.listr.calledOnce).to.be.true;
@@ -143,7 +148,7 @@ describe('Unit: Commands > Update', function () {
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
 
-            return cmdInstance.run({version: '2.0.0', force: false, zip: ''}).then(() => {
+            return cmdInstance.run({version: '2.0.0', force: false, zip: '', v1: false}).then(() => {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
@@ -152,7 +157,8 @@ describe('Unit: Commands > Update', function () {
                     force: false,
                     instance: fakeInstance,
                     activeVersion: '1.25.0',
-                    zip: ''
+                    zip: '',
+                    v1: false
                 });
                 expect(ui.log.calledOnce).to.be.false;
                 expect(ui.listr.calledOnce).to.be.true;
@@ -188,7 +194,7 @@ describe('Unit: Commands > Update', function () {
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({version: '1.0.0', force: false, zip: ''}).then(() => {
+            return cmdInstance.run({version: '1.0.0', force: false, zip: '', v1: false}).then(() => {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
@@ -197,7 +203,8 @@ describe('Unit: Commands > Update', function () {
                     force: false,
                     instance: fakeInstance,
                     activeVersion: '1.0.0',
-                    zip: ''
+                    zip: '',
+                    v1: false
                 });
                 expect(ui.log.calledTwice).to.be.true;
                 expect(ui.log.args[0][0]).to.match(/install is using out-of-date configuration/);
@@ -261,12 +268,10 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
-            const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
+            sinon.stub(process, 'cwd').returns(fakeInstance.dir);
 
-            return cmdInstance.run({rollback: true, force: false, zip: ''}).then(() => {
+            return cmdInstance.run({rollback: true, force: false, zip: '', v1: false}).then(() => {
                 expect(runCommandStub.calledTwice).to.be.true;
-                cwdStub.restore();
-
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(versionStub.args[0][0]).to.deep.equal({
@@ -276,7 +281,8 @@ describe('Unit: Commands > Update', function () {
                     activeVersion: '1.1.0',
                     installPath: '/var/www/ghost/versions/1.0.0',
                     rollback: true,
-                    zip: ''
+                    zip: '',
+                    v1: false
                 });
                 expect(ui.log.calledOnce).to.be.true;
                 expect(ui.log.args[0][0]).to.match(/up to date/);
@@ -322,14 +328,12 @@ describe('Unit: Commands > Update', function () {
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
             const restartStub = sinon.stub(cmdInstance, 'restart').resolves();
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
-            const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
+            sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
             return cmdInstance.run({version: '1.1.0', rollback: false, force: false, restart: true}).then(() => {
-                cwdStub.restore();
-
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
@@ -382,14 +386,12 @@ describe('Unit: Commands > Update', function () {
             sinon.stub(cmdInstance, 'stop').resolves();
             sinon.stub(cmdInstance, 'restart').resolves();
             sinon.stub(cmdInstance, 'link').resolves();
-            const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
+            sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true}).then(() => {
-                cwdStub.restore();
-
+            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: true}).then(() => {
                 const expectedCtx = {
                     version: '1.0.0',
                     force: false,
@@ -397,7 +399,8 @@ describe('Unit: Commands > Update', function () {
                     activeVersion: '1.1.0',
                     installPath: '/var/www/ghost/versions/1.0.0',
                     rollback: true,
-                    zip: ''
+                    zip: '',
+                    v1: true
                 };
 
                 expect(runCommandStub.calledTwice).to.be.true;
@@ -450,13 +453,12 @@ describe('Unit: Commands > Update', function () {
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
             sinon.stub(cmdInstance, 'restart').resolves();
             sinon.stub(cmdInstance, 'link').resolves();
-            const cwdStub = sinon.stub(process, 'cwd').returns(fakeInstance.dir);
+            sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             sinon.stub(cmdInstance, 'downloadAndUpdate');
             sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true}).then(() => {
-                cwdStub.restore();
+            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: false}).then(() => {
                 const expectedCtx = {
                     version: '1.0.0',
                     force: false,
@@ -464,7 +466,8 @@ describe('Unit: Commands > Update', function () {
                     activeVersion: '1.1.0',
                     installPath: '/var/www/ghost/versions/1.0.0',
                     rollback: true,
-                    zip: ''
+                    zip: '',
+                    v1: false
                 };
 
                 expect(runCommandStub.calledTwice).to.be.true;
@@ -625,11 +628,10 @@ describe('Unit: Commands > Update', function () {
             const env = setupTestFolder({dirs: dirs});
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            sinon.stub(process, 'cwd').returns(env.dir);
             const skipStub = sinon.stub();
 
             return instance.removeOldVersions({}, {skip: skipStub}).then(() => {
-                cwdStub.restore();
                 expect(skipStub.calledOnce).to.be.true;
 
                 dirs.forEach((version) => {
@@ -655,7 +657,7 @@ describe('Unit: Commands > Update', function () {
             const env = setupTestFolder(envCfg);
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            sinon.stub(process, 'cwd').returns(env.dir);
             const keptVersions = [
                 '1.1.0',
                 '1.2.0',
@@ -671,8 +673,6 @@ describe('Unit: Commands > Update', function () {
             ];
 
             return instance.removeOldVersions().then(() => {
-                cwdStub.restore();
-
                 keptVersions.forEach((version) => {
                     expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.true;
                 });
@@ -704,17 +704,17 @@ describe('Unit: Commands > Update', function () {
                 rollback: false,
                 force: false,
                 version: null,
-                activeVersion: '1.0.0'
+                activeVersion: '1.0.0',
+                v1: true
             };
-            const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+            sinon.stub(process, 'cwd').returns('/var/www/ghost');
 
             return instance.version(context).then((result) => {
                 expect(result).to.be.true;
                 expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, '1.0.0')).to.be.true;
+                expect(resolveVersion.calledWithExactly(null, '1.0.0', true)).to.be.true;
                 expect(context.version).to.equal('1.0.1');
                 expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
-                cwdStub.restore();
             });
         });
 
@@ -731,9 +731,10 @@ describe('Unit: Commands > Update', function () {
                 force: false,
                 version: null,
                 activeVersion: '1.0.0',
-                zip: '/some/zip/file.zip'
+                zip: '/some/zip/file.zip',
+                v1: true
             };
-            const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
+            sinon.stub(process, 'cwd').returns('/var/www/ghost');
 
             return instance.version(context).then((result) => {
                 expect(result).to.be.true;
@@ -742,7 +743,6 @@ describe('Unit: Commands > Update', function () {
                 expect(zipVersion.calledWithExactly('/some/zip/file.zip', '1.0.0')).to.be.true;
                 expect(context.version).to.equal('1.1.0');
                 expect(context.installPath).to.equal('/var/www/ghost/versions/1.1.0');
-                cwdStub.restore();
             });
         });
 
@@ -756,13 +756,14 @@ describe('Unit: Commands > Update', function () {
                 rollback: false,
                 force: true,
                 version: null,
-                activeVersion: '1.0.0'
+                activeVersion: '1.0.0',
+                v1: false
             };
 
             return instance.version(context).then((result) => {
                 expect(result).to.be.false;
                 expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, null)).to.be.true;
+                expect(resolveVersion.calledWithExactly(null, null, false)).to.be.true;
             });
         });
 
@@ -780,7 +781,8 @@ describe('Unit: Commands > Update', function () {
                 rollback: false,
                 force: true,
                 version: null,
-                activeVersion: '1.0.0'
+                activeVersion: '1.0.0',
+                v1: false
             };
 
             return instance.version(context).then(() => {
@@ -789,7 +791,7 @@ describe('Unit: Commands > Update', function () {
                 expect(error).to.be.an.instanceof(Error);
                 expect(error.message).to.equal('something bad');
                 expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, null)).to.be.true;
+                expect(resolveVersion.calledWithExactly(null, null, false)).to.be.true;
             });
         });
     });
@@ -804,7 +806,7 @@ describe('Unit: Commands > Update', function () {
                 links: [['versions/1.0.0', 'current']]
             }
             const env = setupTestFolder(envCfg);
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            sinon.stub(process, 'cwd').returns(env.dir);
             const config = configStub();
             config.get.withArgs('active-version').returns('1.0.0');
             const context = {
@@ -822,8 +824,6 @@ describe('Unit: Commands > Update', function () {
             expect(config.set.calledWithExactly('previous-version', '1.0.0')).to.be.true;
             expect(config.set.calledWithExactly('active-version', '1.0.1')).to.be.true;
             expect(config.save.calledOnce).to.be.true;
-
-            cwdStub.restore();
         });
 
         it('does things correctly with rollback', function () {
@@ -833,7 +833,7 @@ describe('Unit: Commands > Update', function () {
                 links: [['versions/1.0.1', 'current']]
             }
             const env = setupTestFolder(envCfg);
-            const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
+            sinon.stub(process, 'cwd').returns(env.dir);
             const config = configStub();
             config.get.withArgs('active-version').returns('1.0.1');
             const context = {
@@ -851,8 +851,6 @@ describe('Unit: Commands > Update', function () {
             expect(config.set.calledWithExactly('previous-version', null)).to.be.true;
             expect(config.set.calledWithExactly('active-version', '1.0.0')).to.be.true;
             expect(config.save.calledOnce).to.be.true;
-
-            cwdStub.restore();
         });
     });
 });
