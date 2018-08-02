@@ -103,6 +103,14 @@ describe('Unit: resolveVersion', function () {
                 expect(version).to.equal('1.0.1');
             });
         });
+
+        it('filters out 2.0 version if v1 param is specified', function () {
+            stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0"]}');
+
+            return resolveVersion(null, null, true).then(function (version) {
+                expect(version).to.equal('1.52.37');
+            });
+        });
     });
 
     describe('with existing version', function () {
@@ -110,6 +118,17 @@ describe('Unit: resolveVersion', function () {
             stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion(null, '1.0.1').then(function () {
+                throw new Error('Version finder should not have resolved');
+            }).catch(function (error) {
+                expect(error).to.be.an.instanceOf(Error);
+                expect(error.message).to.equal('No valid versions found.');
+            });
+        });
+
+        it('filters out 2.0 version if v1 param is specified', function () {
+            stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0"]}');
+
+            return resolveVersion(null, '1.52.37', true).then(function () {
                 throw new Error('Version finder should not have resolved');
             }).catch(function (error) {
                 expect(error).to.be.an.instanceOf(Error);
