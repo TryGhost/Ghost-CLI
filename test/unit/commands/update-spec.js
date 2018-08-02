@@ -480,6 +480,118 @@ describe('Unit: Commands > Update', function () {
                 expect(stopStub.called).to.be.false;
             });
         });
+
+        it('attempts to auto-rollback on ghost error', function () {
+            const UpdateCommand = require(modulePath);
+            const config = configStub();
+            const errObj = new errors.GhostError('should_rollback');
+            config.get.withArgs('cli-version').returns('1.0.0');
+            config.get.withArgs('active-version').returns('1.1.0');
+            config.get.withArgs('previous-version').returns('1.0.0');
+
+            const ui = {
+                log: sinon.stub(),
+                listr: sinon.stub().rejects(errObj),
+                run: sinon.stub().callsFake(fn => fn())
+            };
+            const system = {getInstance: sinon.stub()};
+            class TestInstance extends Instance {
+                get cliConfig() { return config; }
+            }
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            fakeInstance.running.resolves(false);
+
+            const cmdInstance = new UpdateCommand(ui, system);
+            const rollback = cmdInstance.rollbackFromFail = sinon.stub().rejects(new Error('rollback_successful'));
+            cmdInstance.runCommand = sinon.stub().resolves(true);
+            cmdInstance.version = sinon.stub().callsFake(context => {
+                context.version = '1.1.1';
+                return true;
+            });
+
+            return cmdInstance.run({}).then(() => {
+                expect(false, 'Promise should have rejected').to.be.true;
+            }).catch(error => {
+                expect(error.message).to.equal('rollback_successful');
+                expect(rollback.calledOnce).to.be.true;
+                expect(rollback.calledWithExactly(errObj, '1.1.1', undefined)).to.be.true;
+            });
+        });
+
+        it('does not attempts to auto-rollback on cli error', function () {
+            const UpdateCommand = require(modulePath);
+            const config = configStub();
+            const errObj = new Error('do_nothing');
+            config.get.withArgs('cli-version').returns('1.0.0');
+            config.get.withArgs('active-version').returns('1.1.0');
+            config.get.withArgs('previous-version').returns('1.0.0');
+
+            const ui = {
+                log: sinon.stub(),
+                listr: sinon.stub().rejects(errObj),
+                run: sinon.stub().callsFake(fn => fn())
+            };
+            const system = {getInstance: sinon.stub()};
+            class TestInstance extends Instance {
+                get cliConfig() { return config; }
+            }
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            fakeInstance.running.resolves(false);
+
+            const cmdInstance = new UpdateCommand(ui, system);
+            const rollback = cmdInstance.rollbackFromFail = sinon.stub();
+            cmdInstance.runCommand = sinon.stub().resolves(true);
+            cmdInstance.version = sinon.stub().callsFake(context => {
+                context.version = '1.1.1';
+                return true;
+            });
+
+            return cmdInstance.run({}).then(() => {
+                expect(false, 'Promise should have rejected').to.be.true;
+            }).catch(error => {
+                expect(error.message).to.equal('do_nothing');
+                expect(rollback.called).to.be.false;
+            });
+        });
+
+        it('does not attempts to auto-rollback on ghost error if rollback is used', function () {
+            const UpdateCommand = require(modulePath);
+            const config = configStub();
+            const errObj = new errors.GhostError('do_nothing');
+            config.get.withArgs('cli-version').returns('1.0.0');
+            config.get.withArgs('active-version').returns('1.1.0');
+            config.get.withArgs('previous-version').returns('1.0.0');
+
+            const ui = {
+                log: sinon.stub(),
+                listr: sinon.stub().rejects(errObj),
+                run: sinon.stub().callsFake(fn => fn())
+            };
+            const system = {getInstance: sinon.stub()};
+            class TestInstance extends Instance {
+                get cliConfig() { return config; }
+            }
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            fakeInstance.running.resolves(false);
+
+            const cmdInstance = new UpdateCommand(ui, system);
+            const rollback = cmdInstance.rollbackFromFail = sinon.stub();
+            cmdInstance.runCommand = sinon.stub().resolves(true);
+            cmdInstance.version = sinon.stub().callsFake(context => {
+                context.version = '1.1.1';
+                return true;
+            });
+
+            return cmdInstance.run({rollback: true}).then(() => {
+                expect(false, 'Promise should have rejected').to.be.true;
+            }).catch(error => {
+                expect(error.message).to.equal('do_nothing');
+                expect(rollback.called).to.be.false;
+            });
+        });
     });
 
     describe('downloadAndUpdate task', function () {
@@ -792,6 +904,86 @@ describe('Unit: Commands > Update', function () {
                 expect(error.message).to.equal('something bad');
                 expect(resolveVersion.calledOnce).to.be.true;
                 expect(resolveVersion.calledWithExactly(null, '1.0.0', false, true)).to.be.true;
+            });
+        });
+    });
+
+    describe('rollbackFromFail', function () {
+        let ui, system;
+
+        beforeEach(function () {
+            const cliConfig = {get: () => '1.0.0'}
+            ui = {
+                log: sinon.stub(),
+                confirm: sinon.stub(),
+                error: sinon.stub()
+            };
+
+            system = {
+                getInstance() {
+                    return {cliConfig};
+                }
+            };
+        });
+
+        it('Asks to rollback by default', function () {
+            const UpdateCommand = require(modulePath);
+            const expectedQuestion = 'Unable to upgrade Ghost from v1.0.0 to v1.1.1. Would you like to revert back to v1.0.0?'
+            const update = new UpdateCommand(ui, system, '/var/www/ghost');
+            ui.confirm.resolves(true);
+            update.run = sinon.stub().resolves();
+
+            return update.rollbackFromFail(false, '1.1.1').then(() => {
+                expect(ui.log.calledOnce).to.be.true;
+                expect(ui.error.calledOnce).to.be.true;
+
+                expect(ui.confirm.calledOnce).to.be.true;
+                expect(ui.confirm.calledWithExactly(expectedQuestion, true)).to.be.true;
+                expect(update.run.calledOnce).to.be.true;
+            });
+        });
+
+        it('Listens to the user', function () {
+            const UpdateCommand = require(modulePath);
+            const update = new UpdateCommand(ui, system, '/var/www/ghost');
+
+            ui.confirm.resolves(false);
+            update.run = sinon.stub().resolves();
+
+            return update.rollbackFromFail(false, '1.1.1').then(() => {
+                expect(ui.log.calledOnce).to.be.true;
+                expect(ui.error.calledOnce).to.be.true;
+
+                expect(ui.confirm.calledOnce).to.be.true;
+                expect(update.run.called).to.be.false;
+            });
+        });
+
+        it('Force update', function () {
+            const UpdateCommand = require(modulePath);
+            const update = new UpdateCommand(ui, system, '/var/www/ghost');
+            update.run = sinon.stub().resolves();
+
+            return update.rollbackFromFail(new Error('test'), '1.1.1', true).then(() => {
+                expect(ui.log.calledOnce).to.be.true;
+                expect(ui.error.calledOnce).to.be.true;
+
+                expect(ui.confirm.called).to.be.false;
+                expect(update.run.calledOnce).to.be.true;
+            });
+        });
+
+        it('Re-runs `run` using rollback', function () {
+            const UpdateCommand = require(modulePath);
+            const update = new UpdateCommand(ui, system, '/var/www/ghost');
+
+            update.run = sinon.stub().resolves();
+            return update.rollbackFromFail(false, '1.1.1', true).then(() => {
+                expect(ui.log.calledOnce).to.be.true;
+                expect(ui.error.calledOnce).to.be.true;
+
+                expect(update.run.calledOnce).to.be.true;
+                expect(update.run.calledWithExactly({rollback: true, restart: true})).to.be.true;
             });
         });
     });
