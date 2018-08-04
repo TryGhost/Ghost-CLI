@@ -38,9 +38,12 @@ describe('Unit: Commands > Update', function () {
 
     describe('run', function () {
         it('doesn\'t run database migrations if active blog version is ^2.0.0', function () {
-            const migrateStub = sinon.stub().resolves();
+            const migratorStub = {
+                migrate: sinon.stub().resolves(),
+                rollback: sinon.stub().resolves()
+            };
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrate': migrateStub
+                '../tasks/migrator': migratorStub
             });
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.8.0');
@@ -95,14 +98,18 @@ describe('Unit: Commands > Update', function () {
                 expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
                 expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
 
-                expect(migrateStub.called).to.be.false;
+                expect(migratorStub.migrate.called).to.be.false;
+                expect(migratorStub.rollback.called).to.be.false;
             });
         });
 
         it('doesn\'t run database migrations if version to migrate to is ^2.0.0', function () {
-            const migrateStub = sinon.stub().resolves();
+            const migratorStub = {
+                migrate: sinon.stub().resolves(),
+                rollback: sinon.stub().resolves()
+            };
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrate': migrateStub
+                '../tasks/migrator': migratorStub
             });
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.8.0');
@@ -157,7 +164,8 @@ describe('Unit: Commands > Update', function () {
                 expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
                 expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
 
-                expect(migrateStub.called).to.be.false;
+                expect(migratorStub.migrate.called).to.be.false;
+                expect(migratorStub.rollback.called).to.be.false;
             });
         });
 
@@ -280,9 +288,12 @@ describe('Unit: Commands > Update', function () {
         });
 
         it('runs all tasks if rollback is false and running is true', function () {
-            const migrateStub = sinon.stub().resolves();
+            const migratorStub = {
+                migrate: sinon.stub().resolves(),
+                rollback: sinon.stub().resolves()
+            };
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrate': migrateStub
+                '../tasks/migrator': migratorStub
             });
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.0.0');
@@ -328,16 +339,20 @@ describe('Unit: Commands > Update', function () {
                 expect(downloadStub.calledOnce).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;
-                expect(migrateStub.calledOnce).to.be.true;
+                expect(migratorStub.migrate.calledOnce).to.be.true;
+                expect(migratorStub.rollback.calledOnce).to.be.true;
                 expect(restartStub.calledOnce).to.be.true;
                 expect(removeOldVersionsStub.calledOnce).to.be.true;
             });
         })
 
         it('skips download, migrate, and removeOldVersion tasks if rollback is true', function () {
-            const migrateStub = sinon.stub().resolves();
+            const migratorStub = {
+                migrate: sinon.stub().resolves(),
+                rollback: sinon.stub().resolves()
+            };
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrate': migrateStub
+                '../tasks/migrator': migratorStub
             });
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.0.0');
@@ -393,15 +408,19 @@ describe('Unit: Commands > Update', function () {
                 expect(ui.listr.called).to.be.true;
 
                 expect(downloadStub.called).to.be.false;
-                expect(migrateStub.called).to.be.false;
+                expect(migratorStub.migrate.called).to.be.false;
+                expect(migratorStub.rollback.called).to.be.true;
                 expect(removeOldVersionsStub.called).to.be.false;
             });
         });
 
         it('skips stop task if running returns false', function () {
-            const migrateStub = sinon.stub().resolves();
+            const migratorStub = {
+                migrate: sinon.stub().resolves(),
+                rollback: sinon.stub().resolves()
+            };
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrate': migrateStub
+                '../tasks/migrator': migratorStub
             });
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.0.0');
