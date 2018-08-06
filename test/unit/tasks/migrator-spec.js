@@ -202,7 +202,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
                 expect(execaStub.calledOnce).to.be.true;
                 expect(execaStub.args[0][0]).to.eql('knex-migrator-rollback');
-                expect(execaStub.args[0][1]).to.eql(['--force', '--version', '1.25.3', '--mgpath', '/some-dir/current']);
+                expect(execaStub.args[0][1]).to.eql(['--force', '--v', '1.25.3', '--mgpath', '/some-dir/current']);
                 expect(sudoStub.called).to.be.false;
             });
         });
