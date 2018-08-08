@@ -31,7 +31,7 @@ describe('Unit: Migrations', function () {
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(sudoStub.calledWithExactly(
-                    'mkdir /var/www/ghost/content/settings',
+                    'mkdir -p /var/www/ghost/content/settings',
                     {sudoArgs: '-E -u ghost'}
                 )).to.be.true;
             });
