@@ -166,12 +166,12 @@ describe('Unit: resolveVersion', function () {
                     });
             });
 
-            it('force updating', function () {
+            it('force updating and you are on the latest v1', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
 
                 return resolveVersion(null, '1.25.2', false, true)
                     .then(function (version) {
-                        expect(version).to.eql('1.25.2');
+                        expect(version).to.eql('2.0.0');
                     });
             });
 
@@ -202,7 +202,7 @@ describe('Unit: resolveVersion', function () {
                     })
                     .catch(function (error) {
                         expect(error).to.be.an.instanceOf(Error);
-                        expect(error.message).to.equal('You can\'t downgrade from v2 to v1 using these options.');
+                        expect(error.message).to.equal('No valid versions found.');
                     });
             });
 
