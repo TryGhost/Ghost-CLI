@@ -122,7 +122,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.options.stderr).to.match(/YA_GOOFED/);
                 expect(error.options.suggestion).to.eql('ghost update --rollback');
                 expect(error.options.help).to.exist;
@@ -148,7 +148,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.options.stderr).to.match(/YA_GOOFED/);
                 expect(error.options.suggestion).to.not.exist;
                 expect(error.options.help).to.exist;
@@ -285,6 +285,20 @@ describe('Unit: Tasks > Migrator', function () {
             });
         });
 
+        it('knex-migrator complains that no more migrations to rollback available', function () {
+            const config = configStub();
+            const cliConfig = configStub();
+            const execaStub = sinon.stub().returns(Promise.reject({stderr: 'No migrations available to rollback'}));
+            const useGhostUserStub = sinon.stub().returns(false);
+
+            const migrator = proxyquire(migratePath, {
+                execa: execaStub,
+                '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
+            });
+
+            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir', system: {environment: 'testing'}}});
+        });
+
         it('error on `ghost update --rollback`', function () {
             const originalArgv = process.argv;
 
@@ -304,7 +318,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.options.stderr).to.match(/YA_GOOFED/);
                 expect(error.options.suggestion).to.eql('ghost update --rollback');
                 expect(error.options.help).to.exist;
