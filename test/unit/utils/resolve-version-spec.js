@@ -135,5 +135,89 @@ describe('Unit: resolveVersion', function () {
                 expect(error.message).to.equal('No valid versions found.');
             });
         });
+
+        describe('jump to next major', function () {
+            it('throws error if you aren\'t on the latest v1', function () {
+                stubYarn('{"data": ["1.23.0", "1.24.0", "1.25.0", "2.0.0"]}');
+
+                return resolveVersion(null, '1.24.0', false).then(function () {
+                    throw new Error('Version finder should not have resolved');
+                }).catch(function (error) {
+                    expect(error).to.be.an.instanceOf(Error);
+                    expect(error.message).to.equal('You are about to migrate to Ghost 2.0. Your blog is not on the latest Ghost 1.0 version.');
+                });
+            });
+
+            it('resolves if you are on the latest v1', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+
+                return resolveVersion(null, '1.25.2', false)
+                    .then(function (version) {
+                        expect(version).to.eql('2.0.0');
+                    });
+            });
+
+            it('resolves using `--v1` and you are\'t on the latest v1', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+
+                return resolveVersion(null, '1.25.1', true)
+                    .then(function (version) {
+                        expect(version).to.eql('1.25.2');
+                    });
+            });
+
+            it('force updating', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+
+                return resolveVersion(null, '1.25.2', false, true)
+                    .then(function (version) {
+                        expect(version).to.eql('1.25.2');
+                    });
+            });
+
+            it('force updating with `--v1`', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+
+                return resolveVersion(null, '1.25.1', true, true)
+                    .then(function (version) {
+                        expect(version).to.eql('1.25.2');
+                    });
+            });
+
+            it('force updating with many v2 releases', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.1.0", "2.2.0"]}');
+
+                return resolveVersion(null, '1.25.1', false, true)
+                    .then(function (version) {
+                        expect(version).to.eql('1.25.2');
+                    });
+            });
+
+            it('throws error if you want to force updating to a previous major', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+
+                return resolveVersion(null, '2.0.0', true, true)
+                    .then(function () {
+                        throw new Error('Version finder should not have resolved');
+                    })
+                    .catch(function (error) {
+                        expect(error).to.be.an.instanceOf(Error);
+                        expect(error.message).to.equal('You can\'t downgrade from v2 to v1 using these options.');
+                    });
+            });
+
+            it('throws error if you want to update to a previous major', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+
+                return resolveVersion(null, '2.0.0', true, false)
+                    .then(function () {
+                        throw new Error('Version finder should not have resolved');
+                    })
+                    .catch(function (error) {
+                        expect(error).to.be.an.instanceOf(Error);
+                        expect(error.message).to.equal('No valid versions found.');
+                    });
+            });
+        });
     });
 });
