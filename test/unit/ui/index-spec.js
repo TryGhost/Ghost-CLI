@@ -290,13 +290,15 @@ describe('Unit: UI', function () {
                 type: 'confirm',
                 name: 'yes',
                 message: 'Is the sky blue',
-                default: true
+                default: true,
+                prefix: undefined
             };
             const testB = {
                 type: 'confirm',
                 name: 'yes',
                 message: 'Is ghost just a blogging platform',
-                default: undefined
+                default: undefined,
+                prefix: undefined
             };
 
             return ui.confirm('Is the sky blue', true).then((result) => {

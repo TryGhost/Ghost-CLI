@@ -46,12 +46,23 @@ describe('Unit: Commands > Update', function () {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
             };
+
+            const majorUpdateStub = sinon.stub();
+
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrator': migratorStub
+                '../tasks/migrator': migratorStub,
+                '../tasks/major-update': majorUpdateStub
             });
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.8.0');
-            config.get.withArgs('active-version').returns('2.0.0');
+
+            const cliConfig = configStub();
+            cliConfig.get.withArgs('cli-version').returns('1.8.0');
+            cliConfig.get.withArgs('active-version').returns('2.0.0');
+
+            const ghostConfig = configStub();
+            ghostConfig.get.withArgs('database').returns({
+                client: 'sqlite3'
+            });
+
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
 
@@ -67,7 +78,8 @@ describe('Unit: Commands > Update', function () {
             });
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() { return cliConfig; }
+                get config() { return ghostConfig; }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -105,6 +117,8 @@ describe('Unit: Commands > Update', function () {
 
                 expect(migratorStub.migrate.called).to.be.false;
                 expect(migratorStub.rollback.called).to.be.false;
+
+                expect(majorUpdateStub.called).to.be.false;
             });
         });
 
@@ -113,12 +127,23 @@ describe('Unit: Commands > Update', function () {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
             };
+
+            const majorUpdateStub = sinon.stub();
+
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrator': migratorStub
+                '../tasks/migrator': migratorStub,
+                '../tasks/major-update': majorUpdateStub
             });
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.8.0');
-            config.get.withArgs('active-version').returns('1.25.0');
+
+            const cliConfig = configStub();
+            cliConfig.get.withArgs('cli-version').returns('1.8.0');
+            cliConfig.get.withArgs('active-version').returns('1.25.0');
+
+            const ghostConfig = configStub();
+            ghostConfig.get.withArgs('database').returns({
+                client: 'sqlite3'
+            });
+
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
 
@@ -134,7 +159,8 @@ describe('Unit: Commands > Update', function () {
             });
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() { return cliConfig; }
+                get config() { return ghostConfig; }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -172,6 +198,8 @@ describe('Unit: Commands > Update', function () {
 
                 expect(migratorStub.migrate.called).to.be.false;
                 expect(migratorStub.rollback.called).to.be.false;
+
+                expect(majorUpdateStub.called).to.be.true;
             });
         });
 
@@ -298,9 +326,14 @@ describe('Unit: Commands > Update', function () {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
             };
+
+            const majorUpdateStub = sinon.stub();
+
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrator': migratorStub
+                '../tasks/migrator': migratorStub,
+                '../tasks/major-update': majorUpdateStub
             });
+
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.0.0');
             config.get.withArgs('active-version').returns('1.0.0');
@@ -309,7 +342,7 @@ describe('Unit: Commands > Update', function () {
             ui.run.callsFake(fn => fn());
             ui.listr.callsFake((tasks, ctx) => {
                 return Promise.each(tasks, (task) => {
-                    if (task.skip && task.skip(ctx)) {
+                    if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
                         return;
                     }
 
@@ -344,20 +377,26 @@ describe('Unit: Commands > Update', function () {
                 expect(stopStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;
                 expect(migratorStub.migrate.calledOnce).to.be.true;
-                expect(migratorStub.rollback.calledOnce).to.be.true;
+                expect(migratorStub.rollback.calledOnce).to.be.false;
                 expect(restartStub.calledOnce).to.be.true;
                 expect(removeOldVersionsStub.calledOnce).to.be.true;
+
+                expect(majorUpdateStub.called).to.be.false;
             });
-        })
+        });
 
         it('skips download, migrate, and removeOldVersion tasks if rollback is true', function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
             };
+            const majorUpdateStub = sinon.stub();
+
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrator': migratorStub
+                '../tasks/migrator': migratorStub,
+                '../tasks/major-update': majorUpdateStub
             });
+
             const config = configStub();
             config.get.withArgs('cli-version').returns('1.0.0');
             config.get.withArgs('active-version').returns('1.1.0');
@@ -367,7 +406,7 @@ describe('Unit: Commands > Update', function () {
             ui.run.callsFake(fn => fn());
             ui.listr.callsFake((tasks, ctx) => {
                 return Promise.each(tasks, (task) => {
-                    if (task.skip && task.skip(ctx)) {
+                    if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
                         return;
                     }
 
@@ -414,6 +453,8 @@ describe('Unit: Commands > Update', function () {
                 expect(migratorStub.migrate.called).to.be.false;
                 expect(migratorStub.rollback.called).to.be.true;
                 expect(removeOldVersionsStub.called).to.be.false;
+
+                expect(majorUpdateStub.called).to.be.false;
             });
         });
 
