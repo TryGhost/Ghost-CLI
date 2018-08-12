@@ -158,9 +158,15 @@ describe('Unit: Tasks > Migrator', function () {
     });
 
     describe('rollback', function () {
+        let cliConfig;
+
+        beforeEach(function () {
+            cliConfig = configStub();
+            cliConfig.get.withArgs('active-version').returns('1.25.3');
+        });
+
         it('runs direct command if useGhostUser returns false', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().resolves();
             const useGhostUserStub = sinon.stub().returns(false);
 
@@ -181,7 +187,7 @@ describe('Unit: Tasks > Migrator', function () {
             });
         });
 
-        it('forward version option to knex-migrator if blog is on v1', function () {
+        it('forward version option to knex-migrator if blog jumps from v1 to v2', function () {
             const config = configStub();
             const cliConfig = configStub();
             const execaStub = sinon.stub().resolves();
@@ -209,7 +215,6 @@ describe('Unit: Tasks > Migrator', function () {
 
         it('runs sudo command if useGhostUser returns true', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().resolves();
             const useGhostUserStub = sinon.stub().returns(true);
 
@@ -230,7 +235,6 @@ describe('Unit: Tasks > Migrator', function () {
 
         it('throws config error with db host if database not found', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().returns(Promise.reject({stderr: 'CODE: ENOTFOUND'}));
             const useGhostUserStub = sinon.stub().returns(false);
 
@@ -249,7 +253,6 @@ describe('Unit: Tasks > Migrator', function () {
 
         it('throws config error with db user if access denied error', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().returns(Promise.reject({stderr: 'CODE: ER_ACCESS_DENIED_ERROR'}));
             const useGhostUserStub = sinon.stub().returns(false);
 
@@ -268,7 +271,6 @@ describe('Unit: Tasks > Migrator', function () {
 
         it('throws system error if sqlite3 error is thrown by knex', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().returns(Promise.reject({stdout: 'Knex: run\n$ npm install sqlite3 --save\nError:'}));
             const useGhostUserStub = sinon.stub().returns(false);
 
@@ -287,7 +289,6 @@ describe('Unit: Tasks > Migrator', function () {
 
         it('knex-migrator complains that no more migrations to rollback available', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().returns(Promise.reject({stderr: 'No migrations available to rollback'}));
             const useGhostUserStub = sinon.stub().returns(false);
 
@@ -305,7 +306,6 @@ describe('Unit: Tasks > Migrator', function () {
             process.argv = ['node', 'ghost', 'update', '--rollback'];
 
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().rejects({stderr: 'YA_GOOFED'});
             const useGhostUserStub = sinon.stub().returns(false);
 
