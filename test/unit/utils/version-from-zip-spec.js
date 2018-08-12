@@ -24,6 +24,29 @@ describe('Unit: Utils > versionFromZip', function () {
         });
     });
 
+    it('rejects if you are not on the latest v1 release and you are trying to jump to the next major', function () {
+        const resolveVersionStub = sinon.stub().resolves('1.25.4');
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0.zip'), '1.20.0').then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.match(/You are about to migrate to Ghost 2.0/);
+        });
+    });
+
+    it('resolves if you are on the latest v1 release and you are trying to jump to the next major', function () {
+        const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0.zip'), '1.25.4');
+    });
+
     it('rejects if zip file doesn\'t have a .zip extension', function () {
         const existsStub = sinon.stub().returns(true);
         const versionFromZip = proxyquire(modulePath, {
