@@ -47,6 +47,49 @@ describe('Unit: Utils > versionFromZip', function () {
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0.zip'), '1.25.4');
     });
 
+    it('resolves if you are on v2 pre and trying to jump to another pre', function () {
+        const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.1');
+    });
+
+    it('resolves if you are on v2 pre and trying to jump to v2 stable', function () {
+        const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.1');
+    });
+    it('rejects if you are on a v2 stable and are trying to downgrade to v2 pre', function () {
+        const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0').then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch(error => {
+            expect(error.message).to.equal('No valid versions found.');
+        });
+    });
+
+    it('rejects if you are on a v2 stable and are trying to downgrade to v2 pre', function () {
+        const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.3').then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch(error => {
+            expect(error.message).to.equal('No valid versions found.');
+        });
+    });
+
     it('rejects if zip file doesn\'t have a .zip extension', function () {
         const existsStub = sinon.stub().returns(true);
         const versionFromZip = proxyquire(modulePath, {
