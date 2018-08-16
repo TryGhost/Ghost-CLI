@@ -8,6 +8,10 @@ const errors = require('../../../lib/errors');
 const modulePath = '../../../lib/utils/version-from-zip';
 
 describe('Unit: Utils > versionFromZip', function () {
+    beforeEach(function () {
+        delete process.env.GHOST_NODE_VERSION_CHECK;
+    });
+
     it('rejects if zip file doesn\'t exist', function () {
         const existsStub = sinon.stub().returns(false);
         const versionFromZip = proxyquire(modulePath, {
@@ -27,7 +31,8 @@ describe('Unit: Utils > versionFromZip', function () {
     it('rejects if you are not on the latest v1 release and you are trying to jump to the next major', function () {
         const resolveVersionStub = sinon.stub().resolves('1.25.4');
         const versionFromZip = proxyquire(modulePath, {
-            './resolve-version': resolveVersionStub
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
         });
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0.zip'), '1.20.0').then(() => {
@@ -41,7 +46,8 @@ describe('Unit: Utils > versionFromZip', function () {
     it('resolves if you are on the latest v1 release and you are trying to jump to the next major', function () {
         const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
         const versionFromZip = proxyquire(modulePath, {
-            './resolve-version': resolveVersionStub
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
         });
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0.zip'), '1.25.4');
@@ -50,7 +56,8 @@ describe('Unit: Utils > versionFromZip', function () {
     it('resolves if you are on v2 pre and trying to jump to another pre', function () {
         const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
         const versionFromZip = proxyquire(modulePath, {
-            './resolve-version': resolveVersionStub
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
         });
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.1');
@@ -59,7 +66,8 @@ describe('Unit: Utils > versionFromZip', function () {
     it('resolves if you are on v2 pre and trying to jump to v2 stable', function () {
         const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
         const versionFromZip = proxyquire(modulePath, {
-            './resolve-version': resolveVersionStub
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
         });
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.1');
@@ -67,7 +75,8 @@ describe('Unit: Utils > versionFromZip', function () {
     it('rejects if you are on a v2 stable and are trying to downgrade to v2 pre', function () {
         const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
         const versionFromZip = proxyquire(modulePath, {
-            './resolve-version': resolveVersionStub
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
         });
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0').then(() => {
@@ -80,7 +89,8 @@ describe('Unit: Utils > versionFromZip', function () {
     it('rejects if you are on a v2 stable and are trying to downgrade to v2 pre', function () {
         const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
         const versionFromZip = proxyquire(modulePath, {
-            './resolve-version': resolveVersionStub
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
         });
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.3').then(() => {
@@ -156,10 +166,8 @@ describe('Unit: Utils > versionFromZip', function () {
         process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip')).then((version) => {
-            delete process.env.GHOST_NODE_VERSION_CHECK;
             expect(version).to.equal('1.0.0');
         }).catch((error) => {
-            delete process.env.GHOST_NODE_VERSION_CHECK;
             return Promise.reject(error);
         });
     });
