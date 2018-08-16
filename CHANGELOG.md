@@ -1,6 +1,36 @@
-# Ghost-CLI Changelog
+# Change Log
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="1.9.0"></a>
+# 1.9.0 (2018-08-16)
+
+### Bug Fixes
+
+* **config:** disallow URLs ending with `/ghost` ([0dfb6d3](https://github.com/TryGhost/Ghost-CLI/commit/0dfb6d3))
+* **migrate:** optimise error handling in migrator task ([be2c923](https://github.com/TryGhost/Ghost-CLI/commit/be2c923)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **migrations:** sudo - don't fail with existing settings folder ([dc2d0f5](https://github.com/TryGhost/Ghost-CLI/commit/dc2d0f5)), closes [#776](https://github.com/TryGhost/Ghost-CLI/issues/776)
+* **nginx:** skip uninstall if url is not set ([9e27b59](https://github.com/TryGhost/Ghost-CLI/commit/9e27b59))
+* **start:** properly print admin URLs for blogs in a subdir ([975049c](https://github.com/TryGhost/Ghost-CLI/commit/975049c))
+* show spinner during update check ([c9cf6d3](https://github.com/TryGhost/Ghost-CLI/commit/c9cf6d3))
+* **systemd:** improve error handling of instance failed state ([0f00c03](https://github.com/TryGhost/Ghost-CLI/commit/0f00c03)), closes [#761](https://github.com/TryGhost/Ghost-CLI/issues/761)
+* **tests:** stub system class for command checkRoot ([ba18452](https://github.com/TryGhost/Ghost-CLI/commit/ba18452))
+* **ui:** don't overwrite default options ([1357cc6](https://github.com/TryGhost/Ghost-CLI/commit/1357cc6))
+* **v2:** allow prerelease->pre/stable upgrades in zips ([10bd8c4](https://github.com/TryGhost/Ghost-CLI/commit/10bd8c4))
+* **v2:** changed major version comparison ([d243bed](https://github.com/TryGhost/Ghost-CLI/commit/d243bed)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **v2:** enforce v1 => v2 migration rules with zips ([c1af61e](https://github.com/TryGhost/Ghost-CLI/commit/c1af61e)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **v2:** ensure `ghost update --force` correctly jumps to v2 ([8093274](https://github.com/TryGhost/Ghost-CLI/commit/8093274)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **v2:** ensure migrate script validates Casper correctly ([93d191f](https://github.com/TryGhost/Ghost-CLI/commit/93d191f)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+
+### Features
+
+* **flag:** add --v1 flag to install and update ([eb315c3](https://github.com/TryGhost/Ghost-CLI/commit/eb315c3)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **flags:** add global `dir` option ([e9ec39a](https://github.com/TryGhost/Ghost-CLI/commit/e9ec39a)), closes [#538](https://github.com/TryGhost/Ghost-CLI/issues/538)
+* **migrate:** execute database rollback on rollback ([#774](https://github.com/TryGhost/Ghost-CLI/issues/774)) ([f56e600](https://github.com/TryGhost/Ghost-CLI/commit/f56e600)), closes [#699](https://github.com/TryGhost/Ghost-CLI/issues/699)
+* **update:** add auto rollback of failed updates ([4f00353](https://github.com/TryGhost/Ghost-CLI/commit/4f00353)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **v2:** added v2 migrate task ([#771](https://github.com/TryGhost/Ghost-CLI/issues/771)) ([e9ed36b](https://github.com/TryGhost/Ghost-CLI/commit/e9ed36b)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **v2:** avoid direct upgrade to v2 ([#770](https://github.com/TryGhost/Ghost-CLI/issues/770)) ([702e953](https://github.com/TryGhost/Ghost-CLI/commit/702e953)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
+* **v2:** update knex-migrator execution for Ghost 2.0 ([#765](https://github.com/TryGhost/Ghost-CLI/issues/765)) ([d6af62a](https://github.com/TryGhost/Ghost-CLI/commit/d6af62a)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
 
 <a name="1.8.1"></a>
 ## 1.8.1 (2018-06-05)
