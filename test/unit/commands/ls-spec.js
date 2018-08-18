@@ -76,6 +76,6 @@ describe('Unit: Commands > ls', function () {
             expect(tableStub.called).to.be.false;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.equal('No installed ghost instances found');
-        })
-    })
+        });
+    });
 });

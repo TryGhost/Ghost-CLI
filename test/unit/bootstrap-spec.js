@@ -155,7 +155,7 @@ describe('Unit: Bootstrap', function () {
 
         it('logs promise if no reason given', function () {
             const handler = process.listeners('unhandledRejection')[0];
-            const p = new Promise((resolve) => resolve());
+            const p = new Promise(resolve => resolve());
 
             try {
                 handler(null, p);

@@ -20,7 +20,7 @@ function proxyLog(proxyOptions) {
 
 function configGet(what) {
     if (what === 'url') {
-        return 'https://dev.ghost.org'
+        return 'https://dev.ghost.org';
     } else if (what === 'logging.transports') {
         return ['file'];
     }
@@ -46,7 +46,7 @@ describe('Unit: Commands > Log', function () {
             es: sinon.stub(),
             // thrown to stop execution
             cvi: sinon.stub().throws(new Error())
-        }
+        };
     });
 
     describe('run', function () {
@@ -140,7 +140,7 @@ describe('Unit: Commands > Log', function () {
             ext.run({name: 'ghost_org', error: true}).then(() => {
                 expect(false, 'existsSync should have thrown').to.be.true;
             }).catch((error) => {
-                const fileName = 'https___dev_ghost_org_dev.error.log'
+                const fileName = 'https___dev_ghost_org_dev.error.log';
                 const expectedFilePath = `/var/www/ghost/content/logs/${fileName}`;
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('SHORT_CIRCUIT');
@@ -165,7 +165,7 @@ describe('Unit: Commands > Log', function () {
             stubs.log = sinon.stub();
             const ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
-            ext.ui = {log: stubs.log}
+            ext.ui = {log: stubs.log};
 
             return ext.run({name: 'ghost_org', follow: true}).then(() => {
                 expect(stubs.es.calledOnce).to.be.true;
@@ -176,7 +176,7 @@ describe('Unit: Commands > Log', function () {
 
         it('Passes unknown PrettyStream errors through', function () {
             class PrettyStream {}
-            PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) =>{
+            PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) => {
                 expect(event).to.equal('error');
                 callback(new Error('test error'));
             });
@@ -196,7 +196,7 @@ describe('Unit: Commands > Log', function () {
 
         it('Ignores PrettyStream syntax errors', function () {
             class PrettyStream {}
-            PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) =>{
+            PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) => {
                 expect(event).to.equal('error');
                 callback(new SyntaxError('bad error'));
                 throw new Error('break the code');

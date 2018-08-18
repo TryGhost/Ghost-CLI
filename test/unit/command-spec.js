@@ -14,7 +14,7 @@ describe('Unit: Command', function () {
         const Command = require(modulePath);
 
         it('throws if command class doesn\'t have a description', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
 
             try {
                 TestCommand.configure('test', [], {});
@@ -25,7 +25,7 @@ describe('Unit: Command', function () {
         });
 
         it('adds params to command name if params exist', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.params = '<arg1> [arg2]';
             TestCommand.description = 'a command';
             const commandStub = sinon.stub();
@@ -39,7 +39,7 @@ describe('Unit: Command', function () {
         });
 
         it('sets up command builder correctly', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.configureOptions = sinon.stub().returns({c: 'd'});
             TestCommand.description = 'a command';
             const commandStub = sinon.stub();
@@ -56,7 +56,7 @@ describe('Unit: Command', function () {
         });
 
         it('calls configureSubcommands if it exists', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.configureOptions = sinon.stub().returns({a: 'b'});
             TestCommand.configureSubcommands = sinon.stub();
             TestCommand.description = 'a command';
@@ -74,7 +74,7 @@ describe('Unit: Command', function () {
         });
 
         it('creates a handler map to the _run method', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.description = 'a command';
             TestCommand._run = sinon.stub();
             const commandStub = sinon.stub();
@@ -94,7 +94,7 @@ describe('Unit: Command', function () {
         const Command = require(modulePath);
 
         it('adds usage if a longDescription exists', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.longDescription = 'a long description here';
             const usageStub = sinon.stub();
             const epilogueStub = sinon.stub();
@@ -106,7 +106,7 @@ describe('Unit: Command', function () {
         });
 
         it('doesn\'t add options if no options defined', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             const optionStub = sinon.stub();
             const epilogueStub = sinon.stub();
 
@@ -116,7 +116,7 @@ describe('Unit: Command', function () {
         });
 
         it('calls option once for each option defined', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.options = {
                 flag: {
                     alias: 'f',
@@ -145,7 +145,7 @@ describe('Unit: Command', function () {
         });
 
         it('skips adding epilogue and usage if onlyOptions is true', function () {
-            const TestCommand = class extends Command {}
+            const TestCommand = class extends Command {};
             TestCommand.options = {
                 flag: {
                     alias: 'f',

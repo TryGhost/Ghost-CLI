@@ -200,7 +200,7 @@ describe('Unit: Errors', function () {
             expect(errorOutput).to.match(/database\.connection\.username/);
             expect(errorOutput).to.match(/database\.connection\.password/);
             expect(errorOutput).to.match(/root \/ password/);
-            expect(errorOutput).to.match(/Help: Run `ghost config <key> <new value>/)
+            expect(errorOutput).to.match(/Help: Run `ghost config <key> <new value>/);
         });
     });
 });

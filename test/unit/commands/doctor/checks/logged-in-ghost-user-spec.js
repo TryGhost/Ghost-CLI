@@ -31,7 +31,7 @@ describe('Unit: Doctor Checks > loggedInGhostUser', function () {
         const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 1002, gid: 1002});
 
         try {
-            loggedInGhostUser.task()
+            loggedInGhostUser.task();
             expect(false, 'error should have been thrown').to.be.true;
         } catch (error) {
             expect(error).to.exist;

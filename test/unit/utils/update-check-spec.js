@@ -11,7 +11,7 @@ describe('Unit: Utils > update-check', function () {
         const pkg = {name: 'ghost', version: '1.0.0'};
         const testError = new Error('update check');
         const latestVersion = sinon.stub().rejects(testError);
-        const ui = {run: sinon.stub().callsFake(fn => fn())}
+        const ui = {run: sinon.stub().callsFake(fn => fn())};
 
         const updateCheck = proxyquire(modulePath, {
             '../../package.json': pkg,
@@ -64,7 +64,6 @@ describe('Unit: Utils > update-check', function () {
         return updateCheck(ui).then(() => {
             expect(ui.run.calledOnce).to.be.true;
             expect(ui.log.calledOnce).to.be.true;
-
 
             const log = ui.log.args[0][0];
 

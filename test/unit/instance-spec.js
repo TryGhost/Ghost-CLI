@@ -39,7 +39,9 @@ describe('Unit: Instance', function () {
         it('returns name value in cliConfig if it exists', function () {
             const getStub = sinon.stub().withArgs('name').returns('testing');
             class TestInstance extends Instance {
-                get cliConfig() { return {get: getStub} }
+                get cliConfig() {
+                    return {get: getStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
             const name = testInstance.name;
@@ -52,8 +54,12 @@ describe('Unit: Instance', function () {
             const cliConfigGetStub = sinon.stub().withArgs('name').returns(null);
             const configGetStub = sinon.stub().withArgs('pname').returns('testing');
             class TestInstance extends Instance {
-                get cliConfig() { return {get: cliConfigGetStub}; }
-                get config() { return {get: configGetStub}; }
+                get cliConfig() {
+                    return {get: cliConfigGetStub}; 
+                }
+                get config() {
+                    return {get: configGetStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
             const name = testInstance.name;
@@ -69,7 +75,9 @@ describe('Unit: Instance', function () {
             const setStub = sinon.stub().withArgs('name', 'testing').returnsThis();
             const saveStub = sinon.stub().returnsThis();
             class TestInstance extends Instance {
-                get cliConfig() { return {set: setStub, save: saveStub} }
+                get cliConfig() {
+                    return {set: setStub, save: saveStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
             testInstance.name = 'testing';
@@ -119,7 +127,9 @@ describe('Unit: Instance', function () {
         it('returns cached process instance if it exists', function () {
             const getStub = sinon.stub().withArgs('process', 'local').returns('local');
             class TestInstance extends Instance {
-                get config() { return {get: getStub}; }
+                get config() {
+                    return {get: getStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
             const testProcess = testInstance._process = {
@@ -138,7 +148,9 @@ describe('Unit: Instance', function () {
             const getStub = sinon.stub().withArgs('process', 'local').returns('local');
             const procManagerStub = sinon.stub().withArgs('local').returns({Class: ProcessManager});
             class TestInstance extends Instance {
-                get config() { return {get: getStub}; }
+                get config() {
+                    return {get: getStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {
                 getProcessManager: procManagerStub
@@ -165,7 +177,9 @@ describe('Unit: Instance', function () {
             const setStub = sinon.stub().withArgs('running', 'testing').returnsThis();
             const saveStub = sinon.stub();
             class TestInstance extends Instance {
-                get cliConfig() { return {set: setStub, save: saveStub}; }
+                get cliConfig() {
+                    return {set: setStub, save: saveStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
 
@@ -178,7 +192,9 @@ describe('Unit: Instance', function () {
         it('returns false if running property not set in config & neither config exists', function () {
             const hasStub = sinon.stub().withArgs('running').returns(false);
             class TestInstance extends Instance {
-                get cliConfig() { return {has: hasStub} }
+                get cliConfig() {
+                    return {has: hasStub}; 
+                }
             }
             const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {development: true, setEnvironment: setEnvironmentStub}, '');
@@ -197,8 +213,12 @@ describe('Unit: Instance', function () {
             const configStub = createConfigStub();
             const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
-                get cliConfig() { return configStub; }
-                get process() { return {isRunning: isRunningStub}; }
+                get cliConfig() {
+                    return configStub; 
+                }
+                get process() {
+                    return {isRunning: isRunningStub}; 
+                }
             }
 
             const existsStub = sinon.stub(Config, 'exists').returns(true);
@@ -221,8 +241,12 @@ describe('Unit: Instance', function () {
             const configStub = createConfigStub();
             const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
-                get cliConfig() { return configStub; }
-                get process() { return {isRunning: isRunningStub}; }
+                get cliConfig() {
+                    return configStub; 
+                }
+                get process() {
+                    return {isRunning: isRunningStub}; 
+                }
             }
 
             const existsStub = sinon.stub(Config, 'exists');
@@ -251,8 +275,12 @@ describe('Unit: Instance', function () {
             isRunningStub.onFirstCall().returns(false);
             isRunningStub.onSecondCall().returns(true);
             class TestInstance extends Instance {
-                get cliConfig() { return configStub; }
-                get process() { return {isRunning: isRunningStub}; }
+                get cliConfig() {
+                    return configStub; 
+                }
+                get process() {
+                    return {isRunning: isRunningStub}; 
+                }
             }
 
             const existsStub = sinon.stub(Config, 'exists').returns(true);
@@ -276,8 +304,12 @@ describe('Unit: Instance', function () {
             const configStub = createConfigStub();
             const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
-                get cliConfig() { return configStub; }
-                get process() { return {isRunning: isRunningStub}; }
+                get cliConfig() {
+                    return configStub; 
+                }
+                get process() {
+                    return {isRunning: isRunningStub}; 
+                }
             }
 
             const existsStub = sinon.stub(Config, 'exists').returns(true);
@@ -302,8 +334,12 @@ describe('Unit: Instance', function () {
             const hasStub = sinon.stub().withArgs('running').returns(true);
             const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
-                get cliConfig() { return {has: hasStub}; }
-                get process() { return {isRunning: isRunningStub} }
+                get cliConfig() {
+                    return {has: hasStub}; 
+                }
+                get process() {
+                    return {isRunning: isRunningStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
             const loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
@@ -322,8 +358,12 @@ describe('Unit: Instance', function () {
             const saveStub = sinon.stub().returnsThis();
             const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
-                get cliConfig() { return {has: hasStub, set: setStub, save: saveStub}; }
-                get process() { return {isRunning: isRunningStub}; }
+                get cliConfig() {
+                    return {has: hasStub, set: setStub, save: saveStub}; 
+                }
+                get process() {
+                    return {isRunning: isRunningStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
             const loadRunEnvStub = sinon.stub(testInstance, 'loadRunningEnvironment');
@@ -396,7 +436,9 @@ describe('Unit: Instance', function () {
         it('throws error if instance is not running', function () {
             const getStub = sinon.stub().withArgs('running').returns(null);
             class TestInstance extends Instance {
-                get cliConfig() { return {get: getStub}; }
+                get cliConfig() {
+                    return {get: getStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
 
@@ -413,7 +455,9 @@ describe('Unit: Instance', function () {
             const getStub = sinon.stub().withArgs('running').returns('development');
             const envStub = sinon.stub();
             class TestInstance extends Instance {
-                get cliConfig() { return {get: getStub}; }
+                get cliConfig() {
+                    return {get: getStub}; 
+                }
             }
             const testInstance = new TestInstance({}, {
                 setEnvironment: envStub
@@ -430,9 +474,15 @@ describe('Unit: Instance', function () {
         it('returns shortened object if running is false', function () {
             const getStub = sinon.stub().withArgs('active-version').returns('1.0.0');
             class TestInstance extends Instance {
-                get name() { return 'testing'; }
-                get cliConfig() { return {get: getStub}; }
-                running() { return Promise.resolve(false); }
+                get name() {
+                    return 'testing'; 
+                }
+                get cliConfig() {
+                    return {get: getStub}; 
+                }
+                running() {
+                    return Promise.resolve(false); 
+                }
             }
             const testInstance = new TestInstance({}, {}, '');
 
@@ -451,11 +501,21 @@ describe('Unit: Instance', function () {
             getStub.withArgs('server.port').returns(1234);
 
             class TestInstance extends Instance {
-                get name() { return 'testing'; }
-                get cliConfig() { return {get: cliGetStub}; }
-                get config() { return {get: getStub}; }
-                get process() { return {name: 'local'}; }
-                running() { return Promise.resolve(true); }
+                get name() {
+                    return 'testing'; 
+                }
+                get cliConfig() {
+                    return {get: cliGetStub}; 
+                }
+                get config() {
+                    return {get: getStub}; 
+                }
+                get process() {
+                    return {name: 'local'}; 
+                }
+                running() {
+                    return Promise.resolve(true); 
+                }
             }
             const testInstance = new TestInstance({}, {environment: 'testing'}, '');
 

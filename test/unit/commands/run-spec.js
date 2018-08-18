@@ -92,7 +92,7 @@ describe('Unit: Commands > Run', function () {
             child_process: {spawn: spawnStub}
         });
         const failStub = sinon.stub();
-        const logStub = sinon.stub()
+        const logStub = sinon.stub();
         const instance = new RunCommand({fail: failStub, log: logStub}, {});
         const exitStub = sinon.stub(process, 'exit');
 

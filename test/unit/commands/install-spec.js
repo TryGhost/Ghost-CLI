@@ -37,7 +37,7 @@ describe('Unit: Commands > Install', function () {
     describe('run', function () {
         afterEach(() => {
             sinon.restore();
-        })
+        });
 
         it('rejects if directory is not empty', function () {
             const readdirStub = sinon.stub().returns([
@@ -130,7 +130,7 @@ describe('Unit: Commands > Install', function () {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(readdirStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true
+                expect(runCommandStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
                     version: '1.5.0',
@@ -147,9 +147,7 @@ describe('Unit: Commands > Install', function () {
             const readdirStub = sinon.stub().returns([]);
             const yarnInstallStub = sinon.stub().resolves();
             const ensureStructureStub = sinon.stub().resolves();
-            const listrStub = sinon.stub().callsFake((tasks, ctx) => {
-                return Promise.each(tasks, task => task.task(ctx, {}));
-            });
+            const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
 
             const InstallCommand = proxyquire(modulePath, {
                 'fs-extra': {readdirSync: readdirStub},

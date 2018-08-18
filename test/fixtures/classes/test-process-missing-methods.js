@@ -2,4 +2,4 @@
 
 const cli = require('../../../lib/index');
 
-module.exports = class TestProcess extends cli.ProcessManager {}
+module.exports = class TestProcess extends cli.ProcessManager {};

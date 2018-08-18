@@ -241,7 +241,7 @@ describe('Unit: Extensions > Nginx', function () {
             ext.restartNginx = sinon.stub().rejects(new errors.CliError('Did not restart'));
 
             return ext.setupNginx(null, ctx, task).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true
+                expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;
                 expect(error).to.be.an.instanceof(errors.CliError);
@@ -272,7 +272,7 @@ describe('Unit: Extensions > Nginx', function () {
             ext.ui.sudo = sudo;
 
             return ext.setupNginx(null, ctx, task).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true
+                expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;
                 expect(error).to.be.an.instanceof(errors.ProcessError);
@@ -364,7 +364,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         function getTasks(ext, args) {
             args = args || {};
-            args.prompt = true
+            args.prompt = true;
             ext.setupSSL(args, ctx, task);
 
             expect(task.skip.called, 'getTasks: task.skip').to.be.false;
@@ -399,11 +399,13 @@ describe('Unit: Extensions > Nginx', function () {
 
             beforeEach(function () {
                 DNS = new Error('DNS_ERROR');
-                proxy.dns = {lookup: () => {throw DNS}};
+                proxy.dns = {lookup: () => {
+                    throw DNS;
+                }};
             });
 
             it('Breaks if DNS fails (Not found & unknown)', function () {
-                DNS.code  = 'ENOTFOUND';
+                DNS.code = 'ENOTFOUND';
                 let ctx = {};
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
@@ -419,7 +421,7 @@ describe('Unit: Extensions > Nginx', function () {
                     log.reset();
                     ctx = {};
                     firstSet = true;
-                    return tasks[0].task(ctx)
+                    return tasks[0].task(ctx);
                 }).then(() => {
                     expect(false, 'Promise should have rejected').to.be.true;
                 }).catch((err) => {
@@ -433,7 +435,7 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Everything skips when DNS fails', function () {
-                stubs.es.callsFake((val) => (val.indexOf('-ssl') < 0 || val.indexOf('acme') >= 0));
+                stubs.es.callsFake(val => (val.indexOf('-ssl') < 0 || val.indexOf('acme') >= 0));
 
                 const ctx = {dnsfail: true};
                 const ext = proxyNginx(proxy);
@@ -536,7 +538,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             it('Rejects when command fails', function () {
                 const ext = proxyNginx(proxy);
-                ext.ui.sudo.rejects(new Error('Go ask George'))
+                ext.ui.sudo.rejects(new Error('Go ask George'));
                 const tasks = getTasks(ext);
 
                 return tasks[4].task().then(() => {
@@ -595,7 +597,7 @@ describe('Unit: Extensions > Nginx', function () {
                 stubs.templatify = sinon.stub().returns('nginx ssl config');
                 stubs.template = sinon.stub().returns(stubs.templatify);
                 proxy['fs-extra'].writeFile = sinon.stub().resolves();
-                proxy['lodash/template'] = stubs.template
+                proxy['lodash/template'] = stubs.template;
             });
 
             it('Provides necessary template data', function () {
@@ -612,7 +614,10 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Templates subdirectories properly', function () {
-                ctx.instance.config.get = (key) => key === 'url' ? 'http://ghost.dev/blog' : 2368;
+                // eslint-disable-next-line arrow-body-style
+                ctx.instance.config.get = (key) => {
+                    return key === 'url' ? 'http://ghost.dev/blog' : 2368;
+                };
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 ext.template = sinon.stub().resolves();
@@ -640,7 +645,7 @@ describe('Unit: Extensions > Nginx', function () {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(err.options.stderr).to.equal('oh no!');
                 });
-            })
+            });
         });
         describe('Restart', function () {
             it('Restarts Nginx', function () {
@@ -656,7 +661,7 @@ describe('Unit: Extensions > Nginx', function () {
 
     describe('uninstall hook', function () {
         const instance = {config: {get: () => 'http://ghost.dev'}};
-        const testEs = (val) => (new RegExp(/-ssl/)).test(val);
+        const testEs = val => (new RegExp(/-ssl/)).test(val);
 
         it('returns if no url exists in config', function () {
             const config = {get: () => undefined};
@@ -680,8 +685,8 @@ describe('Unit: Extensions > Nginx', function () {
         });
 
         it('Removes http config', function () {
-            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev\.conf/)
-            const esStub = sinon.stub().callsFake((val) => !testEs(val));
+            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev\.conf/);
+            const esStub = sinon.stub().callsFake(val => !testEs(val));
             const ext = proxyNginx({'fs-extra': {existsSync: esStub}});
 
             return ext.uninstall(instance).then(() => {
@@ -693,7 +698,7 @@ describe('Unit: Extensions > Nginx', function () {
         });
 
         it('Removes https config', function () {
-            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev-ssl\.conf/)
+            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev-ssl\.conf/);
             const esStub = sinon.stub().callsFake(testEs);
             const ext = proxyNginx({'fs-extra': {existsSync: esStub}});
 
@@ -730,8 +735,8 @@ describe('Unit: Extensions > Nginx', function () {
 
         beforeEach(function () {
             ext = new NGINX();
-            ext.ui = {sudo: sinon.stub().resolves()}
-        })
+            ext.ui = {sudo: sinon.stub().resolves()};
+        });
 
         it('Soft reloads nginx', function () {
             const sudo = ext.ui.sudo;

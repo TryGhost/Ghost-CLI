@@ -9,7 +9,7 @@ const modulePath = '../migrations';
 
 const cli = require('../../../lib');
 
-const context =  {
+const context = {
     instance: {
         dir: '/var/www/ghost',
         config: {

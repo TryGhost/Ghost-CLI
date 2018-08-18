@@ -28,9 +28,15 @@ describe('Unit: Process Manager', function () {
 
         it('returns true if class exists and implements all the right methods', function () {
             class TestProcess extends ProcessManager {
-                start() { return Promise.resolve(); }
-                stop() { return Promise.resolve(); }
-                isRunning() { return true; }
+                start() {
+                    return Promise.resolve(); 
+                }
+                stop() {
+                    return Promise.resolve(); 
+                }
+                isRunning() {
+                    return true; 
+                }
             }
             const result = ProcessManager.isValid(TestProcess);
             expect(result).to.be.true;
@@ -186,7 +192,7 @@ describe('Unit: Process Manager', function () {
             expect(stopStub.calledOnce).to.be.true;
             expect(startStub.calledOnce).to.be.true;
             expect(stopStub.calledBefore(startStub)).to.be.true;
-        })
+        });
     });
 
     it('base start implementation returns a promise', function () {

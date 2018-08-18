@@ -173,7 +173,7 @@ describe('Unit: Systemd > Extension', function () {
             const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test'};
 
             return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true
+                expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;
                 expect(error).to.be.an.instanceof(errors.ProcessError);

@@ -28,7 +28,7 @@ function migrateSSL(ctx, migrateTask) {
     }
 
     const confFileContents = fs.readFileSync(confFile, {encoding: 'utf8'});
-    const certCheck = new RegExp(`ssl_certificate ${originalCertFolder}/fullchain.cer;`)
+    const certCheck = new RegExp(`ssl_certificate ${originalCertFolder}/fullchain.cer;`);
 
     // Case to skip 3: SSL conf does not contain a cert config using the old LE cert
     if (!certCheck.test(confFileContents)) {

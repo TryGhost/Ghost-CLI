@@ -34,7 +34,7 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb)=> {
+            netStub.close = sinon.stub().callsFake((cb) => {
                 cb();
             });
 
@@ -75,7 +75,7 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb)=> {
+            netStub.close = sinon.stub().callsFake((cb) => {
                 cb();
             });
 
@@ -112,13 +112,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb)=> {
+            netStub.close = sinon.stub().callsFake((cb) => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake(() => {
-                return netStub;
-            });
+            sinon.stub(net, 'createServer').callsFake(() => netStub);
 
             return portPolling({
                 netServerTimeoutInMS: 500,
@@ -145,7 +143,7 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb)=> {
+            netStub.close = sinon.stub().callsFake((cb) => {
                 cb();
             });
 

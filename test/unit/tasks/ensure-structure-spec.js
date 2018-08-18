@@ -9,7 +9,7 @@ const ensureStructure = require('../../../lib/tasks/ensure-structure');
 
 describe('Unit: Tasks > ensure-structure', function () {
     after(() => {
-        cleanupTestFolders()
+        cleanupTestFolders();
     });
 
     it('works', function () {
