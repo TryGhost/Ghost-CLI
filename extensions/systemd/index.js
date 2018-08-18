@@ -35,14 +35,15 @@ class SystemdExtension extends Extension {
         }
 
         const service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
-
-        return instance.template(service({
+        const contents = service({
             name: instance.name,
             dir: process.cwd(),
             user: uid,
             environment: this.system.environment,
             ghost_exec_path: process.argv.slice(0,2).join(' ')
-        }), 'systemd service', serviceFilename, '/lib/systemd/system').then(
+        });
+
+        return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system').then(
             () => this.ui.sudo('systemctl daemon-reload')
         ).catch((error) => { throw new ProcessError(error); });
     }

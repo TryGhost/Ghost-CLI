@@ -176,7 +176,6 @@ describe('Unit: Extensions > Nginx', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
             ctx.instance.dir = dir;
-            ctx.instance.template = sinon.stub().resolves();
             const expectedConfig = {
                 url: 'ghost.dev',
                 webroot: `${dir}/system/nginx-root`,
@@ -192,6 +191,7 @@ describe('Unit: Extensions > Nginx', function () {
                 },
                 'lodash/template': templateStub
             });
+            ext.template = sinon.stub().resolves();
             const sudo = sinon.stub().resolves();
             ext.ui.sudo = sudo;
 
@@ -226,7 +226,6 @@ describe('Unit: Extensions > Nginx', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
             ctx.instance.dir = dir;
-            ctx.instance.template = sinon.stub().resolves();
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
@@ -236,7 +235,8 @@ describe('Unit: Extensions > Nginx', function () {
                 },
                 'lodash/template': templateStub
             });
-            const sudo = sinon.stub().resolves()
+            const sudo = sinon.stub().resolves();
+            ext.template = sinon.stub().resolves();
             ext.ui.sudo = sudo;
             ext.restartNginx = sinon.stub().rejects(new errors.CliError('Did not restart'));
 
@@ -258,7 +258,6 @@ describe('Unit: Extensions > Nginx', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
             ctx.instance.dir = dir;
-            ctx.instance.template = sinon.stub().resolves();
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
@@ -268,7 +267,8 @@ describe('Unit: Extensions > Nginx', function () {
                 },
                 'lodash/template': templateStub
             });
-            const sudo = sinon.stub().rejects({stderr: 'oops'})
+            const sudo = sinon.stub().rejects({stderr: 'oops'});
+            ext.template = sinon.stub().resolves();
             ext.ui.sudo = sudo;
 
             return ext.setupNginx(null, ctx, task).then(() => {
@@ -547,6 +547,7 @@ describe('Unit: Extensions > Nginx', function () {
                 });
             });
         });
+
         describe('Headers', function () {
             beforeEach(function () {
                 stubs.wf = sinon.stub().resolves();
@@ -577,6 +578,7 @@ describe('Unit: Extensions > Nginx', function () {
                 });
             });
         });
+
         describe('Config', function () {
             const expectedTemplate = {
                 url: 'ghost.dev',
@@ -592,7 +594,6 @@ describe('Unit: Extensions > Nginx', function () {
             beforeEach(function () {
                 stubs.templatify = sinon.stub().returns('nginx ssl config');
                 stubs.template = sinon.stub().returns(stubs.templatify);
-                ctx.instance.template = () => Promise.resolve();
                 proxy['fs-extra'].writeFile = sinon.stub().resolves();
                 proxy['lodash/template'] = stubs.template
             });
@@ -600,6 +601,7 @@ describe('Unit: Extensions > Nginx', function () {
             it('Provides necessary template data', function () {
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
+                ext.template = sinon.stub().resolves();
                 return tasks[6].task(ctx).then(() => {
                     expect(stubs.template.calledTwice).to.be.true;
                     expect(stubs.templatify.calledOnce).to.be.true;
@@ -613,6 +615,7 @@ describe('Unit: Extensions > Nginx', function () {
                 ctx.instance.config.get = (key) => key === 'url' ? 'http://ghost.dev/blog' : 2368;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
+                ext.template = sinon.stub().resolves();
                 expectedTemplate.location = '^~ /blog';
 
                 return tasks[6].task(ctx).then(() => {
@@ -626,6 +629,7 @@ describe('Unit: Extensions > Nginx', function () {
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 const sudo = sinon.stub().rejects({stderr: 'oh no!'});
+                ext.template = sinon.stub().resolves();
                 ext.ui.sudo = sudo;
 
                 return tasks[6].task(ctx).then(() => {
