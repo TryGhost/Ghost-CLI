@@ -135,9 +135,9 @@ describe('Unit: Systemd > Extension', function () {
             const sudoStub = sinon.stub().resolves();
             const skipStub = sinon.stub();
             const getStub = sinon.stub().returns(false);
-            const templateStub = sinon.stub().resolves();
             const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test', template: templateStub};
+            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test'};
+            const templateStub = sinon.stub(testInstance, 'template').resolves();
 
             return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
                 expect(uidStub.calledOnce).to.be.true;
@@ -146,7 +146,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(existsStub.calledOnce).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
-                expect(templateStub.calledWith('SOME TEMPLATE CONTENTS')).to.be.true;
+                expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(sudoStub.calledWithExactly('systemctl daemon-reload')).to.be.true;
                 expect(logStub.called).to.be.false;
@@ -168,9 +168,9 @@ describe('Unit: Systemd > Extension', function () {
             const sudoStub = sinon.stub().rejects({stderr: 'something went wrong'});
             const skipStub = sinon.stub();
             const getStub = sinon.stub().returns(false);
-            const templateStub = sinon.stub().resolves();
             const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test', template: templateStub};
+            const templateStub = sinon.stub(testInstance, 'template').resolves();
+            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test'};
 
             return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true
@@ -184,7 +184,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(existsStub.calledOnce).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
-                expect(templateStub.calledWith('SOME TEMPLATE CONTENTS')).to.be.true;
+                expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(sudoStub.calledWithExactly('systemctl daemon-reload')).to.be.true;
                 expect(logStub.called).to.be.false;

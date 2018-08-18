@@ -66,7 +66,8 @@ class NginxExtension extends Extension {
             port: ctx.instance.config.get('server.port')
         });
 
-        return ctx.instance.template(
+        return this.template(
+            ctx.instance,
             generatedConfig,
             'nginx config',
             confFile,
@@ -206,7 +207,8 @@ class NginxExtension extends Extension {
                     port: ctx.instance.config.get('server.port')
                 });
 
-                return ctx.instance.template(
+                return this.template(
+                    ctx.instance,
                     generatedSslConfig,
                     'ssl config',
                     confFile,
