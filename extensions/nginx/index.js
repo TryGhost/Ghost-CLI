@@ -10,9 +10,10 @@ const execa = require('execa');
 const Promise = require('bluebird');
 const template = require('lodash/template');
 
-const cli = require('../../lib');
+const {Extension, errors} = require('../../lib');
+const {CliError, ProcessError} = errors;
 
-class NginxExtension extends cli.Extension {
+class NginxExtension extends Extension {
     migrations() {
         const migrations = require('./migrations');
 
@@ -77,11 +78,11 @@ class NginxExtension extends cli.Extension {
         ).catch(
             (error) => {
                 // CASE: error is already a cli error, just pass it along
-                if (error instanceof cli.errors.CliError) {
+                if (error instanceof CliError) {
                     return Promise.reject(error);
                 }
 
-                return Promise.reject(new cli.errors.ProcessError(error));
+                return Promise.reject(new ProcessError(error));
             });
     }
 
@@ -125,7 +126,7 @@ class NginxExtension extends cli.Extension {
                 return Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
                     if (error.code !== 'ENOTFOUND') {
                         // Some other error
-                        return Promise.reject(new cli.errors.CliError({
+                        return Promise.reject(new CliError({
                             message: `Error trying to lookup DNS for '${parsedUrl.hostname}'`,
                             err: error
                         }));
@@ -175,7 +176,7 @@ class NginxExtension extends cli.Extension {
             skip: (ctx) => ctx.dnsfail || fs.existsSync(dhparamFile),
             task: () => {
                 return this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`)
-                    .catch((error) => Promise.reject(new cli.errors.ProcessError(error)));
+                    .catch((error) => Promise.reject(new ProcessError(error)));
             }
         }, {
             title: 'Generating SSL security headers',
@@ -185,7 +186,7 @@ class NginxExtension extends cli.Extension {
 
                 return fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'}).then(() => {
                     return this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`).catch(
-                        (error) => Promise.reject(new cli.errors.ProcessError(error))
+                        (error) => Promise.reject(new ProcessError(error))
                     );
                 });
             }
@@ -213,7 +214,7 @@ class NginxExtension extends cli.Extension {
                 ).then(
                     () => this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
                 ).catch(
-                    (error) => Promise.reject(new cli.errors.ProcessError(error))
+                    (error) => Promise.reject(new ProcessError(error))
                 );
             }
         }, {
@@ -243,7 +244,7 @@ class NginxExtension extends cli.Extension {
                     this.ui.sudo(`rm -f /etc/nginx/sites-available/${confFile}`),
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${confFile}`)
                 ]).catch(
-                    (error) => Promise.reject(new cli.errors.CliError({
+                    (error) => Promise.reject(new CliError({
                         message: `Nginx config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${confFile}.`,
                         help: `Try running 'rm -f /etc/nginx/sites-available/${confFile} && rm -f /etc/nginx/sites-enabled/${confFile}'`,
                         err: error
@@ -259,7 +260,7 @@ class NginxExtension extends cli.Extension {
                     this.ui.sudo(`rm -f /etc/nginx/sites-available/${sslConfFile}`),
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${sslConfFile}`)
                 ]).catch(
-                    (error) => Promise.reject(new cli.errors.CliError({
+                    (error) => Promise.reject(new CliError({
                         message: `SSL config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${sslConfFile}.`,
                         help: `Try running 'rm -f /etc/nginx/sites-available/${sslConfFile} && rm -f /etc/nginx/sites-enabled/${sslConfFile}'`,
                         err: error
@@ -277,7 +278,7 @@ class NginxExtension extends cli.Extension {
 
     restartNginx() {
         return this.ui.sudo('nginx -s reload')
-            .catch((error) => Promise.reject(new cli.errors.CliError({
+            .catch((error) => Promise.reject(new CliError({
                 message: 'Failed to restart Nginx.',
                 err: error
             })));
