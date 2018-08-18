@@ -36,7 +36,7 @@ describe('Unit: Doctor Checks > Memory', function () {
         const memStub = sinon.stub(sysinfo, 'mem').rejects(new Error('systeminformation'));
         const memCheck = require(modulePath);
 
-        return memCheck.task().catch(error => {
+        return memCheck.task().catch((error) => {
             expect(error).to.be.an('error');
             expect(error.message).to.equal('systeminformation');
             expect(memStub.calledOnce).to.be.true;

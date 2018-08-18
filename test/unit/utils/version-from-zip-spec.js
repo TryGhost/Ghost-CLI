@@ -82,7 +82,7 @@ describe('Unit: Utils > versionFromZip', function () {
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0').then(() => {
             expect(false, 'error should have been thrown').to.be.true;
-        }).catch(error => {
+        }).catch((error) => {
             expect(error.message).to.equal('No valid versions found.');
         });
     });
@@ -96,7 +96,7 @@ describe('Unit: Utils > versionFromZip', function () {
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.3').then(() => {
             expect(false, 'error should have been thrown').to.be.true;
-        }).catch(error => {
+        }).catch((error) => {
             expect(error.message).to.equal('No valid versions found.');
         });
     });
@@ -180,9 +180,7 @@ describe('Unit: Utils > versionFromZip', function () {
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip')).then((version) => {
             expect(version).to.equal('1.0.0');
-        }).catch((error) => {
-            return Promise.reject(error);
-        });
+        }).catch(error => Promise.reject(error));
     });
 
     it('rejects if a CLI version is specified in package.json and is not compatible with the current CLI version', function () {

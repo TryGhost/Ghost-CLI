@@ -15,7 +15,7 @@ const fileList = [
     '.ghost-cli',
     'config.production.json',
     'config.development.json'
-]
+];
 
 describe('Unit: Commands > Uninstall', function () {
     afterEach(() => {
@@ -33,7 +33,7 @@ describe('Unit: Commands > Uninstall', function () {
             instance: instance,
             ui: ui,
             system: system
-        }
+        };
     }
 
     describe('run', function () {

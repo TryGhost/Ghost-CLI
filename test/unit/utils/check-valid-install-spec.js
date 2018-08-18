@@ -9,7 +9,7 @@ const fs = require('fs-extra');
 describe('Unit: Utils > checkValidInstall', function () {
     afterEach(() => {
         sinon.restore();
-    })
+    });
 
     it('throws error if config.js present', function () {
         const existsStub = sinon.stub(fs, 'existsSync');

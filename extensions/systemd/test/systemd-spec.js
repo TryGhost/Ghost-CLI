@@ -209,7 +209,7 @@ describe('Unit: Systemd > Process Manager', function () {
             ext.enable().then(() => {
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
-            })
+            });
         });
 
         it('Passes errors through', function () {
@@ -233,7 +233,7 @@ describe('Unit: Systemd > Process Manager', function () {
             ext.disable().then(() => {
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
-            })
+            });
         });
 
         it('Passes errors through', function () {

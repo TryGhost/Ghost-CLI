@@ -314,7 +314,7 @@ describe('Unit: Utils > local-process', function () {
             }, {});
 
             instance.stop('/var/www/ghost').then(() => {
-                done(new Error('stop should have rejected'))
+                done(new Error('stop should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An unexpected error occurred while stopping Ghost.');

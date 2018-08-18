@@ -67,19 +67,21 @@ describe('Unit: Commands > Update', function () {
             const system = {getInstance: sinon.stub()};
 
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => {
-                return Promise.each(tasks, (task) => {
-                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                        return;
-                    }
+            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                    return;
+                }
 
-                    return task.task(ctx);
-                });
-            });
+                return task.task(ctx);
+            }));
 
             class TestInstance extends Instance {
-                get cliConfig() { return cliConfig; }
-                get config() { return ghostConfig; }
+                get cliConfig() {
+                    return cliConfig; 
+                }
+                get config() {
+                    return ghostConfig; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -148,19 +150,21 @@ describe('Unit: Commands > Update', function () {
             const system = {getInstance: sinon.stub()};
 
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => {
-                return Promise.each(tasks, (task) => {
-                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                        return;
-                    }
+            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                    return;
+                }
 
-                    return task.task(ctx);
-                });
-            });
+                return task.task(ctx);
+            }));
 
             class TestInstance extends Instance {
-                get cliConfig() { return cliConfig; }
-                get config() { return ghostConfig; }
+                get cliConfig() {
+                    return cliConfig; 
+                }
+                get config() {
+                    return ghostConfig; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -213,7 +217,9 @@ describe('Unit: Commands > Update', function () {
             ui.run.callsFake(fn => fn());
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -255,7 +261,9 @@ describe('Unit: Commands > Update', function () {
             ui.run.callsFake(fn => fn());
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -288,7 +296,9 @@ describe('Unit: Commands > Update', function () {
             ui.run.callsFake(fn => fn());
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -340,18 +350,18 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => {
-                return Promise.each(tasks, (task) => {
-                    if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
-                        return;
-                    }
+            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+                if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
+                    return;
+                }
 
-                    return task.task(ctx);
-                });
-            });
+                return task.task(ctx);
+            }));
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -404,18 +414,18 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => {
-                return Promise.each(tasks, (task) => {
-                    if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
-                        return;
-                    }
+            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+                if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
+                    return;
+                }
 
-                    return task.task(ctx);
-                });
-            });
+                return task.task(ctx);
+            }));
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -473,18 +483,18 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => {
-                return Promise.each(tasks, (task) => {
-                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                        return;
-                    }
+            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                    return;
+                }
 
-                    return task.task(ctx);
-                });
-            });
+                return task.task(ctx);
+            }));
 
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -537,7 +547,9 @@ describe('Unit: Commands > Update', function () {
             };
             const system = {getInstance: sinon.stub()};
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -546,14 +558,14 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
             const rollback = cmdInstance.rollbackFromFail = sinon.stub().rejects(new Error('rollback_successful'));
             cmdInstance.runCommand = sinon.stub().resolves(true);
-            cmdInstance.version = sinon.stub().callsFake(context => {
+            cmdInstance.version = sinon.stub().callsFake((context) => {
                 context.version = '1.1.1';
                 return true;
             });
 
             return cmdInstance.run({}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
-            }).catch(error => {
+            }).catch((error) => {
                 expect(error.message).to.equal('rollback_successful');
                 expect(rollback.calledOnce).to.be.true;
                 expect(rollback.calledWithExactly(errObj, '1.1.1', undefined)).to.be.true;
@@ -575,7 +587,9 @@ describe('Unit: Commands > Update', function () {
             };
             const system = {getInstance: sinon.stub()};
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -584,14 +598,14 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
             const rollback = cmdInstance.rollbackFromFail = sinon.stub();
             cmdInstance.runCommand = sinon.stub().resolves(true);
-            cmdInstance.version = sinon.stub().callsFake(context => {
+            cmdInstance.version = sinon.stub().callsFake((context) => {
                 context.version = '1.1.1';
                 return true;
             });
 
             return cmdInstance.run({}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
-            }).catch(error => {
+            }).catch((error) => {
                 expect(error.message).to.equal('do_nothing');
                 expect(rollback.called).to.be.false;
             });
@@ -612,7 +626,9 @@ describe('Unit: Commands > Update', function () {
             };
             const system = {getInstance: sinon.stub()};
             class TestInstance extends Instance {
-                get cliConfig() { return config; }
+                get cliConfig() {
+                    return config; 
+                }
             }
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
@@ -621,14 +637,14 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
             const rollback = cmdInstance.rollbackFromFail = sinon.stub();
             cmdInstance.runCommand = sinon.stub().resolves(true);
-            cmdInstance.version = sinon.stub().callsFake(context => {
+            cmdInstance.version = sinon.stub().callsFake((context) => {
                 context.version = '1.1.1';
                 return true;
             });
 
             return cmdInstance.run({rollback: true}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
-            }).catch(error => {
+            }).catch((error) => {
                 expect(error.message).to.equal('do_nothing');
                 expect(rollback.called).to.be.false;
             });
@@ -921,11 +937,8 @@ describe('Unit: Commands > Update', function () {
         });
 
         it('re-throws non CliErrors from resolveVersion util', function () {
-            const resolveVersion = sinon.stub().callsFake(() => {
-                // sinon's reject handling doesn't work quite well enough
-                // for this so we do it manually
-                return Promise.reject(new Error('something bad'));
-            });
+            const resolveVersion = sinon.stub().callsFake(() => Promise.reject(new Error('something bad'))
+            );
             const UpdateCommand = proxyquire(modulePath, {
                 '../utils/resolve-version': resolveVersion
             });
@@ -953,7 +966,7 @@ describe('Unit: Commands > Update', function () {
         let ui, system;
 
         beforeEach(function () {
-            const cliConfig = {get: () => '1.0.0'}
+            const cliConfig = {get: () => '1.0.0'};
             ui = {
                 log: sinon.stub(),
                 confirm: sinon.stub(),
@@ -969,7 +982,7 @@ describe('Unit: Commands > Update', function () {
 
         it('Asks to rollback by default', function () {
             const UpdateCommand = require(modulePath);
-            const expectedQuestion = 'Unable to upgrade Ghost from v1.0.0 to v1.1.1. Would you like to revert back to v1.0.0?'
+            const expectedQuestion = 'Unable to upgrade Ghost from v1.0.0 to v1.1.1. Would you like to revert back to v1.0.0?';
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
             ui.confirm.resolves(true);
             update.run = sinon.stub().resolves();
@@ -1037,7 +1050,7 @@ describe('Unit: Commands > Update', function () {
             const envCfg = {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.0', 'current']]
-            }
+            };
             const env = setupTestFolder(envCfg);
             sinon.stub(process, 'cwd').returns(env.dir);
             const config = configStub();
@@ -1064,7 +1077,7 @@ describe('Unit: Commands > Update', function () {
             const envCfg = {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.1', 'current']]
-            }
+            };
             const env = setupTestFolder(envCfg);
             sinon.stub(process, 'cwd').returns(env.dir);
             const config = configStub();

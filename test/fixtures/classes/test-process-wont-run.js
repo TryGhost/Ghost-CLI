@@ -6,4 +6,4 @@ module.exports = class TestProcess extends cli.ProcessManager {
     static willRun() {
         return false;
     }
-}
+};

@@ -85,7 +85,7 @@ describe('Unit: yarn', function () {
             expect(error).to.be.ok;
             expect(error).to.be.instanceOf(ProcessError);
         });
-    })
+    });
 
     describe('can return observables', function () {
         let stubs;
@@ -125,7 +125,7 @@ describe('Unit: yarn', function () {
                 execa: execa,
                 rxjs: {Observable: TestClass}
             });
-        })
+        });
 
         it('ends properly', function () {
             const res = yarn([], {observe: true});
@@ -170,7 +170,7 @@ describe('Unit: yarn', function () {
             onFn('\nbest\n');
             onFn('run');
 
-            const next = stubs.observer.next
+            const next = stubs.observer.next;
             expect(next.callCount).to.equal(4);
             expect(next.args[0][0]).to.equal('\n\n');
             expect(next.args[1][0]).to.equal('test');
@@ -187,7 +187,7 @@ describe('Unit: yarn', function () {
             }).catch((e) => {
                 expect(e).to.be.ok;
                 expect(e).to.be.instanceOf(ProcessError);
-            })
+            });
         });
     });
 });

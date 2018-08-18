@@ -248,7 +248,7 @@ describe('Unit: UI', function () {
         it('passes options to prompt method', function () {
             const ui = new UI();
             ui.allowPrompt = true;
-            const noSpinStub = sinon.stub(ui, 'noSpin').callsFake((fn) => fn());
+            const noSpinStub = sinon.stub(ui, 'noSpin').callsFake(fn => fn());
             const inquirerStub = sinon.stub(ui, 'inquirer').resolves();
 
             const prompt = {

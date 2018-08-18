@@ -121,7 +121,7 @@ module.exports = class AcceptanceTest {
                 const chunk = d.toString();
 
                 if (options.stdin) {
-                    const stdin = find(options.stdin, (obj) => obj.when.test(chunk));
+                    const stdin = find(options.stdin, obj => obj.when.test(chunk));
 
                     if (stdin) {
                         this.spawnedCommand.stdin.write(`${stdin.write}\n`);
@@ -162,7 +162,7 @@ module.exports = class AcceptanceTest {
                     process.removeListener('exit', cleanup);
                     this.cleanup();
                     const error = new Error(`'${this.command}' printed to stderr with failOnStderr enabled:\n`);
-                    error.message += `cwd: ${this.dir} \nstdout: ${stdoutBuffer} \nstderr: ${stderrBuffer};`
+                    error.message += `cwd: ${this.dir} \nstdout: ${stdoutBuffer} \nstderr: ${stderrBuffer};`;
                     reject(error);
                 }
                 const passed = options.checkOutput(stdoutBuffer, stderrBuffer, this.dir);
@@ -181,7 +181,7 @@ module.exports = class AcceptanceTest {
                 this.cleanup();
                 let message = `Timeout of ${(timeout / 1000) / 60} minutes exceeded for spawned command: ${this.command}\n`;
 
-                message += `stdout: ${stdoutBuffer} \nstderr: ${stderrBuffer}`
+                message += `stdout: ${stdoutBuffer} \nstderr: ${stderrBuffer}`;
                 reject(new Error(message));
             }, timeout);
         });
@@ -195,4 +195,4 @@ module.exports = class AcceptanceTest {
         clearInterval(this.pollOutput);
         clearTimeout(this.fallbackTimeout);
     }
-}
+};

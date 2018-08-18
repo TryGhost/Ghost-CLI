@@ -28,7 +28,7 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('gracefully notifies of already running instance', function () {
-            const runningStub = sinon.stub().resolves(true)
+            const runningStub = sinon.stub().resolves(true);
             const logStub = sinon.stub();
             const ui = {log: logStub};
             const start = new StartCommand(ui, mySystem);
@@ -103,7 +103,7 @@ describe('Unit: Commands > Start', function () {
                     listr: () => Promise.resolve()
                 };
                 ui.run.onFirstCall().resolves();
-                ui.run.onSecondCall().callsFake((fn) => Promise.resolve(fn()));
+                ui.run.onSecondCall().callsFake(fn => Promise.resolve(fn()));
                 myInstance.process = {
                     isEnabled: sinon.stub().resolves(false),
                     enable: sinon.stub().resolves(),
@@ -230,7 +230,7 @@ describe('Unit: Commands > Start', function () {
 
         it('shows custom admin url', function () {
             const oldArgv = process.argv;
-            process.argv = ['', '', 'start']
+            process.argv = ['', '', 'start'];
             myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
             myInstance.config.get.withArgs('admin.url').returns('https://admin.my-amazing.blog.com');
             myInstance.process = {};
@@ -255,7 +255,7 @@ describe('Unit: Commands > Start', function () {
 
         it('shows different message after fresh install', function () {
             const oldArgv = process.argv;
-            process.argv = ['', '', 'install']
+            process.argv = ['', '', 'install'];
             myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
             myInstance.process = {};
             const ui = {

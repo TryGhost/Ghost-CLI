@@ -13,7 +13,7 @@ describe('Unit: Command > Restart', function () {
             ui: {log: logStub},
             system: {getInstance: () => instance},
             runCommand: sinon.stub().resolves()
-        }
+        };
         const command = new RestartCommand({}, {});
 
         return command.run.call(ctx).then(() => {

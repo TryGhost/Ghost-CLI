@@ -25,7 +25,7 @@ describe('Unit: Tasks > yarn-install', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => task.task(ctx));
+            return Promise.each(tasks, task => task.task(ctx));
         });
 
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
@@ -77,7 +77,7 @@ describe('Unit: Tasks > yarn-install', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => task.task(ctx));
+            return Promise.each(tasks, task => task.task(ctx));
         });
 
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();

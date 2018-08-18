@@ -23,7 +23,7 @@ describe('Unit: Command > Config', function () {
         expect(yargsStub.command.calledTwice).to.be.true;
 
         const command1 = yargsStub.command.args[0][0];
-        expect(command1.command).to.equal('get <key>')
+        expect(command1.command).to.equal('get <key>');
         expect(command1.handler).to.be.a('function');
         command1.handler({args: true});
         expect(runStub.calledOnce).to.be.true;
@@ -32,7 +32,7 @@ describe('Unit: Command > Config', function () {
         runStub.reset();
 
         const command2 = yargsStub.command.args[1][0];
-        expect(command2.command).to.equal('set <key> <value>')
+        expect(command2.command).to.equal('set <key> <value>');
         expect(command2.handler).to.be.a('function');
         command2.handler({args: true});
         expect(runStub.calledOnce).to.be.true;
@@ -183,7 +183,7 @@ describe('Unit: Command > Config', function () {
         });
 
         it('returns url prompt with validator if url is not provided and db is sqlite3', function () {
-            const expectedValidator = require('../../../lib/utils/validate-instance-url')
+            const expectedValidator = require('../../../lib/utils/validate-instance-url');
             const argv = {db: 'sqlite3'};
             const result = config.getConfigPrompts(argv);
 

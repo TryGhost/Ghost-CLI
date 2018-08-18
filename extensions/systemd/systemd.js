@@ -33,15 +33,8 @@ class SystemdProcessManager extends ProcessManager {
                 this.instance.config.set('bootstrap-socket', socketAddress);
                 return this.instance.config.save();
             })
-            .then(() => {
-                return this.ui.sudo(`systemctl start ${this.systemdName}`)
-            })
-            .then(() => {
-                return this.ensureStarted({
-                    logSuggestion,
-                    socketAddress
-                });
-            })
+            .then(() => this.ui.sudo(`systemctl start ${this.systemdName}`))
+            .then(() => this.ensureStarted({logSuggestion, socketAddress}))
             .catch((error) => {
                 if (error instanceof CliError) {
                     throw error;
@@ -54,8 +47,9 @@ class SystemdProcessManager extends ProcessManager {
     stop() {
         this._precheck();
 
-        return this.ui.sudo(`systemctl stop ${this.systemdName}`)
-            .catch((error) => { throw new ProcessError(error); });
+        return this.ui.sudo(`systemctl stop ${this.systemdName}`).catch((error) => {
+            throw new ProcessError(error);
+        });
     }
 
     restart() {
@@ -74,15 +68,8 @@ class SystemdProcessManager extends ProcessManager {
                 this.instance.config.set('bootstrap-socket', socketAddress);
                 return this.instance.config.save();
             })
-            .then(() => {
-                return this.ui.sudo(`systemctl restart ${this.systemdName}`)
-            })
-            .then(() => {
-                return this.ensureStarted({
-                    logSuggestion,
-                    socketAddress
-                });
-            })
+            .then(() => this.ui.sudo(`systemctl restart ${this.systemdName}`))
+            .then(() => this.ensureStarted({logSuggestion, socketAddress}))
             .catch((error) => {
                 if (error instanceof CliError) {
                     throw error;
@@ -107,13 +94,15 @@ class SystemdProcessManager extends ProcessManager {
     }
 
     enable() {
-        return this.ui.sudo(`systemctl enable ${this.systemdName} --quiet`)
-            .catch((error) => { throw new ProcessError(error); });
+        return this.ui.sudo(`systemctl enable ${this.systemdName} --quiet`).catch((error) => {
+            throw new ProcessError(error);
+        });
     }
 
     disable() {
-        return this.ui.sudo(`systemctl disable ${this.systemdName} --quiet`)
-            .catch((error) => { throw new ProcessError(error); });
+        return this.ui.sudo(`systemctl disable ${this.systemdName} --quiet`).catch((error) => {
+            throw new ProcessError(error);
+        });
     }
 
     isRunning() {
@@ -132,7 +121,9 @@ class SystemdProcessManager extends ProcessManager {
                 if (error.stdout && error.stdout.match(/failed/)) {
                     return this.ui.sudo(`systemctl reset-failed ${this.systemdName}`)
                         .then(() => false)
-                        .catch((error) => { throw new ProcessError(error); });
+                        .catch((error) => {
+                            throw new ProcessError(error);
+                        });
                 }
 
                 throw new ProcessError(error);

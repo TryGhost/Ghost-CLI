@@ -170,7 +170,7 @@ describe('Unit: UI > PrettyStream', function () {
                     time: '2016-07-01 00:00:00',
                     level: 30,
                     msg: 'Ghost starts now.'
-                }, '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m Ghost starts now.\n')
+                }, '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m Ghost starts now.\n');
             });
 
             it('data.err', function () {

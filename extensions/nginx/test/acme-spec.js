@@ -37,7 +37,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('downloads acme.sh', function () {
-            const dwUrl = 'https://ghost.org/download'
+            const dwUrl = 'https://ghost.org/download';
             const fakeResponse = {
                 body: JSON.stringify({tarball_url: dwUrl}),
                 statusCode: 200
@@ -191,7 +191,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.generate({sudo: sudoStub}).then((result) => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(result).to.not.exist
+                expect(result).to.not.exist;
             });
         });
 
@@ -234,7 +234,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(sudoStub.args[0][0]).to.equal(
                     '/etc/letsencrypt/acme.sh --remove --home /etc/letsencrypt --domain ghost.org'
-                )
+                );
             });
         });
 
@@ -250,7 +250,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(sudoStub.args[0][0]).to.equal(
                     '/home/ghost/.acme.sh/acme.sh --remove --home /home/ghost/.acme.sh --domain ghost.org'
-                )
+                );
             });
         });
 

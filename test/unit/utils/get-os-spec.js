@@ -52,7 +52,7 @@ describe('Unit: Utils > getOS', function () {
 
     it('returns default os.platform if OS is not Mac, Linux, or Windows', function () {
         platformStub.returns('freebsd');
-        versionStub.returns('1.0.0')
+        versionStub.returns('1.0.0');
         const osResult = getOS({
             linux: false,
             macos: false,

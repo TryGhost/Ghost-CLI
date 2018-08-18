@@ -123,31 +123,29 @@ class NginxExtension extends Extension {
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
-            task: (ctx) => {
-                return Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
-                    if (error.code !== 'ENOTFOUND') {
-                        // Some other error
-                        return Promise.reject(new CliError({
-                            message: `Error trying to lookup DNS for '${parsedUrl.hostname}'`,
-                            err: error
-                        }));
-                    }
+            task: ctx => Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
+                if (error.code !== 'ENOTFOUND') {
+                    // Some other error
+                    return Promise.reject(new CliError({
+                        message: `Error trying to lookup DNS for '${parsedUrl.hostname}'`,
+                        err: error
+                    }));
+                }
 
-                    // DNS entry has not populated yet, log an error and skip rest of the
-                    // ssl configuration
-                    const text = [
-                        'Uh-oh! It looks like your domain isn\'t set up correctly yet.',
-                        'Because of this, SSL setup won\'t work correctly. Once you\'ve set up your domain',
-                        'and pointed it at this server\'s IP, try running `ghost setup ssl` again.'
-                    ];
+                // DNS entry has not populated yet, log an error and skip rest of the
+                // ssl configuration
+                const text = [
+                    'Uh-oh! It looks like your domain isn\'t set up correctly yet.',
+                    'Because of this, SSL setup won\'t work correctly. Once you\'ve set up your domain',
+                    'and pointed it at this server\'s IP, try running `ghost setup ssl` again.'
+                ];
 
-                    this.ui.log(text.join(' '), 'yellow');
-                    ctx.dnsfail = true;
-                });
-            }
+                this.ui.log(text.join(' '), 'yellow');
+                ctx.dnsfail = true;
+            })
         }, {
             title: 'Getting additional configuration',
-            skip: (ctx) => ctx.dnsfail,
+            skip: ({dnsfail}) => dnsfail,
             task: () => {
                 let promise;
 
@@ -159,41 +157,40 @@ class NginxExtension extends Extension {
                         type: 'input',
                         message: 'Enter your email (used for Let\'s Encrypt notifications)',
                         validate: value => Boolean(value) || 'You must supply an email'
-                    }).then(answer => { argv.sslemail = answer.email; });
+                    }).then(({email}) => {
+                        argv.sslemail = email;
+                    });
                 }
 
                 return promise;
             }
         }, {
             title: 'Installing acme.sh',
-            skip: (ctx) => ctx.dnsfail,
+            skip: ({dnsfail}) => dnsfail,
             task: (ctx, task) => acme.install(this.ui, task)
         }, {
             title: 'Getting SSL Certificate from Let\'s Encrypt',
-            skip: (ctx) => ctx.dnsfail,
+            skip: ({dnsfail}) => dnsfail,
             task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, argv.sslemail, argv.sslstaging)
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
-            skip: (ctx) => ctx.dnsfail || fs.existsSync(dhparamFile),
-            task: () => {
-                return this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`)
-                    .catch((error) => Promise.reject(new ProcessError(error)));
-            }
+            skip: ({dnsfail}) => dnsfail || fs.existsSync(dhparamFile),
+            task: () => this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`)
+                .catch(error => Promise.reject(new ProcessError(error)))
         }, {
             title: 'Generating SSL security headers',
-            skip: (ctx) => ctx.dnsfail || fs.existsSync(sslParamsFile),
+            skip: ({dnsfail}) => dnsfail || fs.existsSync(sslParamsFile),
             task: () => {
                 const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
 
-                return fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'}).then(() => {
-                    return this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`).catch(
-                        (error) => Promise.reject(new ProcessError(error))
-                    );
-                });
+                return fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'})
+                    .then(() => this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`).catch(
+                        error => Promise.reject(new ProcessError(error))
+                    ));
             }
         }, {
             title: 'Generating SSL configuration',
-            skip: (ctx) => ctx.dnsfail,
+            skip: ({dnsfail}) => dnsfail,
             task: (ctx) => {
                 const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
                 const sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
@@ -215,13 +212,11 @@ class NginxExtension extends Extension {
                     '/etc/nginx/sites-available'
                 ).then(
                     () => this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
-                ).catch(
-                    (error) => Promise.reject(new ProcessError(error))
-                );
+                ).catch(error => Promise.reject(new ProcessError(error)));
             }
         }, {
             title: 'Restarting Nginx',
-            skip: (ctx) => ctx.dnsfail,
+            skip: ({dnsfail}) => dnsfail,
             task: () => this.restartNginx()
         }], false);
     }
@@ -245,13 +240,11 @@ class NginxExtension extends Extension {
                 Promise.all([
                     this.ui.sudo(`rm -f /etc/nginx/sites-available/${confFile}`),
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${confFile}`)
-                ]).catch(
-                    (error) => Promise.reject(new CliError({
-                        message: `Nginx config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${confFile}.`,
-                        help: `Try running 'rm -f /etc/nginx/sites-available/${confFile} && rm -f /etc/nginx/sites-enabled/${confFile}'`,
-                        err: error
-                    }))
-                )
+                ]).catch(error => Promise.reject(new CliError({
+                    message: `Nginx config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${confFile}.`,
+                    help: `Try running 'rm -f /etc/nginx/sites-available/${confFile} && rm -f /etc/nginx/sites-enabled/${confFile}'`,
+                    err: error
+                })))
             );
         }
 
@@ -261,13 +254,11 @@ class NginxExtension extends Extension {
                 Promise.all([
                     this.ui.sudo(`rm -f /etc/nginx/sites-available/${sslConfFile}`),
                     this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${sslConfFile}`)
-                ]).catch(
-                    (error) => Promise.reject(new CliError({
-                        message: `SSL config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${sslConfFile}.`,
-                        help: `Try running 'rm -f /etc/nginx/sites-available/${sslConfFile} && rm -f /etc/nginx/sites-enabled/${sslConfFile}'`,
-                        err: error
-                    }))
-                )
+                ]).catch(error => Promise.reject(new CliError({
+                    message: `SSL config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${sslConfFile}.`,
+                    help: `Try running 'rm -f /etc/nginx/sites-available/${sslConfFile} && rm -f /etc/nginx/sites-enabled/${sslConfFile}'`,
+                    err: error
+                })))
             );
         }
 
@@ -280,7 +271,7 @@ class NginxExtension extends Extension {
 
     restartNginx() {
         return this.ui.sudo('nginx -s reload')
-            .catch((error) => Promise.reject(new CliError({
+            .catch(error => Promise.reject(new CliError({
                 message: 'Failed to restart Nginx.',
                 err: error
             })));

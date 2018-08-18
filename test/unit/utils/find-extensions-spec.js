@@ -51,7 +51,7 @@ describe('Unit: Utils > find-extensions', function () {
             sort: true
         };
 
-        const extensions = args.include.map((ext) => ext.split('extensions/')[1]);
+        const extensions = args.include.map(ext => ext.split('extensions/')[1]);
         delete args.include;
         expect(extensions).to.deep.equal(localExtensions);
         expect(args).to.deep.equal(expected);
@@ -71,7 +71,7 @@ describe('Unit: Utils > find-extensions', function () {
             sort: true
         };
 
-        const extensions = args.include.map((ext) => ext.split('extensions/')[1]);
+        const extensions = args.include.map(ext => ext.split('extensions/')[1]);
         delete args.include;
         expect(extensions).to.deep.equal(localExtensions);
         expect(args).to.deep.equal(expected);
@@ -79,7 +79,7 @@ describe('Unit: Utils > find-extensions', function () {
 
     it('generates proper extension names', function () {
         existsStub.returns(true);
-        const names = findExtensions().map((ext) => ext.name);
+        const names = findExtensions().map(ext => ext.name);
         const expectedNames = ['test', 'rest', undefined];
         expect(names).to.deep.equal(expectedNames);
     });

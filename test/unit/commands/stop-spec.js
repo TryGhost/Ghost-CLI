@@ -8,7 +8,7 @@ const errors = require('../../../lib/errors');
 const StopCommand = require(modulePath);
 
 function proxiedCommand() {
-    return new(proxyquire(modulePath, {'../utils/check-valid-install': () => true}))();
+    return new (proxyquire(modulePath, {'../utils/check-valid-install': () => true}))();
 }
 
 describe('Unit: Commands > Stop', function () {
@@ -90,7 +90,7 @@ describe('Unit: Commands > Stop', function () {
                     expect(runningStub.calledTwice).to.be.true;
                     expect(runningStub.args[1][0]).to.equal(null);
                 });
-            }
+            };
 
             const context = {
                 system: {getInstance: gIstub},
@@ -221,7 +221,7 @@ describe('Unit: Commands > Stop', function () {
 
     it('stopAll stops all instances', function () {
         const stop = new StopCommand();
-        const runStub = sinon.stub().callsFake((fn) => fn.call(stop));
+        const runStub = sinon.stub().callsFake(fn => fn.call(stop));
         const cases = 'abcdefgh'.split('');
         const instances = [];
         cases.forEach((cse) => {

@@ -45,16 +45,18 @@ class SystemdExtension extends Extension {
 
         return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system').then(
             () => this.ui.sudo('systemctl daemon-reload')
-        ).catch((error) => { throw new ProcessError(error); });
+        ).catch((error) => {
+            throw new ProcessError(error);
+        });
     }
 
     uninstall(instance) {
         const serviceFilename = `/lib/systemd/system/ghost_${instance.name}.service`;
 
         if (fs.existsSync(serviceFilename)) {
-            return this.ui.sudo(`rm ${serviceFilename}`).catch(
-                () => { throw new SystemError('Systemd service file link could not be removed, you will need to do this manually.'); }
-            );
+            return this.ui.sudo(`rm ${serviceFilename}`).catch(() => {
+                throw new SystemError('Systemd service file link could not be removed, you will need to do this manually.');
+            });
         }
 
         return Promise.resolve();

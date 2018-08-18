@@ -85,7 +85,9 @@ describe('Unit: Commands > Setup', function () {
                 db: 'mysql'
             };
 
-            const setup = new SetupCommand({}, {setEnvironment: () => {throw new Error('Take a break')}});
+            const setup = new SetupCommand({}, {setEnvironment: () => {
+                throw new Error('Take a break');
+            }});
 
             try {
                 setup.run(Object.assign(argVSpy, argvA));
@@ -115,12 +117,16 @@ describe('Unit: Commands > Setup', function () {
         });
 
         it('Hooks when stages are passed through', function () {
-            let stages = []
+            let stages = [];
             const stubs = {
                 noCall: sinon.stub().resolves(),
                 important: sinon.stub().resolves(),
-                hook: sinon.stub().callsFake((n, ths) => {ths.stages = stages; return Promise.resolve()}),
-                listr: sinon.stub().callsFake((tasks) => {tasks.forEach((task) => task.task())})
+                hook: sinon.stub().callsFake((n, ths) => {
+                    ths.stages = stages; return Promise.resolve();
+                }),
+                listr: sinon.stub().callsFake((tasks) => {
+                    tasks.forEach(task => task.task());
+                })
             };
             stages = [{name: 'nocall', fn: stubs.noCall}, {name: 'important', fn: stubs.important}];
             const system = {
@@ -242,15 +248,13 @@ describe('Unit: Commands > Setup', function () {
             config.has.returns(false);
 
             const system = {
-                getInstance: () => {
-                    return {
-                        checkEnvironment: () => true,
-                        apples: true,
-                        config,
-                        dir: '/var/www/ghost',
-                        cliConfig: cliConfigStub
-                    };
-                },
+                getInstance: () => ({
+                    checkEnvironment: () => true,
+                    apples: true,
+                    config,
+                    dir: '/var/www/ghost',
+                    cliConfig: cliConfigStub
+                }),
                 addInstance: aIstub,
                 hook: () => Promise.resolve()
             };
@@ -264,15 +268,13 @@ describe('Unit: Commands > Setup', function () {
                 'setup-linux-user': false
             };
 
-            ui.listr.callsFake((tasks, ctx) => {
-                return Promise.each(tasks, (task) => {
-                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                        return;
-                    }
+            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                    return;
+                }
 
-                    return task.task(ctx);
-                });
-            });
+                return task.task(ctx);
+            }));
 
             const setup = new SetupCommand(ui, system);
             return setup.run(argv).then(() => {
@@ -294,15 +296,13 @@ describe('Unit: Commands > Setup', function () {
             config.has.returns(false);
 
             const system = {
-                getInstance: () => {
-                    return {
-                        checkEnvironment: () => true,
-                        apples: true,
-                        config,
-                        dir: '/var/www/ghost',
-                        cliConfig: cliConfigStub
-                    };
-                },
+                getInstance: () => ({
+                    checkEnvironment: () => true,
+                    apples: true,
+                    config,
+                    dir: '/var/www/ghost',
+                    cliConfig: cliConfigStub
+                }),
                 addInstance: aIstub,
                 hook: () => Promise.resolve()
             };
@@ -350,14 +350,12 @@ describe('Unit: Commands > Setup', function () {
             config.has.returns(true);
 
             const system = {
-                getInstance: () => {
-                    return {
-                        checkEnvironment: () => true,
-                        apples: true,
-                        config,
-                        dir: '/var/www/ghost'
-                    };
-                },
+                getInstance: () => ({
+                    checkEnvironment: () => true,
+                    apples: true,
+                    config,
+                    dir: '/var/www/ghost'
+                }),
                 addInstance: aIstub,
                 hook: () => Promise.resolve()
             };
@@ -514,7 +512,7 @@ describe('Unit: Commands > Setup', function () {
 
         it('honors stage skipping via arguments', function () {
             const ui = {
-                run: (a) => a(),
+                run: a => a(),
                 listr: sinon.stub().resolves()
             };
             const skipStub = sinon.stub();
@@ -541,7 +539,7 @@ describe('Unit: Commands > Setup', function () {
                 return Promise.resolve(a.indexOf('Z') < 0);
             }
             const ui = {
-                run: (a) => a(),
+                run: a => a(),
                 log: () => true,
                 listr: sinon.stub().resolves(),
                 confirm: sinon.stub().callsFake(confirm)

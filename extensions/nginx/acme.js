@@ -5,7 +5,7 @@ const got = require('got');
 const path = require('path');
 const download = require('download');
 
-const cli = require('../../lib');
+const {errors: {CliError, ProcessError, SystemError}} = require('../../lib');
 
 function isInstalled() {
     return fs.existsSync('/etc/letsencrypt/acme.sh');
@@ -25,12 +25,12 @@ function install(ui, task) {
     // sure it has global read permissions first
     return ui.sudo('mkdir -p /etc/letsencrypt').then(() => {
         ui.logVerbose('ssl: downloading acme.sh to temporary directory', 'green');
-        return fs.emptyDir(acmeTmpDir)
+        return fs.emptyDir(acmeTmpDir);
     }).then(() => got(acmeApiUrl)).then((response) => {
         try {
             response = JSON.parse(response.body).tarball_url;
         } catch (e) {
-            return Promise.reject(new cli.errors.CliError({
+            return Promise.reject(new CliError({
                 message: 'Unable to parse Github api response for acme',
                 err: e
             }));
@@ -50,18 +50,18 @@ function install(ui, task) {
         return ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeCodeDir});
     }).catch((error) => {
         // CASE: error is already a cli error, just pass it along
-        if (error instanceof cli.errors.CliError) {
+        if (error instanceof CliError) {
             return Promise.reject(error);
         }
 
         // catch any request errors first, which isn't a ProcessError
         if (!error.stderr) {
-            return Promise.reject(new cli.errors.CliError({
+            return Promise.reject(new CliError({
                 message: 'Unable to query GitHub for ACME download URL',
                 err: error
             }));
         }
-        return Promise.reject(new cli.errors.ProcessError(error));
+        return Promise.reject(new ProcessError(error));
     });
 }
 
@@ -77,11 +77,11 @@ function generateCert(ui, domain, webroot, email, staging) {
 
         if (error.stderr.match(/Verify error:(Fetching|Invalid Response)/)) {
             // Domain verification failed
-            return Promise.reject(new cli.errors.SystemError('Your domain name is not pointing to the correct IP address of your server, please update it and run `ghost setup ssl` again'));
+            return Promise.reject(new SystemError('Your domain name is not pointing to the correct IP address of your server, please update it and run `ghost setup ssl` again'));
         }
 
         // It's not an error we expect might happen, throw a ProcessError instead.
-        return Promise.reject(new cli.errors.ProcessError(error));
+        return Promise.reject(new ProcessError(error));
     });
 }
 
@@ -90,9 +90,7 @@ function remove(domain, ui, acmeHome) {
 
     const cmd = `${acmeHome}/acme.sh --remove --home ${acmeHome} --domain ${domain}`;
 
-    return ui.sudo(cmd).catch((error) => {
-        return Promise.reject(new cli.errors.ProcessError(error));
-    });
+    return ui.sudo(cmd).catch(error => Promise.reject(new ProcessError(error)));
 }
 
 module.exports = {
