@@ -105,7 +105,7 @@ describe('Unit: resolveVersion', function () {
         });
 
         it('filters out 2.0 version if v1 param is specified', function () {
-            stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0"]}');
+            stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0", "2.0.1"]}');
 
             return resolveVersion(null, null, true).then(function (version) {
                 expect(version).to.equal('1.52.37');
@@ -126,7 +126,7 @@ describe('Unit: resolveVersion', function () {
         });
 
         it('filters out 2.0 version if v1 param is specified', function () {
-            stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0"]}');
+            stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0", "2.0.1"]}');
 
             return resolveVersion(null, '1.52.37', true).then(function () {
                 throw new Error('Version finder should not have resolved');
@@ -146,7 +146,7 @@ describe('Unit: resolveVersion', function () {
 
         describe('jump to next major', function () {
             it('throws error if you aren\'t on the latest v1', function () {
-                stubYarn('{"data": ["1.23.0", "1.24.0", "1.25.0", "2.0.0"]}');
+                stubYarn('{"data": ["1.23.0", "1.24.0", "1.25.0", "2.0.0", "2.0.1"]}');
 
                 return resolveVersion(null, '1.24.0', false).then(function () {
                     throw new Error('Version finder should not have resolved');
@@ -157,16 +157,16 @@ describe('Unit: resolveVersion', function () {
             });
 
             it('resolves if you are on the latest v1', function () {
-                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
                 return resolveVersion(null, '1.25.2', false)
                     .then(function (version) {
-                        expect(version).to.eql('2.0.0');
+                        expect(version).to.eql('2.0.1');
                     });
             });
 
             it('resolves using `--v1` and you are\'t on the latest v1', function () {
-                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
                 return resolveVersion(null, '1.25.1', true)
                     .then(function (version) {
@@ -174,17 +174,26 @@ describe('Unit: resolveVersion', function () {
                     });
             });
 
+            it('updates to latest v2 with many v2 releases', function () {
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.1.0", "2.2.0"]}');
+
+                return resolveVersion(null, '1.25.2', false, false)
+                    .then(function (version) {
+                        expect(version).to.eql('2.2.0');
+                    });
+            });
+
             it('force updating and you are on the latest v1', function () {
-                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
                 return resolveVersion(null, '1.25.2', false, true)
                     .then(function (version) {
-                        expect(version).to.eql('2.0.0');
+                        expect(version).to.eql('2.0.1');
                     });
             });
 
             it('force updating with `--v1`', function () {
-                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0"]}');
+                stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
                 return resolveVersion(null, '1.25.1', true, true)
                     .then(function (version) {
