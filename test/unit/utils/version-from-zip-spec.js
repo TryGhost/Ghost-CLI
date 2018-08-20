@@ -72,6 +72,7 @@ describe('Unit: Utils > versionFromZip', function () {
 
         return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0-rc.2.zip'), '2.0.0-rc.1');
     });
+
     it('rejects if you are on a v2 stable and are trying to downgrade to v2 pre', function () {
         const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
         const versionFromZip = proxyquire(modulePath, {
@@ -97,6 +98,18 @@ describe('Unit: Utils > versionFromZip', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch(error => {
             expect(error.message).to.equal('No valid versions found.');
+        });
+    });
+
+    it('allows upgrading from v2 to next v2', function () {
+        const resolveVersionStub = sinon.stub().rejects(new Error('No valid versions found.'));
+        const versionFromZip = proxyquire(modulePath, {
+            './resolve-version': resolveVersionStub,
+            '../../package.json': {version: '1.9.0'}
+        });
+
+        return versionFromZip(path.join(__dirname, '../../fixtures/ghost-2.0.1.zip'), '2.0.0').then((version) => {
+            expect(version).to.equal('2.0.1');
         });
     });
 
