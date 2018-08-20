@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.1"></a>
+## 1.9.1 (2018-08-20)
+
+### Bug Fixes
+
+* **ui:** ensure demo post url is output correctly ([#785](https://github.com/TryGhost/Ghost-CLI/issues/785)) ([b054939](https://github.com/TryGhost/Ghost-CLI/commit/b054939))
+* **version-resolver:** allow v2 updates w/ multiple v2 releases ([fc12d22](https://github.com/TryGhost/Ghost-CLI/commit/fc12d22))
+* **zip:** ensure zip upgrades from v2 to next v2 work ([4ae1f42](https://github.com/TryGhost/Ghost-CLI/commit/4ae1f42))
+
 <a name="1.9.0"></a>
 # 1.9.0 (2018-08-16)
 
