@@ -136,6 +136,14 @@ describe('Unit: resolveVersion', function () {
             });
         });
 
+        it('allows upgrading from v2 to next v2', function () {
+            stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
+
+            return resolveVersion(null, '2.0.0').then(function (version) {
+                expect(version).to.equal('2.0.1');
+            });
+        });
+
         describe('jump to next major', function () {
             it('throws error if you aren\'t on the latest v1', function () {
                 stubYarn('{"data": ["1.23.0", "1.24.0", "1.25.0", "2.0.0"]}');
