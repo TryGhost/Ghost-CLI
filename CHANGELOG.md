@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.2"></a>
+## 1.9.2 (2018-08-29)
+
+### Bug Fixes
+
+* **doctor:** set find maxBuffer to infinity ([a681542](https://github.com/TryGhost/Ghost-CLI/commit/a681542)), closes [#801](https://github.com/TryGhost/Ghost-CLI/issues/801)
+* **ui:** make sudo prompt more clear ([02d506a](https://github.com/TryGhost/Ghost-CLI/commit/02d506a)), closes [#797](https://github.com/TryGhost/Ghost-CLI/issues/797)
+
+### Features
+
+* **stack:** add support for ubuntu 18 ([7d17adb](https://github.com/TryGhost/Ghost-CLI/commit/7d17adb)), closes [#794](https://github.com/TryGhost/Ghost-CLI/issues/794)
+
 <a name="1.9.1"></a>
 ## 1.9.1 (2018-08-20)
 
