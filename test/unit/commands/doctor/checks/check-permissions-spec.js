@@ -16,7 +16,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
         const execaStub = sinon.stub(execa, 'shell').resolves({stdout: ''});
 
         return checkPermissions().then(() => {
-            expect(execaStub.calledWithExactly('find ./content ! -group ghost ! -user ghost')).to.be.true;
+            expect(execaStub.calledWithExactly('find ./content ! -group ghost ! -user ghost', {maxBuffer: Infinity})).to.be.true;
         });
     });
 
@@ -28,7 +28,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.match(/Ghost can't access some files or directories to check for correct permissions./);
-            expect(execaStub.calledWithExactly('find ./ -type d ! -perm 775 ! -perm 755')).to.be.true;
+            expect(execaStub.calledWithExactly('find ./ -type d ! -perm 775 ! -perm 755', {maxBuffer: Infinity})).to.be.true;
         });
     });
 
@@ -40,7 +40,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ProcessError);
             expect(error.message).to.match(/oops, cmd could not be executed/);
-            expect(execaStub.calledWithExactly('find ./  -type f ! -path "./versions/*" ! -perm 664 ! -perm 644')).to.be.true;
+            expect(execaStub.calledWithExactly('find ./  -type f ! -path "./versions/*" ! -perm 664 ! -perm 644', {maxBuffer: Infinity})).to.be.true;
         });
     });
 });
