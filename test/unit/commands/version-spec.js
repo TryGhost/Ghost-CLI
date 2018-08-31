@@ -37,7 +37,7 @@ describe('Unit: Commands > Version', function () {
         instance.run();
         expect(logStub.calledTwice).to.be.true;
         expect(stripAnsi(logStub.args[0][0])).to.match(/Ghost-CLI version: 1\.0\.0/);
-        expect(stripAnsi(logStub.args[1][0])).to.match(/Ghost Version \(at ~\/ghost\): 1\.5\.0/);
+        expect(stripAnsi(logStub.args[1][0])).to.match(/Ghost version: 1\.5\.0 \(at ~\/ghost\)/);
         expect(getInstanceStub.calledOnce).to.be.true;
         expect(hasStub.calledOnce).to.be.true;
         expect(getStub.calledOnce).to.be.true;
