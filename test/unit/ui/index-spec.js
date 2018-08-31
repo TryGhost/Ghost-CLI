@@ -245,6 +245,57 @@ describe('Unit: UI', function () {
             }
         });
 
+        it('returns default if auto is true and prompts is an object', function () {
+            const ui = new UI();
+            ui.auto = true;
+
+            const noSpinStub = sinon.stub(ui, 'noSpin');
+            const prompt = {
+                name: 'test',
+                type: 'input',
+                message: 'test',
+                default: 'testing'
+            };
+
+            return ui.prompt(prompt).then((results) => {
+                expect(results.test).to.equal('testing');
+                expect(noSpinStub.called).to.be.false;
+            });
+        });
+
+        it('returns defaults and prompts when auto is true and prompts is an array', function () {
+            const ui = new UI();
+            ui.auto = true;
+
+            const defaultPrompts = [{
+                name: 'a',
+                default: '1'
+            }, {
+                name: 'b',
+                default: '2'
+            }];
+            const noDefaultPrompts = [{
+                name: 'c'
+            }, {
+                name: 'd'
+            }];
+
+            const noSpinStub = sinon.stub(ui, 'noSpin').callsFake(fn => fn());
+            const inquirerStub = sinon.stub(ui, 'inquirer').resolves({c: '3', d: '4'});
+
+            return ui.prompt([...defaultPrompts, ...noDefaultPrompts]).then((answers) => {
+                expect(answers).to.deep.equal({
+                    a: '1',
+                    b: '2',
+                    c: '3',
+                    d: '4'
+                });
+                expect(noSpinStub.calledOnce).to.be.true;
+                expect(inquirerStub.calledOnce).to.be.true;
+                expect(inquirerStub.calledWithExactly(noDefaultPrompts)).to.be.true;
+            });
+        });
+
         it('passes options to prompt method', function () {
             const ui = new UI();
             ui.allowPrompt = true;
@@ -272,6 +323,17 @@ describe('Unit: UI', function () {
             const ui = new UI();
             const promptStub = sinon.stub(ui, 'prompt').resolves({yes: true});
             ui.allowPrompt = false;
+
+            return ui.confirm('Some question', false).then((result) => {
+                expect(result).to.be.false;
+                expect(promptStub.called).to.be.false;
+            });
+        });
+
+        it('returns default answers if auto is false', function () {
+            const ui = new UI();
+            const promptStub = sinon.stub(ui, 'prompt').resolves({yes: true});
+            ui.auto = true;
 
             return ui.confirm('Some question', false).then((result) => {
                 expect(result).to.be.false;

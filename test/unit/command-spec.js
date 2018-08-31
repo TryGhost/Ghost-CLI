@@ -293,19 +293,21 @@ describe('Unit: Command', function () {
             return TestCommand._run('test', {
                 verbose: true,
                 prompt: true,
-                development: true
+                development: true,
+                auto: false
             }, [{extensiona: true}]).then(() => {
                 expect(uiStub.calledOnce).to.be.true;
                 expect(uiStub.calledWithExactly({
                     verbose: true,
-                    allowPrompt: true
+                    allowPrompt: true,
+                    auto: false
                 })).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 expect(systemStub.calledOnce).to.be.true;
                 expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true})).to.be.true;
+                expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true, auto: false})).to.be.true;
             });
         });
 
@@ -332,19 +334,21 @@ describe('Unit: Command', function () {
             return TestCommand._run('test', {
                 verbose: false,
                 prompt: false,
-                development: false
+                development: false,
+                auto: true
             }, [{extensiona: true}]).then(() => {
                 expect(uiStub.calledOnce).to.be.true;
                 expect(uiStub.calledWithExactly({
                     verbose: false,
-                    allowPrompt: false
+                    allowPrompt: false,
+                    auto: true
                 })).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 expect(systemStub.calledOnce).to.be.true;
                 expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false})).to.be.true;
+                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
                 expect(onStub.calledTwice).to.be.true;
                 expect(onStub.calledWith('SIGINT')).to.be.true;
                 expect(onStub.calledWith('SIGTERM')).to.be.true;
@@ -376,12 +380,14 @@ describe('Unit: Command', function () {
             return TestCommand._run('test', {
                 verbose: false,
                 prompt: false,
-                development: false
+                development: false,
+                auto: false
             }, [{extensiona: true}]).then(() => {
                 expect(uiStub.calledOnce).to.be.true;
                 expect(uiStub.calledWithExactly({
                     verbose: false,
-                    allowPrompt: false
+                    allowPrompt: false,
+                    auto: false
                 })).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
@@ -390,7 +396,7 @@ describe('Unit: Command', function () {
                 expect(updateCheckStub.calledOnce).to.be.true;
                 expect(updateCheckStub.calledWithExactly({ui: true})).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false})).to.be.true;
+                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
 
                 process.env.NODE_ENV = oldEnv;
             });
@@ -422,19 +428,21 @@ describe('Unit: Command', function () {
             return TestCommand._run('test', {
                 verbose: false,
                 prompt: false,
-                development: false
+                development: false,
+                auto: false
             }, [{extensiona: true}]).then(() => {
                 expect(uiStub.calledOnce).to.be.true;
                 expect(uiStub.calledWithExactly({
                     verbose: false,
-                    allowPrompt: false
+                    allowPrompt: false,
+                    auto: false
                 })).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
                 expect(systemStub.calledOnce).to.be.true;
                 expect(systemStub.calledWithExactly({error: errorStub}, [{extensiona: true}])).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false})).to.be.true;
+                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
                 expect(errorStub.calledOnce).to.be.true;
                 expect(exitStub.calledOnce).to.be.true;
 
