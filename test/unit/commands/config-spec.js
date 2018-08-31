@@ -189,6 +189,18 @@ describe('Unit: Command > Config', function () {
 
             expect(result).to.have.length(1);
             expect(result[0].name).to.equal('url');
+            expect(result[0].default).to.equal('http://localhost:2368');
+            expect(result[0].validate).to.equal(expectedValidator);
+        });
+
+        it('returns url prompt with correct defaults', function () {
+            const expectedValidator = require('../../../lib/utils/validate-instance-url');
+            const argv = {db: 'sqlite3', auto: true};
+            const result = config.getConfigPrompts(argv);
+
+            expect(result).to.have.length(1);
+            expect(result[0].name).to.equal('url');
+            expect(result[0].default).to.be.null;
             expect(result[0].validate).to.equal(expectedValidator);
         });
 
@@ -219,6 +231,7 @@ describe('Unit: Command > Config', function () {
             const passprompt = result.find(prompt => prompt.name === 'dbpass');
             expect(passprompt).to.be.ok;
             expect(passprompt.message).to.match(/skip to keep current/);
+            expect(passprompt.default).to.equal('password');
 
             const nameprompt = result.find(prompt => prompt.name === 'dbname');
             expect(nameprompt).to.be.ok;
