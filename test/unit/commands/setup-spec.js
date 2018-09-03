@@ -240,9 +240,6 @@ describe('Unit: Commands > Setup', function () {
             const listr = sinon.stub();
             const aIstub = sinon.stub();
             const config = configStub();
-            const cliConfigStub = configStub();
-
-            cliConfigStub.get.withArgs('active-version').returns('2.0.0');
 
             config.get.withArgs('url').returns('https://ghost.org');
             config.has.returns(false);
@@ -253,7 +250,7 @@ describe('Unit: Commands > Setup', function () {
                     apples: true,
                     config,
                     dir: '/var/www/ghost',
-                    cliConfig: cliConfigStub
+                    version: '2.0.0'
                 }),
                 addInstance: aIstub,
                 hook: () => Promise.resolve()
@@ -288,9 +285,6 @@ describe('Unit: Commands > Setup', function () {
             const listr = sinon.stub().resolves();
             const aIstub = sinon.stub();
             const config = configStub();
-            const cliConfigStub = configStub();
-
-            cliConfigStub.get.withArgs('active-version').returns('1.25.0');
 
             config.get.withArgs('url').returns('https://ghost.org');
             config.has.returns(false);
@@ -301,7 +295,7 @@ describe('Unit: Commands > Setup', function () {
                     apples: true,
                     config,
                     dir: '/var/www/ghost',
-                    cliConfig: cliConfigStub
+                    version: '1.25.0'
                 }),
                 addInstance: aIstub,
                 hook: () => Promise.resolve()
