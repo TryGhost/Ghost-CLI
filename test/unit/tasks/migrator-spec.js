@@ -158,13 +158,6 @@ describe('Unit: Tasks > Migrator', function () {
     });
 
     describe('rollback', function () {
-        let cliConfig;
-
-        beforeEach(function () {
-            cliConfig = configStub();
-            cliConfig.get.withArgs('active-version').returns('1.25.3');
-        });
-
         it('runs direct command if useGhostUser returns false', function () {
             const config = configStub();
             const execaStub = sinon.stub().resolves();
@@ -177,7 +170,7 @@ describe('Unit: Tasks > Migrator', function () {
 
             const sudoStub = sinon.stub().resolves();
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
                 expect(useGhostUserStub.calledOnce).to.be.true;
                 expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
                 expect(execaStub.calledOnce).to.be.true;
@@ -189,7 +182,6 @@ describe('Unit: Tasks > Migrator', function () {
 
         it('forward version option to knex-migrator if blog jumps from v1 to v2', function () {
             const config = configStub();
-            const cliConfig = configStub();
             const execaStub = sinon.stub().resolves();
             const useGhostUserStub = sinon.stub().returns(false);
 
@@ -200,10 +192,7 @@ describe('Unit: Tasks > Migrator', function () {
 
             const sudoStub = sinon.stub().resolves();
 
-            cliConfig.get.withArgs('active-version').returns('2.0.0');
-            cliConfig.get.withArgs('previous-version').returns('1.25.3');
-
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
+            return migrator.rollback({instance: {config, version: '2.0.0', previousVersion: '1.25.3', dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
                 expect(useGhostUserStub.calledOnce).to.be.true;
                 expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
                 expect(execaStub.calledOnce).to.be.true;
@@ -225,7 +214,7 @@ describe('Unit: Tasks > Migrator', function () {
 
             const sudoStub = sinon.stub().resolves();
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
                 expect(useGhostUserStub.calledOnce).to.be.true;
                 expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
                 expect(execaStub.calledOnce).to.be.false;
@@ -243,7 +232,7 @@ describe('Unit: Tasks > Migrator', function () {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.ConfigError);
@@ -261,7 +250,7 @@ describe('Unit: Tasks > Migrator', function () {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.ConfigError);
@@ -279,7 +268,7 @@ describe('Unit: Tasks > Migrator', function () {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
@@ -297,7 +286,7 @@ describe('Unit: Tasks > Migrator', function () {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir', system: {environment: 'testing'}}});
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir', system: {environment: 'testing'}}});
         });
 
         it('error on `ghost update --rollback`', function () {
@@ -314,7 +303,7 @@ describe('Unit: Tasks > Migrator', function () {
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
-            return migrator.rollback({instance: {config, cliConfig, dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
+            return migrator.rollback({instance: {config, version: '1.25.3', dir: '/some-dir', system: {environment: 'testing'}}}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {

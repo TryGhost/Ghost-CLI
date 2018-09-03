@@ -29,7 +29,7 @@ class SystemdExtension extends Extension {
 
         const serviceFilename = `ghost_${instance.name}.service`;
 
-        if (instance.cliConfig.get('extension.systemd', false) || fs.existsSync(path.join('/lib/systemd/system', serviceFilename))) {
+        if (fs.existsSync(path.join('/lib/systemd/system', serviceFilename))) {
             this.ui.log('Systemd service has already been set up. Skipping Systemd setup');
             return task.skip();
         }

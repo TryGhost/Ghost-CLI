@@ -255,14 +255,10 @@ describe('Unit: Commands > Install', function () {
     });
 
     describe('tasks > link', function () {
-        it('creates current link and updates cliConfig', function () {
+        it('creates current link and updates versions', function () {
             const symlinkSyncStub = sinon.stub();
-            const config = {
-                set: sinon.stub(),
-                save: sinon.stub()
-            };
-            config.set.returns(config);
-            const getInstanceStub = sinon.stub().returns({cliConfig: config});
+            const config = {};
+            const getInstanceStub = sinon.stub().returns(config);
 
             const InstallCommand = proxyquire(modulePath, {
                 'symlink-or-copy': {sync: symlinkSyncStub}
@@ -274,10 +270,10 @@ describe('Unit: Commands > Install', function () {
             expect(symlinkSyncStub.calledOnce).to.be.true;
             expect(symlinkSyncStub.calledWithExactly('/some/dir/1.5.0', path.join(process.cwd(), 'current')));
             expect(getInstanceStub.calledOnce).to.be.true;
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.calledWithExactly('cli-version', '1.0.0')).to.be.true;
-            expect(config.set.calledWithExactly('active-version', '1.5.0')).to.be.true;
-            expect(config.save.calledOnce).to.be.true;
+            expect(config).to.deep.equal({
+                version: '1.5.0',
+                cliVersion: '1.0.0'
+            });
         });
     });
 });

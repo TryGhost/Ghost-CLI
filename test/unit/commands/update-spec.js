@@ -12,6 +12,23 @@ const modulePath = '../../../lib/commands/update';
 const errors = require('../../../lib/errors');
 const Instance = require('../../../lib/instance');
 
+function createTestInstance(version, cliVersion, previousVersion = null, config = {}) {
+    return class extends Instance {
+        get version() {
+            return version;
+        }
+        get cliVersion() {
+            return cliVersion;
+        }
+        get previousVersion() {
+            return previousVersion;
+        }
+        get config() {
+            return config;
+        }
+    };
+}
+
 describe('Unit: Commands > Update', function () {
     after(() => {
         cleanupTestFolders();
@@ -54,10 +71,6 @@ describe('Unit: Commands > Update', function () {
                 '../tasks/major-update': majorUpdateStub
             });
 
-            const cliConfig = configStub();
-            cliConfig.get.withArgs('cli-version').returns('1.8.0');
-            cliConfig.get.withArgs('active-version').returns('2.0.0');
-
             const ghostConfig = configStub();
             ghostConfig.get.withArgs('database').returns({
                 client: 'sqlite3'
@@ -75,14 +88,7 @@ describe('Unit: Commands > Update', function () {
                 return task.task(ctx);
             }));
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return cliConfig; 
-                }
-                get config() {
-                    return ghostConfig; 
-                }
-            }
+            const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(true);
@@ -137,10 +143,6 @@ describe('Unit: Commands > Update', function () {
                 '../tasks/major-update': majorUpdateStub
             });
 
-            const cliConfig = configStub();
-            cliConfig.get.withArgs('cli-version').returns('1.8.0');
-            cliConfig.get.withArgs('active-version').returns('1.25.0');
-
             const ghostConfig = configStub();
             ghostConfig.get.withArgs('database').returns({
                 client: 'sqlite3'
@@ -158,14 +160,7 @@ describe('Unit: Commands > Update', function () {
                 return task.task(ctx);
             }));
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return cliConfig; 
-                }
-                get config() {
-                    return ghostConfig; 
-                }
-            }
+            const TestInstance = createTestInstance('1.25.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(true);
@@ -209,18 +204,11 @@ describe('Unit: Commands > Update', function () {
 
         it('doesn\'t run tasks if no new versions are available', function () {
             const UpdateCommand = require(modulePath);
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.0.0-beta.1');
-            config.get.withArgs('active-version').returns('1.0.0');
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.0.0', '1.0.0-beta.1');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(true);
@@ -252,19 +240,11 @@ describe('Unit: Commands > Update', function () {
 
         it('rejects if rollback is passed and no previous version exists', function () {
             const UpdateCommand = require(modulePath);
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.0.0');
-            config.get.withArgs('previous-version').returns(null);
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(true);
@@ -287,19 +267,11 @@ describe('Unit: Commands > Update', function () {
 
         it('populates context with correct data if rollback is passed and previous version exists', function () {
             const UpdateCommand = require(modulePath);
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.1.0');
-            config.get.withArgs('previous-version').returns('1.0.0');
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(false);
@@ -344,9 +316,6 @@ describe('Unit: Commands > Update', function () {
                 '../tasks/major-update': majorUpdateStub
             });
 
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.0.0');
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
@@ -358,11 +327,7 @@ describe('Unit: Commands > Update', function () {
                 return task.task(ctx);
             }));
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(true);
@@ -422,11 +387,7 @@ describe('Unit: Commands > Update', function () {
                 return task.task(ctx);
             }));
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(false);
@@ -476,10 +437,6 @@ describe('Unit: Commands > Update', function () {
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': migratorStub
             });
-            const config = configStub();
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.1.0');
-            config.get.withArgs('previous-version').returns('1.0.0');
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
@@ -491,11 +448,7 @@ describe('Unit: Commands > Update', function () {
                 return task.task(ctx);
             }));
 
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(false);
@@ -534,11 +487,7 @@ describe('Unit: Commands > Update', function () {
 
         it('attempts to auto-rollback on ghost error', function () {
             const UpdateCommand = require(modulePath);
-            const config = configStub();
             const errObj = new errors.GhostError('should_rollback');
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.1.0');
-            config.get.withArgs('previous-version').returns('1.0.0');
 
             const ui = {
                 log: sinon.stub(),
@@ -546,11 +495,7 @@ describe('Unit: Commands > Update', function () {
                 run: sinon.stub().callsFake(fn => fn())
             };
             const system = {getInstance: sinon.stub()};
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(false);
@@ -574,11 +519,7 @@ describe('Unit: Commands > Update', function () {
 
         it('does not attempts to auto-rollback on cli error', function () {
             const UpdateCommand = require(modulePath);
-            const config = configStub();
             const errObj = new Error('do_nothing');
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.1.0');
-            config.get.withArgs('previous-version').returns('1.0.0');
 
             const ui = {
                 log: sinon.stub(),
@@ -586,11 +527,7 @@ describe('Unit: Commands > Update', function () {
                 run: sinon.stub().callsFake(fn => fn())
             };
             const system = {getInstance: sinon.stub()};
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(false);
@@ -613,11 +550,7 @@ describe('Unit: Commands > Update', function () {
 
         it('does not attempts to auto-rollback on ghost error if rollback is used', function () {
             const UpdateCommand = require(modulePath);
-            const config = configStub();
             const errObj = new errors.GhostError('do_nothing');
-            config.get.withArgs('cli-version').returns('1.0.0');
-            config.get.withArgs('active-version').returns('1.1.0');
-            config.get.withArgs('previous-version').returns('1.0.0');
 
             const ui = {
                 log: sinon.stub(),
@@ -625,11 +558,7 @@ describe('Unit: Commands > Update', function () {
                 run: sinon.stub().callsFake(fn => fn())
             };
             const system = {getInstance: sinon.stub()};
-            class TestInstance extends Instance {
-                get cliConfig() {
-                    return config; 
-                }
-            }
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.running.resolves(false);
@@ -963,21 +892,22 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('rollbackFromFail', function () {
-        let ui, system;
+        const ui = {
+            log: sinon.stub(),
+            confirm: sinon.stub(),
+            error: sinon.stub()
+        };
 
-        beforeEach(function () {
-            const cliConfig = {get: () => '1.0.0'};
-            ui = {
-                log: sinon.stub(),
-                confirm: sinon.stub(),
-                error: sinon.stub()
-            };
+        const system = {
+            getInstance() {
+                return {previousVersion: '1.0.0'};
+            }
+        };
 
-            system = {
-                getInstance() {
-                    return {cliConfig};
-                }
-            };
+        afterEach(function () {
+            ui.log.reset();
+            ui.confirm.reset();
+            ui.error.reset();
         });
 
         it('Asks to rollback by default', function () {
@@ -1046,57 +976,51 @@ describe('Unit: Commands > Update', function () {
         const UpdateCommand = require(modulePath);
 
         it('does things correctly with normal upgrade', function () {
-            const instance = new UpdateCommand({}, {});
+            const command = new UpdateCommand({}, {});
             const envCfg = {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.0', 'current']]
             };
             const env = setupTestFolder(envCfg);
             sinon.stub(process, 'cwd').returns(env.dir);
-            const config = configStub();
-            config.get.withArgs('active-version').returns('1.0.0');
+            const instance = {
+                version: '1.0.0'
+            };
             const context = {
                 installPath: path.join(env.dir, 'versions/1.0.1'),
                 version: '1.0.1',
                 rollback: false,
-                instance: {
-                    cliConfig: config
-                }
+                instance
             };
 
-            instance.link(context);
+            command.link(context);
             expect(fs.readlinkSync(path.join(env.dir, 'current'))).to.equal(path.join(env.dir, 'versions/1.0.1'));
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.calledWithExactly('previous-version', '1.0.0')).to.be.true;
-            expect(config.set.calledWithExactly('active-version', '1.0.1')).to.be.true;
-            expect(config.save.calledOnce).to.be.true;
+            expect(instance.version).to.equal('1.0.1');
+            expect(instance.previousVersion).to.equal('1.0.0');
         });
 
         it('does things correctly with rollback', function () {
-            const instance = new UpdateCommand({}, {});
+            const command = new UpdateCommand({}, {});
             const envCfg = {
                 dirs: ['versions/1.0.0', 'versions/1.0.1'],
                 links: [['versions/1.0.1', 'current']]
             };
             const env = setupTestFolder(envCfg);
             sinon.stub(process, 'cwd').returns(env.dir);
-            const config = configStub();
-            config.get.withArgs('active-version').returns('1.0.1');
+            const instance = {
+                version: '1.0.1'
+            };
             const context = {
                 installPath: path.join(env.dir, 'versions/1.0.0'),
                 version: '1.0.0',
                 rollback: true,
-                instance: {
-                    cliConfig: config
-                }
+                instance
             };
 
-            instance.link(context);
+            command.link(context);
             expect(fs.readlinkSync(path.join(env.dir, 'current'))).to.equal(path.join(env.dir, 'versions/1.0.0'));
-            expect(config.set.calledTwice).to.be.true;
-            expect(config.set.calledWithExactly('previous-version', null)).to.be.true;
-            expect(config.set.calledWithExactly('active-version', '1.0.0')).to.be.true;
-            expect(config.save.calledOnce).to.be.true;
+            expect(instance.version).to.equal('1.0.0');
+            expect(instance.previousVersion).to.be.null;
         });
     });
 });

@@ -17,18 +17,14 @@ function build(migrations) {
         log: sinon.stub()
     };
 
-    const config = {
-        get: sinon.stub().returns('1.1.0'),
-        set: sinon.stub(),
-        save: sinon.stub()
+    const instance = {
+        cliVersion: '1.1.0'
     };
-
-    config.set.returns(config);
 
     const system = {
         cliVersion: '1.2.0',
         hook: sinon.stub().resolves(),
-        getInstance: sinon.stub().returns({cliConfig: config})
+        getInstance: sinon.stub().returns(instance)
     };
 
     const parseStub = sinon.stub().returns(migrations);
@@ -37,7 +33,7 @@ function build(migrations) {
 
     return {
         cmd: new Cmd(ui, system),
-        config: config,
+        instance,
         parse: parseStub
     };
 }
@@ -49,47 +45,41 @@ describe('Unit: Commands > Migrate', function () {
             task: () => {}
         }];
 
-        const built = build(migrations);
+        const {cmd, instance, parse} = build(migrations);
 
-        return built.cmd.run({}).then(() => {
-            expect(built.cmd.ui.run.calledOnce).to.be.true;
-            expect(built.cmd.system.hook.calledOnce).to.be.true;
-            expect(built.parse.calledOnce).to.be.true;
-            expect(built.cmd.ui.listr.calledOnce).to.be.true;
-            expect(built.cmd.ui.listr.calledWith(migrations)).to.be.true;
-            expect(built.config.get.calledOnce).to.be.true;
-            expect(built.config.set.calledOnce).to.be.true;
-            expect(built.config.set.calledWithExactly('cli-version', '1.2.0')).to.be.true;
+        return cmd.run({}).then(() => {
+            expect(cmd.ui.run.calledOnce).to.be.true;
+            expect(cmd.system.hook.calledOnce).to.be.true;
+            expect(parse.calledOnce).to.be.true;
+            expect(cmd.ui.listr.calledOnce).to.be.true;
+            expect(cmd.ui.listr.calledWith(migrations)).to.be.true;
+            expect(instance.cliVersion).to.equal('1.2.0');
         });
     });
 
     it('skips if no migrations', function () {
-        const built = build([]);
+        const {cmd, instance, parse} = build([]);
 
-        return built.cmd.run({}).then(() => {
-            expect(built.cmd.ui.run.calledOnce).to.be.true;
-            expect(built.cmd.system.hook.calledOnce).to.be.true;
-            expect(built.parse.calledOnce).to.be.true;
-            expect(built.cmd.ui.listr.calledOnce).to.be.false;
-            expect(built.cmd.ui.log.calledOnce).to.be.true;
-            expect(built.config.get.calledOnce).to.be.true;
-            expect(built.config.set.calledOnce).to.be.true;
-            expect(built.config.set.calledWithExactly('cli-version', '1.2.0')).to.be.true;
+        return cmd.run({}).then(() => {
+            expect(cmd.ui.run.calledOnce).to.be.true;
+            expect(cmd.system.hook.calledOnce).to.be.true;
+            expect(parse.calledOnce).to.be.true;
+            expect(cmd.ui.listr.calledOnce).to.be.false;
+            expect(cmd.ui.log.calledOnce).to.be.true;
+            expect(instance.cliVersion).to.equal('1.2.0');
         });
     });
 
     it('quiet supresses output', function () {
-        const built = build([]);
+        const {cmd, instance, parse} = build([]);
 
-        return built.cmd.run({quiet: true}).then(() => {
-            expect(built.cmd.ui.run.calledOnce).to.be.true;
-            expect(built.cmd.system.hook.calledOnce).to.be.true;
-            expect(built.parse.calledOnce).to.be.true;
-            expect(built.cmd.ui.listr.calledOnce).to.be.false;
-            expect(built.cmd.ui.log.calledOnce).to.be.false;
-            expect(built.config.get.calledOnce).to.be.true;
-            expect(built.config.set.calledOnce).to.be.true;
-            expect(built.config.set.calledWithExactly('cli-version', '1.2.0')).to.be.true;
+        return cmd.run({quiet: true}).then(() => {
+            expect(cmd.ui.run.calledOnce).to.be.true;
+            expect(cmd.system.hook.calledOnce).to.be.true;
+            expect(parse.calledOnce).to.be.true;
+            expect(cmd.ui.listr.calledOnce).to.be.false;
+            expect(cmd.ui.log.calledOnce).to.be.false;
+            expect(instance.cliVersion).to.equal('1.2.0');
         });
     });
 });

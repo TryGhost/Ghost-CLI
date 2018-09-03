@@ -72,29 +72,6 @@ describe('Unit: Systemd > Extension', function () {
             expect(skipStub.calledOnce).to.be.true;
         });
 
-        it('skips stage if "extension.systemd" property in cliConfig is true', function () {
-            const uidStub = sinon.stub().returns(true);
-
-            const SystemdExtension = proxyquire(modulePath, {
-                './get-uid': uidStub
-            });
-
-            const logStub = sinon.stub();
-            const skipStub = sinon.stub();
-            const getStub = sinon.stub().returns(true);
-            const testInstance = new SystemdExtension({log: logStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', cliConfig: {get: getStub}};
-
-            testInstance._setup({}, {instance: instance}, {skip: skipStub});
-            expect(uidStub.calledOnce).to.be.true;
-            expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-            expect(getStub.calledOnce).to.be.true;
-            expect(getStub.calledWithExactly('extension.systemd', false)).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/Systemd service has already been set up/);
-            expect(skipStub.calledOnce).to.be.true;
-        });
-
         it('skips stage if systemd file already exists', function () {
             const uidStub = sinon.stub().returns(true);
             const existsStub = sinon.stub().returns(true);
@@ -106,14 +83,12 @@ describe('Unit: Systemd > Extension', function () {
 
             const logStub = sinon.stub();
             const skipStub = sinon.stub();
-            const getStub = sinon.stub().returns(false);
             const testInstance = new SystemdExtension({log: logStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test'};
+            const instance = {dir: '/some/dir', name: 'test'};
 
             testInstance._setup({}, {instance: instance}, {skip: skipStub});
             expect(uidStub.calledOnce).to.be.true;
             expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-            expect(getStub.calledOnce).to.be.true;
             expect(existsStub.calledOnce).to.be.true;
             expect(existsStub.calledWithExactly('/lib/systemd/system/ghost_test.service')).to.be.true;
             expect(logStub.calledOnce).to.be.true;
@@ -134,15 +109,13 @@ describe('Unit: Systemd > Extension', function () {
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
             const skipStub = sinon.stub();
-            const getStub = sinon.stub().returns(false);
             const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test'};
+            const instance = {dir: '/some/dir', name: 'test'};
             const templateStub = sinon.stub(testInstance, 'template').resolves();
 
             return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(getStub.calledOnce).to.be.true;
                 expect(existsStub.calledOnce).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
@@ -167,10 +140,9 @@ describe('Unit: Systemd > Extension', function () {
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().rejects({stderr: 'something went wrong'});
             const skipStub = sinon.stub();
-            const getStub = sinon.stub().returns(false);
             const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
             const templateStub = sinon.stub(testInstance, 'template').resolves();
-            const instance = {dir: '/some/dir', cliConfig: {get: getStub}, name: 'test'};
+            const instance = {dir: '/some/dir', name: 'test'};
 
             return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
@@ -180,7 +152,6 @@ describe('Unit: Systemd > Extension', function () {
                 expect(error.options.stderr).to.be.equal('something went wrong');
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(getStub.calledOnce).to.be.true;
                 expect(existsStub.calledOnce).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
