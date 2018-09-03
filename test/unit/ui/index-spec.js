@@ -587,6 +587,20 @@ describe('Unit: UI', function () {
         const errors = require('../../../lib/errors');
 
         describe('handles cliError', function () {
+            it('logMessageOnly', function () {
+                const ui = new UI({verbose: true});
+                const log = sinon.stub(ui, 'log');
+                const fail = sinon.stub(ui, 'fail');
+                const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
+
+                ui.error(new errors.CliError({message: 'error occurred', logMessageOnly: true}));
+
+                expect(formatDebug.calledOnce).to.be.true;
+                expect(log.called).to.be.false;
+                expect(fail.calledOnce).to.be.true;
+                expect(fail.calledWithExactly('error occurred')).to.be.true;
+            });
+
             it('verbose', function () {
                 const ui = new UI({verbose: true});
                 const system = {writeErrorLog: sinon.stub()};

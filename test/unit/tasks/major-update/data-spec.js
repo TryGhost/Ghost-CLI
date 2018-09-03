@@ -69,7 +69,7 @@ describe('Unit: Tasks > Major Update > Data', function () {
     });
 
     it('mysql: success', function () {
-        connection.raw.withArgs('SELECT * FROM settings WHERE `key`="active_theme";').resolves([[{value: 'casper'}]]);
+        connection.raw.withArgs('SELECT * FROM settings WHERE `key`="active_theme";').resolves([[{value: 'not-casper'}]]);
         connection.raw.withArgs('SELECT uuid FROM posts WHERE slug="v2-demo-post";').resolves([[{uuid: 'uuid'}]]);
 
         gscanMock.check.resolves({unformatted: true});

@@ -4,13 +4,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const configStub = require('../../../utils/config-stub');
-// From https://github.com/chalk/ansi-regex/blob/v3.0.0/index.js
-const pattern = [
-    '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\\u0007)',
-    '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))'
-].join('|');
-
-const COLOR_REGEX = new RegExp(pattern, 'g');
+const stripAnsi = require('strip-ansi');
 
 describe('Unit: Tasks > Major Update > UI', function () {
     let ui, dataMock, ctx;
@@ -83,7 +77,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
             expect(ctx.ui.log.callCount).to.eql(6);
             expect(ctx.ui.confirm.calledTwice).to.be.true;
 
-            const output = ctx.ui.log.args.join(' ').replace(COLOR_REGEX, '');
+            const output = stripAnsi(ctx.ui.log.args.join(' '));
 
             expect(output.match(/Your theme has 1 warning/)).to.exist;
             expect(output.match(/File: index.hbs/)).to.exist;
@@ -120,7 +114,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
             expect(ctx.ui.log.callCount).to.eql(7);
             expect(ctx.ui.confirm.calledTwice).to.be.true;
 
-            const output = ctx.ui.log.args.join(' ').replace(COLOR_REGEX, '');
+            const output = stripAnsi(ctx.ui.log.args.join(' '));
 
             expect(output.match(/Your theme has 2 errors/)).to.exist;
             expect(output.match(/File: post.hbs/)).to.exist;
@@ -131,41 +125,46 @@ describe('Unit: Tasks > Major Update > UI', function () {
     });
 
     it('theme has errors and warnings', function () {
-        ctx.ui.confirm.resolves(true);
+        ctx.ui.confirm.onFirstCall().resolves(true);
+        ctx.ui.confirm.onSecondCall().resolves(false);
 
         dataMock.resolves({
             gscanReport: {
                 results: {
                     error: {
-                        all: [{RULE_10: {failures: [{ref: 'post.hbs'}, {ref: 'page.hbs'}]}}, {RULE_20: {failures: [{ref: 'page.hbs'}]}}],
+                        all: [{RULE_10: {failures: [{ref: 'post.hbs'}, {ref: 'page.hbs'}]}}],
                         byFiles: {
-                            'post.hbs': [{rule: '<b>This is an Error.</b>'}],
-                            'page.hbs': [{rule: '<b>This is another Error.</b>'}, {rule: '<b>This is an Error.</b>'}]
+                            'post.hbs': [{rule: '<b>This is an Error.</b>'}]
                         }
                     },
                     warning: {
-                        all: [{RULE_01: {failures: [{ref: 'package.json'}]}}],
-                        byFiles: {'package.json': [{rule: 'This attribute is important.'}]}
+                        all: [{RULE_01: {failures: [{ref: 'package.json'}]}}, {RULE_20: {failures: [{ref: 'page.hbs'}]}}],
+                        byFiles: {
+                            'package.json': [{rule: 'This attribute is important.'}],
+                            'page.hbs': [{rule: '<b>This is a warning.</b>'}]
+                        }
                     }
                 }
-            },
-            demoPost: {
-                uuid: '1234'
             }
         });
 
         return ui(ctx).then(() => {
-            expect(ctx.ui.log.callCount).to.eql(9);
+            expect(true).to.equal(false, 'Test should fail');
+        }).catch((err) => {
+            expect(err.message).to.match(/Update aborted/);
+            expect(err.logMessageOnly).to.be.true;
+
+            expect(ctx.ui.log.callCount).to.eql(8);
             expect(ctx.ui.confirm.calledTwice).to.be.true;
 
-            const output = ctx.ui.log.args.join(' ').replace(COLOR_REGEX, '');
+            const output = stripAnsi(ctx.ui.log.args.join(' '));
 
-            expect(output.match(/Your theme has 2 errors and 1 warning/)).to.exist;
+            expect(output.match(/Your theme has 1 error and 2 warnings/)).to.exist;
             expect(output.match(/File: post.hbs/)).to.exist;
             expect(output.match(/File: page.hbs/)).to.exist;
             expect(output.match(/File: package.json/)).to.exist;
-            expect(output.match(/This is an Error./g).length).to.eql(2);
-            expect(output.match(/This is another Error./g).length).to.eql(1);
+            expect(output.match(/This is an Error./g).length).to.eql(1);
+            expect(output.match(/This is a warning./g).length).to.eql(1);
             expect(output.match(/This attribute is important./g).length).to.eql(1);
         });
     });
@@ -206,7 +205,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
                 expect(ctx.ui.log.callCount).to.eql(9);
                 expect(ctx.ui.confirm.calledOnce).to.be.true;
 
-                const output = ctx.ui.log.args.join(' ').replace(COLOR_REGEX, '');
+                const output = stripAnsi(ctx.ui.log.args.join(' '));
 
                 expect(output.match(/Your theme has 2 errors and 1 warning/)).to.exist;
                 expect(output.match(/File: post.hbs/)).to.exist;
