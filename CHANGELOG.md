@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.3"></a>
+## 1.9.3 (2018-09-04)
+
+### Features
+
+* add --auto flag to make setup quicker ([89a92c0](https://github.com/TryGhost/Ghost-CLI/commit/89a92c0)), closes [#806](https://github.com/TryGhost/Ghost-CLI/issues/806)
+
 <a name="1.9.2"></a>
 ## 1.9.2 (2018-08-29)
 
