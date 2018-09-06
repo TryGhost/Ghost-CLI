@@ -155,7 +155,7 @@ class NginxExtension extends Extension {
                     promise = this.ui.prompt({
                         name: 'email',
                         type: 'input',
-                        message: 'Enter your email (used for Let\'s Encrypt notifications)',
+                        message: 'Enter your email (For SSL Certificate)',
                         validate: value => Boolean(value) || 'You must supply an email'
                     }).then(({email}) => {
                         argv.sslemail = email;
