@@ -505,14 +505,19 @@ describe('Unit: Commands > Setup', function () {
         });
 
         it('honors stage skipping via arguments', function () {
+            const SetupCommand = proxyquire(modulePath, {
+                os: {platform: () => 'linux'},
+                '../tasks/configure': () => Promise.resolve()
+            });
             const ui = {
                 run: a => a(),
                 listr: sinon.stub().resolves()
             };
             const skipStub = sinon.stub();
+            const config = configStub();
             const system = {
                 hook: () => Promise.resolve(),
-                getInstance: sinon.stub()
+                getInstance: sinon.stub().returns({config})
             };
             const setup = new SetupCommand(ui, system);
             setup.runCommand = () => Promise.resolve();
@@ -529,6 +534,11 @@ describe('Unit: Commands > Setup', function () {
         });
 
         it('normally prompts to run a stage', function () {
+            const configureStub = sinon.stub().resolves();
+            const SetupCommand = proxyquire(modulePath, {
+                os: {platform: () => 'linux'},
+                '../tasks/configure': configureStub
+            });
             function confirm(a) {
                 return Promise.resolve(a.indexOf('Z') < 0);
             }
@@ -539,13 +549,13 @@ describe('Unit: Commands > Setup', function () {
                 confirm: sinon.stub().callsFake(confirm)
             };
             const skipStub = sinon.stub();
+            const config = configStub();
             const system = {
                 hook: () => Promise.resolve(),
-                getInstance: sinon.stub()
+                getInstance: sinon.stub().returns({config})
             };
             const setup = new SetupCommand(ui, system);
             let tasks;
-            const runCommand = sinon.stub(setup, 'runCommand').resolves();
 
             setup.addStage('zest', () => true, null, 'Zesty');
             setup.addStage('test', () => true, null, 'Test');
@@ -563,7 +573,7 @@ describe('Unit: Commands > Setup', function () {
                 expect(ui.confirm.calledTwice).to.be.true;
                 expect(ui.confirm.args[0][0]).to.match(/Zesty/);
                 expect(ui.confirm.args[1][0]).to.match(/Test/);
-                expect(runCommand.calledOnce).to.be.true;
+                expect(configureStub.calledOnce).to.be.true;
             });
         });
     });

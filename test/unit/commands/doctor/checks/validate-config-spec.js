@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const errors = require('../../../../../lib/errors');
 const {setupTestFolder, cleanupTestFolders} = require('../../../../utils/test-folder');
-const advancedOpts = require('../../../../../lib/commands/config/advanced');
+const advancedOpts = require('../../../../../lib/tasks/configure/options');
 
 const check = require('../../../../../lib/commands/doctor/checks/validate-config');
 const validateConfig = check.task;
