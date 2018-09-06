@@ -7,8 +7,8 @@ const url = require('../../../lib/utils/url');
 describe('Unit: Utils > URL', function () {
     describe('> Validate', function () {
         it('non-URLs fail', function () {
-            expect(url.validate('totally a url')).to.match(/Invalid URL/);
-            expect(url.validate('notaurl')).to.match(/Invalid URL/);
+            expect(url.validate('totally a url')).to.match(/Invalid domain/);
+            expect(url.validate('notaurl')).to.match(/Invalid domain/);
         });
 
         it('protocol-free URLs fail', function () {
