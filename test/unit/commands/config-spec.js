@@ -507,8 +507,8 @@ describe('Unit: Command > Config', function () {
 
             // Check validate function
             expect(advancedOptions.adminUrl.validate('http://localhost:2368')).to.be.true;
-            expect(advancedOptions.adminUrl.validate('localhost:2368')).to.match(/Invalid URL/);
-            expect(advancedOptions.adminUrl.validate('not even remotely a URL')).to.match(/Invalid URL/);
+            expect(advancedOptions.adminUrl.validate('localhost:2368')).to.match(/Invalid domain/);
+            expect(advancedOptions.adminUrl.validate('not even remotely a domain')).to.match(/Invalid domain/);
 
             // Check transform function
             expect(advancedOptions.adminUrl.transform('http://MyUpperCaseUrl.com')).to.equal('http://myuppercaseurl.com');
