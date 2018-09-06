@@ -464,7 +464,7 @@ describe('Unit: UI', function () {
             const stdin = streamTestUtils.getWritableStream((output) => {
                 expect(output).to.equal('password\n');
                 expect(logStub.calledOnce).to.be.true;
-                expect(logStub.calledWithExactly('Running sudo command: ghost -v', 'gray')).to.be.true;
+                expect(logStub.calledWithExactly('+ sudo ghost -v', 'gray')).to.be.true;
                 expect(shellStub.calledOnce).to.be.true;
                 expect(shellStub.args[0][0]).to.match(eCall);
                 expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo'});

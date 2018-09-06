@@ -99,7 +99,7 @@ describe('Unit: Commands > Run', function () {
         instance.useGhostUser({dir: '/var/www/ghost'});
 
         expect(logStub.calledOnce).to.be.true;
-        expect(logStub.args[0][0]).to.match(/Running sudo command/);
+        expect(logStub.args[0][0]).to.match(/^\+ sudo/);
         expect(spawnStub.calledOnce).to.be.true;
         expect(spawnStub.calledWithExactly('sudo', [
             '-E',
