@@ -128,6 +128,19 @@ describe('Unit: Command > Config', function () {
             });
         });
 
+        it('transforms domain without protocol', function () {
+            const ConfigCommand = require(modulePath);
+            const instanceConfig = new Config('config.json');
+            const saveStub = sinon.stub(instanceConfig, 'save');
+            const getInstanceStub = sinon.stub().returns({config: instanceConfig});
+            const config = new ConfigCommand({}, {getInstance: getInstanceStub});
+
+            return config.handleAdvancedOptions({url: 'myWebsite.com'}).then(() => {
+                expect(instanceConfig.get('url')).to.equal('https://mywebsite.com');
+                expect(saveStub.calledOnce).to.be.true;
+            });
+        });
+
         it('throws config error if validate function is defined and doesn\'t return true', function () {
             const ConfigCommand = proxyquire(modulePath, {'./advanced': {
                 url: {
@@ -183,7 +196,7 @@ describe('Unit: Command > Config', function () {
         });
 
         it('returns url prompt with validator if url is not provided and db is sqlite3', function () {
-            const expectedValidator = require('../../../lib/utils/validate-instance-url');
+            const expectedValidator = require('../../../lib/utils/url').validate;
             const argv = {db: 'sqlite3'};
             const result = config.getConfigPrompts(argv);
 
@@ -194,7 +207,7 @@ describe('Unit: Command > Config', function () {
         });
 
         it('returns url prompt with correct defaults', function () {
-            const expectedValidator = require('../../../lib/utils/validate-instance-url');
+            const expectedValidator = require('../../../lib/utils/url').validate;
             const argv = {db: 'sqlite3', auto: true};
             const result = config.getConfigPrompts(argv);
 
@@ -478,7 +491,7 @@ describe('Unit: Command > Config', function () {
     describe('advanced options', function () {
         it('url', function () {
             const advancedOptions = require(advancedModulePath);
-            const expectedValidator = require('../../../lib/utils/validate-instance-url');
+            const expectedValidator = require('../../../lib/utils/url').validate;
             expect(advancedOptions.url).to.exist;
 
             // Check validate function
