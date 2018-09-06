@@ -30,7 +30,7 @@ describe('Unit: Commands > Start', function () {
         it('gracefully notifies of already running instance', function () {
             const runningStub = sinon.stub().resolves(true);
             const logStub = sinon.stub();
-            const ui = {log: logStub};
+            const ui = {log: logStub, logHelp: logStub};
             const start = new StartCommand(ui, mySystem);
             myInstance.running = runningStub;
 
@@ -194,37 +194,37 @@ describe('Unit: Commands > Start', function () {
             const ui = {
                 run: () => Promise.resolve(),
                 listr: () => Promise.resolve(),
-                log: sinon.stub()
+                log: sinon.stub(),
+                logHelp: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
-                expect(ui.log.args[0][0]).to.include('https://my-amazing.blog.com');
+                expect(ui.log.args[0][0]).to.include('---------------');
                 expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
-                expect(ui.log.args[1][0]).to.include('https://my-amazing.blog.com/ghost');
+                expect(ui.log.args[1][1]).to.eql('https://my-amazing.blog.com/ghost/');
             });
         });
 
-        it('is normally loud', function () {
+        it('is normally loud (subdir)', function () {
             myInstance.config.get.withArgs('url').returns('https://my-amazing.site/blog');
             myInstance.process = {};
             const ui = {
                 run: () => Promise.resolve(),
                 listr: () => Promise.resolve(),
-                log: sinon.stub()
+                log: sinon.stub(),
+                logHelp: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
-                expect(ui.log.args[0][0]).to.include('https://my-amazing.site/blog');
+                expect(ui.log.args[0][0]).to.include('---------------');
                 expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
-                expect(ui.log.args[1][0]).to.include('https://my-amazing.site/blog/ghost/');
+                expect(ui.log.args[1][1]).to.include('https://my-amazing.site/blog/ghost/');
             });
         });
 
@@ -237,17 +237,17 @@ describe('Unit: Commands > Start', function () {
             const ui = {
                 run: () => Promise.resolve(),
                 listr: () => Promise.resolve(),
-                log: sinon.stub()
+                log: sinon.stub(),
+                logHelp: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
-                expect(ui.log.args[0][0]).to.include('https://my-amazing.blog.com');
+                expect(ui.log.args[0][0]).to.include('---------------');
                 expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
-                expect(ui.log.args[1][0]).to.include('https://admin.my-amazing.blog.com/ghost');
+                expect(ui.log.args[1][1]).to.include('https://admin.my-amazing.blog.com/ghost');
 
                 process.argv = oldArgv;
             });
@@ -261,38 +261,70 @@ describe('Unit: Commands > Start', function () {
             const ui = {
                 run: () => Promise.resolve(),
                 listr: () => Promise.resolve(),
-                log: sinon.stub()
+                log: sinon.stub(),
+                logHelp: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/You can access your publication at/);
-                expect(ui.log.args[0][0]).to.include('https://my-amazing.blog.com');
-                expect(ui.log.args[1][0]).to.match(/Next, go to to your admin interface at /);
-                expect(ui.log.args[1][0]).to.include('https://my-amazing.blog.com/ghost');
+                expect(ui.log.args[0][0]).to.include('---------------');
+                expect(ui.log.args[1][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
+                expect(ui.log.args[1][1]).to.eql('https://my-amazing.blog.com/ghost/');
 
                 process.argv = oldArgv;
             });
         });
 
-        it('warns of direct mail transport', function () {
+        it('does not show setup message after fresh LOCAL install without custom domain', function () {
+            const oldArgv = process.argv;
+            process.argv = ['', '', 'install'];
+            myInstance.config.get.withArgs('url').returns('http://123.56.6.1');
+            myInstance.config.get.withArgs('process').returns('local');
+            myInstance.process = {};
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: () => Promise.resolve(),
+                log: sinon.stub(),
+                logHelp: sinon.stub()
+            };
+            const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+            return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(ui.log.callCount).to.eql(2);
+                expect(ui.log.args[0][0]).to.include('---------------');
+                expect(ui.log.args[1][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
+                expect(ui.log.args[1][1]).to.eql('http://123.56.6.1/ghost/');
+
+                process.argv = oldArgv;
+            });
+        });
+
+        it('warns of direct mail transport on install', function () {
+            const oldArgv = process.argv;
+            process.argv = ['', '', 'install'];
             myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
             myInstance.config.get.withArgs('mail.transport').returns('Direct');
             myInstance.process = {};
             const ui = {
                 run: () => Promise.resolve(),
                 listr: () => Promise.resolve(),
-                log: sinon.stub()
+                log: sinon.stub(),
+                logHelp: sinon.stub()
             };
             const start = new StartCommand(ui, mySystem);
             const runCommandStub = sinon.stub(start, 'runCommand').resolves();
             return start.run({enable: false}).then(() => {
                 expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.callCount).to.equal(4);
-                expect(ui.log.args[2][0]).to.match(/Ghost uses direct mail/);
-                expect(ui.log.args[3][0]).to.match(/alternative email method/);
+                expect(ui.log.callCount).to.equal(3);
+                expect(ui.log.args[0][0]).to.match(/Ghost uses direct mail/);
+                expect(ui.log.args[1][0]).to.include('---------------');
+                expect(ui.log.args[2][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
+                expect(ui.log.args[2][1]).to.eql('https://my-amazing.blog.com/ghost/');
+
+                process.argv = oldArgv;
             });
         });
     });

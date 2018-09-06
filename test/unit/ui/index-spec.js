@@ -593,6 +593,36 @@ describe('Unit: UI', function () {
             expect(stdout.write.args[0][0]).to.equal('test\n');
             expect(stdout.write.args[1][0]).to.equal('best\n');
         });
+
+        it('displays a multi-line help message when called with 4 args', function (done) {
+            const stdout = streamTestUtils.getWritableStream(function (output) {
+                expect(output, 'output exists').to.be.ok;
+                expect(hasAnsi(output), 'output has color').to.be.true;
+                expect(output, 'output value').to.include(chalk.green(`\nmy message: \n\n    ${chalk.cyan('testing')}`));
+
+                done();
+            });
+            stdout.on('error', done);
+
+            const UI = require(modulePath);
+            const ui = new UI({stdout: stdout});
+            ui.log('my message', 'testing', 'green', 'link');
+        });
+
+        it('displays a multi-line help message with exta line when called with 5 args', function (done) {
+            const stdout = streamTestUtils.getWritableStream(function (output) {
+                expect(output, 'output exists').to.be.ok;
+                expect(hasAnsi(output), 'output has color').to.be.true;
+                expect(output, 'output value').to.include(chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`));
+
+                done();
+            });
+            stdout.on('error', done);
+
+            const UI = require(modulePath);
+            const ui = new UI({stdout: stdout});
+            ui.log('my message', 'testing', 'white', 'cmd', true);
+        });
     });
 
     describe('logVerbose', function () {
