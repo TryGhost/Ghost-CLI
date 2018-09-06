@@ -174,14 +174,36 @@ describe('Unit: Commands > Uninstall', function () {
                 });
             });
 
-            it('step 4 (removing ghost install)', function () {
+            it('step 4 (removing any root-owned folders)', () => {
+                const command = createInstance();
+                command.ui.sudo.resolves();
+
+                return getSteps(command.instance, command.ui).then((steps) => {
+                    const task = steps[3];
+
+                    expect(task.title).to.equal('Removing root-owned files in install folder');
+
+                    command.system._platform = {linux: false};
+                    expect(task.enabled()).to.be.false;
+
+                    command.system._platform = {linux: true};
+                    expect(task.enabled()).to.be.true;
+
+                    return task.task();
+                }).then(() => {
+                    expect(command.ui.sudo.calledOnce).to.be.true;
+                    expect(command.ui.sudo.calledWithExactly('find . -user root -type f -exec rm -f {} \\;')).to.be.true;
+                });
+            });
+
+            it('step 5 (removing ghost install)', function () {
                 const command = createInstance();
                 command.system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
                 const readdirStub = sinon.stub(fs, 'readdirSync').returns(fileList);
                 const removeStub = sinon.stub(fs, 'remove').resolves();
 
                 return getSteps(command.instance, command.ui).then((steps) => {
-                    const task = steps[3];
+                    const task = steps[4];
 
                     expect(task.title).to.equal('Removing Ghost installation');
                     return task.task();
