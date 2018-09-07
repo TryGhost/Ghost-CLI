@@ -96,7 +96,7 @@ describe('Unit: Utils > checkRootUser', function () {
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-            expect(errorStub.args[0][0]).to.match(/Can't run command as 'root' user/);
+            expect(errorStub.args[0][0]).to.match(/You can't run commands as the 'root' user/);
         }
     });
 
@@ -200,7 +200,7 @@ describe('Unit: Utils > checkRootUser', function () {
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-            expect(errorStub.args[0][0]).to.match(/Can't run command as 'root' user/);
+            expect(errorStub.args[0][0]).to.match(/You can't run commands as the 'root' user/);
         }
     });
 
@@ -228,7 +228,7 @@ describe('Unit: Utils > checkRootUser', function () {
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-            expect(errorStub.args[0][0]).to.match(/Can't run command as 'root' user/);
+            expect(errorStub.args[0][0]).to.match(/You can't run commands as the 'root' user/);
         }
     });
 });

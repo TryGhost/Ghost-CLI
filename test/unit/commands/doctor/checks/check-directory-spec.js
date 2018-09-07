@@ -101,7 +101,7 @@ describe('Unit: Doctor Checks > checkDirectoryAndAbove', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/path \/root\/ is not readable/);
+            expect(error.message).to.match(/directory \/root\/ is not readable/);
 
             expect(isRootStub.calledTwice).to.be.true;
             expect(lstatStub.calledTwice).to.be.true;

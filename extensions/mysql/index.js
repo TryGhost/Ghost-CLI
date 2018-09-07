@@ -60,7 +60,7 @@ class MySQLExtension extends cli.Extension {
                         'database.connection.port': dbconfig.port || '3306'
                     },
                     environment: this.system.environment,
-                    help: 'Please ensure that MySQL is installed and reachable. You can always re-run `ghost setup` to try again.'
+                    help: 'Ensure that MySQL is installed and reachable. You can always re-run `ghost setup` to try again.'
                 }));
             } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
                 return Promise.reject(new cli.errors.ConfigError({

@@ -39,7 +39,7 @@ describe('Unit: Doctor Checks > loggedInGhostUser', function () {
             expect(fsStub.calledOnce).to.be.true;
             expect(ghostUserStub.calledOnce).to.be.true;
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/You can't use Ghost with the ghost user./);
+            expect(error.message).to.match(/You can't run commands with the "ghost" user./);
         }
     });
 
