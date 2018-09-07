@@ -40,7 +40,7 @@ describe('Unit: Doctor Checks > loggedInUserOwner', function () {
             expect(uidStub.calledOnce).to.be.true;
             expect(gidStub.calledOnce).to.be.true;
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your current user is not the owner of the Ghost directory and also not part of the same group./);
+            expect(error.message).to.match(/Your user does not own the directory/);
         }
     });
 
@@ -61,7 +61,7 @@ describe('Unit: Doctor Checks > loggedInUserOwner', function () {
         expect(uidStub.calledOnce).to.be.true;
         expect(gidStub.calledOnce).to.be.true;
         expect(logStub.calledOnce).to.be.true;
-        expect(logStub.args[0][0]).to.match(/The current user is not the owner of the Ghost directory. This might cause problems./);
+        expect(logStub.args[0][0]).to.match(/Your user does not own the directory/);
     });
 
     it('resolves if current user is also the owner', function () {

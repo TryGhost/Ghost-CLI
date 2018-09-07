@@ -77,7 +77,7 @@ function generateCert(ui, domain, webroot, email, staging) {
 
         if (error.stderr.match(/Verify error:(Fetching|Invalid Response)/)) {
             // Domain verification failed
-            return Promise.reject(new SystemError('Your domain name is not pointing to the correct IP address of your server, please update it and run `ghost setup ssl` again'));
+            return Promise.reject(new SystemError('Your domain name is not pointing to the correct IP address of your server, check your DNS has propagated and run `ghost setup ssl` again'));
         }
 
         // It's not an error we expect might happen, throw a ProcessError instead.

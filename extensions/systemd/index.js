@@ -23,7 +23,7 @@ class SystemdExtension extends Extension {
 
         // getUid returns either the uid or null
         if (!uid) {
-            this.ui.log('The "ghost" user has not been created, please run `ghost setup linux-user` first', 'yellow');
+            this.ui.log('The "ghost" user has not been created, try running `ghost setup linux-user` first', 'yellow');
             return task.skip();
         }
 
