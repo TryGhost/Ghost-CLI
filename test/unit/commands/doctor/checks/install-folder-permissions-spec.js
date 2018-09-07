@@ -21,7 +21,7 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/current directory is not writable/);
+            expect(error.message).to.match(/is not writable by your user/);
             expect(accessStub.calledOnce).to.be.true;
             expect(accessStub.calledWith(process.cwd())).to.be.true;
         });
