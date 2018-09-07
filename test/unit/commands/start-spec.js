@@ -277,6 +277,33 @@ describe('Unit: Commands > Start', function () {
             });
         });
 
+        it('shows setup message after fresh install without custom domain', function () {
+            const oldArgv = process.argv;
+            process.argv = ['', '', 'install'];
+            myInstance.config.get.withArgs('url').returns('http://123.56.6.1');
+            myInstance.process = {};
+            const ui = {
+                run: () => Promise.resolve(),
+                listr: () => Promise.resolve(),
+                log: sinon.stub(),
+                logHelp: sinon.stub()
+            };
+            const start = new StartCommand(ui, mySystem);
+            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+            return start.run({enable: false}).then(() => {
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(ui.log.callCount).to.eql(4);
+                expect(ui.log.args[0][0]).to.include('---------------');
+                expect(ui.log.args[1][0]).to.match(/To add a custom domain and secure your site, run/);
+                expect(ui.log.args[1][1]).to.eql('ghost setup ssl --url example.com');
+                expect(ui.log.args[2][0]).to.include('---------------');
+                expect(ui.log.args[3][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
+                expect(ui.log.args[3][1]).to.eql('http://123.56.6.1/ghost/');
+
+                process.argv = oldArgv;
+            });
+        });
+
         it('does not show setup message after fresh LOCAL install without custom domain', function () {
             const oldArgv = process.argv;
             process.argv = ['', '', 'install'];
