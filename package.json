@@ -97,7 +97,7 @@
     "nyc": "12.0.2",
     "proxyquire": "2.0.1",
     "sinon": "6.1.5",
-    "standard-version": "4.4.0",
+    "standard-version": "4.3.0",
     "tmp": "0.0.33"
   },
   "standard-version": {

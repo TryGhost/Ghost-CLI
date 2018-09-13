@@ -3,14 +3,14 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 <a name="1.9.3"></a>
-## 1.9.3 (2018-09-04)
+## [1.9.3](https://github.com/TryGhost/Ghost-CLI/compare/1.9.2...1.9.3) (2018-09-04)
 
 ### Features
 
 * add --auto flag to make setup quicker ([89a92c0](https://github.com/TryGhost/Ghost-CLI/commit/89a92c0)), closes [#806](https://github.com/TryGhost/Ghost-CLI/issues/806)
 
 <a name="1.9.2"></a>
-## 1.9.2 (2018-08-29)
+## [1.9.2](https://github.com/TryGhost/Ghost-CLI/compare/1.9.1...1.9.2) (2018-08-29)
 
 ### Bug Fixes
 
@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **stack:** add support for ubuntu 18 ([7d17adb](https://github.com/TryGhost/Ghost-CLI/commit/7d17adb)), closes [#794](https://github.com/TryGhost/Ghost-CLI/issues/794)
 
 <a name="1.9.1"></a>
-## 1.9.1 (2018-08-20)
+## [1.9.1](https://github.com/TryGhost/Ghost-CLI/compare/1.9.0...1.9.1) (2018-08-20)
 
 ### Bug Fixes
 
@@ -31,7 +31,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **zip:** ensure zip upgrades from v2 to next v2 work ([4ae1f42](https://github.com/TryGhost/Ghost-CLI/commit/4ae1f42))
 
 <a name="1.9.0"></a>
-# 1.9.0 (2018-08-16)
+# [1.9.0](https://github.com/TryGhost/Ghost-CLI/compare/1.8.1...1.9.0) (2018-08-16)
 
 ### Bug Fixes
 
@@ -61,14 +61,14 @@ All notable changes to this project will be documented in this file. See [standa
 * **v2:** update knex-migrator execution for Ghost 2.0 ([#765](https://github.com/TryGhost/Ghost-CLI/issues/765)) ([d6af62a](https://github.com/TryGhost/Ghost-CLI/commit/d6af62a)), closes [#759](https://github.com/TryGhost/Ghost-CLI/issues/759)
 
 <a name="1.8.1"></a>
-## 1.8.1 (2018-06-05)
+## [1.8.1](https://github.com/TryGhost/Ghost-CLI/compare/1.8.0...1.8.1) (2018-06-05)
 
 ### Bug Fixes
 
 * **run:** local process manager forwards Ghost error message correctly ([abaf834](https://github.com/TryGhost/Ghost-CLI/commit/abaf834)), closes [#742](https://github.com/TryGhost/Ghost-CLI/issues/742)
 
 <a name="1.8.0"></a>
-# 1.8.0 (2018-05-29)
+# [1.8.0](https://github.com/TryGhost/Ghost-CLI/compare/1.7.3...1.8.0) (2018-05-29)
 
 ### Bug Fixes
 
