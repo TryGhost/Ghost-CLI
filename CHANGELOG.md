@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.4"></a>
+## [1.9.4](https://github.com/TryGhost/Ghost-CLI/compare/1.9.3...1.9.4) (2018-09-13)
+
+
+### Bug Fixes
+
+* make admin & url validation the same ([29acafe](https://github.com/TryGhost/Ghost-CLI/commit/29acafe))
+* **utils:** fix logic error in url validator ([c8f3554](https://github.com/TryGhost/Ghost-CLI/commit/c8f3554))
+
+
+### Features
+
+* added transform to handle urls without proto ([581c901](https://github.com/TryGhost/Ghost-CLI/commit/581c901)), closes [#812](https://github.com/TryGhost/Ghost-CLI/issues/812) [#812](https://github.com/TryGhost/Ghost-CLI/issues/812)
+
+
+
 <a name="1.9.3"></a>
 ## [1.9.3](https://github.com/TryGhost/Ghost-CLI/compare/1.9.2...1.9.3) (2018-09-04)
 
