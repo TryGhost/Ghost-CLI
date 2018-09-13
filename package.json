@@ -28,12 +28,12 @@
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint bin/* lib test extensions",
-    "release": "standard-version",
     "test:unit": "nyc --reporter=html --reporter=text mocha --recursive test/unit extensions/**/test",
     "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
     "test:all": "yarn test:unit && yarn test:acceptance",
     "test": "yarn test:all",
-    "posttest": "yarn lint"
+    "posttest": "yarn lint",
+    "ship": "f() { STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then standard-version $@ && git push --follow-tags;  fi; }; f"
   },
   "nyc": {
     "exclude": [
