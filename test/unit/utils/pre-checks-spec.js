@@ -89,7 +89,7 @@ describe('Unit: Utils > pre-checks', function () {
 
             getTasks({}, {}, {platform: {linux: true}}).then(([,task]) => {
                 expect(task.title).to.equal('Ensuring correct ~/.config folder ownership');
-                expect(task.isEnabled()).to.be.true;
+                expect(task.enabled()).to.be.true;
                 return task.task();
             }).catch((error) => {
                 expect(error.message).to.equal('test error');
@@ -108,7 +108,7 @@ describe('Unit: Utils > pre-checks', function () {
             const sudo = sinon.stub().resolves();
 
             return getTasks({}, {sudo}, {platform: {linux: false}}).then(([,task]) => {
-                expect(task.isEnabled()).to.be.false;
+                expect(task.enabled()).to.be.false;
                 return task.task();
             }).then(() => {
                 expect(uid.calledOnce).to.be.true;
