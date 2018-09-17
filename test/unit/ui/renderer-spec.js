@@ -140,6 +140,35 @@ describe('Unit: UI > Renderer', function () {
             expect(spinner.fail.called).to.be.false;
         });
 
+        it('stop spinner called when task completes and clearOnSuccess is true', function () {
+            const subStub = sinon.stub();
+            const renderer = new Renderer({}, [{
+                subscribe: subStub,
+                isCompleted: () => true,
+                isSkipped: () => false,
+                hasFailed: () => false,
+                isEnabled
+            }], {clearOnSuccess: true});
+
+            const spinner = {
+                succeed: sinon.stub(),
+                stop: sinon.stub(),
+                info: sinon.stub(),
+                fail: sinon.stub()
+            };
+            renderer.spinner = spinner;
+            renderer.subscribeToEvents();
+
+            expect(subStub.calledOnce).to.be.true;
+            // update values and execute callback
+            subStub.firstCall.args[0]({type: 'STATE'});
+
+            expect(spinner.stop.calledOnce).to.be.true;
+            expect(spinner.succeed.called).to.be.false;
+            expect(spinner.info.called).to.be.false;
+            expect(spinner.fail.called).to.be.false;
+        });
+
         it('info spinner called when task skips', function () {
             const subStub = sinon.stub();
             const renderer = new Renderer({}, [{
