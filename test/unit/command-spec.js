@@ -361,17 +361,17 @@ describe('Unit: Command', function () {
             const uiStub = sinon.stub().returns({ui: true});
             const setEnvironmentStub = sinon.stub();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
-            const updateCheckStub = sinon.stub().resolves();
+            const preChecksStub = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
                 './system': systemStub,
-                './utils/update-check': updateCheckStub
+                './utils/pre-checks': preChecksStub
             });
 
             class TestCommand extends Command {}
             TestCommand.global = true;
-            TestCommand.checkVersion = true;
+            TestCommand.runPreChecks = true;
 
             const runStub = sinon.stub(TestCommand.prototype, 'run');
             const oldEnv = process.env.NODE_ENV;
@@ -393,8 +393,8 @@ describe('Unit: Command', function () {
                 expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 expect(systemStub.calledOnce).to.be.true;
                 expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
-                expect(updateCheckStub.calledOnce).to.be.true;
-                expect(updateCheckStub.calledWithExactly({ui: true})).to.be.true;
+                expect(preChecksStub.calledOnce).to.be.true;
+                expect(preChecksStub.calledWithExactly({ui: true}, {setEnvironment: setEnvironmentStub})).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
                 expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
 
