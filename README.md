@@ -16,9 +16,9 @@
 
 ## Documentation
 
-- [Complete Setup Guide](https://docs.ghost.org/v1/docs/install)
-- [Command Reference](https://docs.ghost.org/v1/docs/ghost-cli)
-- [Troubleshooting Guide](https://docs.ghost.org/v1/docs/troubleshooting#section-cli-errors)
+- [Complete Setup Guide](https://docs.ghost.org/docs/install)
+- [Command Reference](https://docs.ghost.org/docs/ghost-cli)
+- [Troubleshooting Guide](https://docs.ghost.org/docs/troubleshooting#section-cli-errors)
 - [Forum](https://forum.ghost.org)
 
 ## Project Goals
