@@ -14,5 +14,5 @@ Alternatively, check out these resources below. Thanks! 😁.
 - [Ghost-CLI docs](https://docs.ghost.org/docs/ghost-cli)
 - [Forum Support](https://forum.ghost.org/c/help)
 - [Ideas](https://forum.ghost.org/c/Ideas)
-- [Contributing Guide](https://docs.ghost.org/v1/docs/contributing)
-- [Self-hoster Docs](http://docs.ghost.org/v1/)
+- [Contributing Guide](https://docs.ghost.org/docs/contributing)
+- [Self-hoster Docs](http://docs.ghost.org/docs/)
