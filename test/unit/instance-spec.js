@@ -158,6 +158,21 @@ describe('Unit: Instance', function () {
     it('cliVersion getter/setter works', testConfigAccessors('cliVersion', 'cli-version'));
     it('previousVersion getter/setter works', testConfigAccessors('previousVersion', 'previous-version'));
 
+    it('isSetup accessor works', function () {
+        const hasInstance = sinon.stub();
+        hasInstance.onFirstCall().returns(true);
+        hasInstance.onSecondCall().returns(false);
+
+        const instance = new Instance({}, {hasInstance}, '/dir/a');
+
+        expect(instance.isSetup).to.be.true;
+        expect(hasInstance.calledOnce).to.be.true;
+        expect(hasInstance.calledWithExactly(instance)).to.be.true;
+
+        expect(instance.isSetup).to.be.false;
+        expect(hasInstance.calledTwice).to.be.true;
+    });
+
     it('sets up instance vars in constructor', function () {
         const testInstance = new Instance({ui: true}, {system: true}, 'some_test_dir');
         expect(testInstance.ui).to.deep.equal({ui: true});
