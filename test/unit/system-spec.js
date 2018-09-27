@@ -286,6 +286,17 @@ describe('Unit: System', function () {
         });
     });
 
+    it('hasInstance works', function () {
+        const System = require(modulePath);
+        const system = new System({}, []);
+        system.globalConfig.set('instances', {test: {cwd: '/dir/a'}});
+        const instanceA = new Instance({}, system, '/dir/a');
+        const instanceB = new Instance({}, system, '/dir/b');
+
+        expect(system.hasInstance(instanceA)).to.be.true;
+        expect(system.hasInstance(instanceB)).to.be.false;
+    });
+
     it('cachedInstance loads instance and caches it', function () {
         const System = require(modulePath);
         const systemInstance = new System({ui: true}, []);
