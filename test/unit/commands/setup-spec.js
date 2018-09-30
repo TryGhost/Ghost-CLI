@@ -2,578 +2,422 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const Promise = require('bluebird');
 const path = require('path');
 const configStub = require('../../utils/config-stub');
 
+const UI = require('../../../lib/ui/index');
+const System = require('../../../lib/system');
+
 const modulePath = '../../../lib/commands/setup';
-const SetupCommand = proxyquire(modulePath, {os: {platform: () => 'linux'}});
+const SetupCommand = require(modulePath);
 
 describe('Unit: Commands > Setup', function () {
-    it('Constructor initializes stages', function () {
-        const setup = new SetupCommand({},{});
-        expect(setup.stages).to.be.an('array');
-        expect(setup.stages.length).to.equal(0);
+    it('localArgs', function () {
+        const setup = new SetupCommand({}, {});
+
+        const argvA = {
+            local: true,
+            url: 'http://localhost:2369',
+            pname: 'local-ghost',
+            process: 'local',
+            db: 'mysql',
+            stack: false,
+            start: true
+        };
+        const argvB = {
+            local: true,
+            url: 'http://localhost:2368',
+            pname: 'ghost-local',
+            process: 'local',
+            stack: false,
+            start: true,
+            db: 'sqlite3',
+            dbpath: path.join(process.cwd(), 'content/data/ghost-local.db')
+        };
+
+        expect(setup.localArgs(argvA)).to.deep.equal(argvA);
+        expect(setup.localArgs({local: true})).to.deep.equal(argvB);
+        expect(setup.localArgs({local: true, start: false})).to.deep.equal(Object.assign(argvB, {start: false}));
     });
 
-    it('addStage pushes to stages', function () {
-        const setup = new SetupCommand({},{});
-        const expectedA = {
-            name: 'Eat',
-            description: 'Consume food',
-            dependencies: ['food', 'water'],
-            fn: () => true
-        };
-        const expectedB = {
-            name: 'Sleep',
-            dependencies: 'bed',
-            fn: () => false
-        };
-        const expectedC = {
-            name: 'Code',
-            dependencies: [],
-            fn: () => false
-        };
-        const expectedD = {
-            name: 'Repeat',
-            fn: () => 'Foundation',
-            dependencies: null
-        };
-        setup.addStage(expectedA.name, expectedA.fn, expectedA.dependencies, expectedA.description);
-        setup.addStage(expectedB.name, expectedB.fn, expectedB.dependencies, expectedB.description);
-        setup.addStage(expectedC.name, expectedC.fn, expectedC.dependencies, expectedC.description);
-        setup.addStage(expectedD.name, expectedD.fn, expectedD.dependencies, expectedD.description);
+    describe('tasks', function () {
+        function getTasks(stubs = {}, steps = []) {
+            const Command = proxyquire(modulePath, stubs);
+            const ui = sinon.createStubInstance(UI);
+            const system = sinon.createStubInstance(System);
+            const setup = new Command(ui, system);
+            ui.confirm.resolves(false);
 
-        expectedB.dependencies = ['bed'];
-        expectedB.description = 'Sleep';
-        expectedC.description = 'Code';
-        expectedD.description = 'Repeat';
+            const tasks = setup.tasks(steps);
+            return {tasks, ui, system, setup};
+        }
 
-        expect(setup.stages.length).to.equal(4);
-        expect(setup.stages[0]).to.deep.equal(expectedA);
-        expect(setup.stages[1]).to.deep.equal(expectedB);
-        expect(setup.stages[2]).to.deep.equal(expectedC);
-        expect(setup.stages[3]).to.deep.equal(expectedD);
+        it('returns default tasks correctly', function () {
+            const {tasks} = getTasks();
+            expect(tasks).to.have.length(4);
+            tasks.forEach((task) => {
+                expect(task).to.include.all.keys('id', 'task', 'enabled', 'title');
+            });
+        });
+
+        it('wraps tasks correctly', function () {
+            const task1stub = sinon.stub().resolves();
+            const task2stub = sinon.stub().resolves();
+            const steps = [
+                [{
+                    id: 'testing',
+                    name: 'Testing',
+                    task: task1stub
+                }, {
+                    id: 'testing-2',
+                    title: 'Custom Title',
+                    enabled: () => false,
+                    task: task2stub
+                }], null, [{
+                    notarealtask: true
+                }]
+            ];
+            const {tasks, ui} = getTasks({}, steps);
+
+            // there should only be 2 tasks added
+            expect(tasks).to.have.length(6);
+
+            const task1 = tasks[3];
+            const task2 = tasks[4];
+
+            expect(task1.id).to.equal('testing');
+            expect(task1.name).to.equal('Testing');
+            expect(task1.title).to.equal('Setting up Testing');
+
+            expect(task2.id).to.equal('testing-2');
+            expect(task2.title).to.equal('Custom Title');
+
+            expect(task1.enabled({
+                argv: {stages: ['testing']}
+            })).to.be.true;
+            expect(task1.enabled({
+                argv: {'setup-testing': false, stages: []}
+            })).to.be.false;
+            expect(task1.enabled({argv: {stages: []}}));
+
+            expect(task2.enabled({
+                argv: {stages: ['testing-2']}
+            })).to.be.false;
+            expect(task2.enabled({
+                argv: {'setup-testing-2': false, stages: []}
+            })).to.be.false;
+            expect(task2.enabled({
+                argv: {stages: []}
+            })).to.be.false;
+
+            const skip = sinon.stub().resolves();
+
+            return task1.task({single: true}).then(() => {
+                expect(ui.confirm.called).to.be.false;
+                expect(task1stub.calledOnce).to.be.true;
+
+                task1stub.resetHistory();
+                return task1.task({single: false}, {skip});
+            }).then(() => {
+                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up Testing?', true)).to.be.true;
+                expect(task1stub.called).to.be.false;
+                expect(skip.calledOnce).to.be.true;
+
+                skip.resetHistory();
+                ui.confirm.resetHistory();
+                ui.confirm.resolves(true);
+                return task1.task({single: false}, {skip});
+            }).then(() => {
+                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up Testing?', true)).to.be.true;
+                expect(task1stub.calledOnce).to.be.true;
+                expect(skip.called).to.be.false;
+
+                ui.confirm.reset();
+                ui.confirm.resolves(false);
+                skip.resetHistory();
+
+                return task2.task({single: true}, {skip});
+            }).then(() => {
+                expect(ui.confirm.called).to.be.false;
+                expect(task2stub.calledOnce).to.be.true;
+
+                task2stub.resetHistory();
+                return task2.task({single: false}, {skip});
+            }).then(() => {
+                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up testing-2?', true)).to.be.true;
+                expect(task2stub.called).to.be.false;
+                expect(skip.calledOnce).to.be.true;
+
+                skip.resetHistory();
+                ui.confirm.resetHistory();
+                ui.confirm.resolves(true);
+                return task2.task({single: false}, {skip});
+            }).then(() => {
+                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up testing-2?', true)).to.be.true;
+                expect(task2stub.calledOnce).to.be.true;
+                expect(skip.called).to.be.false;
+            });
+        });
+
+        describe('internal (default) tasks', function () {
+            it('config', function () {
+                const stub = sinon.stub();
+                const instance = {config: {config: true}};
+                const {tasks, ui, system} = getTasks({
+                    '../tasks/configure': stub
+                });
+                const [configTask] = tasks;
+
+                expect(configTask.id).to.equal('config');
+                expect(configTask.title).to.equal('Configuring Ghost');
+                expect(stub.called).to.be.false;
+
+                system.environment = 'testing';
+                configTask.task({instance, argv: {thisisargs: true}, single: false});
+                expect(stub.calledOnceWithExactly(
+                    ui,
+                    {config: true},
+                    {thisisargs: true},
+                    'testing',
+                    true
+                )).to.be.true;
+            });
+
+            it('instance', function () {
+                const config = configStub();
+                const instance = {config, dir: '/var/www/ghosttest'};
+                const {tasks, system} = getTasks();
+                const [,instanceTask] = tasks;
+
+                expect(instanceTask.id).to.equal('instance');
+                expect(instanceTask.title).to.equal('Setting up instance');
+
+                const argv = {stages: []};
+
+                // Check enabled fn
+                instance.isSetup = true;
+                expect(instanceTask.enabled({instance, argv})).to.be.false;
+                instance.isSetup = false;
+                expect(instanceTask.enabled({instance, argv})).to.be.true;
+
+                // Test task
+                config.has.returns(false);
+                instanceTask.task({instance, argv: {pname: 'test-ghost'}, stages: []});
+                expect(instance.name).to.equal('test-ghost');
+                expect(config.get.called).to.be.false;
+                expect(system.addInstance.calledOnceWithExactly(instance)).to.be.true;
+                expect(config.has.calledOnceWithExactly('paths.contentPath')).to.be.true;
+                expect(config.set.calledOnceWithExactly('paths.contentPath', '/var/www/ghosttest/content')).to.be.true;
+                expect(config.save.calledOnce).to.be.true;
+
+                config.has.returns(true);
+                config.has.resetHistory();
+                config.set.resetHistory();
+                config.save.resetHistory();
+                system.addInstance.resetHistory();
+                config.get.returns('https://example.com');
+                instanceTask.task({instance, argv});
+                expect(instance.name).to.equal('example-com');
+                expect(config.get.calledOnceWithExactly('url')).to.be.true;
+                expect(system.addInstance.calledOnceWithExactly(instance)).to.be.true;
+                expect(config.has.calledOnceWithExactly('paths.contentPath')).to.be.true;
+                expect(config.set.called).to.be.false;
+                expect(config.save.called).to.be.false;
+            });
+
+            it('linux-user', function () {
+                const stub = sinon.stub();
+                const {tasks, system} = getTasks({'../tasks/linux': stub});
+                const [,,linuxTask] = tasks;
+
+                expect(linuxTask.id).to.equal('linux-user');
+                expect(linuxTask.name).to.equal('"ghost" system user');
+                expect(linuxTask.title).to.equal('Setting up "ghost" system user');
+
+                linuxTask.task({});
+                expect(stub.calledOnce).to.be.true;
+
+                expect(linuxTask.enabled({argv: {local: true, stages: []}})).to.be.false;
+                system._platform = {linux: false};
+                expect(linuxTask.enabled({argv: {local: false, stages: []}})).to.be.false;
+                system._platform = {linux: true};
+                expect(linuxTask.enabled({argv: {process: 'local', stages: []}})).to.be.false;
+                expect(linuxTask.enabled({argv: {process: 'systemd', stages: []}})).to.be.true;
+            });
+
+            it('migrate', function () {
+                const migrate = sinon.stub();
+                const {tasks} = getTasks({'../tasks/migrator': {migrate}});
+                const [,,,migrateTask] = tasks;
+
+                expect(migrateTask.id).to.equal('migrate');
+                expect(migrateTask.title).to.equal('Running database migrations');
+
+                migrateTask.task({});
+                expect(migrate.calledOnce).to.be.true;
+
+                const instance = {version: '1.0.0'};
+                expect(migrateTask.enabled({argv: {migrate: false, stages: []}, instance})).to.be.false;
+                expect(migrateTask.enabled({argv: {stages: []}, instance})).to.be.true;
+                instance.version = '2.0.0';
+                expect(migrateTask.enabled({argv: {stages: []}, instance})).to.be.false;
+            });
+        });
     });
 
     describe('run', function () {
         it('Handles local setup properly', function () {
-            const argvA = {
-                local: true,
-                url: 'http://localhost:2369',
-                pname: 'local-ghost',
-                process: 'local',
-                db: 'mysql',
-                stack: false,
-                start: true
-            };
-            const argvB = {
-                local: true,
-                url: 'http://localhost:2368/',
-                pname: 'ghost-local',
-                process: 'local',
-                stack: false,
-                start: true,
-                db: 'sqlite3',
-                dbpath: path.join(process.cwd(), 'content/data/ghost-local.db')
-            };
-            let argVSpy = {
-                local: true,
-                url: 'http://localhost:2369',
-                pname: 'local-ghost',
-                process: 'local',
-                db: 'mysql'
-            };
-
             const setup = new SetupCommand({}, {setEnvironment: () => {
                 throw new Error('Take a break');
             }});
 
+            const localArgs = sinon.stub(setup, 'localArgs');
+
             try {
-                setup.run(Object.assign(argVSpy, argvA));
+                setup.run({local: true});
                 expect(false, 'An error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error.message).to.equal('Take a break');
-                expect(argVSpy).to.deep.equal(argvA);
-                argVSpy = {local: true};
-            }
-
-            try {
-                setup.run(argVSpy);
-                expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
-                expect(error.message).to.equal('Take a break');
-                expect(argVSpy).to.deep.equal(argvB);
-                argVSpy = {local: true, start: false};
-            }
-
-            try {
-                setup.run(argVSpy);
-                expect(false, 'An error should have been thrown').to.be.true;
-            } catch (error) {
-                expect(error.message).to.equal('Take a break');
-                expect(argVSpy).to.deep.equal(Object.assign(argvB, {start: false}));
+                expect(localArgs.calledOnce).to.be.true;
             }
         });
 
-        it('Hooks when stages are passed through', function () {
-            let stages = [];
-            const stubs = {
-                noCall: sinon.stub().resolves(),
-                important: sinon.stub().resolves(),
-                hook: sinon.stub().callsFake((n, ths) => {
-                    ths.stages = stages; return Promise.resolve();
-                }),
-                listr: sinon.stub().callsFake((tasks) => {
-                    tasks.forEach(task => task.task());
-                })
-            };
-            stages = [{name: 'nocall', fn: stubs.noCall}, {name: 'important', fn: stubs.important}];
-            const system = {
-                getInstance: () => ({checkEnvironment: () => true}),
-                hook: stubs.hook
-            };
-            const ui = {listr: stubs.listr};
+        it('calls correct methods when stages are passed in', function () {
+            const ui = sinon.createStubInstance(UI);
+            const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
-            return setup.run({stages: ['important']}).then(() => {
-                expect(stubs.hook.calledOnce).to.be.true;
-                expect(stubs.noCall.called).to.be.false;
-                expect(stubs.important.calledOnce).to.be.true;
-                expect(stubs.listr.calledOnce).to.be.true;
-            });
-        });
+            const runCommand = sinon.stub(setup, 'runCommand').resolves();
+            const run = sinon.stub().resolves([]);
+            const checkEnvironment = sinon.stub();
+            const instance = {checkEnvironment};
+            const tasks = [{id: 'test', task1: true}, {id: 'test2', task2: true}];
+            const taskStub = sinon.stub(setup, 'tasks').returns(tasks);
+            const listr = {tasks, run};
 
-        describe('special case migrations', function () {
-            it('db migrations', function () {
-                const system = {
-                    getInstance: () => ({checkEnvironment: () => true}),
-                    hook: () => Promise.resolve()
-                };
-                const ui = {
-                    listr: sinon.stub().callsFake((tasks) => {
-                        expect(tasks[0].title).to.equal('Running database migrations');
-                        expect(tasks[0].task.name).to.equal('runMigrations');
-                        return Promise.resolve();
-                    })
-                };
-                const setup = new SetupCommand(ui, system);
+            system.getInstance.returns(instance);
+            system.hook.resolves([{step1: true}, {step2: true}]);
+            ui.listr.returns(listr);
+            ui.confirm.resolves(true);
 
-                return setup.run({stages: ['migrate']}).then(() => {
-                    expect(ui.listr.calledOnce).to.be.true;
-                });
-            });
-
-            it('linux-user', function () {
-                const system = {
-                    getInstance: () => ({checkEnvironment: () => true}),
-                    hook: () => Promise.resolve()
-                };
-                const ui = {
-                    listr: sinon.stub().callsFake((tasks) => {
-                        expect(tasks[0].title).to.equal('Setting up "ghost" system user');
-                        expect(tasks[0].task.name).to.equal('bound linuxSetupTask');
-                        return Promise.resolve();
-                    })
-                };
-                const setup = new SetupCommand(ui, system);
-
-                return setup.run({stages: ['linux-user']}).then(() => {
-                    expect(ui.listr.calledOnce).to.be.true;
-                });
-            });
-
-            it('linux-user (on windows)', function () {
-                const system = {
-                    getInstance: () => ({checkEnvironment: () => true}),
-                    hook: () => Promise.resolve()
-                };
-                const osStub = {platform: () => 'win32'};
-                const ui = {
-                    listr: sinon.stub().callsFake((tasks) => {
-                        expect(tasks.length).to.equal(0);
-                        return Promise.resolve();
-                    }),
-                    log: sinon.stub()
-                };
-                const SetupCommand = proxyquire(modulePath, {os: osStub});
-                const setup = new SetupCommand(ui, system);
-
-                return setup.run({stages: ['linux-user']}).then(() => {
-                    expect(ui.log.calledOnce).to.be.true;
-                    expect(ui.log.args[0][0]).to.match(/is not Linux/);
-                });
-            });
-
-            it('linux-user (on macos)', function () {
-                const system = {
-                    getInstance: () => ({checkEnvironment: () => true}),
-                    hook: () => Promise.resolve()
-                };
-                const osStub = {platform: () => 'darwin'};
-                const ui = {
-                    listr: sinon.stub().callsFake((tasks) => {
-                        expect(tasks.length).to.equal(0);
-                        return Promise.resolve();
-                    }),
-                    log: sinon.stub()
-                };
-                const SetupCommand = proxyquire(modulePath, {os: osStub});
-                const setup = new SetupCommand(ui, system);
-
-                return setup.run({stages: ['linux-user']}).then(() => {
-                    expect(ui.log.calledOnce).to.be.true;
-                    expect(ui.log.args[0][0]).to.match(/is not Linux/);
-                });
-            });
-        });
-
-        it('Initial stage is setup properly, but skips db migrations', function () {
-            const migratorStub = {
-                migrate: sinon.stub().resolves(),
-                rollback: sinon.stub().resolves()
-            };
-
-            const SetupCommand = proxyquire(modulePath, {
-                '../tasks/migrator': migratorStub
-            });
-
-            const listr = sinon.stub();
-            const aIstub = sinon.stub();
-            const config = configStub();
-
-            config.get.withArgs('url').returns('https://ghost.org');
-            config.has.returns(false);
-
-            const system = {
-                getInstance: () => ({
-                    checkEnvironment: () => true,
-                    apples: true,
-                    config,
-                    dir: '/var/www/ghost',
-                    version: '2.0.0'
-                }),
-                addInstance: aIstub,
-                hook: () => Promise.resolve()
-            };
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: listr,
-                confirm: () => Promise.resolve(false)
-            };
-            const argv = {
-                prompt: true,
-                'setup-linux-user': false
-            };
-
-            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
-                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                    return;
-                }
-
-                return task.task(ctx);
-            }));
-
-            const setup = new SetupCommand(ui, system);
-            return setup.run(argv).then(() => {
-                expect(listr.calledOnce).to.be.true;
-                expect(migratorStub.migrate.called).to.be.false;
-                expect(migratorStub.rollback.called).to.be.false;
-            });
-        });
-
-        it('Initial stage is setup properly', function () {
-            const listr = sinon.stub().resolves();
-            const aIstub = sinon.stub();
-            const config = configStub();
-
-            config.get.withArgs('url').returns('https://ghost.org');
-            config.has.returns(false);
-
-            const system = {
-                getInstance: () => ({
-                    checkEnvironment: () => true,
-                    apples: true,
-                    config,
-                    dir: '/var/www/ghost',
-                    version: '1.25.0'
-                }),
-                addInstance: aIstub,
-                hook: () => Promise.resolve()
-            };
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: listr,
-                confirm: () => Promise.resolve(false)
-            };
-            const argv = {
-                prompt: true,
-                'setup-linux-user': false,
-                migrate: false
-            };
-
-            const setup = new SetupCommand(ui, system);
-            return setup.run(argv).then(() => {
-                expect(listr.calledOnce).to.be.true;
-                const tasks = listr.args[0][0];
-                expect(tasks[0].title).to.equal('Setting up instance');
-                tasks.forEach(function (task) {
-                    expect(task.title).to.not.match(/database migrations/);
-                });
-
-                const ctx = {};
-                tasks[0].task(ctx);
-
-                expect(ctx.instance).to.be.ok;
-                expect(ctx.instance.apples).to.be.true;
-                expect(ctx.instance.name).to.equal('ghost-org');
-                expect(aIstub.calledOnce).to.be.true;
-                expect(aIstub.args[0][0]).to.deep.equal(ctx.instance);
-
-                expect(config.has.calledOnce).to.be.true;
-                expect(config.set.calledOnce).to.be.true;
-                expect(config.set.calledWithExactly('paths.contentPath', '/var/www/ghost/content')).to.be.true;
-                expect(config.save.calledOnce).to.be.true;
-            });
-        });
-
-        it('Initial stage is setup properly, sanitizes pname argument', function () {
-            const listr = sinon.stub().resolves();
-            const aIstub = sinon.stub();
-            const config = configStub();
-            config.get.withArgs('url').returns('https://ghost.org');
-            config.has.returns(true);
-
-            const system = {
-                getInstance: () => ({
-                    checkEnvironment: () => true,
-                    apples: true,
-                    config,
-                    dir: '/var/www/ghost'
-                }),
-                addInstance: aIstub,
-                hook: () => Promise.resolve()
-            };
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: listr,
-                confirm: () => Promise.resolve(false)
-            };
-            const argv = {
-                prompt: true,
-                'setup-linux-user': false,
-                migrate: false,
-                pname: 'example.com'
-            };
-
-            const setup = new SetupCommand(ui, system);
-            return setup.run(argv).then(() => {
-                expect(listr.calledOnce).to.be.true;
-                const tasks = listr.args[0][0];
-                expect(tasks[0].title).to.equal('Setting up instance');
-                tasks.forEach(function (task) {
-                    expect(task.title).to.not.match(/database migrations/);
-                });
-
-                const ctx = {};
-                tasks[0].task(ctx);
-
-                expect(ctx.instance).to.be.ok;
-                expect(ctx.instance.apples).to.be.true;
-                expect(ctx.instance.name).to.equal('example-com');
-                expect(aIstub.calledOnce).to.be.true;
-                expect(aIstub.args[0][0]).to.deep.equal(ctx.instance);
-                expect(config.has.calledOnce).to.be.true;
-                expect(config.set.called).to.be.false;
-                expect(config.save.called).to.be.false;
-            });
-        });
-
-        describe('task dependency checks', function () {
-            let stubs, ui, system;
-
-            beforeEach(function () {
-                stubs = {
-                    test: sinon.stub(),
-                    zest: sinon.stub(),
-                    listr: sinon.stub().resolves(),
-                    skipped: sinon.stub(),
-                    skip: sinon.stub(),
-                    log: sinon.stub()
-                };
-                ui = {
-                    run: () => Promise.resolve(),
-                    listr: stubs.listr,
-                    log: stubs.log
-                };
-                system = {
-                    hook: () => Promise.resolve(),
-                    getInstance: sinon.stub()
-                };
-            });
-
-            it('everything is fine', function () {
-                stubs.skipped.returns(false);
-                const setup = new SetupCommand(ui, system);
-                setup.runCommand = () => Promise.resolve();
-
-                setup.addStage('test', stubs.test, [], 'Test');
-                setup.addStage('zest', stubs.zest, ['test'], 'Zesty');
-
-                return setup.run({prompt: false}).then(() => {
-                    expect(stubs.listr.calledOnce).to.be.true;
-
-                    const tasks = stubs.listr.args[0][0];
-
-                    expect(tasks[2].title).to.match(/Test/);
-                    expect(tasks[3].title).to.match(/Zesty/);
-                    tasks[2].task({}, {_task: {isSkipped: stubs.skipped}});
-                    expect(stubs.test.calledOnce).to.be.true;
-
-                    tasks[3].task({}, {});
-                    expect(stubs.skipped.calledOnce).to.be.true;
-                    expect(stubs.zest.calledOnce).to.be.true;
-                });
-            });
-
-            it('unknown dependency', function () {
-                const expectLog = new RegExp(/(?=.*test)(?=.*stage, which was)/);
-                const setup = new SetupCommand(ui, system);
-                setup.runCommand = () => Promise.resolve();
-                setup.addStage('zest', stubs.zest, ['test'], 'Zesty');
-
-                return setup.run({prompt: false}).then(() => {
-                    expect(stubs.listr.calledOnce).to.be.true;
-                    const tasks = stubs.listr.args[0][0];
-
-                    expect(tasks[2].title).to.match(/Zesty/);
-                    tasks[2].task({}, {skip: stubs.skip});
-
-                    expect(stubs.zest.calledOnce).to.be.false;
-                    expect(stubs.skip.calledOnce).to.be.true;
-                    expect(stubs.log.calledOnce).to.be.true;
-                    expect(stubs.log.args[0][0]).to.match(expectLog);
-                });
-            });
-
-            it('dependency was skipped', function () {
-                stubs.skipped.returns(true);
-                const expectLog = new RegExp(/(?=.*test)(?=.*stage, which was)/);
-                const setup = new SetupCommand(ui, system);
-                setup.runCommand = () => Promise.resolve();
-
-                setup.addStage('test', stubs.test, [], 'Test');
-                setup.addStage('zest', stubs.zest, ['test'], 'Zesty');
-
-                return setup.run({prompt: false}).then(() => {
-                    expect(stubs.listr.calledOnce).to.be.true;
-                    const tasks = stubs.listr.args[0][0];
-
-                    expect(tasks[2].title).to.match(/Test/);
-                    expect(tasks[3].title).to.match(/Zesty/);
-
-                    tasks[2].task({}, {_task: {isSkipped: stubs.skipped}});
-                    expect(stubs.test.calledOnce).to.be.true;
-                    tasks[3].task({}, {skip: stubs.skip});
-                    expect(stubs.skipped.calledOnce).to.be.true;
-
-                    expect(stubs.zest.calledOnce).to.be.false;
-                    expect(stubs.skip.calledOnce).to.be.true;
-                    expect(stubs.log.calledOnce).to.be.true;
-                    expect(stubs.log.args[0][0]).to.match(expectLog);
-                });
-            });
-
-            it('multiple dependencies did not run', function () {
-                const expectLog = new RegExp(/(?=.*'test', 'rest')(?=.*stages, which were)/);
-                const setup = new SetupCommand(ui, system);
-                setup.runCommand = () => Promise.resolve();
-                setup.addStage('zest', stubs.zest, ['test', 'rest'], 'Zesty');
-
-                return setup.run({prompt: false}).then(() => {
-                    expect(stubs.listr.calledOnce).to.be.true;
-                    const tasks = stubs.listr.args[0][0];
-
-                    expect(tasks[2].title).to.match(/Zesty/);
-                    tasks[2].task({}, {skip: stubs.skip});
-                    expect(stubs.zest.calledOnce).to.be.false;
-
-                    expect(stubs.skip.calledOnce).to.be.true;
-                    expect(stubs.log.calledOnce).to.be.true;
-                    expect(stubs.log.args[0][0]).to.match(expectLog);
-                });
-            });
-        });
-
-        it('honors stage skipping via arguments', function () {
-            const SetupCommand = proxyquire(modulePath, {
-                os: {platform: () => 'linux'},
-                '../tasks/configure': () => Promise.resolve()
-            });
-            const ui = {
-                run: a => a(),
-                listr: sinon.stub().resolves()
-            };
-            const skipStub = sinon.stub();
-            const config = configStub();
-            const system = {
-                hook: () => Promise.resolve(),
-                getInstance: sinon.stub().returns({config})
-            };
-            const setup = new SetupCommand(ui, system);
-            setup.runCommand = () => Promise.resolve();
-            setup.addStage('zest', () => true, null, 'Zesty');
-
-            return setup.run({prompt: false, 'setup-zest': false}).then(() => {
+            return setup.run({local: false, stages: ['test1', 'test2']}).then(() => {
+                expect(system.getInstance.calledOnce).to.be.true;
+                expect(checkEnvironment.calledOnce).to.be.true;
+                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+                expect(taskStub.calledOnce).to.be.true;
+                expect(taskStub.args[0]).to.deep.equal([
+                    [{step1: true}, {step2: true}]
+                ]);
                 expect(ui.listr.calledOnce).to.be.true;
-                const tasks = ui.listr.args[0][0];
-
-                expect(tasks[2].title).to.match(/Zesty/);
-                tasks[2].task({}, {skip: skipStub});
-                expect(skipStub.calledOnce).to.be.true;
+                expect(ui.listr.args[0]).to.deep.equal([
+                    tasks,
+                    false,
+                    {exitOnError: false}
+                ]);
+                expect(run.calledOnce).to.be.true;
+                const [[runArgs]] = run.args;
+                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+                expect(runArgs.ui).to.equal(ui);
+                expect(runArgs.system).to.equal(system);
+                expect(runArgs.instance).to.equal(instance);
+                expect(runArgs.tasks).to.deep.equal({
+                    test: tasks[0],
+                    test2: tasks[1]
+                });
+                expect(runArgs.listr).to.equal(listr);
+                expect(runArgs.argv).to.deep.equal({local: false, stages: ['test1', 'test2']});
+                expect(runArgs.single).to.be.true;
+                expect(ui.confirm.called).to.be.false;
+                expect(runCommand.called).to.be.false;
             });
         });
 
-        it('normally prompts to run a stage', function () {
-            const configureStub = sinon.stub().resolves();
-            const SetupCommand = proxyquire(modulePath, {
-                os: {platform: () => 'linux'},
-                '../tasks/configure': configureStub
-            });
-            function confirm(a) {
-                return Promise.resolve(a.indexOf('Z') < 0);
-            }
-            const ui = {
-                run: a => a(),
-                log: () => true,
-                listr: sinon.stub().resolves(),
-                confirm: sinon.stub().callsFake(confirm)
-            };
-            const skipStub = sinon.stub();
-            const config = configStub();
-            const system = {
-                hook: () => Promise.resolve(),
-                getInstance: sinon.stub().returns({config})
-            };
+        it('doesn\'t prompt and doesn\'t start when argv.start is false', function () {
+            const ui = sinon.createStubInstance(UI);
+            const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
-            let tasks;
+            const runCommand = sinon.stub(setup, 'runCommand').resolves();
+            const taskStub = sinon.stub(setup, 'tasks').returns([]);
+            const run = sinon.stub().resolves([]);
+            const checkEnvironment = sinon.stub();
+            const instance = {checkEnvironment};
 
-            setup.addStage('zest', () => true, null, 'Zesty');
-            setup.addStage('test', () => true, null, 'Test');
+            system.getInstance.returns(instance);
+            system.hook.resolves([]);
+            ui.listr.returns({run, tasks: []});
+            ui.confirm.resolves(true);
 
-            return setup.run({prompt: true, start: false}).then(() => {
+            return setup.run({start: false}).then(() => {
+                expect(system.getInstance.calledOnce).to.be.true;
+                expect(checkEnvironment.calledOnce).to.be.false;
+                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+                expect(taskStub.calledOnce).to.be.true;
                 expect(ui.listr.calledOnce).to.be.true;
-                tasks = ui.listr.args[0][0];
+                expect(run.calledOnce).to.be.true;
+                const [[runArgs]] = run.args;
+                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+                expect(runArgs.single).to.be.false;
+                expect(ui.confirm.called).to.be.false;
+                expect(runCommand.called).to.be.false;
+            });
+        });
 
-                expect(tasks[2].title).to.match(/Zesty/);
-                expect(tasks[3].title).to.match(/Test/);
+        it('doesn\'t prompt and starts when argv.start is true', function () {
+            const ui = sinon.createStubInstance(UI);
+            const system = sinon.createStubInstance(System);
+            const setup = new SetupCommand(ui, system);
+            const runCommand = sinon.stub(setup, 'runCommand').resolves();
+            const taskStub = sinon.stub(setup, 'tasks').returns(['some', 'tasks']);
+            const run = sinon.stub().resolves([]);
+            const checkEnvironment = sinon.stub();
+            const instance = {checkEnvironment};
 
-                return tasks[2].task({}, {skip: skipStub});
-            }).then(() => tasks[3].task({}, {})).then(() => {
-                expect(skipStub.calledOnce).to.be.true;
-                expect(ui.confirm.calledTwice).to.be.true;
-                expect(ui.confirm.args[0][0]).to.match(/Zesty/);
-                expect(ui.confirm.args[1][0]).to.match(/Test/);
-                expect(configureStub.calledOnce).to.be.true;
+            system.getInstance.returns(instance);
+            system.hook.resolves([]);
+            ui.listr.returns({run, tasks: []});
+            ui.confirm.resolves(true);
+
+            return setup.run({start: true}).then(() => {
+                expect(system.getInstance.calledOnce).to.be.true;
+                expect(checkEnvironment.calledOnce).to.be.false;
+                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+                expect(taskStub.calledOnce).to.be.true;
+                expect(ui.listr.calledOnce).to.be.true;
+                expect(run.calledOnce).to.be.true;
+                const [[runArgs]] = run.args;
+                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+                expect(runArgs.single).to.be.false;
+                expect(ui.confirm.called).to.be.false;
+                expect(runCommand.called).to.be.true;
+            });
+        });
+
+        it('prompts and follows start prompt', function () {
+            const ui = sinon.createStubInstance(UI);
+            const system = sinon.createStubInstance(System);
+            const setup = new SetupCommand(ui, system);
+            const runCommand = sinon.stub(setup, 'runCommand').resolves();
+            const taskStub = sinon.stub(setup, 'tasks').returns(['some', 'tasks']);
+            const run = sinon.stub().resolves([]);
+            const checkEnvironment = sinon.stub();
+            const instance = {checkEnvironment};
+
+            system.getInstance.returns(instance);
+            system.hook.resolves([]);
+            ui.listr.returns({run, tasks: []});
+            ui.confirm.resolves(false);
+
+            return setup.run({}).then(() => {
+                expect(system.getInstance.calledOnce).to.be.true;
+                expect(checkEnvironment.calledOnce).to.be.false;
+                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+                expect(taskStub.calledOnce).to.be.true;
+                expect(ui.listr.calledOnce).to.be.true;
+                expect(run.calledOnce).to.be.true;
+                const [[runArgs]] = run.args;
+                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+                expect(runArgs.single).to.be.false;
+                expect(ui.confirm.calledOnce).to.be.true;
+                expect(runCommand.called).to.be.false;
             });
         });
     });

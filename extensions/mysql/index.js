@@ -3,30 +3,28 @@
 const Promise = require('bluebird');
 const mysql = require('mysql');
 const omit = require('lodash/omit');
-const cli = require('../../lib');
 const generator = require('generate-password');
+const {Extension, errors} = require('../../lib');
 
 const localhostAliases = ['localhost', '127.0.0.1'];
+const {ConfigError, CliError} = errors;
 
-class MySQLExtension extends cli.Extension {
-    setup(cmd, argv) {
-        // Case 1: ghost install local OR ghost setup --local
-        // Case 2: ghost install --db sqlite3
-        // Skip in both cases
-        if (argv.local || argv.db === 'sqlite3') {
-            return;
-        }
-
-        cmd.addStage('mysql', this.setupMySQL.bind(this), [], '"ghost" mysql user');
+class MySQLExtension extends Extension {
+    setup() {
+        return [{
+            id: 'mysql',
+            name: '"ghost" mysql user',
+            task: (...args) => this.setupMySQL(...args),
+            // Case 1: ghost install local OR ghost setup --local
+            // Case 2: ghost install --db sqlite3
+            // Skip in both cases
+            enabled: ({argv}) => !(argv.local || argv.db === 'sqlite3'),
+            skip: ({instance}) => instance.config.get('database.connection.user') !== 'root'
+        }];
     }
 
-    setupMySQL(argv, ctx, task) {
+    setupMySQL(ctx) {
         const dbconfig = ctx.instance.config.get('database.connection');
-
-        if (dbconfig.user !== 'root') {
-            this.ui.log('MySQL user is not "root", skipping additional user setup', 'yellow');
-            return task.skip();
-        }
 
         return this.ui.listr([{
             title: 'Connecting to database',
@@ -53,7 +51,7 @@ class MySQLExtension extends cli.Extension {
 
         return Promise.fromCallback(cb => this.connection.connect(cb)).catch((error) => {
             if (error.code === 'ECONNREFUSED') {
-                return Promise.reject(new cli.errors.ConfigError({
+                return Promise.reject(new ConfigError({
                     message: error.message,
                     config: {
                         'database.connection.host': dbconfig.host,
@@ -63,7 +61,7 @@ class MySQLExtension extends cli.Extension {
                     help: 'Ensure that MySQL is installed and reachable. You can always re-run `ghost setup` to try again.'
                 }));
             } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-                return Promise.reject(new cli.errors.ConfigError({
+                return Promise.reject(new ConfigError({
                     message: error.message,
                     config: {
                         'database.connection.user': dbconfig.user,
@@ -74,7 +72,7 @@ class MySQLExtension extends cli.Extension {
                 }));
             }
 
-            return Promise.reject(new cli.errors.CliError({
+            return Promise.reject(new CliError({
                 message: 'Error trying to connect to the MySQL database.',
                 help: 'You can run `ghost config` to re-enter the correct credentials. Alternatively you can run `ghost setup` again.',
                 err: error
@@ -168,11 +166,11 @@ class MySQLExtension extends cli.Extension {
         this.ui.logVerbose(`MySQL: running query > ${queryString}`, 'gray');
         return Promise.fromCallback(cb => this.connection.query(queryString, cb))
             .catch((error) => {
-                if (error instanceof (cli.errors.CliError)) {
+                if (error instanceof CliError) {
                     return Promise.reject(error);
                 }
 
-                return Promise.reject(new cli.errors.CliError({
+                return Promise.reject(new CliError({
                     message: error.message,
                     context: queryString,
                     err: error

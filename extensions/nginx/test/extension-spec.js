@@ -5,11 +5,17 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../index';
 const Promise = require('bluebird');
-const errors = require('../../../lib/errors');
+const {errors, Extension} = require('../../../lib');
+const configStub = require('../../../test/utils/config-stub');
 
-const NGINX = require(modulePath);
+// Proxied things
+const fs = require('fs-extra');
+const execa = require('execa');
+const migrations = require('../migrations');
+
+const Nginx = require(modulePath);
 const testURL = 'http://ghost.dev';
-const nginxBase = '/etc/nginx/sites-';
+// const nginxBase = '/etc/nginx/sites-';
 const dir = '/var/www/ghost';
 
 function addStubs(instance) {
@@ -40,142 +46,173 @@ function _get(key) {
 }
 
 describe('Unit: Extensions > Nginx', function () {
-    it('inherits from extension', function () {
-        const ext = require('../../../lib/extension.js');
-
-        expect(NGINX.prototype instanceof ext).to.be.true;
+    afterEach(() => {
+        sinon.restore();
     });
 
-    describe('migrations hook', function () {
-        // Describe is used here for future-proofing
-        describe('[before 1.2.0]', function () {
-            it('Skips if not linux', function () {
-                const osStub = sinon.stub().returns('win32');
-                const ext = proxyNginx({os: {platform: osStub}});
-                const migrations = ext.migrations();
+    it('inherits from extension', function () {
+        expect(Nginx.prototype instanceof Extension).to.be.true;
+    });
 
-                expect(migrations[0].before).to.equal('1.2.0');
-                expect(migrations[0].skip()).to.be.true;
-            });
+    it('migrations hook', function () {
+        const inst = new Nginx({}, {}, {}, '/some/dir');
+        const migrateStub = sinon.stub(migrations, 'migrateSSL');
+        const result = inst.migrations();
 
-            it('Skips if acme.sh doesn\'t exist', function () {
-                const ext = proxyNginx({
-                    'fs-extra': {existsSync: sinon.stub().returns(false)},
-                    os: {
-                        platform: () => 'linux',
-                        homedir: () => '/home/me'
-                    }
-                });
-                const migrations = ext.migrations();
+        expect(result).to.have.length(1);
+        const [task] = result;
 
-                expect(migrations[0].before).to.equal('1.2.0');
-                expect(migrations[0].skip()).to.be.true;
-            });
+        expect(task.before).to.equal('1.2.0');
+        expect(task.title).to.equal('Migrating SSL certs');
 
-            it('Doesn\'t skip if acme.sh exists', function () {
-                const ext = proxyNginx({
-                    'fs-extra': {existsSync: sinon.stub().returns(true)},
-                    os: {
-                        platform: () => 'linux',
-                        homedir: () => '/home/me'
-                    }
-                });
-                const migrations = ext.migrations();
+        task.task();
+        expect(migrateStub.calledOnce).to.be.true;
 
-                expect(migrations[0].before).to.equal('1.2.0');
-                expect(migrations[0].skip()).to.be.false;
-            });
-        });
+        inst.system.platform = {linux: false};
+        const exists = sinon.stub(fs, 'existsSync').returns(false);
+        expect(task.skip()).to.be.true;
+        expect(exists.called).to.be.false;
+
+        inst.system.platform = {linux: true};
+        expect(task.skip()).to.be.true;
+        expect(exists.calledOnce).to.be.true;
+
+        inst.system.platform = {linux: true};
+        exists.returns(true);
+        expect(task.skip()).to.be.false;
+        expect(exists.calledTwice).to.be.true;
     });
 
     describe('setup hook', function () {
-        let ext;
+        function tasks(i) {
+            const inst = new Nginx({}, {}, {}, '/some/dir');
+            const result = inst.setup();
+            expect(result).to.have.length(2);
+            return {inst, task: result[i]};
+        }
 
-        before(function () {
-            ext = new NGINX();
+        it('nginx', function () {
+            const {task, inst} = tasks(0);
+            const nginxStub = sinon.stub(inst, 'setupNginx');
+
+            // Check nginx
+            expect(task.id).to.equal('nginx');
+            expect(task.name).to.equal('Nginx');
+            expect(task.enabled({argv: {local: false}})).to.be.true;
+            expect(task.enabled({argv: {local: true}})).to.be.false;
+
+            task.task('some', 'args');
+            expect(nginxStub.calledOnce).to.be.true;
+            expect(nginxStub.calledWithExactly('some', 'args')).to.be.true;
+
+            const supportedStub = sinon.stub(inst, 'isSupported').returns(false);
+            const exists = sinon.stub(fs, 'existsSync').returns(true);
+            const config = configStub();
+            const ctx = {instance: {config}};
+
+            function reset() {
+                exists.resetHistory();
+                config.get.reset();
+            }
+
+            expect(task.skip(ctx)).to.contain('Nginx is not installed.');
+            expect(config.get.called).to.be.false;
+            expect(supportedStub.calledOnce).to.be.true;
+            expect(exists.called).to.be.false;
+
+            reset();
+            supportedStub.returns(true);
+            config.get.returns('http://localhost:2368');
+            expect(task.skip(ctx)).to.contain('Your url contains a port.');
+            expect(config.get.called).to.be.true;
+            expect(exists.called).to.be.false;
+
+            reset();
+            config.get.returns('https://ghost.dev');
+            expect(task.skip(ctx)).to.contain('Nginx configuration already found for this url.');
+            expect(config.get.called).to.be.true;
+            expect(exists.calledOnce).to.be.true;
+
+            reset();
+            config.get.returns('https://ghost.dev');
+            exists.returns(false);
+            expect(task.skip(ctx)).to.be.false;
+            expect(config.get.called).to.be.true;
+            expect(exists.calledOnce).to.be.true;
         });
 
-        it('Doesn\'t run on local installs', function () {
-            const asStub = sinon.stub();
-            const cmd = {addStage: asStub};
-            ext.setup(cmd, {local: true});
+        it('ssl', function () {
+            const ip = sinon.stub();
+            const {task, inst} = tasks(1);
+            const stub = sinon.stub(inst, 'setupSSL');
 
-            expect(asStub.called).to.be.false;
-        });
+            // Check SSL
+            expect(task.id).to.equal('ssl');
+            expect(task.name).to.equal('SSL');
+            expect(task.enabled({argv: {local: false}})).to.be.true;
+            expect(task.enabled({argv: {local: true}})).to.be.false;
 
-        it('Adds nginx and ssl substages', function () {
-            const asStub = sinon.stub();
-            const cmd = {addStage: asStub};
-            ext.setup(cmd, {});
+            task.task('some', 'args');
+            expect(stub.calledOnce).to.be.true;
+            expect(stub.calledWithExactly('some', 'args')).to.be.true;
 
-            expect(asStub.calledTwice).to.be.true;
-            expect(asStub.args[0][0]).to.equal('nginx');
-            expect(asStub.args[1][0]).to.equal('ssl');
-            expect(asStub.args[1][2]).to.equal('nginx');
+            const isSkipped = sinon.stub().returns(false);
+            const hasFailed = sinon.stub().returns(false);
+            const exists = sinon.stub(fs, 'existsSync');
+            const config = configStub();
+
+            const nginx = {isSkipped, hasFailed};
+            const context = {tasks: {nginx}, instance: {config}};
+
+            isSkipped.returns(true);
+            expect(task.skip(context)).to.contain('Nginx setup task was skipped');
+
+            isSkipped.returns(false);
+            hasFailed.returns(true);
+            expect(task.skip(context)).to.contain('Nginx setup task failed');
+
+            hasFailed.returns(false);
+            ip.returns(true);
+            config.get.returns('http://127.0.0.1');
+            expect(task.skip(context)).to.contain('SSL certs cannot be generated for IP addresses');
+            expect(exists.called).to.be.false;
+
+            ip.returns(false);
+            exists.returns(true);
+            config.get.returns('http://ghost.dev');
+            expect(task.skip(context)).to.contain('SSL has already been set up');
+            expect(exists.calledOnce).to.be.true;
+
+            exists.reset();
+            exists.returns(false);
+            expect(task.skip(Object.assign({argv: {prompt: false}}, context))).to.contain('SSL email must be provided');
+            expect(exists.calledOnce).to.be.true;
+
+            const argv = {prompt: true, sslemail: 'test@ghost.org'};
+
+            exists.resetHistory();
+            expect(task.skip(Object.assign({argv, single: true}, context))).to.contain('Nginx config file does not exist');
+            expect(exists.calledTwice).to.be.true;
+
+            exists.resetHistory();
+            expect(task.skip(Object.assign({argv, single: false}, context))).to.be.true;
+            expect(exists.calledTwice).to.be.true;
+
+            exists.reset();
+            exists.onFirstCall().returns(false);
+            exists.onSecondCall().returns(true);
+            expect(task.skip(Object.assign({argv}, context))).to.be.false;
+            expect(exists.calledTwice).to.be.true;
         });
     });
 
     describe('setupNginx', function () {
-        let ext;
-        let ctx;
-        const task = {skip: sinon.stub()};
-
-        beforeEach(function () {
-            ext = new NGINX();
-            ext = addStubs(ext);
-            ctx = {
-                instance: {
-                    config: {get: sinon.stub().callsFake(_get)}
-                }
-            };
-        });
-
-        afterEach(function () {
-            task.skip.reset();
-        });
-
-        it('Checks if nginx is installed & breaks if not', function () {
-            ext.isSupported = sinon.stub().returns(false);
-            ext.setupNginx(null, null, task);
-
-            expect(ext.isSupported.calledOnce).to.be.true;
-            expect(ext.ui.log.calledOnce).to.be.true;
-            expect(ext.ui.log.args[0][0]).to.match(/not installed/);
-            expect(task.skip.calledOnce).to.be.true;
-        });
-
-        it('Notifies if URL contains a port & breaks', function () {
-            const get = sinon.stub().returns(`${testURL}:3000`);
-            const log = ext.ui.log;
-            ctx.instance.config.get = get;
-            ext.setupNginx(null, ctx, task);
-
-            expect(get.calledOnce).to.be.true;
-            expect(log.calledOnce).to.be.true;
-            expect(log.args[0][0]).to.match(/contains a port/);
-            expect(task.skip.calledOnce).to.be.true;
-        });
-
-        // This is 2 tests in one, because checking the proper file name via a test requires
-        //  very similar logic to nginx not running setup if the config file already exists
-        it('Generates correct filename & breaks if already configured', function () {
-            const expectedFile = `${nginxBase}available/ghost.dev.conf`;
-            const existsStub = sinon.stub().returns(true);
-            const ext = proxyNginx({'fs-extra': {existsSync: existsStub}});
-            ext.setupNginx(null, ctx, task);
-            const log = ext.ui.log;
-
-            expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.args[0][0]).to.equal(expectedFile);
-            expect(log.calledOnce).to.be.true;
-            expect(log.args[0][0]).to.match(/configuration already found/);
-            expect(task.skip.calledOnce).to.be.true;
-        });
+        const config = configStub();
+        config.get.callsFake(_get);
 
         it('Generates the proper config', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
-            ctx.instance.dir = dir;
             const expectedConfig = {
                 url: 'ghost.dev',
                 webroot: `${dir}/system/nginx-root`,
@@ -195,7 +232,7 @@ describe('Unit: Extensions > Nginx', function () {
             const sudo = sinon.stub().resolves();
             ext.ui.sudo = sudo;
 
-            return ext.setupNginx(null, ctx, task).then(() => {
+            return ext.setupNginx({instance: {config, dir}}).then(() => {
                 expect(templateStub.calledOnce).to.be.true;
                 expect(loadStub.calledOnce).to.be.true;
                 expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
@@ -206,16 +243,10 @@ describe('Unit: Extensions > Nginx', function () {
                 // Testing handling of subdirectory installations
 
                 loadStub.reset();
-                ctx.instance.config.get = (key) => {
-                    if (key === 'url') {
-                        return `${testURL}/a/b/c`;
-                    } else {
-                        return _get(key);
-                    }
-                };
+                config.get.withArgs('url').returns(`${testURL}/a/b/c`);
                 expectedConfig.location = '^~ /a/b/c';
 
-                return ext.setupNginx(null, ctx, task).then(() => {
+                return ext.setupNginx({instance: {config, dir}}).then(() => {
                     expect(loadStub.calledOnce).to.be.true;
                     expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
                 });
@@ -225,7 +256,6 @@ describe('Unit: Extensions > Nginx', function () {
         it('passes the error if it\'s already a CliError', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
-            ctx.instance.dir = dir;
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
@@ -240,7 +270,7 @@ describe('Unit: Extensions > Nginx', function () {
             ext.ui.sudo = sudo;
             ext.restartNginx = sinon.stub().rejects(new errors.CliError('Did not restart'));
 
-            return ext.setupNginx(null, ctx, task).then(() => {
+            return ext.setupNginx({instance: {config, dir}}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;
@@ -257,7 +287,6 @@ describe('Unit: Extensions > Nginx', function () {
         it('returns a ProcessError when symlink command fails', function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
-            ctx.instance.dir = dir;
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
@@ -271,7 +300,7 @@ describe('Unit: Extensions > Nginx', function () {
             ext.template = sinon.stub().resolves();
             ext.ui.sudo = sudo;
 
-            return ext.setupNginx(null, ctx, task).then(() => {
+            return ext.setupNginx({instance: {config, dir}}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;
@@ -287,87 +316,13 @@ describe('Unit: Extensions > Nginx', function () {
 
     describe('setupSSL', function () {
         let stubs;
-        let task;
-        let ctx;
-        let ext;
-
-        beforeEach(function () {
-            stubs = {
-                es: sinon.stub().returns(false),
-                skip: sinon.stub()
-            };
-            task = {skip: stubs.skip};
-            ctx = {instance: {config: {get: _get}}};
-            ext = proxyNginx({'fs-extra': {existsSync: stubs.es}});
-        });
-
-        it('skips if the url is an IP address', function () {
-            ctx = {instance: {config: {get: () => 'http://10.0.0.1'}}};
-            ext.setupSSL({}, ctx, task);
-
-            expect(stubs.es.calledOnce).to.be.false;
-            expect(ext.ui.log.calledOnce).to.be.true;
-            expect(ext.ui.log.args[0][0]).to.match(/SSL certs cannot be generated for IP addresses/);
-            expect(stubs.skip.calledOnce).to.be.true;
-        });
-
-        it('Breaks if ssl config already exists', function () {
-            const sslFile = '/etc/nginx/sites-available/ghost.dev-ssl.conf';
-            const existsStub = sinon.stub().returns(true);
-            ext = proxyNginx({'fs-extra': {existsSync: existsStub}});
-            ext.setupSSL(null, ctx, task);
-            const log = ext.ui.log;
-
-            expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.args[0][0]).to.equal(sslFile);
-            expect(log.calledOnce).to.be.true;
-            expect(log.args[0][0]).to.match(/SSL has /);
-            expect(stubs.skip.calledOnce).to.be.true;
-        });
-
-        it('Errors when email cannot be retrieved', function () {
-            ext.setupSSL({}, ctx, task);
-
-            expect(stubs.es.calledOnce).to.be.true;
-            expect(ext.ui.log.calledOnce).to.be.true;
-            expect(ext.ui.log.args[0][0]).to.match(/SSL email must be provided/);
-            expect(stubs.skip.calledOnce).to.be.true;
-        });
-
-        it('Breaks if http config doesn\'t exist (single & multiple)', function () {
-            ext.setupSSL({prompt: true}, ctx, task);
-
-            expect(stubs.es.calledTwice).to.be.true;
-            expect(ext.ui.log.called).to.be.false;
-            expect(stubs.skip.calledOnce).to.be.true;
-
-            // Test w/ singular context
-            stubs.es.reset();
-            stubs.skip.reset();
-            ext.ui.log.reset();
-            ctx.single = true;
-            ext.setupSSL({prompt: true}, ctx, task);
-
-            expect(stubs.es.calledTwice, '1').to.be.true;
-            expect(ext.ui.log.calledOnce, '2').to.be.true;
-            expect(ext.ui.log.args[0][0]).to.match(/Nginx config file/);
-            expect(stubs.skip.calledOnce, '4').to.be.true;
-        });
-    });
-
-    describe('setupSSL > Subtasks', function () {
-        let stubs;
-        let task;
         let ctx;
         let proxy;
         const fsExp = new RegExp(/-ssl/);
 
-        function getTasks(ext, args) {
-            args = args || {};
-            args.prompt = true;
-            ext.setupSSL(args, ctx, task);
+        function getTasks(ext, argv = {}) {
+            ext.setupSSL(Object.assign({argv}, ctx));
 
-            expect(task.skip.called, 'getTasks: task.skip').to.be.false;
             expect(ext.ui.log.called, 'getTasks: ui.log').to.be.false;
             expect(ext.ui.listr.calledOnce, 'getTasks: ui.listr').to.be.true;
             return ext.ui.listr.args[0][0];
@@ -375,10 +330,8 @@ describe('Unit: Extensions > Nginx', function () {
 
         beforeEach(function () {
             stubs = {
-                es: sinon.stub().callsFake(value => !(fsExp).test(value)),
-                skip: sinon.stub()
+                es: sinon.stub().callsFake(value => !(fsExp).test(value))
             };
-            task = {skip: stubs.skip};
             ctx = {
                 instance: {
                     config: {get: _get},
@@ -412,14 +365,13 @@ describe('Unit: Extensions > Nginx', function () {
                 const log = ext.ui.log;
                 let firstSet = false;
 
-                return tasks[0].task(ctx).then(() => {
-                    expect(log.called).to.be.true;
-                    expect(log.args[0][0]).to.match(/domain isn't set up correctly/);
-                    expect(ctx.dnsfail).to.be.true;
+                return tasks[0].task().then(() => {
+                    expect(true, 'task should have errored').to.be.false;
+                }).catch((error) => {
+                    expect(error).to.be.an.instanceof(errors.CliError);
+                    expect(error.message).to.contain('your domain isn\'t set up correctly');
 
                     DNS.code = 'PEACHESARETASTY';
-                    log.reset();
-                    ctx = {};
                     firstSet = true;
                     return tasks[0].task(ctx);
                 }).then(() => {
@@ -432,27 +384,6 @@ describe('Unit: Extensions > Nginx', function () {
                     expect(log.called).to.be.false;
                     expect(ctx.dnsfail).to.not.exist;
                 });
-            });
-
-            it('Everything skips when DNS fails', function () {
-                stubs.es.callsFake(val => (val.indexOf('-ssl') < 0 || val.indexOf('acme') >= 0));
-
-                const ctx = {dnsfail: true};
-                const ext = proxyNginx(proxy);
-                const tasks = getTasks(ext);
-
-                expect(tasks[1].skip(ctx)).to.be.true;
-                expect(tasks[2].skip(ctx)).to.be.true;
-                expect(tasks[2].skip(ctx)).to.be.true;
-                expect(tasks[3].skip(ctx)).to.be.true;
-                expect(tasks[4].skip(ctx)).to.be.true;
-                expect(tasks[5].skip(ctx)).to.be.true;
-                expect(tasks[6].skip(ctx)).to.be.true;
-                expect(tasks[7].skip(ctx)).to.be.true;
-                ctx.dnsfail = false;
-                // These are FS related validators
-                expect(tasks[4].skip(ctx)).to.be.true;
-                expect(tasks[5].skip(ctx)).to.be.true;
             });
         });
 
@@ -527,8 +458,11 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Uses OpenSSL (and skips if already exists)', function () {
+                proxy['fs-extra'].existsSync = () => true;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
+
+                expect(tasks[4].skip()).to.be.true;
 
                 return tasks[4].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
@@ -537,10 +471,12 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Rejects when command fails', function () {
+                proxy['fs-extra'].existsSync = () => false;
                 const ext = proxyNginx(proxy);
                 ext.ui.sudo.rejects(new Error('Go ask George'));
                 const tasks = getTasks(ext);
 
+                expect(tasks[4].skip()).to.be.false;
                 return tasks[4].task().then(() => {
                     expect(false, 'Promise should have rejected').to.be.true;
                 }).catch((err) => {
@@ -557,10 +493,12 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Writes & moves file to proper location', function () {
+                proxy['fs-extra'].existsSync = () => true;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 const expectedSudo = new RegExp(/(?=^mv)(?=.*snippets\/ssl-params\.conf)/);
 
+                expect(tasks[5].skip()).to.be.true;
                 return tasks[5].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
@@ -568,10 +506,12 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Throws an error when moving fails', function () {
+                proxy['fs-extra'].existsSync = () => false;
                 const ext = proxyNginx(proxy);
                 ext.ui.sudo.rejects(new Error('Potato'));
                 const tasks = getTasks(ext);
 
+                expect(tasks[5].skip()).to.be.false;
                 return tasks[5].task().then(() => {
                     expect(false, 'Promise should have been rejected').to.be.true;
                 }).catch((err) => {
@@ -663,125 +603,117 @@ describe('Unit: Extensions > Nginx', function () {
         const instance = {config: {get: () => 'http://ghost.dev'}};
         const testEs = val => (new RegExp(/-ssl/)).test(val);
 
+        function stub() {
+            const ui = {sudo: sinon.stub(), log: sinon.stub()};
+            const exists = sinon.stub(fs, 'existsSync');
+            const inst = new Nginx(ui, {}, {}, '/some/dir');
+            const restartNginx = sinon.stub(inst, 'restartNginx');
+
+            return {inst, exists, restartNginx, ui};
+        }
+
         it('returns if no url exists in config', function () {
             const config = {get: () => undefined};
-            const existsSync = sinon.stub().returns(false);
-            const ext = proxyNginx({'fs-extra': {existsSync}});
+            const {exists, inst, restartNginx} = stub();
 
-            return ext.uninstall({config}).then(() => {
-                expect(existsSync.called).to.be.false;
-                expect(ext.restartNginx.called).to.be.false;
+            return inst.uninstall({config}).then(() => {
+                expect(exists.called).to.be.false;
+                expect(restartNginx.called).to.be.false;
             });
         });
 
         it('Leaves nginx alone when no config file exists', function () {
-            const esStub = sinon.stub().returns(false);
-            const ext = proxyNginx({'fs-extra': {existsSync: esStub}});
+            const {exists, inst, restartNginx} = stub();
+            exists.returns(false);
 
-            return ext.uninstall(instance).then(() => {
-                expect(esStub.calledTwice).to.be.true;
-                expect(ext.restartNginx.called).to.be.false;
+            return inst.uninstall(instance).then(() => {
+                expect(exists.calledTwice).to.be.true;
+                expect(restartNginx.called).to.be.false;
             });
         });
 
         it('Removes http config', function () {
             const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev\.conf/);
-            const esStub = sinon.stub().callsFake(val => !testEs(val));
-            const ext = proxyNginx({'fs-extra': {existsSync: esStub}});
+            const {exists, inst, restartNginx, ui} = stub();
+            exists.callsFake(val => !testEs(val));
 
-            return ext.uninstall(instance).then(() => {
-                expect(ext.ui.sudo.calledTwice).to.be.true;
-                expect(ext.ui.sudo.args[0][0]).to.match(sudoExp);
-                expect(ext.ui.sudo.args[1][0]).to.match(sudoExp);
-                expect(ext.restartNginx.calledOnce).to.be.true;
+            return inst.uninstall(instance).then(() => {
+                expect(ui.sudo.calledTwice).to.be.true;
+                expect(ui.sudo.args[0][0]).to.match(sudoExp);
+                expect(ui.sudo.args[1][0]).to.match(sudoExp);
+                expect(restartNginx.calledOnce).to.be.true;
             });
         });
 
         it('Removes https config', function () {
             const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev-ssl\.conf/);
-            const esStub = sinon.stub().callsFake(testEs);
-            const ext = proxyNginx({'fs-extra': {existsSync: esStub}});
+            const {exists, inst, restartNginx, ui} = stub();
+            exists.callsFake(testEs);
 
-            return ext.uninstall(instance).then(() => {
-                expect(ext.ui.sudo.calledTwice).to.be.true;
-                expect(ext.ui.sudo.args[0][0]).to.match(sudoExp);
-                expect(ext.ui.sudo.args[1][0]).to.match(sudoExp);
-                expect(ext.restartNginx.calledOnce).to.be.true;
+            return inst.uninstall(instance).then(() => {
+                expect(ui.sudo.calledTwice).to.be.true;
+                expect(ui.sudo.args[0][0]).to.match(sudoExp);
+                expect(ui.sudo.args[1][0]).to.match(sudoExp);
+                expect(restartNginx.calledOnce).to.be.true;
             });
         });
 
         it('Handles symlink removal fails smoothly', function () {
-            const urlStub = sinon.stub().returns('http://ghost.dev');
-            const instance = {config: {get: urlStub}};
-            const esStub = sinon.stub().returns(true);
-            const NGINX = proxyquire(modulePath, {'fs-extra': {existsSync: esStub}});
-            const ext = new NGINX();
-            ext.ui = {sudo: sinon.stub().rejects(), log: sinon.stub()};
-            ext.restartNginx = sinon.stub();
+            const {exists, inst, restartNginx, ui} = stub();
+            exists.returns(true);
+            ui.sudo.rejects();
 
-            return ext.uninstall(instance).then(() => {
+            return inst.uninstall(instance).then(() => {
                 expect(false, 'A rejection should have happened').to.be.true;
             }).catch((error) => {
-                sinon.assert.callCount(ext.ui.sudo, 4);
+                expect(ui.sudo.callCount).to.equal(4);
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.match(/Nginx config file/);
-                expect(ext.restartNginx.calledOnce).to.be.false;
+                expect(restartNginx.calledOnce).to.be.false;
             });
         });
     });
 
     describe('restartNginx', function () {
-        let ext;
+        const sudo = sinon.stub();
+        const inst = new Nginx({sudo}, {}, {}, '/some/dir');
 
-        beforeEach(function () {
-            ext = new NGINX();
-            ext.ui = {sudo: sinon.stub().resolves()};
-        });
+        afterEach(() => sudo.reset());
 
         it('Soft reloads nginx', function () {
-            const sudo = ext.ui.sudo;
-            ext.restartNginx();
+            sudo.resolves();
 
-            expect(sudo.calledOnce).to.be.true;
-            expect(sudo.args[0][0]).to.match(/nginx -s reload/);
+            return inst.restartNginx().then(() => {
+                expect(sudo.calledOnce).to.be.true;
+                expect(sudo.calledWithExactly('nginx -s reload')).to.be.true;
+            });
         });
 
-        it('Throws an Error when nginx does', function () {
-            ext.ui.sudo.rejects('ssl error or something');
-            const sudo = ext.ui.sudo;
+        it('throws an error when nginx does', function () {
+            const err = new Error('ssl error');
+            sudo.rejects(err);
 
-            return ext.restartNginx().then(function () {
+            return inst.restartNginx().then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
-            }).catch(function (err) {
+            }).catch((error) => {
                 expect(sudo.calledOnce).to.be.true;
-                expect(sudo.args[0][0]).to.match(/nginx -s reload/);
-                expect(err).to.be.ok;
-                expect(err).to.be.instanceof(errors.CliError);
+                expect(sudo.calledWithExactly('nginx -s reload')).to.be.true;
+                expect(error).to.be.an.instanceof(errors.CliError);
+                expect(error.message).to.equal('Failed to restart Nginx.');
             });
         });
     });
 
-    describe('isSupported', function () {
-        it('Calls dpkg', function () {
-            const shellStub = sinon.stub().resolves();
-            const NGINX = proxyquire(modulePath,{execa: {shellSync: shellStub}});
-            const ext = new NGINX();
+    it('isSupported fn', function () {
+        const shell = sinon.stub(execa, 'shellSync');
+        const inst = new Nginx({}, {}, {}, '/some/dir');
 
-            ext.isSupported();
+        expect(inst.isSupported()).to.be.true;
+        expect(shell.calledOnce).to.be.true;
 
-            expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.args[0][0]).to.match(/dpkg -l \| grep nginx/);
-        });
-
-        it('Returns false when dpkg fails', function () {
-            const shellStub = sinon.stub().throws('uh oh');
-            const NGINX = proxyquire(modulePath,{execa: {shellSync: shellStub}});
-            const ext = new NGINX();
-
-            const isSupported = ext.isSupported();
-
-            expect(shellStub.calledOnce).to.be.true;
-            expect(isSupported).to.be.false;
-        });
+        shell.reset();
+        shell.throws(new Error());
+        expect(inst.isSupported()).to.be.false;
+        expect(shell.calledOnce).to.be.true;
     });
 });
