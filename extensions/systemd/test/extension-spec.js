@@ -3,53 +3,58 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const path = require('path');
 const proxyquire = require('proxyquire').noCallThru();
+const configStub = require('../../../test/utils/config-stub');
+
+const fs = require('fs-extra');
 
 const modulePath = '../index';
 const errors = require('../../../lib/errors');
+const SystemdExtension = require('../index');
 
 describe('Unit: Systemd > Extension', function () {
-    describe('setup hook', function () {
-        const SystemdExtension = require(modulePath);
+    afterEach(function () {
+        sinon.restore();
+    });
 
-        it('skips adding stage if argv.local is true', function () {
-            const configStub = sinon.stub().returns('systemd');
-            const instanceStub = sinon.stub().returns({config: {get: configStub}});
-            const addStageStub = sinon.stub();
+    it('setup hook', function () {
+        const inst = new SystemdExtension({}, {}, {}, '/some/dir');
+        const tasks = inst.setup();
 
-            const testInstance = new SystemdExtension({}, {getInstance: instanceStub}, {}, path.join(__dirname, '..'));
+        expect(tasks).to.have.length(1);
+        expect(tasks[0].id).to.equal('systemd');
+        expect(tasks[0].name).to.equal('Systemd');
 
-            testInstance.setup({addStage: addStageStub}, {local: true});
-            expect(instanceStub.calledOnce).to.be.true;
-            expect(addStageStub.calledOnce).to.be.false;
-            expect(configStub.calledOnce).to.be.false;
-        });
+        const [{enabled, task, skip}] = tasks;
+        const config = configStub();
+        const instance = {config, name: 'test_instance'};
 
-        it('skips adding stage if process is not systemd', function () {
-            const configStub = sinon.stub().returns('local');
-            const instanceStub = sinon.stub().returns({config: {get: configStub}});
-            const addStageStub = sinon.stub();
+        config.get.withArgs('process').returns('notsystemd');
+        expect(enabled({argv: {local: true}, instance})).to.be.false;
+        expect(config.get.called).to.be.false;
 
-            const testInstance = new SystemdExtension({}, {getInstance: instanceStub}, {}, path.join(__dirname, '..'));
+        expect(enabled({argv: {local: false}, instance})).to.be.false;
+        expect(config.get.calledOnce).to.be.true;
 
-            testInstance.setup({addStage: addStageStub}, {local: false});
-            expect(instanceStub.calledOnce).to.be.true;
-            expect(configStub.calledOnce).to.be.true;
-            expect(addStageStub.calledOnce).to.be.false;
-        });
+        config.get.withArgs('process').returns('systemd');
+        config.get.resetHistory();
+        expect(enabled({argv: {local: false}, instance})).to.be.true;
+        expect(config.get.calledOnce).to.be.true;
 
-        it('adds stage if local is not true and process is systemd', function () {
-            const configStub = sinon.stub().returns('systemd');
-            const instanceStub = sinon.stub().returns({config: {get: configStub}});
-            const addStageStub = sinon.stub();
+        const stub = sinon.stub(inst, '_setup').returns({stubCalled: true});
+        expect(task('some', 'args')).to.deep.equal({stubCalled: true});
+        expect(stub.calledOnceWithExactly('some', 'args')).to.be.true;
 
-            const testInstance = new SystemdExtension({}, {getInstance: instanceStub}, {}, path.join(__dirname, '..'));
+        const exists = sinon.stub(fs, 'existsSync');
+        exists.returns(true);
 
-            testInstance.setup({addStage: addStageStub}, {local: false});
-            expect(instanceStub.calledOnce).to.be.true;
-            expect(configStub.calledOnce).to.be.true;
-            expect(addStageStub.calledOnce).to.be.true;
-            expect(addStageStub.calledWith('systemd')).to.be.true;
-        });
+        expect(skip({instance})).to.contain('Systemd service has already been set up');
+        expect(exists.calledOnceWithExactly('/lib/systemd/system/ghost_test_instance.service')).to.be.true;
+
+        exists.returns(false);
+        exists.resetHistory();
+
+        expect(skip({instance})).to.be.false;
+        expect(exists.calledOnce).to.be.true;
     });
 
     describe('setup stage', function () {
@@ -60,50 +65,23 @@ describe('Unit: Systemd > Extension', function () {
                 './get-uid': uidStub
             });
 
-            const logStub = sinon.stub();
             const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new SystemdExtension({}, {}, {}, path.join(__dirname, '..'));
 
-            testInstance._setup({}, {instance: {dir: '/some/dir'}}, {skip: skipStub});
+            testInstance._setup({instance: {dir: '/some/dir'}}, {skip: skipStub});
             expect(uidStub.calledOnce).to.be.true;
             expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/"ghost" user has not been created/);
             expect(skipStub.calledOnce).to.be.true;
-        });
-
-        it('skips stage if systemd file already exists', function () {
-            const uidStub = sinon.stub().returns(true);
-            const existsStub = sinon.stub().returns(true);
-
-            const SystemdExtension = proxyquire(modulePath, {
-                './get-uid': uidStub,
-                'fs-extra': {existsSync: existsStub}
-            });
-
-            const logStub = sinon.stub();
-            const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', name: 'test'};
-
-            testInstance._setup({}, {instance: instance}, {skip: skipStub});
-            expect(uidStub.calledOnce).to.be.true;
-            expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-            expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.calledWithExactly('/lib/systemd/system/ghost_test.service')).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/Systemd service has already been set up/);
-            expect(skipStub.calledOnce).to.be.true;
+            expect(skipStub.args[0][0]).to.contain('"ghost" user has not been created');
         });
 
         it('runs through template method and reloads daemon', function () {
             const uidStub = sinon.stub().returns(true);
-            const existsStub = sinon.stub().returns(false);
             const readFileSyncStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
 
             const SystemdExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
-                'fs-extra': {existsSync: existsStub, readFileSync: readFileSyncStub}
+                'fs-extra': {readFileSync: readFileSyncStub}
             });
 
             const logStub = sinon.stub();
@@ -113,10 +91,9 @@ describe('Unit: Systemd > Extension', function () {
             const instance = {dir: '/some/dir', name: 'test'};
             const templateStub = sinon.stub(testInstance, 'template').resolves();
 
-            return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
+            return testInstance._setup({instance: instance}, {skip: skipStub}).then(() => {
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(existsStub.calledOnce).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
                 expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
@@ -129,12 +106,11 @@ describe('Unit: Systemd > Extension', function () {
 
         it('can handle error when template method fails', function () {
             const uidStub = sinon.stub().returns(true);
-            const existsStub = sinon.stub().returns(false);
             const readFileSyncStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
 
             const SystemdExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
-                'fs-extra': {existsSync: existsStub, readFileSync: readFileSyncStub}
+                'fs-extra': {readFileSync: readFileSyncStub}
             });
 
             const logStub = sinon.stub();
@@ -144,7 +120,7 @@ describe('Unit: Systemd > Extension', function () {
             const templateStub = sinon.stub(testInstance, 'template').resolves();
             const instance = {dir: '/some/dir', name: 'test'};
 
-            return testInstance._setup({}, {instance: instance}, {skip: skipStub}).then(() => {
+            return testInstance._setup({instance: instance}, {skip: skipStub}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;
@@ -152,7 +128,6 @@ describe('Unit: Systemd > Extension', function () {
                 expect(error.options.stderr).to.be.equal('something went wrong');
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(existsStub.calledOnce).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
                 expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;

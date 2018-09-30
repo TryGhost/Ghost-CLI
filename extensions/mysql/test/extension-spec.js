@@ -2,100 +2,97 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
+const configStub = require('../../../test/utils/config-stub');
 
 const modulePath = '../index';
 const errors = require('../../../lib/errors');
 
 describe('Unit: Mysql extension', function () {
-    describe('setup hook', function () {
+    it('setup hook works', function () {
         const MysqlExtension = require(modulePath);
+        const inst = new MysqlExtension({}, {}, {}, '/some/dir');
+        const result = inst.setup();
 
-        it('does not add stage if --local is true', function () {
-            const instance = new MysqlExtension({}, {}, {}, '/some/dir');
-            const addStageStub = sinon.stub();
+        expect(result).to.have.length(1);
+        const [task] = result;
 
-            instance.setup({addStage: addStageStub}, {local: true});
-            expect(addStageStub.called).to.be.false;
-        });
+        // Check static properties
+        expect(task.id).to.equal('mysql');
+        expect(task.name).to.equal('"ghost" mysql user');
 
-        it('does not add stage if db is sqlite3', function () {
-            const instance = new MysqlExtension({}, {}, {}, '/some/dir');
-            const addStageStub = sinon.stub();
+        // Check task functions
+        expect(task.task).to.be.a('function');
+        expect(task.enabled).to.be.a('function');
+        expect(task.skip).to.be.a('function');
 
-            instance.setup({addStage: addStageStub}, {local: false, db: 'sqlite3'});
-            expect(addStageStub.called).to.be.false;
-        });
+        // Check task.task
+        const stub = sinon.stub(inst, 'setupMySQL');
+        task.task('a', 'set', 'of', 'args', true);
+        expect(stub.calledOnce).to.be.true;
+        expect(stub.calledWithExactly('a', 'set', 'of', 'args', true)).to.be.true;
 
-        it('adds stage if not local and db is not sqlite3', function () {
-            const instance = new MysqlExtension({}, {}, {}, '/some/dir');
-            const addStageStub = sinon.stub();
+        // Check task.enabled
+        expect(task.enabled({argv: {local: true}})).to.be.false;
+        expect(task.enabled({argv: {local: false, db: 'sqlite3'}})).to.be.false;
+        expect(task.enabled({argv: {local: false}})).to.be.true;
 
-            instance.setup({addStage: addStageStub}, {local: false, db: 'mysql'});
-            expect(addStageStub.calledOnce).to.be.true;
-            expect(addStageStub.calledWith('mysql')).to.be.true;
-        });
+        // Check task.skip
+        const get = sinon.stub();
+        get.onFirstCall().returns('not-root');
+        get.onSecondCall().returns('root');
+
+        expect(task.skip({instance: {config: {get}}})).to.be.true;
+        expect(get.calledOnce).to.be.true;
+        expect(task.skip({instance: {config: {get}}})).to.be.false;
+        expect(get.calledTwice).to.be.true;
     });
 
-    describe('setupMySQL', function () {
+    it('setupMySQL works', function () {
         const MysqlExtension = require(modulePath);
+        const listr = sinon.stub();
+        const config = configStub();
+        const dbConfig = {host: 'localhost', user: 'root', password: 'password'};
+        config.get.returns(dbConfig);
 
-        it('skips if db user is not root', function () {
-            const logStub = sinon.stub();
-            const instance = new MysqlExtension({log: logStub}, {}, {}, '/some/dir');
-            const getStub = sinon.stub().returns({user: 'notroot'});
-            const skipStub = sinon.stub().resolves();
+        const inst = new MysqlExtension({listr}, {}, {}, '/some/dir');
+        const context = {instance: {config}};
+        inst.setupMySQL(context);
 
-            return instance.setupMySQL({}, {instance: {config: {get: getStub}}}, {skip: skipStub}).then(() => {
-                expect(getStub.calledOnce).to.be.true;
-                expect(getStub.calledWithExactly('database.connection')).to.be.true;
-                expect(logStub.calledOnce).to.be.true;
-                expect(logStub.args[0][0]).to.match(/user is not "root"/);
-                expect(skipStub.calledOnce).to.be.true;
-            });
-        });
+        expect(config.get.calledOnce).to.be.true;
+        expect(config.get.calledWithExactly('database.connection')).to.be.true;
+        expect(listr.calledOnce).to.be.true;
+        const [tasks, ctx] = listr.args[0];
+        expect(tasks).to.have.length(4);
+        expect(ctx).to.be.false;
 
-        it('returns tasks that call the helpers and cleanup', function () {
-            const listrStub = sinon.stub().callsFake(function (tasks) {
-                expect(tasks).to.be.an.instanceof(Array);
-                expect(tasks).to.have.length(4);
+        const canConnect = sinon.stub(inst, 'canConnect');
+        expect(tasks[0].title).to.equal('Connecting to database');
+        tasks[0].task();
+        expect(canConnect.calledOnce).to.be.true;
+        expect(canConnect.calledWithExactly(context, dbConfig)).to.be.true;
 
-                // Run each task step
-                tasks.forEach(task => task.task());
-                return Promise.resolve();
-            });
-            const instance = new MysqlExtension({listr: listrStub}, {}, {}, '/some/dir');
-            const getStub = sinon.stub().returns({user: 'root'});
-            const saveStub = sinon.stub();
-            const setStub = sinon.stub();
-            setStub.returns({set: setStub, save: saveStub});
-            const endStub = sinon.stub();
-            const skipStub = sinon.stub().resolves();
-            const canConnectStub = sinon.stub(instance, 'canConnect');
-            const createUserStub = sinon.stub(instance, 'createUser').callsFake((ctx) => {
-                ctx.mysql = {username: 'testuser', password: 'testpass'};
-            });
-            const grantPermissionsStub = sinon.stub(instance, 'grantPermissions');
+        const createUser = sinon.stub(inst, 'createUser');
+        expect(tasks[1].title).to.equal('Creating new MySQL user');
+        tasks[1].task();
+        expect(createUser.calledOnce).to.be.true;
+        expect(createUser.calledWithExactly(context, dbConfig)).to.be.true;
 
-            instance.connection = {end: endStub};
+        const grantPermissions = sinon.stub(inst, 'grantPermissions');
+        expect(tasks[2].title).to.equal('Granting new user permissions');
+        tasks[2].task();
+        expect(grantPermissions.calledOnce).to.be.true;
+        expect(grantPermissions.calledWithExactly(context, dbConfig)).to.be.true;
 
-            return instance.setupMySQL({}, {
-                instance: {config: {get: getStub, set: setStub, save: saveStub}}
-            }, {skip: skipStub}).then(() => {
-                expect(skipStub.called).to.be.false;
-                expect(listrStub.calledOnce).to.be.true;
-                expect(listrStub.args[0][1]).to.be.false;
-
-                expect(getStub.calledOnce).to.be.true;
-                expect(canConnectStub.calledOnce).to.be.true;
-                expect(createUserStub.calledOnce).to.be.true;
-                expect(grantPermissionsStub.calledOnce).to.be.true;
-                expect(setStub.calledTwice).to.be.true;
-                expect(setStub.calledWithExactly('database.connection.user', 'testuser')).to.be.true;
-                expect(setStub.calledWithExactly('database.connection.password', 'testpass')).to.be.true;
-                expect(saveStub.calledOnce).to.be.true;
-                expect(endStub.calledOnce).to.be.true;
-            });
-        });
+        const end = sinon.stub();
+        inst.connection = {end};
+        context.mysql = {username: 'new', password: 'new'};
+        expect(tasks[3].title).to.equal('Saving new config');
+        tasks[3].task();
+        expect(config.set.calledTwice).to.be.true;
+        expect(config.set.calledWithExactly('database.connection.user', 'new')).to.be.true;
+        expect(config.set.calledWithExactly('database.connection.password', 'new')).to.be.true;
+        expect(config.save.calledOnce).to.be.true;
+        expect(end.calledOnce).to.be.true;
     });
 
     describe('canConnect', function () {
