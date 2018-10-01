@@ -393,8 +393,9 @@ describe('Unit: UI', function () {
                 expect(ListrStub.calledWithNew()).to.be.true;
                 expect(createRendererStub.calledOnce).to.be.true;
                 expect(ListrStub.calledWithExactly(tasks, {
-                    renderer: {RendererClass: true}
-                }));
+                    renderer: {RendererClass: true},
+                    exitOnError: true
+                })).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
                 expect(runStub.calledWithExactly({
                     ui: ui,
@@ -419,8 +420,8 @@ describe('Unit: UI', function () {
                 expect(createRendererStub.called).to.be.false;
                 expect(ListrStub.calledWithExactly(tasks, {
                     renderer: 'verbose',
-                    exitOnError: true
-                }));
+                    exitOnError: false
+                })).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
                 expect(runStub.calledWithExactly({
                     something: 'foo',
@@ -437,13 +438,13 @@ describe('Unit: UI', function () {
             const ui = new UI();
             const tasks = ['test','ing','is','necessary'];
 
-            const result = ui.listr(tasks, false, {exitOnError: false, renderer: 'update'});
+            const result = ui.listr(tasks, false, {renderer: 'update'});
             expect(result).to.deep.equal({run: runStub});
             expect(ListrStub.calledWithNew()).to.be.true;
             expect(ListrStub.calledWithExactly(tasks, {
                 renderer: 'update',
                 exitOnError: true
-            }));
+            })).to.be.true;
             expect(runStub.called).to.be.false;
         });
     });
