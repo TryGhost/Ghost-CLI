@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.5"></a>
+## [1.9.5](https://github.com/TryGhost/Ghost-CLI/compare/1.9.4...1.9.5) (2018-10-02)
+
+
+### Bug Fixes
+
+* use correct task function property in pre-checks ([1674e7e](https://github.com/TryGhost/Ghost-CLI/commit/1674e7e))
+
+
+### Features
+
+* add 'clearOnSuccess' option to renderer ([7cfbfb7](https://github.com/TryGhost/Ghost-CLI/commit/7cfbfb7))
+* **pre-checks:** add ~/.config folder ownership to pre-run checks ([e9e640f](https://github.com/TryGhost/Ghost-CLI/commit/e9e640f)), closes [#675](https://github.com/TryGhost/Ghost-CLI/issues/675)
+
+
+
 <a name="1.9.4"></a>
 ## [1.9.4](https://github.com/TryGhost/Ghost-CLI/compare/1.9.3...1.9.4) (2018-09-13)
 
