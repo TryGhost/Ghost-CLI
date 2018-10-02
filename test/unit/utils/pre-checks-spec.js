@@ -83,13 +83,26 @@ describe('Unit: Utils > pre-checks', function () {
             delete process.env.USER;
         });
 
+        it('skips if ~/.config does not exist', function () {
+            const homedir = sinon.stub(os, 'homedir').returns('/home/ghost');
+            const exists = sinon.stub(fs, 'existsSync').returns(false);
+
+            return getTasks({}, {}, {platform: {linux: true}}).then(([,task]) => {
+                expect(task.enabled()).to.be.false;
+                expect(homedir.calledOnce).to.be.true;
+                expect(exists.calledOnce).to.be.true;
+            });
+        });
+
         it('rejects error if fs.lstat errors', function (done) {
             const homedir = sinon.stub(os, 'homedir').returns('/home/ghost');
             const lstat = sinon.stub(fs, 'lstat').rejects(new Error('test error'));
+            const exists = sinon.stub(fs, 'existsSync').returns(true);
 
             getTasks({}, {}, {platform: {linux: true}}).then(([,task]) => {
                 expect(task.title).to.equal('Ensuring correct ~/.config folder ownership');
                 expect(task.enabled()).to.be.true;
+                expect(exists.calledOnce).to.be.true;
                 return task.task();
             }).catch((error) => {
                 expect(error.message).to.equal('test error');
@@ -103,12 +116,14 @@ describe('Unit: Utils > pre-checks', function () {
         it('doesn\'t do anything if directory ownership if fine', function () {
             sinon.stub(os, 'homedir').returns('/home/ghost');
             sinon.stub(fs, 'lstat').resolves({uid: 1, gid: 1});
+            const exists = sinon.stub(fs, 'existsSync').returns(true);
             const uid = sinon.stub(process, 'getuid').returns(1);
             const gid = sinon.stub(process, 'getgid').returns(1);
             const sudo = sinon.stub().resolves();
 
             return getTasks({}, {sudo}, {platform: {linux: false}}).then(([,task]) => {
                 expect(task.enabled()).to.be.false;
+                expect(exists.called).to.be.false;
                 return task.task();
             }).then(() => {
                 expect(uid.calledOnce).to.be.true;
