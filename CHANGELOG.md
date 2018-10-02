@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.6"></a>
+## [1.9.6](https://github.com/TryGhost/Ghost-CLI/compare/1.9.5...1.9.6) (2018-10-02)
+
+
+### Bug Fixes
+
+* **pre-check:** don't run config check if folder doesn't exist ([baa351c](https://github.com/TryGhost/Ghost-CLI/commit/baa351c)), closes [#834](https://github.com/TryGhost/Ghost-CLI/issues/834)
+
+
+
 <a name="1.9.5"></a>
 ## [1.9.5](https://github.com/TryGhost/Ghost-CLI/compare/1.9.4...1.9.5) (2018-10-02)
 
