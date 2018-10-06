@@ -35,6 +35,10 @@ class SystemdProcessManager extends ProcessManager {
             })
             .then(() => this.ui.sudo(`systemctl start ${this.systemdName}`))
             .then(() => this.ensureStarted({logSuggestion, socketAddress}))
+            .then(() => {
+                this.instance.config.set('bootstrap-socket', null);
+                return this.instance.config.save();
+            })
             .catch((error) => {
                 if (error instanceof CliError) {
                     throw error;
@@ -70,6 +74,10 @@ class SystemdProcessManager extends ProcessManager {
             })
             .then(() => this.ui.sudo(`systemctl restart ${this.systemdName}`))
             .then(() => this.ensureStarted({logSuggestion, socketAddress}))
+            .then(() => {
+                this.instance.config.set('bootstrap-socket', null);
+                return this.instance.config.save();
+            })
             .catch((error) => {
                 if (error instanceof CliError) {
                     throw error;
