@@ -64,7 +64,7 @@ module.exports = class AcceptanceTest {
         options = options || {};
 
         return new Promise((resolve, reject) => {
-            cp.exec(`${this.cliPath} ${this.command}`, {
+            cp.exec(`node ${this.cliPath} ${this.command}`, {
                 env: Object.assign({}, process.env, options.env || {}),
                 cwd: this.dir
             }, (err, stdout, stderr) => {
