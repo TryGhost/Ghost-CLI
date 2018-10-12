@@ -48,6 +48,7 @@
   "dependencies": {
     "abbrev": "1.1.1",
     "adm-zip": "0.4.11",
+    "archiver": "^3.0.0",
     "bluebird": "3.5.1",
     "chalk": "2.4.1",
     "cli-table3": "0.5.0",
@@ -69,6 +70,7 @@
     "log-symbols": "2.2.0",
     "moment": "2.22.2",
     "mysql": "2.16.0",
+    "mysqldump": "^2.2.1",
     "ora": "3.0.0",
     "path-is-root": "0.1.0",
     "portfinder": "1.0.16",
