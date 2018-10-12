@@ -10,16 +10,19 @@ matrix:
   include:
     - node_js: "8"
       env: TEST_SUITE=lint
+    - os: windows
+      node_js: "8"
+      env: TEST_SUITE=windows
 
 cache:
   directories:
     - node_modules
 
 install:
-  - yarn
+  - if [ "$TRAVIS_OS_NAME" == "windows" ]; then npm install && npm link; else yarn install; fi
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
+  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; elif [ "$TEST_SUITE" == "windows" ]; then yarn run test:windows; else yarn run test:all; fi
 
 after_success:
   - if [[ "$TRAVIS_NODE_VERSION" == "8" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
