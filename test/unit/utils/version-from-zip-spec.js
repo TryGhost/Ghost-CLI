@@ -8,8 +8,28 @@ const errors = require('../../../lib/errors');
 const modulePath = '../../../lib/utils/version-from-zip';
 
 describe('Unit: Utils > versionFromZip', function () {
+    const currentNodeVersion = process.versions.node;
+
+    before(function () {
+        Object.defineProperty(process.versions, 'node', {
+            value: '8.11.0', // CHANGE THIS WHENEVER RECOMMENDED NODE VERSION CHANGES
+            writable: true,
+            enumerable: true,
+            configurable: true
+        });
+    });
+
     beforeEach(function () {
         delete process.env.GHOST_NODE_VERSION_CHECK;
+    });
+
+    after(function () {
+        Object.defineProperty(process.versions, 'node', {
+            value: currentNodeVersion,
+            writeable: false,
+            enumerable: true,
+            configurable: true
+        });
     });
 
     it('rejects if zip file doesn\'t exist', function () {
