@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.7"></a>
+## [1.9.7](https://github.com/TryGhost/Ghost-CLI/compare/1.9.6...1.9.7) (2018-10-30)
+
+
+### Bug Fixes
+
+* **ui:** default exitOnError to true in listr opts ([58806da](https://github.com/TryGhost/Ghost-CLI/commit/58806da))
+
+
+### Features
+
+* **instance:** add isSetup getter ([c81070c](https://github.com/TryGhost/Ghost-CLI/commit/c81070c))
+* **node:** add support for node v10 ([cccddae](https://github.com/TryGhost/Ghost-CLI/commit/cccddae))
+* **renderer:** log task output if skipped ([463d706](https://github.com/TryGhost/Ghost-CLI/commit/463d706))
+* **system:** add hasInstance method ([65bc340](https://github.com/TryGhost/Ghost-CLI/commit/65bc340))
+
+
+
 <a name="1.9.6"></a>
 ## [1.9.6](https://github.com/TryGhost/Ghost-CLI/compare/1.9.5...1.9.6) (2018-10-02)
 
