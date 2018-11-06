@@ -1,6 +1,7 @@
 'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const proxyquire = require('proxyquire');
+const {CliError} = require('../../../lib/errors');
 
 let resolveVersion;
 
@@ -19,7 +20,7 @@ describe('Unit: resolveVersion', function () {
         return resolveVersion('0.11.0').then(function () {
             throw new Error('Version finder should not have resolved.');
         }).catch(function (error) {
-            expect(error).to.be.an.instanceOf(Error);
+            expect(error).to.be.an.instanceOf(CliError);
             expect(error.message).to.equal('Ghost-CLI cannot install versions of Ghost less than 1.0.0');
         });
     });
@@ -30,7 +31,7 @@ describe('Unit: resolveVersion', function () {
         return resolveVersion().then(function () {
             throw new Error('Version finder should not have resolved.');
         }).catch(function (error) {
-            expect(error).to.be.an.instanceOf(Error);
+            expect(error).to.be.an.instanceOf(CliError);
             expect(error.message).to.equal('Ghost-CLI was unable to load versions from Yarn.');
         });
     });
@@ -41,7 +42,7 @@ describe('Unit: resolveVersion', function () {
         return resolveVersion().then(function () {
             throw new Error('Version finder should not have resolved.');
         }).catch(function (error) {
-            expect(error).to.be.an.instanceOf(Error);
+            expect(error).to.be.an.instanceOf(CliError);
             expect(error.message).to.equal('No valid versions found.');
         });
     });
@@ -52,7 +53,7 @@ describe('Unit: resolveVersion', function () {
         return resolveVersion().then(function () {
             throw new Error('Version finder should not have resolved');
         }).catch(function (error) {
-            expect(error).to.be.an.instanceOf(Error);
+            expect(error).to.be.an.instanceOf(CliError);
             expect(error.message).to.equal('No valid versions found.');
         });
     });
@@ -64,7 +65,7 @@ describe('Unit: resolveVersion', function () {
             return resolveVersion().then(function () {
                 throw new Error('Version finder should not have resolved');
             }).catch(function (error) {
-                expect(error).to.be.an.instanceOf(Error);
+                expect(error).to.be.an.instanceOf(CliError);
                 expect(error.message).to.equal('No valid versions found.');
             });
         });
@@ -75,7 +76,7 @@ describe('Unit: resolveVersion', function () {
             return resolveVersion('1.0.5').then(function () {
                 throw new Error('Version finder should not have resolved');
             }).catch(function (error) {
-                expect(error).to.be.an.instanceOf(Error);
+                expect(error).to.be.an.instanceOf(CliError);
                 expect(error.message).to.equal('Invalid version specified: 1.0.5');
             });
         });
@@ -84,7 +85,9 @@ describe('Unit: resolveVersion', function () {
             stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion('1.0.0').then(function (version) {
-                expect(version).to.equal('1.0.0');
+                expect(version).to.be.an('array');
+                expect(version.length).to.equal(1);
+                expect(version[0]).to.equal('1.0.0');
             });
         });
 
@@ -92,7 +95,9 @@ describe('Unit: resolveVersion', function () {
             stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion('v1.0.0').then(function (version) {
-                expect(version).to.equal('1.0.0');
+                expect(version).to.be.an('array');
+                expect(version.length).to.equal(1);
+                expect(version[0]).to.equal('1.0.0');
             });
         });
 
@@ -100,7 +105,9 @@ describe('Unit: resolveVersion', function () {
             stubYarn('{"data": ["1.0.0", "1.0.1"]}');
 
             return resolveVersion().then(function (version) {
-                expect(version).to.equal('1.0.1');
+                expect(version).to.be.an('array');
+                expect(version.length).to.equal(1);
+                expect(version[0]).to.equal('1.0.1');
             });
         });
 
@@ -108,7 +115,9 @@ describe('Unit: resolveVersion', function () {
             stubYarn('{"data": ["1.0.0", "1.0.1", "1.52.37", "2.0.0", "2.0.1"]}');
 
             return resolveVersion(null, null, true).then(function (version) {
-                expect(version).to.equal('1.52.37');
+                expect(version).to.be.an('array');
+                expect(version.length).to.equal(1);
+                expect(version[0]).to.equal('1.52.37');
             });
         });
     });
@@ -120,7 +129,7 @@ describe('Unit: resolveVersion', function () {
             return resolveVersion(null, '1.0.1').then(function () {
                 throw new Error('Version finder should not have resolved');
             }).catch(function (error) {
-                expect(error).to.be.an.instanceOf(Error);
+                expect(error).to.be.an.instanceOf(CliError);
                 expect(error.message).to.equal('No valid versions found.');
             });
         });
@@ -131,7 +140,7 @@ describe('Unit: resolveVersion', function () {
             return resolveVersion(null, '1.52.37', true).then(function () {
                 throw new Error('Version finder should not have resolved');
             }).catch(function (error) {
-                expect(error).to.be.an.instanceOf(Error);
+                expect(error).to.be.an.instanceOf(CliError);
                 expect(error.message).to.equal('No valid versions found.');
             });
         });
@@ -140,7 +149,9 @@ describe('Unit: resolveVersion', function () {
             stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
             return resolveVersion(null, '2.0.0').then(function (version) {
-                expect(version).to.equal('2.0.1');
+                expect(version).to.be.an('array');
+                expect(version.length).to.equal(1);
+                expect(version[0]).to.equal('2.0.1');
             });
         });
 
@@ -151,7 +162,7 @@ describe('Unit: resolveVersion', function () {
                 return resolveVersion(null, '1.24.0', false).then(function () {
                     throw new Error('Version finder should not have resolved');
                 }).catch(function (error) {
-                    expect(error).to.be.an.instanceOf(Error);
+                    expect(error).to.be.an.instanceOf(CliError);
                     expect(error.message).to.equal('You are about to migrate to Ghost 2.0. Your blog is not on the latest Ghost 1.0 version.');
                 });
             });
@@ -159,55 +170,61 @@ describe('Unit: resolveVersion', function () {
             it('resolves if you are on the latest v1', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
-                return resolveVersion(null, '1.25.2', false)
-                    .then(function (version) {
-                        expect(version).to.eql('2.0.1');
-                    });
+                return resolveVersion(null, '1.25.2', false).then(function (version) {
+                    expect(version).to.be.an('array');
+                    expect(version.length).to.equal(2);
+                    expect(version).to.deep.equal(['2.0.0', '2.0.1']);
+                });
             });
 
             it('resolves using `--v1` and you are\'t on the latest v1', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
-                return resolveVersion(null, '1.25.1', true)
-                    .then(function (version) {
-                        expect(version).to.eql('1.25.2');
-                    });
+                return resolveVersion(null, '1.25.1', true).then(function (version) {
+                    expect(version).to.be.an('array');
+                    expect(version.length).to.equal(1);
+                    expect(version[0]).to.equal('1.25.2');
+                });
             });
 
             it('updates to latest v2 with many v2 releases', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.1.0", "2.2.0"]}');
 
-                return resolveVersion(null, '1.25.2', false, false)
-                    .then(function (version) {
-                        expect(version).to.eql('2.2.0');
-                    });
+                return resolveVersion(null, '1.25.2', false, false).then(function (version) {
+                    expect(version).to.be.an('array');
+                    expect(version.length).to.equal(3);
+                    expect(version).to.deep.equal(['2.0.0', '2.1.0', '2.2.0']);
+                });
             });
 
             it('force updating and you are on the latest v1', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
-                return resolveVersion(null, '1.25.2', false, true)
-                    .then(function (version) {
-                        expect(version).to.eql('2.0.1');
-                    });
+                return resolveVersion(null, '1.25.2', false, true).then(function (version) {
+                    expect(version).to.be.an('array');
+                    expect(version.length, version.join(' ')).to.equal(2);
+                    expect(version).to.deep.equal(['2.0.0', '2.0.1']);
+                });
             });
 
             it('force updating with `--v1`', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.0.1"]}');
 
-                return resolveVersion(null, '1.25.1', true, true)
-                    .then(function (version) {
-                        expect(version).to.eql('1.25.2');
-                    });
+                return resolveVersion(null, '1.25.1', true, true).then(function (version) {
+                    expect(version).to.be.an('array');
+                    expect(version.length).to.equal(1);
+                    expect(version[0]).to.equal('1.25.2');
+                });
             });
 
             it('force updating with many v2 releases', function () {
                 stubYarn('{"data": ["1.23.0", "1.25.1", "1.25.2", "2.0.0", "2.1.0", "2.2.0"]}');
 
-                return resolveVersion(null, '1.25.1', false, true)
-                    .then(function (version) {
-                        expect(version).to.eql('1.25.2');
-                    });
+                return resolveVersion(null, '1.25.1', false, true).then(function (version) {
+                    expect(version).to.be.an('array');
+                    expect(version.length).to.equal(1);
+                    expect(version[0]).to.equal('1.25.2');
+                });
             });
 
             it('throws error if you want to force updating to a previous major', function () {
@@ -218,7 +235,7 @@ describe('Unit: resolveVersion', function () {
                         throw new Error('Version finder should not have resolved');
                     })
                     .catch(function (error) {
-                        expect(error).to.be.an.instanceOf(Error);
+                        expect(error).to.be.an.instanceOf(CliError);
                         expect(error.message).to.equal('No valid versions found.');
                     });
             });
@@ -231,7 +248,7 @@ describe('Unit: resolveVersion', function () {
                         throw new Error('Version finder should not have resolved');
                     })
                     .catch(function (error) {
-                        expect(error).to.be.an.instanceOf(Error);
+                        expect(error).to.be.an.instanceOf(CliError);
                         expect(error.message).to.equal('No valid versions found.');
                     });
             });
