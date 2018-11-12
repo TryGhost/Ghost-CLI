@@ -67,7 +67,7 @@ describe('Unit: Utils > checkRootUser', function () {
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-            expect(errorStub.args[0][0]).to.match(/We discovered that you are using the Digitalocean One-Click install./);
+            expect(errorStub.args[0][0]).to.match(/It looks like you're using using the DigitalOcean One-Click install./);
         }
     });
 
@@ -121,7 +121,7 @@ describe('Unit: Utils > checkRootUser', function () {
         expect(processStub.calledOnce).to.be.true;
         expect(errorStub.calledOnce).to.be.true;
         expect(exitStub.calledOnce).to.be.false;
-        expect(errorStub.args[0][0]).to.match(/We discovered that you are using the Digitalocean One-Click install./);
+        expect(errorStub.args[0][0]).to.match(/It looks like you're using using the DigitalOcean One-Click install./);
     });
 
     it('shows special message for root installs', function () {
@@ -149,7 +149,7 @@ describe('Unit: Utils > checkRootUser', function () {
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-            expect(errorStub.args[0][0]).to.match(/It seems Ghost was installed using the root user./);
+            expect(errorStub.args[0][0]).to.match(/It looks like Ghost was installed using the root user./);
         }
     });
 
@@ -174,7 +174,7 @@ describe('Unit: Utils > checkRootUser', function () {
         expect(processStub.calledOnce).to.be.true;
         expect(errorStub.calledOnce).to.be.true;
         expect(exitStub.calledOnce).to.be.false;
-        expect(errorStub.args[0][0]).to.match(/It seems Ghost was installed using the root user./);
+        expect(errorStub.args[0][0]).to.match(/It looks like Ghost was installed using the root user./);
     });
 
     it('throws error command run with root for non-root installs', function () {
