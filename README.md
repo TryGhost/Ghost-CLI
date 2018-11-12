@@ -16,9 +16,9 @@
 
 ## Documentation
 
-- [Complete Setup Guide](https://docs.ghost.org/docs/install)
-- [Command Reference](https://docs.ghost.org/docs/ghost-cli)
-- [Troubleshooting Guide](https://docs.ghost.org/docs/troubleshooting#section-cli-errors)
+- [Complete Setup Guide](https://docs.ghost.org/setup/)
+- [Command Reference](https://docs.ghost.org/api/ghost-cli/)
+- [Knowledgebase](https://docs.ghost.org/api/ghost-cli/knowledgebase/)
 - [Forum](https://forum.ghost.org)
 
 ## Project Goals
@@ -31,7 +31,7 @@ In order to keep these goals obtainable & maintainable by Ghost's small team, we
 
 ### Recommended stack
 
-We officially recommend the stack [described here](https://docs.ghost.org/docs/install#section-pre-requisites) for production installs.
+We officially recommend the stack [described here](https://docs.ghost.org/install/ubuntu/) for production installs.
 
 The team behind Ghost CLI _only_ supports this stack. This restriction is very deliberate, as every additional option for configuration or divergent piece of code required to support an additional environment creates exponential complexity and maintenance overhead. 
 
@@ -53,9 +53,7 @@ The secondary focus is on improving the CLI itself. We want to ensure that the U
 
 We aren't able to provide support in GitHub, but we do keep track of common issues with the `known-issue` label and regularly update documentation & error messages to be clearer.
 
-The documentation for Ghost-CLI can be found at https://docs.ghost.org and includes an extensive [troubleshooting section](https://docs.ghost.org/docs/troubleshooting). 
-
-Community support can be found in our [forum](https://forum.ghost.org).
+The documentation for Ghost-CLI can be found at https://docs.ghost.org/api/ghost-cli/. Community support can be found in our [forum](https://forum.ghost.org).
 
 
 ## Developer Setup (for contributing)
@@ -75,10 +73,6 @@ To run the CLI for testing:
 ```sh
 yarn test
 ```
-
-## Looking for ghost-cli <= 0.0.2?
-
-The npm version of ghost-cli <= 0.0.2 can be found [here](https://github.com/jeffdonthemic/ghost-cli). Any versions of Ghost-CLI > 1.0.0-alpha.1 are part of this project.
 
 # Copyright & License
 

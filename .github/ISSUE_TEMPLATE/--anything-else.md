@@ -11,7 +11,7 @@ For usage and support questions, or ideas & feature requests please check out [o
 
 Alternatively, check out these resources below. Thanks! 😁.
 
-- [Ghost-CLI docs](https://docs.ghost.org/docs/ghost-cli)
+- [Ghost-CLI docs](https://docs.ghost.org/api/ghost-cli/)
 - [Forum Support](https://forum.ghost.org/c/help)
 - [Ideas](https://forum.ghost.org/c/Ideas)
 - [Contributing Guide](https://docs.ghost.org/docs/contributing)
