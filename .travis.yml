@@ -20,7 +20,7 @@ install:
   - yarn
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
+  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint && yarn audit; else yarn run test:all; fi
 
 after_success:
   - if [[ "$TRAVIS_NODE_VERSION" == "8" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
