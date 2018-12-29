@@ -23,7 +23,7 @@
   "license": "MIT",
   "main": "lib/index.js",
   "bin": {
-    "ghost": "./bin/ghost"
+    "ghost": "./bin/ghost.js"
   },
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -95,6 +95,7 @@
     "has-ansi": "3.0.0",
     "mocha": "5.2.0",
     "nyc": "13.1.0",
+    "pkg": "4.3.5",
     "proxyquire": "2.1.0",
     "sinon": "7.2.2",
     "standard-version": "4.3.0",

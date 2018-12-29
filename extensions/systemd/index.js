@@ -35,12 +35,13 @@ class SystemdExtension extends Extension {
         }
 
         const service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
+        const ghostExecPath = process.pkg.entrypoint ? process.argv[0] : process.argv.slice(0,2).join(' ')
         const contents = service({
             name: instance.name,
             dir: process.cwd(),
             user: uid,
             environment: this.system.environment,
-            ghost_exec_path: process.argv.slice(0,2).join(' ')
+            ghost_exec_path: ghostExecPath
         });
 
         return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system').then(
