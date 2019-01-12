@@ -14,7 +14,7 @@ Please be aware that the team behind the Ghost CLI only supports the recommended
 
 ### Summary
 
-Search GitHub for existing issues & check the docs: https://docs.ghost.org/docs/troubleshooting. If you're still stuck, please provide a quick summary of the problem, steps to reproduce, and full tech details including logs.
+Search GitHub for existing issues & check the docs: https://docs.ghost.org/faq/errors/. If you're still stuck, please provide a quick summary of the problem, steps to reproduce, and full tech details including logs.
 
 ### Steps to Reproduce
 
