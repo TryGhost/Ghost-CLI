@@ -16,7 +16,7 @@
 
 ## Documentation
 
-- [Complete Setup Guide](https://docs.ghost.org/setup/)
+- [Complete Setup Guide](https://docs.ghost.org/install/ubuntu/)
 - [Command Reference](https://docs.ghost.org/api/ghost-cli/)
 - [Knowledgebase](https://docs.ghost.org/api/ghost-cli/knowledgebase/)
 - [Forum](https://forum.ghost.org)

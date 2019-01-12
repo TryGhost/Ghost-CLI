@@ -14,5 +14,5 @@ Alternatively, check out these resources below. Thanks! 😁.
 - [Ghost-CLI docs](https://docs.ghost.org/api/ghost-cli/)
 - [Forum Support](https://forum.ghost.org/c/help)
 - [Ideas](https://forum.ghost.org/c/Ideas)
-- [Contributing Guide](https://docs.ghost.org/docs/contributing)
-- [Self-hoster Docs](http://docs.ghost.org/docs/)
+- [Contributing Guide](https://docs.ghost.org/concepts/contributing)
+- [Self-hoster Docs](https://docs.ghost.org/install/ubuntu/)
