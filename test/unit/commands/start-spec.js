@@ -1,4 +1,3 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
@@ -12,7 +11,7 @@ const DoctorCommand = require('../../../lib/commands/doctor');
 const modulePath = '../../../lib/commands/start';
 const StartCommand = require(modulePath);
 
-function getStubs(dir) {
+function getStubs(dir, environment = undefined) {
     const ui = new UI({});
     const system = new System(ui, []);
     const instance = new Instance(ui, system, dir);
@@ -20,6 +19,8 @@ function getStubs(dir) {
 
     instance._cliConfig = createConfigStub();
     instance._cliConfig.get.withArgs('name').returns('testing');
+    instance._config.environment = environment;
+    system.environment = environment;
 
     const getInstance = sinon.stub(system, 'getInstance').returns(instance);
 
@@ -58,6 +59,52 @@ describe('Unit: Commands > Start', function () {
             expect(start.called).to.be.false;
         });
 
+        it('warns of http use in production', async function () {
+            const {ui, system, instance} = getStubs('/var/www/ghost', 'production');
+            const logStub = sinon.stub(ui, 'log');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            instance.config.get.returns('http://localhost:2368');
+            const start = new StartCommand(ui, system);
+            sinon.stub(start, 'runCommand').rejects(new Error('runCommand'));
+
+            try {
+                await start.run({argv: true});
+                expect(false, 'Promise should have rejected').to.be.true;
+            } catch (error) {
+                expect(error.message).to.equal('runCommand');
+            }
+
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.args[0][0]);
+            expect(logStub.args[0][0]).to.include('HTTPS URL');
+            expect(logStub.args[0][0]).to.include('https://ghost.org');
+
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+        });
+
+        it('no warning with ssl in production', async function () {
+            const {ui, system, instance} = getStubs('/var/www/ghost', 'production');
+            const logStub = sinon.stub(ui, 'log');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            instance.config.get.returns('https://demo.ghost.io');
+            const start = new StartCommand(ui, system);
+            sinon.stub(start, 'runCommand').rejects(new Error('runCommand'));
+
+            try {
+                await start.run({argv: true});
+            } catch (error) {
+                expect(error.message).to.equal('runCommand');
+            }
+
+            expect(logStub.called).to.be.false;
+
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+        });
+
         it('runs startup checks and starts correctly', async function () {
             const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
             const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
@@ -84,7 +131,7 @@ describe('Unit: Commands > Start', function () {
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.calledTwice).to.be.true;
-            expect(instance.config.get.calledTwice).to.be.true;
+            expect(instance.config.get.calledThrice).to.be.true;
         });
 
         it('doesn\'t log if quiet is set to true', async function () {
@@ -111,7 +158,7 @@ describe('Unit: Commands > Start', function () {
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.called).to.be.false;
-            expect(instance.config.get.called).to.be.false;
+            expect(instance.config.get.calledOnce).to.be.true;
         });
     });
 
