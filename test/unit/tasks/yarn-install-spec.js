@@ -195,7 +195,8 @@ describe('Unit: Tasks > yarn-install', function () {
             };
             const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
             const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub
+                '../utils/yarn': yarnStub,
+                '../../package.json': {version: '1.0.0'}
             }).subTasks.dist;
             const ctx = {version: '1.5.0'};
 
@@ -206,6 +207,31 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(error.message).to.equal('Ghost v1.5.0 is not compatible with this version of the CLI.');
                 expect(yarnStub.calledOnce).to.be.true;
                 expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+            });
+        });
+
+        it('resolves if Ghost version isn\'t compatible with CLI version, but CLI is a prerelease version', function () {
+            const data = {
+                data: {
+                    engines: {node: process.versions.node, cli: '^1.9.0'},
+                    dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
+                }
+            };
+            const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
+            const dist = proxyquire(modulePath, {
+                '../utils/yarn': yarnStub,
+                '../../package.json': {version: '1.10.0-beta.0'}
+            }).subTasks.dist;
+            const ctx = {version: '1.5.0'};
+
+            return dist(ctx).then(() => {
+                expect(yarnStub.calledOnce).to.be.true;
+                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+                expect(ctx).to.deep.equal({
+                    version: '1.5.0',
+                    shasum: 'asdf1234',
+                    tarball: 'something.tgz'
+                });
             });
         });
 
