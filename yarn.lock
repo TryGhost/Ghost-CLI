@@ -3208,7 +3208,7 @@ package-hash@^2.0.0:
     md5-hex "^2.0.0"
     release-zalgo "^1.0.0"
 
-package-json@^5.0.0:
+package-json@5.0.0, package-json@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/package-json/-/package-json-5.0.0.tgz#a7dbe2725edcc7dc9bcee627672275e323882433"
   integrity sha512-EeHQFFTlEmLrkIQoxbE9w0FuAWHoc1XpthDqnZ/i9keOt701cteyXwAxQFLpVqVjj3feh2TodkihjLaRUtIgLg==

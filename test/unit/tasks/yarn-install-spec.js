@@ -1,7 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const proxyquire = require('proxyquire');
+const proxyquire = require('proxyquire').noPreserveCache();
 const Promise = require('bluebird');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const path = require('path');
@@ -102,48 +102,14 @@ describe('Unit: Tasks > yarn-install', function () {
     });
 
     describe('dist subtask', function () {
-        it('rejects if yarn util returns invalid json', function () {
-            const yarnStub = sinon.stub().resolves({stdout: 'not json'});
-            const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub
-            }).subTasks.dist;
-
-            return dist({version: '1.5.0'}).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.match(/download information could not be read/);
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
-            });
-        });
-
-        it('rejects if dist data could not be found', function () {
-            const yarnStub = sinon.stub().resolves({stdout: '{}'});
-            const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub
-            }).subTasks.dist;
-
-            return dist({version: '1.5.0'}).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.match(/download information could not be read/);
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
-            });
-        });
-
         it('rejects if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is not set', function () {
             const data = {
-                data: {
-                    engines: {node: '^0.10.0'},
-                    dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-                }
+                engines: {node: '^0.10.0'},
+                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
             };
-            const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
+            const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub
+                'package-json': infoStub
             }).subTasks.dist;
             const ctx = {version: '1.5.0'};
 
@@ -152,29 +118,27 @@ describe('Unit: Tasks > yarn-install', function () {
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.equal('Ghost v1.5.0 is not compatible with the current Node version.');
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+                expect(infoStub.calledOnce).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
             });
         });
 
         it('resolves if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is set', function () {
             const data = {
-                data: {
-                    engines: {node: '^0.10.0'},
-                    dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-                }
+                engines: {node: '^0.10.0'},
+                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
             };
-            const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
+            const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub
+                'package-json': infoStub
             }).subTasks.dist;
             const ctx = {version: '1.5.0'};
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
             return dist(ctx).then(() => {
                 delete process.env.GHOST_NODE_VERSION_CHECK;
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+                expect(infoStub.calledOnce).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
                 expect(ctx).to.deep.equal({
                     version: '1.5.0',
                     shasum: 'asdf1234',
@@ -188,14 +152,12 @@ describe('Unit: Tasks > yarn-install', function () {
 
         it('rejects if Ghost version isn\'t compatible with the current CLI version', function () {
             const data = {
-                data: {
-                    engines: {node: process.versions.node, cli: '^0.0.1'},
-                    dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-                }
+                engines: {node: process.versions.node, cli: '^0.0.1'},
+                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
             };
-            const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
+            const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub,
+                'package-json': infoStub,
                 '../../package.json': {version: '1.0.0'}
             }).subTasks.dist;
             const ctx = {version: '1.5.0'};
@@ -205,28 +167,26 @@ describe('Unit: Tasks > yarn-install', function () {
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.equal('Ghost v1.5.0 is not compatible with this version of the CLI.');
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+                expect(infoStub.calledOnce).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
             });
         });
 
         it('resolves if Ghost version isn\'t compatible with CLI version, but CLI is a prerelease version', function () {
             const data = {
-                data: {
-                    engines: {node: process.versions.node, cli: '^1.9.0'},
-                    dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-                }
+                engines: {node: process.versions.node, cli: '^1.9.0'},
+                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
             };
-            const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
+            const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub,
+                'package-json': infoStub,
                 '../../package.json': {version: '1.10.0-beta.0'}
             }).subTasks.dist;
             const ctx = {version: '1.5.0'};
 
             return dist(ctx).then(() => {
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+                expect(infoStub.calledOnce).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
                 expect(ctx).to.deep.equal({
                     version: '1.5.0',
                     shasum: 'asdf1234',
@@ -236,16 +196,16 @@ describe('Unit: Tasks > yarn-install', function () {
         });
 
         it('adds shasum and tarball values to context', function () {
-            const data = {data: {dist: {shasum: 'asdf1234', tarball: 'something.tgz'}}};
-            const yarnStub = sinon.stub().resolves({stdout: JSON.stringify(data)});
+            const data = {dist: {shasum: 'asdf1234', tarball: 'something.tgz'}};
+            const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                '../utils/yarn': yarnStub
+                'package-json': infoStub
             }).subTasks.dist;
             const ctx = {version: '1.5.0'};
 
             return dist(ctx).then(() => {
-                expect(yarnStub.calledOnce).to.be.true;
-                expect(yarnStub.calledWithExactly(['info', 'ghost@1.5.0', '--json'])).to.be.true;
+                expect(infoStub.calledOnce).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
                 expect(ctx).to.deep.equal({
                     version: '1.5.0',
                     shasum: 'asdf1234',
