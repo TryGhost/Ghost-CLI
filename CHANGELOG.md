@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **setup:** refactor setup command ([9cb3138](https://github.com/TryGhost/Ghost-CLI/commit/9cb3138)), closes [#594](https://github.com/TryGhost/Ghost-CLI/issues/594) [#588](https://github.com/TryGhost/Ghost-CLI/issues/588)
 
+### Bug Fixes
+
+* **compat-check:** handle cli prerelease case ([9906ab6](https://github.com/TryGhost/Ghost-CLI/commit/9906ab6))
 
 
 <a name="1.9.9"></a>
