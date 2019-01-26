@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.10.0-beta.0"></a>
+# [1.10.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.9.9...1.10.0-beta.0) (2019-01-26)
+
+
+### Features
+
+* **setup:** refactor setup command ([9cb3138](https://github.com/TryGhost/Ghost-CLI/commit/9cb3138)), closes [#594](https://github.com/TryGhost/Ghost-CLI/issues/594) [#588](https://github.com/TryGhost/Ghost-CLI/issues/588)
+
+
+
 <a name="1.9.9"></a>
 ## [1.9.9](https://github.com/TryGhost/Ghost-CLI/compare/1.9.8...1.9.9) (2019-01-14)
 
