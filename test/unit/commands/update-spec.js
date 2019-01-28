@@ -135,7 +135,7 @@ describe('Unit: Commands > Update', function () {
                 tasks.forEach((task) => {
                     if (task.title.toLowerCase().indexOf('restarting') >= 0) {
                         ranRestart = true;
-                        expect(task.enabled(ctx)).to.be.false;
+                        expect(task.enabled(ctx)).to.be.undefined;
                     }
                 });
 
