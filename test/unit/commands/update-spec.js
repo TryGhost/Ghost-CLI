@@ -58,6 +58,135 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('run', function () {
+        it('restarts only if required: not specified + running', function () {
+            const UpdateCommand = proxyquire(modulePath, {
+                '../tasks/migrator': sinon.stub().resolves(),
+                '../tasks/major-update': {
+                    migrate: sinon.stub().resolves(),
+                    rollback: sinon.stub().resolves()
+                }
+            });
+
+            const system = {};
+            const ui = {log: () => true, listr: sinon.stub().resolves(), run: fn => fn()};
+            const ghostConfig = configStub();
+            ghostConfig.get.withArgs('database').returns({client: 'sqlite3'});
+
+            const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance = () => fakeInstance;
+            fakeInstance.running.resolves(true);
+            const cmdInstance = new UpdateCommand(ui, system);
+
+            sinon.stub(cmdInstance, 'version').resolves(true);
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link', 'stop']
+                .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
+
+            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false}).then(() => {
+                expect(ui.listr.calledOnce).to.be.true;
+                const [tasks, ctx] = ui.listr.args[0];
+                expect(tasks).to.be.an('array');
+                expect(ctx).to.be.an('object');
+                let ranRestart = false;
+
+                tasks.forEach((task) => {
+                    if (task.title.toLowerCase().indexOf('restarting') >= 0) {
+                        ranRestart = true;
+                        expect(task.enabled(ctx)).to.be.true;
+                    }
+                });
+
+                expect(ranRestart).to.be.true;
+                expect(fakeInstance.running.calledOnce).to.be.true;
+            });
+        });
+
+        it('restarts only if required: not specified + not running', function () {
+            const UpdateCommand = proxyquire(modulePath, {
+                '../tasks/migrator': sinon.stub().resolves(),
+                '../tasks/major-update': {
+                    migrate: sinon.stub().resolves(),
+                    rollback: sinon.stub().resolves()
+                }
+            });
+
+            const system = {};
+            const ui = {log: () => true, listr: sinon.stub().resolves(), run: fn => fn()};
+            const ghostConfig = configStub();
+            ghostConfig.get.withArgs('database').returns({client: 'sqlite3'});
+
+            const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance = () => fakeInstance;
+            fakeInstance.running.resolves(false);
+            const cmdInstance = new UpdateCommand(ui, system);
+
+            sinon.stub(cmdInstance, 'version').resolves(true);
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link', 'stop']
+                .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
+
+            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false}).then(() => {
+                expect(ui.listr.calledOnce).to.be.true;
+                const [tasks, ctx] = ui.listr.args[0];
+                expect(tasks).to.be.an('array');
+                expect(ctx).to.be.an('object');
+                let ranRestart = false;
+
+                tasks.forEach((task) => {
+                    if (task.title.toLowerCase().indexOf('restarting') >= 0) {
+                        ranRestart = true;
+                        expect(task.enabled(ctx)).to.be.undefined;
+                    }
+                });
+
+                expect(ranRestart).to.be.true;
+                expect(fakeInstance.running.calledOnce).to.be.true;
+            });
+        });
+
+        it('restarts only if required: specified', function () {
+            const UpdateCommand = proxyquire(modulePath, {
+                '../tasks/migrator': sinon.stub().resolves(),
+                '../tasks/major-update': {
+                    migrate: sinon.stub().resolves(),
+                    rollback: sinon.stub().resolves()
+                }
+            });
+
+            const system = {};
+            const ui = {log: () => true, listr: sinon.stub().resolves(), run: fn => fn()};
+            const ghostConfig = configStub();
+            ghostConfig.get.withArgs('database').returns({client: 'sqlite3'});
+
+            const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance = () => fakeInstance;
+            fakeInstance.running.resolves(false);
+            const cmdInstance = new UpdateCommand(ui, system);
+
+            sinon.stub(cmdInstance, 'version').resolves(true);
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link', 'stop']
+                .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
+
+            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: true}).then(() => {
+                expect(ui.listr.calledOnce).to.be.true;
+                const [tasks, ctx] = ui.listr.args[0];
+                expect(tasks).to.be.an('array');
+                expect(ctx).to.be.an('object');
+                let ranRestart = false;
+
+                tasks.forEach((task) => {
+                    if (task.title.toLowerCase().indexOf('restarting') >= 0) {
+                        ranRestart = true;
+                        expect(task.enabled(ctx)).to.be.true;
+                    }
+                });
+
+                expect(ranRestart).to.be.true;
+                expect(fakeInstance.running.calledOnce).to.be.true;
+            });
+        });
+
         it('doesn\'t run database migrations if active blog version is ^2.0.0', function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
@@ -101,7 +230,7 @@ describe('Unit: Commands > Update', function () {
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
 
-            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false}).then(() => {
+            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: false}).then(() => {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
@@ -173,7 +302,7 @@ describe('Unit: Commands > Update', function () {
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
 
-            return cmdInstance.run({version: '2.0.0', force: false, zip: '', v1: false}).then(() => {
+            return cmdInstance.run({version: '2.0.0', force: false, zip: '', v1: false, restart: false}).then(() => {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(ui.run.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
