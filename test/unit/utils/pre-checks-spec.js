@@ -21,6 +21,10 @@ function getTasks(stubs = {}, ui = {}, system = {}) {
 }
 
 describe('Unit: Utils > pre-checks', function () {
+    afterEach(function () {
+        delete process.env.GHOST_CLI_PRE_CHECKS;
+    });
+
     describe('update check', function () {
         it('rejects error if latestVersion has an error', function (done) {
             const pkg = {name: 'ghost', version: '1.0.0'};
@@ -75,6 +79,26 @@ describe('Unit: Utils > pre-checks', function () {
                 expect(latestVersion.calledWithExactly('ghost')).to.be.true;
             });
         });
+
+        it('enabled returns true if GHOST_CLI_PRE_CHECKS env var is unset', function () {
+            return getTasks({}, {}).then(([task]) => task.enabled()).then((result) => {
+                expect(result).to.be.true;
+            });
+        });
+
+        it('enabled returns true if GHOST_CLI_PRE_CHECKS env var is not false', function () {
+            process.env.GHOST_CLI_PRE_CHECKS = 'true';
+            return getTasks({}, {}).then(([task]) => task.enabled()).then((result) => {
+                expect(result).to.be.true;
+            });
+        });
+
+        it('enabled returns false if GHOST_CLI_PRE_CHECKS env var is false', function () {
+            process.env.GHOST_CLI_PRE_CHECKS = 'false';
+            return getTasks({}, {}).then(([task]) => task.enabled()).then((result) => {
+                expect(result).to.be.false;
+            });
+        });
     });
 
     describe('~/.config folder ownership', function () {
@@ -87,6 +111,18 @@ describe('Unit: Utils > pre-checks', function () {
             const homedir = sinon.stub(os, 'homedir').returns('/home/ghost');
             const exists = sinon.stub(fs, 'existsSync').returns(false);
 
+            return getTasks({}, {}, {platform: {linux: true}}).then(([,task]) => {
+                expect(task.enabled()).to.be.false;
+                expect(homedir.calledOnce).to.be.true;
+                expect(exists.calledOnce).to.be.true;
+            });
+        });
+
+        it('skips if GHOST_CLI_PRE_CHECKS env var is false', function () {
+            const homedir = sinon.stub(os, 'homedir').returns('/home/ghost');
+            const exists = sinon.stub(fs, 'existsSync').returns(true);
+
+            process.env.GHOST_CLI_PRE_CHECKS = 'false';
             return getTasks({}, {}, {platform: {linux: true}}).then(([,task]) => {
                 expect(task.enabled()).to.be.false;
                 expect(homedir.calledOnce).to.be.true;
