@@ -171,7 +171,7 @@ describe('Unit: Command', function () {
     });
 
     describe('_run', function () {
-        it('calls checkValidInstall when global option is not set', function () {
+        it('calls checkValidInstall when global option is not set', async function () {
             const checkValidInstall = sinon.stub();
             const Command = proxyquire(modulePath, {
                 './utils/check-valid-install': checkValidInstall
@@ -181,7 +181,7 @@ describe('Unit: Command', function () {
             checkValidInstall.throws();
 
             try {
-                TestCommand._run('test', {});
+                await TestCommand._run('test', {});
                 throw new Error('checkValidInstall not called');
             } catch (e) {
                 expect(e.message).to.not.equal('checkValidInstall not called');
@@ -190,7 +190,7 @@ describe('Unit: Command', function () {
             }
         });
 
-        it('will not run command when executed as root user', function () {
+        it('will not run command when executed as root user', async function () {
             const checkRootUserStub = sinon.stub();
             const Command = proxyquire(modulePath, {
                 './utils/check-root-user': checkRootUserStub
@@ -202,14 +202,14 @@ describe('Unit: Command', function () {
             checkRootUserStub.throws();
 
             try {
-                TestCommand._run('test');
+                await TestCommand._run('test');
             } catch (e) {
                 expect(e).to.exist;
                 expect(checkRootUserStub.calledOnce).to.be.true;
             }
         });
 
-        it('doesn\'t check for root when command allows root', function () {
+        it('doesn\'t check for root when command allows root', async function () {
             const checkRootUserStub = sinon.stub().throws('let them be freeee');
             class ShortCircuit {
                 constructor() {
@@ -226,7 +226,7 @@ describe('Unit: Command', function () {
             TestCommand.allowRoot = true;
 
             try {
-                TestCommand._run('test', {dir: '.'});
+                await TestCommand._run('test', {dir: '.'});
             } catch (e) {
                 expect(e).to.exist;
                 expect(e.message).to.equal('you shall not pass');
@@ -234,7 +234,7 @@ describe('Unit: Command', function () {
             }
         });
 
-        it('Changes directory if needed', function () {
+        it('Changes directory if needed', async function () {
             sinon.stub(process, 'exit').throws(new Error('exit_stub'));
             const outStub = sinon.stub(process.stderr, 'write');
             const chdirStub = sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
@@ -242,7 +242,7 @@ describe('Unit: Command', function () {
             class TestCommand extends Command {}
 
             try {
-                TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
+                await TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
                 throw new Error('Should have errored');
             } catch (error) {
                 expect(error).to.be.ok;
@@ -254,7 +254,7 @@ describe('Unit: Command', function () {
             }
         });
 
-        it('Creates & changes into directory if needed', function () {
+        it('Creates & changes into directory if needed', async function () {
             sinon.stub(process.stderr, 'write');
             sinon.stub(process, 'exit').throws(new Error('exit_stub'));
             sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
@@ -265,7 +265,7 @@ describe('Unit: Command', function () {
             TestCommand.ensureDir = true;
 
             try {
-                TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
+                await TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
                 throw new Error('Should have errored');
             } catch (error) {
                 expect(error).to.be.ok;
@@ -275,7 +275,7 @@ describe('Unit: Command', function () {
             }
         });
 
-        it('loads system and ui dependencies, calls run method', function () {
+        it('loads system and ui dependencies, calls run method', async function () {
             const uiStub = sinon.stub().returns({ui: true});
             const setEnvironmentStub = sinon.stub();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
@@ -290,28 +290,27 @@ describe('Unit: Command', function () {
 
             const runStub = sinon.stub(TestCommand.prototype, 'run');
 
-            return TestCommand._run('test', {
+            await TestCommand._run('test', {
                 verbose: true,
                 prompt: true,
                 development: true,
                 auto: false
-            }, [{extensiona: true}]).then(() => {
-                expect(uiStub.calledOnce).to.be.true;
-                expect(uiStub.calledWithExactly({
-                    verbose: true,
-                    allowPrompt: true,
-                    auto: false
-                })).to.be.true;
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-                expect(systemStub.calledOnce).to.be.true;
-                expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
-                expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true, auto: false})).to.be.true;
-            });
+            }, [{extensiona: true}]);
+            expect(uiStub.calledOnce).to.be.true;
+            expect(uiStub.calledWithExactly({
+                verbose: true,
+                allowPrompt: true,
+                auto: false
+            })).to.be.true;
+            expect(setEnvironmentStub.calledOnce).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(systemStub.calledOnce).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+            expect(runStub.calledOnce).to.be.true;
+            expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true, auto: false})).to.be.true;
         });
 
-        it('binds cleanup handler if cleanup method is defined', function () {
+        it('binds cleanup handler if cleanup method is defined', async function () {
             const uiStub = sinon.stub().returns({ui: true});
             const setEnvironmentStub = sinon.stub();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
@@ -331,33 +330,32 @@ describe('Unit: Command', function () {
             const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
-            return TestCommand._run('test', {
+            await TestCommand._run('test', {
                 verbose: false,
                 prompt: false,
                 development: false,
                 auto: true
-            }, [{extensiona: true}]).then(() => {
-                expect(uiStub.calledOnce).to.be.true;
-                expect(uiStub.calledWithExactly({
-                    verbose: false,
-                    allowPrompt: false,
-                    auto: true
-                })).to.be.true;
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-                expect(systemStub.calledOnce).to.be.true;
-                expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
-                expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
-                expect(onStub.calledTwice).to.be.true;
-                expect(onStub.calledWith('SIGINT')).to.be.true;
-                expect(onStub.calledWith('SIGTERM')).to.be.true;
+            }, [{extensiona: true}]);
+            expect(uiStub.calledOnce).to.be.true;
+            expect(uiStub.calledWithExactly({
+                verbose: false,
+                allowPrompt: false,
+                auto: true
+            })).to.be.true;
+            expect(setEnvironmentStub.calledOnce).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(systemStub.calledOnce).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+            expect(runStub.calledOnce).to.be.true;
+            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
+            expect(onStub.calledTwice).to.be.true;
+            expect(onStub.calledWith('SIGINT')).to.be.true;
+            expect(onStub.calledWith('SIGTERM')).to.be.true;
 
-                process.env.NODE_ENV = oldEnv;
-            });
+            process.env.NODE_ENV = oldEnv;
         });
 
-        it('runs updateCheck if checkVersion property is true on command class', function () {
+        it('runs updateCheck if checkVersion property is true on command class', async function () {
             const uiStub = sinon.stub().returns({ui: true});
             const setEnvironmentStub = sinon.stub();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
@@ -377,32 +375,31 @@ describe('Unit: Command', function () {
             const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
-            return TestCommand._run('test', {
+            await TestCommand._run('test', {
                 verbose: false,
                 prompt: false,
                 development: false,
                 auto: false
-            }, [{extensiona: true}]).then(() => {
-                expect(uiStub.calledOnce).to.be.true;
-                expect(uiStub.calledWithExactly({
-                    verbose: false,
-                    allowPrompt: false,
-                    auto: false
-                })).to.be.true;
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-                expect(systemStub.calledOnce).to.be.true;
-                expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
-                expect(preChecksStub.calledOnce).to.be.true;
-                expect(preChecksStub.calledWithExactly({ui: true}, {setEnvironment: setEnvironmentStub})).to.be.true;
-                expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
+            }, [{extensiona: true}]);
+            expect(uiStub.calledOnce).to.be.true;
+            expect(uiStub.calledWithExactly({
+                verbose: false,
+                allowPrompt: false,
+                auto: false
+            })).to.be.true;
+            expect(setEnvironmentStub.calledOnce).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(systemStub.calledOnce).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+            expect(preChecksStub.calledOnce).to.be.true;
+            expect(preChecksStub.calledWithExactly({ui: true}, {setEnvironment: setEnvironmentStub})).to.be.true;
+            expect(runStub.calledOnce).to.be.true;
+            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
 
-                process.env.NODE_ENV = oldEnv;
-            });
+            process.env.NODE_ENV = oldEnv;
         });
 
-        it('catches errors, passes them to ui error method, then exits', function () {
+        it('catches errors, passes them to ui error method, then exits', async function () {
             const errorStub = sinon.stub();
             const uiStub = sinon.stub().returns({error: errorStub});
             const setEnvironmentStub = sinon.stub();
@@ -415,7 +412,7 @@ describe('Unit: Command', function () {
 
             class TestCommand extends Command {
                 run() {
-                    return Promise.reject(new Error('an error occurred'));
+                    throw new Error('an error occurred');
                 }
             }
             TestCommand.global = true;
@@ -425,39 +422,38 @@ describe('Unit: Command', function () {
             process.env.NODE_ENV = 'production';
             const exitStub = sinon.stub(process, 'exit');
 
-            return TestCommand._run('test', {
+            await TestCommand._run('test', {
                 verbose: false,
                 prompt: false,
                 development: false,
                 auto: false
-            }, [{extensiona: true}]).then(() => {
-                expect(uiStub.calledOnce).to.be.true;
-                expect(uiStub.calledWithExactly({
-                    verbose: false,
-                    allowPrompt: false,
-                    auto: false
-                })).to.be.true;
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
-                expect(systemStub.calledOnce).to.be.true;
-                expect(systemStub.calledWithExactly({error: errorStub}, [{extensiona: true}])).to.be.true;
-                expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
-                expect(errorStub.calledOnce).to.be.true;
-                expect(exitStub.calledOnce).to.be.true;
+            }, [{extensiona: true}]);
+            expect(uiStub.calledOnce).to.be.true;
+            expect(uiStub.calledWithExactly({
+                verbose: false,
+                allowPrompt: false,
+                auto: false
+            })).to.be.true;
+            expect(setEnvironmentStub.calledOnce).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
+            expect(systemStub.calledOnce).to.be.true;
+            expect(systemStub.calledWithExactly({error: errorStub}, [{extensiona: true}])).to.be.true;
+            expect(runStub.calledOnce).to.be.true;
+            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
+            expect(errorStub.calledOnce).to.be.true;
+            expect(exitStub.calledOnce).to.be.true;
 
-                process.env.NODE_ENV = oldEnv;
-            });
+            process.env.NODE_ENV = oldEnv;
         });
     });
 
-    it('base run method throws error', function () {
+    it('base run method throws error', async function () {
         const Command = require(modulePath);
         class TestCommand extends Command {}
         const commandInstance = new TestCommand({}, {});
 
         try {
-            commandInstance.run();
+            await commandInstance.run();
             throw new Error('should not be thrown');
         } catch (e) {
             expect(e.message).to.equal('Command must implement run function');
@@ -467,20 +463,21 @@ describe('Unit: Command', function () {
     describe('runCommand', function () {
         const Command = require(modulePath);
 
-        it('errors if CommandClass does not extend Command', function () {
+        it('errors if CommandClass does not extend Command', async function () {
             class TestCommand extends Command {}
             class BadCommand {}
 
             const newInstance = new TestCommand({}, {});
 
-            return newInstance.runCommand(BadCommand, {}).then(() => {
+            try {
+                await newInstance.runCommand(BadCommand, {});
                 expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
+            } catch (error) {
                 expect(error.message).to.match(/does not extend the Command class/);
-            });
+            }
         });
 
-        it('instantiates and runs other command class', function () {
+        it('instantiates and runs other command class', async function () {
             class TestCommand extends Command {}
             class Test2Command extends Command {
                 run() {
@@ -491,13 +488,12 @@ describe('Unit: Command', function () {
             const runSpy = sinon.spy(Test2Command.prototype, 'run');
             const testInstance = new TestCommand({}, {});
 
-            return testInstance.runCommand(Test2Command, {argv: true}).then(() => {
-                expect(runSpy.calledOnce).to.be.true;
-                expect(runSpy.calledWithExactly({argv: true})).to.be.true;
-            });
+            await testInstance.runCommand(Test2Command, {argv: true});
+            expect(runSpy.calledOnce).to.be.true;
+            expect(runSpy.calledWithExactly({argv: true})).to.be.true;
         });
 
-        it('defaults to empty object if argv is not passed', function () {
+        it('defaults to empty object if argv is not passed', async function () {
             class TestCommand extends Command {}
             class Test2Command extends Command {
                 run() {
@@ -508,10 +504,9 @@ describe('Unit: Command', function () {
             const runSpy = sinon.spy(Test2Command.prototype, 'run');
             const testInstance = new TestCommand({}, {});
 
-            return testInstance.runCommand(Test2Command).then(() => {
-                expect(runSpy.calledOnce).to.be.true;
-                expect(runSpy.calledWithExactly({})).to.be.true;
-            });
+            await testInstance.runCommand(Test2Command);
+            expect(runSpy.calledOnce).to.be.true;
+            expect(runSpy.calledWithExactly({})).to.be.true;
         });
     });
 });
