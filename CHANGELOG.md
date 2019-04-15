@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.10.0-beta.1"></a>
+# [1.10.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0-beta.0...1.10.0-beta.1) (2019-04-15)
+
+
+### Bug Fixes
+
+* **install:** ignore dotfiles except for .ghost-cli in dir check ([0bd929b](https://github.com/TryGhost/Ghost-CLI/commit/0bd929b)), closes [#868](https://github.com/TryGhost/Ghost-CLI/issues/868)
+* **update:** maintain instance state ([#818](https://github.com/TryGhost/Ghost-CLI/issues/818)) ([f67c4bf](https://github.com/TryGhost/Ghost-CLI/commit/f67c4bf))
+
+
+### Features
+
+* **pre-checks:** add ability to skip pre-checks with env var ([6c5a49c](https://github.com/TryGhost/Ghost-CLI/commit/6c5a49c)), closes [#867](https://github.com/TryGhost/Ghost-CLI/issues/867)
+* **yarn:** use package-json instead of yarn for version resolution ([e68b65d](https://github.com/TryGhost/Ghost-CLI/commit/e68b65d))
+
+
+
 <a name="1.10.0-beta.0"></a>
 # [1.10.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.9.9...1.10.0-beta.0) (2019-01-26)
 
