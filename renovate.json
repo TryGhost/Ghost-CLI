@@ -13,6 +13,13 @@
   "major": {
     "automerge": false
   },
+  "ignoreDeps": [
+    "cli-table3",
+    "got",
+    "rxjs",
+    "standard-version",
+    "validator"
+  ],
   "packageRules": [
     {
       "depTypeList": ["devDependencies"],
@@ -21,7 +28,7 @@
     },
     {
       "groupName": "CLI Tools",
-      "packageNames": ["chalk", "cli-table3", "inquirer", "listr", "log-symbols", "ora", "yargs"],
+      "packageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora", "yargs"],
       "updateTypes": ["minor", "patch"],
       "automerge": true
     },
