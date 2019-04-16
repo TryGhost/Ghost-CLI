@@ -6,5 +6,9 @@
     ":maintainLockFilesMonthly",
     ":prHourlyLimitNone",
     ":automergeMinor"
- ]
+  ],
+  "travis": { "enabled": true },
+  "node": {
+    "supportPolicy": ["lts"]
+  },
 }
