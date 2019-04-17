@@ -19,7 +19,8 @@
     "got",
     "rxjs",
     "standard-version",
-    "validator"
+    "validator", 
+    "yargs"
   ],
   "packageRules": [
     {
@@ -29,7 +30,7 @@
     },
     {
       "groupName": "CLI Tools",
-      "packageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora", "yargs"],
+      "packageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora"],
       "updateTypes": ["minor", "patch"],
       "automerge": true
     },
