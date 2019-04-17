@@ -4,7 +4,8 @@
     "group:jsTestMonMajor",
     "group:linters",
     ":maintainLockFilesMonthly",
-    ":prHourlyLimitNone"
+    ":prHourlyLimitNone",
+    ":semanticCommitTypeAll(chore)"
   ],
   "travis": { "enabled": true },
   "node": {
@@ -20,8 +21,6 @@
     "standard-version",
     "validator"
   ],
-  "semanticCommits": true,
-  "semanticCommitType": "chore",
   "packageRules": [
     {
       "depTypeList": ["devDependencies"],
