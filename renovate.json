@@ -20,6 +20,8 @@
     "standard-version",
     "validator"
   ],
+  "semanticCommits": true,
+  "semanticCommitType": "chore",
   "packageRules": [
     {
       "depTypeList": ["devDependencies"],
