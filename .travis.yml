@@ -1,26 +1,25 @@
+dist: xenial
 language: node_js
-
 node_js:
-  - "6"
-  - "8"
-  - "10"
-
-sudo: false
-
-matrix:
-  include:
-    - node_js: "8"
-      env: TEST_SUITE=lint
-
+      - 6
+      - 8
+      - 10
+  
 cache:
   directories:
     - node_modules
 
-install:
-  - yarn
+jobs:
+  include:
+    - node_js: "10"
+      env: TEST_SUITE=lint
+
+# Don't run builds for renovate PRs, only renovate pushes
+if: NOT branch =~ /^renovate\\/.+$/ AND type != pull_request
 
 script:
   - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
 
 after_success:
-  - if [[ "$TRAVIS_NODE_VERSION" == "8" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
+  - if [[ "$TRAVIS_NODE_VERSION" == "10" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
+
