@@ -1,18 +1,11 @@
 {
   "extends": [
-    "config:base",
-    "group:jsTestMonMajor",
-    "group:linters",
-    ":maintainLockFilesMonthly",
-    ":prHourlyLimitNone",
+    "@tryghost:quietJS",
     ":semanticCommitTypeAll(chore)"
   ],
   "travis": { "enabled": true },
   "node": {
     "supportPolicy": ["lts"]
-  },
-  "major": {
-    "automerge": false
   },
   "ignoreDeps": [
     "cli-table3",
