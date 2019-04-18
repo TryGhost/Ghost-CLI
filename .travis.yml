@@ -14,6 +14,7 @@ jobs:
 
 # Don't run builds for renovate PRs
 if: NOT head_branch =~ ^renovate
+# dlalaa
 
 script:
   - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
