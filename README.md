@@ -1,5 +1,7 @@
 # Ghost-CLI
 
+testing
+
 [![TravisCI Status](https://travis-ci.org/TryGhost/Ghost-CLI.svg?branch=master)](https://travis-ci.org/TryGhost/Ghost-CLI)
 [![Appveyor Status](https://ci.appveyor.com/api/projects/status/drkas41sgvbdn9ca?svg=true)](https://ci.appveyor.com/project/acburdine/ghost-cli)
 [![Coverage Status](https://coveralls.io/repos/github/TryGhost/Ghost-CLI/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-CLI?branch=master)
