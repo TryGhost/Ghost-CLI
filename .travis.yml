@@ -12,8 +12,8 @@ jobs:
     - node_js: "10"
       env: TEST_SUITE=lint
 
-# Don't run builds for renovate PRs, only renovate pushes
-if: !(type = pull_request && branch =~ ^renovate/)
+# Don't run builds for renovate PRs 
+if: fork = true || NOT (type = pull_request && branch =~ ^renovate/)
 
 script:
   - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
