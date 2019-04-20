@@ -2,24 +2,20 @@
 const expect = require('chai').expect;
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
-const ProcessError = require('../../../lib/errors').ProcessError;
+const {isObservable} = require('rxjs');
+const {getReadableStream} = require('../../utils/stream');
+const {ProcessError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/yarn';
 
-let yarn;
+const setup = proxies => proxyquire(modulePath, proxies);
 
 describe('Unit: yarn', function () {
     let currentEnv;
-    let execa;
 
     beforeEach(function () {
         currentEnv = process.env;
         process.env = {};
-
-        execa = sinon.stub().resolves();
-        yarn = proxyquire(modulePath, {
-            execa: execa
-        });
     });
 
     afterEach(function () {
@@ -27,9 +23,10 @@ describe('Unit: yarn', function () {
     });
 
     it('spawns yarn process with no arguments correctly', function () {
-        const promise = yarn();
+        const execa = sinon.stub().resolves();
+        const yarn = setup({execa});
 
-        return promise.then(function () {
+        return yarn().then(function () {
             expect(execa.calledOnce).to.be.true;
             expect(execa.args[0]).to.be.ok;
             expect(execa.args[0]).to.have.lengthOf(3);
@@ -38,9 +35,10 @@ describe('Unit: yarn', function () {
     });
 
     it('spawns yarn process with correct arguments', function () {
-        const promise = yarn(['cache', 'clear']);
+        const execa = sinon.stub().resolves();
+        const yarn = setup({execa});
 
-        return promise.then(function () {
+        return yarn(['cache', 'clear']).then(function () {
             expect(execa.calledOnce).to.be.true;
             expect(execa.args[0]).to.be.ok;
             expect(execa.args[0]).to.have.lengthOf(3);
@@ -49,9 +47,10 @@ describe('Unit: yarn', function () {
     });
 
     it('correctly passes through options', function () {
-        const promise = yarn([], {cwd: 'test'});
+        const execa = sinon.stub().resolves();
+        const yarn = setup({execa});
 
-        return promise.then(function () {
+        return yarn([], {cwd: 'test'}).then(function () {
             expect(execa.calledOnce).to.be.true;
             expect(execa.args[0]).to.be.ok;
             expect(execa.args[0]).to.have.lengthOf(3);
@@ -61,11 +60,11 @@ describe('Unit: yarn', function () {
     });
 
     it('respects process.env overrides but doesn\'t mutate process.env', function () {
+        const execa = sinon.stub().resolves();
+        const yarn = setup({execa});
+
         process.env.TESTENV = 'test';
-
-        const promise = yarn([], {env: {TESTENV: 'override'}});
-
-        return promise.then(() => {
+        return yarn([], {env: {TESTENV: 'override'}}).then(() => {
             expect(execa.calledOnce).to.be.true;
             expect(execa.args[0][2]).to.be.an('object');
             expect(execa.args[0][2].env).to.be.an('object');
@@ -75,8 +74,8 @@ describe('Unit: yarn', function () {
     });
 
     it('fails gracefully when yarn fails', function () {
-        execa.rejects(new Error('YARN_TO_FAST'));
-        yarn = proxyquire(modulePath, {execa: execa});
+        const execa = sinon.stub().rejects(new Error('YARN_TO_FAST'));
+        const yarn = setup({execa});
 
         return yarn().then(() => {
             expect(false, 'Promise should have rejected').to.be.true;
@@ -88,105 +87,90 @@ describe('Unit: yarn', function () {
     });
 
     describe('can return observables', function () {
-        let stubs;
-        beforeEach(function () {
-            stubs = {
-                stdout: sinon.stub(),
-                observer: {
-                    next: sinon.stub(),
-                    complete: sinon.stub(),
-                    error: sinon.stub()
-                }
-            };
-
-            class TestClass {
-                constructor(fn) {
-                    stubs.proxy = {fn: fn};
-                    return (new Promise((resolve,reject) => {
-                        stubs.proxy.resolve = resolve;
-                        stubs.proxy.reject = reject;
-                    }));
-                }
-            }
-
-            const execaPromise = new Promise((resolve, reject) => {
-                stubs._execa = {
-                    resolve: resolve,
-                    reject: reject
-                };
-            });
-            execaPromise.stdout = {
-                setEncoding: () => true,
-                on: stubs.stdout
-            };
-            execa.returns(execaPromise);
-
-            yarn = proxyquire(modulePath, {
-                execa: execa,
-                rxjs: {Observable: TestClass}
-            });
-        });
-
         it('ends properly', function () {
-            const res = yarn([], {observe: true});
-            expect(stubs.proxy).to.be.an('Object');
-
-            stubs.proxy.fn(stubs.observer);
-            stubs._execa.resolve();
-            res.then(() => {
-                expect(stubs.observer.complete.calledOnce).to.be.true;
+            const execa = sinon.stub().callsFake(() => {
+                const promise = Promise.resolve();
+                promise.stdout = getReadableStream();
+                return promise;
             });
+            const yarn = setup({execa});
 
-            stubs.proxy.resolve();
-            return res;
+            const res = yarn([], {observe: true});
+            expect(isObservable(res)).to.be.true;
+
+            const subscriber = {
+                next: sinon.stub(),
+                error: sinon.stub(),
+                complete: sinon.stub()
+            };
+
+            res.subscribe(subscriber);
+
+            return res.toPromise().then(() => {
+                expect(execa.calledOnce).to.be.true;
+                expect(subscriber.next.called).to.be.false;
+                expect(subscriber.error.called).to.be.false;
+                expect(subscriber.complete.calledOnce).to.be.true;
+            });
         });
 
         it('ends properly (error)', function () {
-            const res = yarn([], {observe: true});
-            expect(stubs.proxy).to.be.an('Object');
-            stubs.proxy.fn(stubs.observer);
-            stubs._execa.reject('test');
-
-            res.then(() => {
-                expect(stubs.observer.complete.called).to.be.false;
-                expect(stubs.observer.error.calledOnce).to.be.true;
-                expect(stubs.observer.error.args[0][0]).to.equal('test');
+            const execa = sinon.stub().callsFake(() => {
+                const promise = Promise.reject(new Error('test error'));
+                promise.stdout = getReadableStream();
+                return promise;
             });
+            const yarn = setup({execa});
 
-            stubs.proxy.resolve();
-            return res;
-        });
-
-        it('proxies data through', function () {
-            yarn([], {observe: true});
-            expect(stubs.proxy).to.be.an('Object');
-            stubs.proxy.fn(stubs.observer);
-            expect(stubs.stdout.calledOnce).to.be.true;
-            expect(stubs.stdout.args[0][0]).to.equal('data');
-
-            const onFn = stubs.stdout.args[0][1];
-            onFn('\n\n\n');
-            onFn('test\n');
-            onFn('\nbest\n');
-            onFn('run');
-
-            const next = stubs.observer.next;
-            expect(next.callCount).to.equal(4);
-            expect(next.args[0][0]).to.equal('\n\n');
-            expect(next.args[1][0]).to.equal('test');
-            expect(next.args[2][0]).to.equal('\nbest');
-            expect(next.args[3][0]).to.equal('run');
-        });
-
-        it('cleans up observer error', function () {
             const res = yarn([], {observe: true});
-            expect(stubs.proxy).to.be.an('Object');
-            stubs.proxy.reject();
-            return res.then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((e) => {
-                expect(e).to.be.ok;
-                expect(e).to.be.instanceOf(ProcessError);
+            expect(isObservable(res)).to.be.true;
+
+            const subscriber = {
+                next: sinon.stub(),
+                error: sinon.stub(),
+                complete: sinon.stub()
+            };
+
+            res.subscribe(subscriber);
+
+            return res.toPromise().catch((error) => {
+                expect(error.message).to.equal('test error');
+                expect(execa.calledOnce).to.be.true;
+                expect(subscriber.next.called).to.be.false;
+                expect(subscriber.error.calledOnce).to.be.true;
+                expect(subscriber.error.args[0][0]).to.be.an.instanceOf(ProcessError);
+                expect(subscriber.complete.called).to.be.false;
+            });
+        });
+
+        it('passes data through', function () {
+            const execa = sinon.stub().callsFake(() => {
+                const promise = Promise.resolve();
+                promise.stdout = getReadableStream(function () {
+                    this.push('test message\n');
+                    this.push(null);
+                });
+                return promise;
+            });
+            const yarn = setup({execa});
+
+            const res = yarn([], {observe: true});
+            expect(isObservable(res)).to.be.true;
+
+            const subscriber = {
+                next: sinon.stub(),
+                error: sinon.stub(),
+                complete: sinon.stub()
+            };
+
+            res.subscribe(subscriber);
+
+            return res.toPromise().then(() => {
+                expect(execa.calledOnce).to.be.true;
+                expect(subscriber.next.calledOnce).to.be.true;
+                expect(subscriber.next.calledWithExactly('test message')).to.be.true;
+                expect(subscriber.error.called).to.be.false;
+                expect(subscriber.complete.calledOnce).to.be.true;
             });
         });
     });

@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const path = require('path');
 const fs = require('fs');
+const {Observable, isObservable} = require('rxjs');
 
 const modulePath = '../../../lib/tasks/yarn-install';
 const errors = require('../../../lib/errors');
@@ -16,7 +17,7 @@ describe('Unit: Tasks > yarn-install', function () {
     });
 
     it('base function calls subtasks and yarn util', function () {
-        const yarnStub = sinon.stub().resolves();
+        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
         const yarnInstall = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
@@ -25,7 +26,10 @@ describe('Unit: Tasks > yarn-install', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, task => task.task(ctx));
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
         });
 
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
@@ -67,7 +71,7 @@ describe('Unit: Tasks > yarn-install', function () {
     });
 
     it('catches errors from yarn and cleans up install folder', function () {
-        const yarnStub = sinon.stub().rejects(new Error('an error occurred'));
+        const yarnStub = sinon.stub().returns(new Observable(o => o.error(new Error('an error occurred'))));
         const yarnInstall = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
@@ -77,7 +81,10 @@ describe('Unit: Tasks > yarn-install', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, task => task.task(ctx));
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
         });
 
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
