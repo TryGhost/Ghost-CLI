@@ -1,0 +1,37 @@
+{
+  "extends": [
+    "@tryghost:quietJS",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "travis": { "enabled": true },
+  "node": {
+    "supportPolicy": ["lts"]
+  },
+  "ignoreDeps": [
+    "cli-table3",
+    "got",
+    "rxjs",
+    "standard-version",
+    "validator", 
+    "yargs"
+  ],
+  "packageRules": [
+    {
+      "depTypeList": ["devDependencies"],
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "groupName": "CLI Tools",
+      "packageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora"],
+      "updateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "groupName": "Well Known",
+      "packageNames": ["debug", "fs-extra", "got", "lodash", "moment", "semver", "yarn"],
+      "updateTypes": ["minor", "patch"],
+      "automerge": true
+    }
+  ]
+}
