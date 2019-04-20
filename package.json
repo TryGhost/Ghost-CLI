@@ -1,9 +1,9 @@
 {
   "name": "ghost-cli",
   "version": "1.10.0-rc.0",
-  "description": "Just a CLI manager (for a blogging platform)",
+  "description": "CLI Tool for installing & updating Ghost",
   "author": "Ghost Foundation",
-  "homepage": "http://ghost.org",
+  "homepage": "https://ghost.org",
   "keywords": [
     "ghost",
     "cli"
