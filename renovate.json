@@ -10,9 +10,8 @@
   "ignoreDeps": [
     "cli-table3",
     "got",
-    "rxjs",
     "standard-version",
-    "validator", 
+    "validator",
     "yargs"
   ],
   "packageRules": [
