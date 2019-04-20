@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.10.0-rc.0"></a>
+# [1.10.0-rc.0](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0-beta.1...1.10.0-rc.0) (2019-04-20)
+
+
+### Bug Fixes
+
+* **help:** Bigger max width for help output ([33e76fd](https://github.com/TryGhost/Ghost-CLI/commit/33e76fd))
+* **help:** Group global options together ([84f9012](https://github.com/TryGhost/Ghost-CLI/commit/84f9012))
+* **help:** Hacky fix for incorrect option name ([15d14e6](https://github.com/TryGhost/Ghost-CLI/commit/15d14e6))
+* **help:** remove dupe alias of check-mem in install ([4e37d56](https://github.com/TryGhost/Ghost-CLI/commit/4e37d56))
+* **help:** Tweak help argument display order ([3eb1961](https://github.com/TryGhost/Ghost-CLI/commit/3eb1961))
+
+
+
 <a name="1.10.0-beta.1"></a>
 # [1.10.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0-beta.0...1.10.0-beta.1) (2019-04-15)
 
