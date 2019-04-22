@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.10.0-rc.1"></a>
+# [1.10.0-rc.1](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0-rc.0...1.10.0-rc.1) (2019-04-22)
+
+
+### Bug Fixes
+
+* **deps:** update rxjs to v6 ([cbe6390](https://github.com/TryGhost/Ghost-CLI/commit/cbe6390))
+
+
+
 <a name="1.10.0-rc.0"></a>
 # [1.10.0-rc.0](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0-beta.1...1.10.0-rc.0) (2019-04-20)
 
