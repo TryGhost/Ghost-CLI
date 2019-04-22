@@ -9,7 +9,11 @@
   },
   "ignoreDeps": [
     "cli-table3",
+    "fkill",
     "got",
+    "latest-version",
+    "log-symbols",
+    "package-json",
     "standard-version",
     "validator",
     "yargs"
