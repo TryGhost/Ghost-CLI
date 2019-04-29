@@ -9,7 +9,6 @@
   },
   "ignoreDeps": [
     "cli-table3",
-    "fkill",
     "got",
     "latest-version",
     "log-symbols",
