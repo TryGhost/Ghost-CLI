@@ -10,8 +10,7 @@
   "ignoreDeps": [
     "cli-table3",
     "standard-version",
-    "validator",
-    "yargs"
+    "validator"
   ],
   "packageRules": [
     {
