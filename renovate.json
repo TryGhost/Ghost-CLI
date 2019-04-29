@@ -9,7 +9,6 @@
   },
   "ignoreDeps": [
     "cli-table3",
-    "package-json",
     "standard-version",
     "validator",
     "yargs"
