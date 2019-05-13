@@ -60,7 +60,7 @@
     "fs-extra": "7.0.1",
     "generate-password": "1.4.1",
     "global-modules": "2.0.0",
-    "got": "8.3.2",
+    "got": "9.6.0",
     "inquirer": "6.3.1",
     "is-running": "2.1.0",
     "latest-version": "4.0.0",

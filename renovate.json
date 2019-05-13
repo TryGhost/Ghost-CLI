@@ -9,7 +9,6 @@
   },
   "ignoreDeps": [
     "cli-table3",
-    "got",
     "latest-version",
     "log-symbols",
     "package-json",
