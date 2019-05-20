@@ -75,7 +75,7 @@
     "portfinder": "1.0.20",
     "prettyjson": "1.2.1",
     "read-last-lines": "1.7.1",
-    "replace-in-file": "4.0.0",
+    "replace-in-file": "4.1.0",
     "rxjs": "6.5.2",
     "semver": "6.0.0",
     "shasum": "1.0.2",
