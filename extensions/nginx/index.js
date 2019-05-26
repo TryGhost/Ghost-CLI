@@ -13,6 +13,9 @@ const template = require('lodash/template');
 const {Extension, errors} = require('../../lib');
 const {CliError, ProcessError} = errors;
 
+const nginxConfigPath = process.env.NGINX_CONFIG_PATH || '/etc/nginx';
+const nginxProgramName = process.env.NGINX_PROGRAM_NAME || 'nginx';
+
 class NginxExtension extends Extension {
     migrations() {
         const migrations = require('./migrations');
@@ -47,7 +50,7 @@ class NginxExtension extends Extension {
 
                 const confFile = `${hostname}.conf`;
 
-                if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
+                if (fs.existsSync(`${nginxConfigPath}/sites-available/${confFile}`)) {
                     return 'Nginx configuration already found for this url. Skipping Nginx setup.';
                 }
 
@@ -74,7 +77,7 @@ class NginxExtension extends Extension {
                     return 'SSL certs cannot be generated for IP addresses, skipping';
                 }
 
-                if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
+                if (fs.existsSync(`${nginxConfigPath}/sites-available/${confFile}`)) {
                     return 'SSL has already been set up, skipping';
                 }
 
@@ -82,7 +85,7 @@ class NginxExtension extends Extension {
                     return 'SSL email must be provided via the --sslemail option, skipping SSL setup';
                 }
 
-                if (!fs.existsSync(`/etc/nginx/sites-available/${hostname}.conf`)) {
+                if (!fs.existsSync(`${nginxConfigPath}/sites-available/${hostname}.conf`)) {
                     return single ? 'Nginx config file does not exist, skipping SSL setup' : true;
                 }
 
@@ -105,8 +108,8 @@ class NginxExtension extends Extension {
             port: instance.config.get('server.port')
         });
 
-        return this.template(instance, generatedConfig, 'nginx config', confFile, '/etc/nginx/sites-available').then(
-            () => this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
+        return this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`).then(
+            () => this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`)
         ).then(
             () => this.restartNginx()
         ).catch((error) => {
@@ -126,8 +129,8 @@ class NginxExtension extends Extension {
         const acme = require('./acme');
 
         const rootPath = path.resolve(instance.dir, 'system', 'nginx-root');
-        const dhparamFile = '/etc/nginx/snippets/dhparam.pem';
-        const sslParamsFile = '/etc/nginx/snippets/ssl-params.conf';
+        const dhparamFile = `${nginxConfigPath}/snippets/dhparam.pem`;
+        const sslParamsFile = `${nginxConfigPath}/snippets/ssl-params.conf`;
         const sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
 
         return this.ui.listr([{
@@ -210,8 +213,8 @@ class NginxExtension extends Extension {
                     port: instance.config.get('server.port')
                 });
 
-                return this.template(instance, generatedSslConfig, 'ssl config', confFile, '/etc/nginx/sites-available').then(
-                    () => this.ui.sudo(`ln -sf /etc/nginx/sites-available/${confFile} /etc/nginx/sites-enabled/${confFile}`)
+                return this.template(instance, generatedSslConfig, 'ssl config', confFile, `${nginxConfigPath}/sites-available`).then(
+                    () => this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`)
                 ).catch(error => Promise.reject(new ProcessError(error)));
             }
         }, {
@@ -233,29 +236,29 @@ class NginxExtension extends Extension {
 
         const promises = [];
 
-        if (fs.existsSync(`/etc/nginx/sites-available/${confFile}`)) {
+        if (fs.existsSync(`${nginxConfigPath}/sites-available/${confFile}`)) {
             // Nginx config exists, remove it
             promises.push(
                 Promise.all([
-                    this.ui.sudo(`rm -f /etc/nginx/sites-available/${confFile}`),
-                    this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${confFile}`)
+                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${confFile}`),
+                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${confFile}`)
                 ]).catch(error => Promise.reject(new CliError({
-                    message: `Nginx config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${confFile}.`,
-                    help: `Try running 'rm -f /etc/nginx/sites-available/${confFile} && rm -f /etc/nginx/sites-enabled/${confFile}'`,
+                    message: `Nginx config file link could not be removed, you will need to do this manually for ${nginxConfigPath}/sites-available/${confFile}.`,
+                    help: `Try running 'rm -f ${nginxConfigPath}/sites-available/${confFile} && rm -f ${nginxConfigPath}/sites-enabled/${confFile}'`,
                     err: error
                 })))
             );
         }
 
-        if (fs.existsSync(`/etc/nginx/sites-available/${sslConfFile}`)) {
+        if (fs.existsSync(`${nginxConfigPath}/sites-available/${sslConfFile}`)) {
             // SSL config exists, remove it
             promises.push(
                 Promise.all([
-                    this.ui.sudo(`rm -f /etc/nginx/sites-available/${sslConfFile}`),
-                    this.ui.sudo(`rm -f /etc/nginx/sites-enabled/${sslConfFile}`)
+                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${sslConfFile}`),
+                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${sslConfFile}`)
                 ]).catch(error => Promise.reject(new CliError({
-                    message: `SSL config file link could not be removed, you will need to do this manually for /etc/nginx/sites-available/${sslConfFile}.`,
-                    help: `Try running 'rm -f /etc/nginx/sites-available/${sslConfFile} && rm -f /etc/nginx/sites-enabled/${sslConfFile}'`,
+                    message: `SSL config file link could not be removed, you will need to do this manually for ${nginxConfigPath}/sites-available/${sslConfFile}.`,
+                    help: `Try running 'rm -f ${nginxConfigPath}/sites-available/${sslConfFile} && rm -f ${nginxConfigPath}/sites-enabled/${sslConfFile}'`,
                     err: error
                 })))
             );
@@ -269,7 +272,7 @@ class NginxExtension extends Extension {
     }
 
     restartNginx() {
-        return this.ui.sudo('nginx -s reload')
+        return this.ui.sudo(`${nginxProgramName} -s reload`)
             .catch(error => Promise.reject(new CliError({
                 message: 'Failed to restart Nginx.',
                 err: error
@@ -278,7 +281,7 @@ class NginxExtension extends Extension {
 
     isSupported() {
         try {
-            execa.shellSync('dpkg -l | grep nginx', {stdio: 'ignore'});
+            execa.shellSync(`dpkg -l | grep ${nginxProgramName}`, {stdio: 'ignore'});
             return true;
         } catch (e) {
             return false;
