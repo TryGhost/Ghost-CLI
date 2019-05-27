@@ -48,7 +48,7 @@
   "dependencies": {
     "abbrev": "1.1.1",
     "adm-zip": "0.4.13",
-    "bluebird": "3.5.4",
+    "bluebird": "3.5.5",
     "chalk": "2.4.2",
     "cli-table3": "0.5.0",
     "debug": "4.1.1",
