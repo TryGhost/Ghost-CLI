@@ -77,7 +77,7 @@
     "read-last-lines": "1.7.1",
     "replace-in-file": "4.1.0",
     "rxjs": "6.5.2",
-    "semver": "6.0.0",
+    "semver": "6.1.0",
     "shasum": "1.0.2",
     "stat-mode": "0.3.0",
     "strip-ansi": "5.2.0",
