@@ -296,6 +296,38 @@ describe('Unit: UI', function () {
             });
         });
 
+        it('returns default if auto is true and prompt type is list/expand', function () {
+            const ui = new UI();
+            ui.auto = true;
+
+            const prompts = [{
+                type: 'rawlist',
+                name: 'a',
+                choices: ['small', 'medium', 'large'],
+                default: 2
+            }, {
+                type: 'rawlist',
+                name: 'b',
+                choices: ['small', 'medium', 'large'],
+                default: 0
+            }, {
+                type: 'expand',
+                name: 'c',
+                choices: ['small', 'medium', 'large'],
+                default: 1
+            }];
+
+            const noSpinStub = sinon.stub(ui, 'noSpin');
+            return ui.prompt(prompts).then((results) => {
+                expect(results).to.deep.equal({
+                    a: 'large',
+                    b: 'small',
+                    c: 'medium'
+                });
+                expect(noSpinStub.called).to.be.false;
+            });
+        });
+
         it('passes options to prompt method', function () {
             const ui = new UI();
             ui.allowPrompt = true;
