@@ -90,6 +90,12 @@ describe('Unit: resolveVersion', function () {
                 expect(version).to.equal('1.52.37');
             });
         });
+
+        it('resolves with latest version if 1.x release is newer than latest 2.x', async function () {
+            const resolveVersion = stub(['1.0.0', '1.0.1', '2.0.0', '2.0.1', '1.0.2']);
+            const version = await resolveVersion();
+            expect(version).to.equal('2.0.1');
+        });
     });
 
     describe('with existing version', function () {
