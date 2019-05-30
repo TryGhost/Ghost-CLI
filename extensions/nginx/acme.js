@@ -7,6 +7,8 @@ const download = require('download');
 
 const {errors: {CliError, ProcessError, SystemError}} = require('../../lib');
 
+const nginxProgramName = process.env.NGINX_PROGRAM_NAME || 'nginx';
+
 function isInstalled() {
     return fs.existsSync('/etc/letsencrypt/acme.sh');
 }
@@ -67,7 +69,7 @@ function install(ui, task) {
 
 function generateCert(ui, domain, webroot, email, staging) {
     const cmd = `/etc/letsencrypt/acme.sh --issue --home /etc/letsencrypt --domain ${domain} --webroot ${webroot} ` +
-    `--reloadcmd "nginx -s reload" --accountemail ${email}${staging ? ' --staging' : ''}`;
+    `--reloadcmd "${nginxProgramName} -s reload" --accountemail ${email}${staging ? ' --staging' : ''}`;
 
     return ui.sudo(cmd).catch((error) => {
         if (error.code === 2) {
