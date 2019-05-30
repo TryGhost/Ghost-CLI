@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.10.1"></a>
+## [1.10.1](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0...1.10.1) (2019-05-30)
+
+
+### Bug Fixes
+
+* **extension:** prompt default should be index not key ([#935](https://github.com/TryGhost/Ghost-CLI/issues/935)) ([b8401ec](https://github.com/TryGhost/Ghost-CLI/commit/b8401ec))
+* **resolve-version:** sort versions before retrieving latest ([#939](https://github.com/TryGhost/Ghost-CLI/issues/939)) ([8a17c8b](https://github.com/TryGhost/Ghost-CLI/commit/8a17c8b))
+* **system:** improve hasInstance check ([#940](https://github.com/TryGhost/Ghost-CLI/issues/940)) ([aad60a6](https://github.com/TryGhost/Ghost-CLI/commit/aad60a6)), closes [#936](https://github.com/TryGhost/Ghost-CLI/issues/936)
+* **ui:** return correct default value for list prompts ([8dc7441](https://github.com/TryGhost/Ghost-CLI/commit/8dc7441))
+
+
+### Features
+
+* add check-update command ([#881](https://github.com/TryGhost/Ghost-CLI/issues/881)) ([527104b](https://github.com/TryGhost/Ghost-CLI/commit/527104b)), closes [#876](https://github.com/TryGhost/Ghost-CLI/issues/876)
+* **nginx:** customisable paths & program name ([#932](https://github.com/TryGhost/Ghost-CLI/issues/932)) ([94389d5](https://github.com/TryGhost/Ghost-CLI/commit/94389d5))
+
+
+
 <a name="1.10.0"></a>
 # [1.10.0](https://github.com/TryGhost/Ghost-CLI/compare/1.10.0-rc.1...1.10.0) (2019-04-22)
 
