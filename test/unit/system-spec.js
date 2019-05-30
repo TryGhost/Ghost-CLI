@@ -289,12 +289,17 @@ describe('Unit: System', function () {
     it('hasInstance works', function () {
         const System = require(modulePath);
         const system = new System({}, []);
-        system.globalConfig.set('instances', {test: {cwd: '/dir/a'}});
+        system.globalConfig.set('instances', {test: {cwd: '/dir/a'}, test2: {cwd: '/dir/c'}});
         const instanceA = new Instance({}, system, '/dir/a');
+        instanceA._cliConfig.set('name', 'test');
+
         const instanceB = new Instance({}, system, '/dir/b');
+        const instanceC = new Instance({}, system, '/dir/c');
+        instanceC._cliConfig.set('name', 'different');
 
         expect(system.hasInstance(instanceA)).to.be.true;
         expect(system.hasInstance(instanceB)).to.be.false;
+        expect(system.hasInstance(instanceC)).to.be.false;
     });
 
     it('cachedInstance loads instance and caches it', function () {
