@@ -171,13 +171,13 @@ adm-zip@0.4.13:
   resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.13.tgz#597e2f8cc3672151e1307d3e95cddbc75672314a"
   integrity sha512-fERNJX8sOXfel6qCBCMPvZLzENBEhZTzKqg6vrOW5pvoEaQuJhRU4ndTAh6lHOxn1I6jnz2NHra56ZODM751uw==
 
-aggregate-error@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/aggregate-error/-/aggregate-error-2.2.0.tgz#f54b464db18cc77c907ae084451f39134707134a"
-  integrity sha512-E5n+IZkhh22/pFdUvHUU/o9z752lc+7tgHt+FXS/g6BjlbE9249dGmuS/SxIWMPhTljZJkFN+7OXE0+O5+WT8w==
+aggregate-error@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/aggregate-error/-/aggregate-error-3.0.0.tgz#5b5a3c95e9095f311c9ab16c19fb4f3527cd3f79"
+  integrity sha512-yKD9kEoJIR+2IFqhMwayIBgheLYbB3PS2OBhWae1L/ODTd/JF/30cW0bc9TqzRL3k4U41Dieu3BF4I29p8xesA==
   dependencies:
     clean-stack "^2.0.0"
-    indent-string "^3.0.0"
+    indent-string "^3.2.0"
 
 ajv@^6.5.5, ajv@^6.9.1:
   version "6.10.0"
@@ -277,10 +277,15 @@ array-ify@^1.0.0:
   resolved "https://registry.yarnpkg.com/array-ify/-/array-ify-1.0.0.tgz#9e528762b4a9066ad163a6962a364418e9626ece"
   integrity sha1-nlKHYrSpBmrRY6aWKjZEGOlibs4=
 
-arrify@^1.0.0, arrify@^1.0.1:
+arrify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-1.0.1.tgz#898508da2226f380df904728456849c1501a4b0d"
   integrity sha1-iYUI2iIm84DfkEcoRWhJwVAaSw0=
+
+arrify@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/arrify/-/arrify-2.0.1.tgz#c9655e9331e0abcd588d2a7cad7e9956f66701fa"
+  integrity sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==
 
 asn1@~0.2.3:
   version "0.2.4"
@@ -892,14 +897,6 @@ cp-file@^6.2.0:
     pify "^4.0.1"
     safe-buffer "^5.0.1"
 
-cross-spawn-async@^2.1.1:
-  version "2.2.5"
-  resolved "https://registry.yarnpkg.com/cross-spawn-async/-/cross-spawn-async-2.2.5.tgz#845ff0c0834a3ded9d160daca6d390906bb288cc"
-  integrity sha1-hF/wwINKPe2dFg2sptOQkGuyiMw=
-  dependencies:
-    lru-cache "^4.0.0"
-    which "^1.2.8"
-
 cross-spawn@^4:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-4.0.2.tgz#7b9247621c23adfdd3856004a823cbe397424d41"
@@ -1376,15 +1373,6 @@ execa@1.0.0, execa@^1.0.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-execa@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/execa/-/execa-0.1.1.tgz#b09c2a9309bc0ef0501479472db3180f8d4c3edd"
-  integrity sha1-sJwqkwm8DvBQFHlHLbMYD41MPt0=
-  dependencies:
-    cross-spawn-async "^2.1.1"
-    object-assign "^4.0.1"
-    strip-eof "^1.0.0"
-
 execa@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/execa/-/execa-0.7.0.tgz#944becd34cc41ee32a63a9faf27ad5a65fc59777"
@@ -1584,17 +1572,17 @@ find-up@^2.0.0, find-up@^2.1.0:
   dependencies:
     locate-path "^2.0.0"
 
-fkill@6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/fkill/-/fkill-6.1.0.tgz#452ffa940598007407645e6ded9de5c6badd8403"
-  integrity sha512-538NpH8/vyIvi0offMGGlqT4Uhg05njCnMMuHIU0zohApV+hDi9lUzkrKhz3OcGrw6X8UZ2hPi3SCwvfYk2gBA==
+fkill@6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/fkill/-/fkill-6.2.0.tgz#a5c0ab65e0469578d0b648a86ac8526fc5ab5fa2"
+  integrity sha512-VoPpKScAzvZ07jtciOY0bJieJwyd/VVCuo4fn3nBLh4iBagzYED7GLQeFBpMpy7HP5edEKTDo8yxaIrYrwb7hg==
   dependencies:
-    aggregate-error "^2.2.0"
-    arrify "^1.0.1"
+    aggregate-error "^3.0.0"
+    arrify "^2.0.1"
     execa "^1.0.0"
     pid-from-port "^1.1.3"
     process-exists "^3.1.0"
-    taskkill "^2.0.0"
+    taskkill "^3.0.0"
 
 flat-cache@^2.0.1:
   version "2.0.1"
@@ -2039,7 +2027,7 @@ indent-string@^2.1.0:
   dependencies:
     repeating "^2.0.0"
 
-indent-string@^3.0.0:
+indent-string@^3.0.0, indent-string@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-3.2.0.tgz#4a5fd6d27cc332f37e5419a504dbb837105c9289"
   integrity sha1-Sl/W0nzDMvN+VBmlBNu4NxBckok=
@@ -2647,7 +2635,7 @@ lowercase-keys@^1.0.0, lowercase-keys@^1.0.1:
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.1.tgz#6f9e30b47084d971a7c820ff15a6c5167b74c26f"
   integrity sha512-G2Lj61tXDnVFFOi8VZds+SoQjtQC3dgokKdDG2mTm1tx4m50NUHBOZSBwQQHyy0V12A0JTG4icfZQH+xPyh8VA==
 
-lru-cache@^4.0.0, lru-cache@^4.0.1:
+lru-cache@^4.0.1:
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-4.1.5.tgz#8bbe50ea85bed59bc9e33dcab8235ee9bcf443cd"
   integrity sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==
@@ -4183,13 +4171,13 @@ tar-stream@^1.5.2:
     to-buffer "^1.1.1"
     xtend "^4.0.0"
 
-taskkill@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/taskkill/-/taskkill-2.0.0.tgz#a354305702a964357033027aa949eaed5331b784"
-  integrity sha1-o1QwVwKpZDVwMwJ6qUnq7VMxt4Q=
+taskkill@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/taskkill/-/taskkill-3.0.0.tgz#44fd7350a053fe97e5c25e16be5fe1e097a7ffdc"
+  integrity sha512-lKzlrlm9FVkxSwxl3h/9q/FQdjLke6AKPat5mfPN1+y9gH16F1/+pz3oQdQPJosBAEArW3vHuCMEoOf4d5l+NA==
   dependencies:
-    arrify "^1.0.0"
-    execa "^0.1.1"
+    arrify "^2.0.1"
+    execa "^1.0.0"
 
 tasklist@^3.1.0:
   version "3.1.1"
@@ -4439,7 +4427,7 @@ which-module@^2.0.0:
   resolved "https://registry.yarnpkg.com/which-module/-/which-module-2.0.0.tgz#d9ef07dce77b9902b8a3a8fa4b31c3e3f7e6e87a"
   integrity sha1-2e8H3Od7mQK4o6j6SzHD4/fm6Ho=
 
-which@1.3.1, which@^1.2.8, which@^1.2.9, which@^1.3.0, which@^1.3.1:
+which@1.3.1, which@^1.2.9, which@^1.3.0, which@^1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/which/-/which-1.3.1.tgz#a45043d54f5805316da8d62f9f50918d3da70b0a"
   integrity sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==
