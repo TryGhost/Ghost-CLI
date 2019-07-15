@@ -61,7 +61,7 @@
     "generate-password": "1.4.2",
     "global-modules": "2.0.0",
     "got": "9.6.0",
-    "inquirer": "6.4.1",
+    "inquirer": "6.5.0",
     "is-running": "2.1.0",
     "latest-version": "5.1.0",
     "listr": "0.14.3",
