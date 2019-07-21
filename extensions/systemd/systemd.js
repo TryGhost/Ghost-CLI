@@ -153,7 +153,7 @@ class SystemdProcessManager extends ProcessManager {
 
     static willRun() {
         try {
-            execa.shellSync('which systemctl', {stdio: 'ignore'});
+            execa.sync('which systemctl', {stdio: 'ignore', shell: true});
             return true;
         } catch (e) {
             return false;

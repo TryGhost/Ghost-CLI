@@ -1,18 +1,18 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const proxyquire = require('proxyquire');
 
-const execa = require('execa');
 const errors = require('../../../../../lib/errors');
 
-const systemStack = require('../../../../../lib/commands/doctor/checks/system-stack');
+function stub(execa) {
+    return proxyquire('../../../../../lib/commands/doctor/checks/system-stack', {execa});
+}
 
 describe('Unit: Doctor Checks > systemStack', function () {
-    afterEach(() => {
-        sinon.restore();
-    });
-
     it('enabled works', function () {
+        const systemStack = stub(() => {});
+
         expect(systemStack.enabled({local: true}), 'false if local is true').to.be.false;
         expect(systemStack.enabled({
             local: false,
@@ -25,12 +25,15 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('skip works', function () {
+        const systemStack = stub(() => {});
+
         expect(systemStack.skip({argv: {stack: false}})).to.be.true;
         expect(systemStack.skip({argv: {stack: true}})).to.be.false;
     });
 
     it('rejects if platform is not linux', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub().resolves();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 
@@ -53,7 +56,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('does not reject if confirm resolves with true', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub().resolves();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(true);
         const skipStub = sinon.stub();
@@ -74,7 +78,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('rejects if lsb_release command does not exist', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects();
+        const execaStub = sinon.stub().rejects();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 
@@ -97,7 +102,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('rejects if lsb_release command does not return Ubuntu 16', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: 'Ubuntu 14'});
+        const execaStub = sinon.stub().resolves({stdout: 'Ubuntu 14'});
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 
@@ -120,7 +126,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('groups missing rejected promises for systemd and nginx', function () {
-        const execaStub = sinon.stub(execa, 'shell');
+        const execaStub = sinon.stub();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
         const listrStub = sinon.stub().rejects({
@@ -150,7 +157,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('nginx and systemd checks reject correctly', function () {
-        const execaStub = sinon.stub(execa, 'shell');
+        const execaStub = sinon.stub();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 
@@ -200,7 +208,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('resolves if all stack conditions are met', function () {
-        const execaStub = sinon.stub(execa, 'shell');
+        const execaStub = sinon.stub();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 
@@ -220,7 +229,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('resolves if all stack conditions are met (ubuntu 18)', function () {
-        const execaStub = sinon.stub(execa, 'shell');
+        const execaStub = sinon.stub();
+        const systemStack = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 

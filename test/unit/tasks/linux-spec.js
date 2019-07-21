@@ -21,7 +21,7 @@ describe('Unit: Tasks > linux', function () {
     it('skips creating user if user already exists', function () {
         const shellStub = sinon.stub();
         const linux = proxyquire(modulePath, {
-            execa: {shellSync: shellStub}
+            execa: {sync: shellStub}
         });
         const listrStub = sinon.stub().callsFake(fakeListr);
 
@@ -39,7 +39,7 @@ describe('Unit: Tasks > linux', function () {
     it('creates user if user doesn\'t exist', function () {
         const shellStub = sinon.stub().throws(new Error('No such user'));
         const linux = proxyquire(modulePath, {
-            execa: {shellSync: shellStub}
+            execa: {sync: shellStub}
         });
         const listrStub = sinon.stub().callsFake(fakeListr);
         const sudoStub = sinon.stub().resolves();

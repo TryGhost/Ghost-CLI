@@ -10,7 +10,7 @@ describe('Unit: Utils > getOS', function () {
 
     beforeEach(function () {
         versionStub = sinon.stub(os, 'release');
-        execaStub = sinon.stub(execa, 'shellSync');
+        execaStub = sinon.stub(execa, 'sync');
         platformStub = sinon.stub(os, 'platform');
     });
 

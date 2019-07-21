@@ -2,18 +2,19 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const configStub = require('../../../../utils/config-stub');
+const proxyquire = require('proxyquire');
 
 const execa = require('execa');
 const errors = require('../../../../../lib/errors');
 
-const mysqlCheck = require('../../../../../lib/commands/doctor/checks/mysql');
+function stub(execa) {
+    return proxyquire('../../../../../lib/commands/doctor/checks/mysql', {execa});
+}
 
 describe('Unit: Doctor Checks > mysql', function () {
-    afterEach(() => {
-        sinon.restore();
-    });
-
     describe('enabled', function () {
+        const mysqlCheck = stub(() => {});
+
         it('returns false if configured db is sqlite3', function () {
             const config = configStub();
             config.get.withArgs('database.client').returns('sqlite3');
@@ -54,7 +55,8 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('appends sbin to path if platform is linux', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub().resolves();
+        const mysqlCheck = stub(execaStub);
         const ctx = {system: {platform: {linux: true}}};
 
         return mysqlCheck.task(ctx).then(() => {
@@ -65,17 +67,19 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('does not append sbin to path if platform is not linux', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub().resolves();
+        const mysqlCheck = stub(execaStub);
         const ctx = {system: {platform: {linux: false}}};
 
         return mysqlCheck.task(ctx).then(() => {
             expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.args[0][1]).to.be.empty;
+            expect(execaStub.args[0][1]).to.deep.equal({shell: true});
         });
     });
 
     it('calls confirm if execa rejects and allowPrompt is true', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects();
+        const execaStub = sinon.stub().rejects();
+        const mysqlCheck = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(true);
         const skipStub = sinon.stub();
@@ -95,7 +99,8 @@ describe('Unit: Doctor Checks > mysql', function () {
     });
 
     it('rejects if confirm says no', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects();
+        const execaStub = sinon.stub().rejects();
+        const mysqlCheck = stub(execaStub);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 

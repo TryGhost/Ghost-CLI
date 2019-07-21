@@ -9,7 +9,7 @@ describe('Unit: Systemd > get-uid util', function () {
     it('catches error but returns null', function () {
         const shellStub = sinon.stub().throws(new Error('some error'));
         const getUid = proxyquire(modulePath, {
-            execa: {shellSync: shellStub}
+            execa: {sync: shellStub}
         });
 
         const result = getUid('/some/dir');
@@ -20,7 +20,7 @@ describe('Unit: Systemd > get-uid util', function () {
     it('returns null if ghost user doesn\'t exist', function () {
         const shellStub = sinon.stub().throws(new Error('No such user'));
         const getUid = proxyquire(modulePath, {
-            execa: {shellSync: shellStub}
+            execa: {sync: shellStub}
         });
 
         const result = getUid('/some/dir');
@@ -33,7 +33,7 @@ describe('Unit: Systemd > get-uid util', function () {
         const lstatStub = sinon.stub().returns({uid: 1});
         const getUid = proxyquire(modulePath, {
             fs: {lstatSync: lstatStub},
-            execa: {shellSync: shellStub}
+            execa: {sync: shellStub}
         });
 
         const result = getUid('/some/dir');
@@ -48,7 +48,7 @@ describe('Unit: Systemd > get-uid util', function () {
         const lstatStub = sinon.stub().returns({uid: 42});
         const getUid = proxyquire(modulePath, {
             fs: {lstatSync: lstatStub},
-            execa: {shellSync: shellStub}
+            execa: {sync: shellStub}
         });
 
         const result = getUid('/some/dir');

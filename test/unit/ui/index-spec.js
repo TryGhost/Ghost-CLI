@@ -482,10 +482,13 @@ describe('Unit: UI', function () {
     });
 
     describe('sudo', function () {
-        const UI = require(modulePath);
+        function stub(execa) {
+            return proxyquire(modulePath, {execa});
+        }
 
         it('runs a sudo command', function (done) {
-            const shellStub = sinon.stub(execa, 'shell');
+            const shellStub = sinon.stub();
+            const UI = stub(shellStub);
             const ui = new UI();
 
             const logStub = sinon.stub(ui, 'log');
@@ -500,7 +503,7 @@ describe('Unit: UI', function () {
                 expect(logStub.calledWithExactly('+ sudo ghost -v', 'gray')).to.be.true;
                 expect(shellStub.calledOnce).to.be.true;
                 expect(shellStub.args[0][0]).to.match(eCall);
-                expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo'});
+                expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo', shell: true});
                 expect(promptStub.calledOnce).to.be.true;
                 done();
             });
@@ -514,7 +517,8 @@ describe('Unit: UI', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};
 
-            const shellStub = sinon.stub(execa, 'shell').returns(shell);
+            const shellStub = sinon.stub().returns(shell);
+            const UI = stub(shellStub);
             const ui = new UI();
 
             sinon.stub(ui, 'log').returns(true);

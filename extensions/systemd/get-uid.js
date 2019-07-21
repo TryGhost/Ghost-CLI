@@ -12,7 +12,7 @@ const execa = require('execa');
  */
 module.exports = function getUid(dir) {
     try {
-        const uid = execa.shellSync('id -u ghost').stdout;
+        const uid = execa.sync('id -u ghost', {shell: true}).stdout;
         const stat = fs.lstatSync(path.join(dir, 'content'));
 
         if (stat.uid.toString() !== uid) {

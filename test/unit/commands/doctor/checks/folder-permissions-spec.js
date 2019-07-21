@@ -1,18 +1,18 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
+const proxyquire = require('proxyquire');
 
-const execa = require('execa');
-const errors = require('../../../../../lib/errors');
-
-const folderPermissions = require('../../../../../lib/commands/doctor/checks/folder-permissions');
+function stub(checkPermissions) {
+    return proxyquire('../../../../../lib/commands/doctor/checks/folder-permissions', {
+        './check-permissions': checkPermissions
+    });
+}
 
 describe('Unit: Doctor Checks > Checking folder permissions', function () {
-    afterEach(() => {
-        sinon.restore();
-    });
-
     it('exports tasks', function () {
+        const folderPermissions = stub(() => {});
+
         expect(folderPermissions).to.be.an.instanceof(Object);
         expect(folderPermissions.title).to.match(/Checking folder permissions/);
         expect(folderPermissions.task).to.be.an.instanceof(Function);
@@ -21,60 +21,26 @@ describe('Unit: Doctor Checks > Checking folder permissions', function () {
         expect(folderPermissions.category).to.have.length(2);
     });
 
-    it('skips when content when ghost is locally installed', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
+    it('enabled returns false when process manager is local', function () {
+        const folderPermissions = stub(() => {});
+        const instance = {process: {name: 'local'}};
 
-        expect(folderPermissions).to.exist;
-        expect(folderPermissions.enabled({instance: {process: {name: 'local'}}}), 'skips if no Ghost user should be used').to.be.false;
-        expect(execaStub.called).to.be.false;
+        expect(folderPermissions.enabled({instance})).to.be.false;
     });
 
-    it('rejects with error if folders have incorrect permissions', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: './content/images\n./system/apps\n./content/themes'});
+    it('enabled returns true when process manager is not local', function () {
+        const folderPermissions = stub(() => {});
+        const instance = {process: {name: 'systemd'}};
 
-        expect(folderPermissions.enabled({instance: {process: {name: 'systemd'}}}), 'skips if no Ghost user should be used').to.be.true;
-        return folderPermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your installation folder contains some directories or files with incorrect permissions:/);
-            expect(error.message).to.match(/- \.\/system\/apps/);
-            expect(error.message).to.match(/sudo find \.\/ -type d -exec chmod 00775 \{\} \\;/);
-            expect(execaStub.called).to.be.true;
-        });
+        expect(folderPermissions.enabled({instance})).to.be.true;
     });
 
-    it('rejects with error if files have incorrect permissions', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: './content/images/test.jpg'});
+    it('task calls checkPermissions', async function () {
+        const checkPermissions = sinon.stub().resolves();
+        const folderPermissions = stub(checkPermissions);
 
-        return folderPermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your installation folder contains a directory or file with incorrect permissions:/);
-            expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
-            expect(error.message).to.match(/sudo find \.\/ -type d -exec chmod 00775 \{\} \\;/);
-            expect(execaStub.called).to.be.true;
-        });
-    });
-
-    it('passes if all folders have the correct permissions', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: ''});
-
-        return folderPermissions.task({}).then(() => {
-            expect(execaStub.called).to.be.true;
-        });
-    });
-
-    it('rejects with error if execa command fails', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
-
-        return folderPermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ProcessError);
-            expect(error.message).to.match(/oops, cmd could not be executed/);
-            expect(execaStub.called).to.be.true;
-        });
+        await folderPermissions.task();
+        expect(checkPermissions.calledOnce).to.be.true;
+        expect(checkPermissions.calledWithExactly('folder', 'Checking folder permissions'));
     });
 });

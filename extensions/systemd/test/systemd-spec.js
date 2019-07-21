@@ -388,7 +388,7 @@ describe('Unit: Systemd > Process Manager', function () {
         it('Calls execa', function () {
             const expectedCmd = 'which systemctl';
             const Systemd = proxyquire(modulePath,
-                {execa: {shellSync: execaStub}});
+                {execa: {sync: execaStub}});
 
             expect(Systemd.willRun()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
@@ -398,7 +398,7 @@ describe('Unit: Systemd > Process Manager', function () {
         it('Always fails', function () {
             execaStub = sinon.stub().throws(new Error());
             const Systemd = proxyquire(modulePath,
-                {execa: {shellSync: execaStub}});
+                {execa: {sync: execaStub}});
 
             expect(Systemd.willRun()).to.be.false;
             expect(execaStub.calledOnce).to.be.true;

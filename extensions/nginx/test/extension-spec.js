@@ -705,7 +705,7 @@ describe('Unit: Extensions > Nginx', function () {
     });
 
     it('isSupported fn', function () {
-        const shell = sinon.stub(execa, 'shellSync');
+        const shell = sinon.stub(execa, 'sync');
         const inst = new Nginx({}, {}, {}, '/some/dir');
 
         expect(inst.isSupported()).to.be.true;
