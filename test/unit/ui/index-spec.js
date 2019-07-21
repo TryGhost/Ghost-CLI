@@ -9,8 +9,6 @@ const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
 const EventEmitter = require('events');
 
-const execa = require('execa');
-
 const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {

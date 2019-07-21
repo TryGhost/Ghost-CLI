@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const configStub = require('../../../../utils/config-stub');
 const proxyquire = require('proxyquire');
 
-const execa = require('execa');
 const errors = require('../../../../../lib/errors');
 
 function stub(execa) {
