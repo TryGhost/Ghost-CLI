@@ -1,6 +1,6 @@
 [Unit]
 Description=Ghost systemd service for blog: <%= name %>
-Documentation=https://docs.ghost.org
+Documentation=https://ghost.org/docs/
 
 [Service]
 Type=simple

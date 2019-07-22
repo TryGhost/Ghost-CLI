@@ -745,7 +745,7 @@ describe('Unit: UI', function () {
                 expect(log.args[1][0]).to.equal(errs[0].toString(true));
                 expect(log.args[2][0]).to.equal('cherries');
                 expect(stripAnsi(log.args[3][0])).to.match(/\nTry running ghost doctor to check your system for known issues./);
-                expect(log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(log.args[4][0]).to.match(/https:\/\/ghost\.org\/docs\//);
                 expect(log.args[5][0]).to.match(/Cli/);
                 expect(log.args[6][0]).to.equal(errs[1].toString(true));
                 expect(log.args[7][0]).to.equal('cherries');
@@ -771,7 +771,7 @@ describe('Unit: UI', function () {
                 expect(log.args[1][0]).to.equal(errs[0].toString(false));
                 expect(log.args[2][0]).to.equal('cherries');
                 expect(stripAnsi(log.args[3][0])).to.match(/\nTry running ghost doctor to check your system for known issues./);
-                expect(log.args[4][0]).to.match(/https:\/\/docs\.ghost\.org\//);
+                expect(log.args[4][0]).to.match(/https:\/\/ghost\.org\/docs\//);
                 expect(log.args[5][0]).to.match(/Cli/);
                 expect(log.args[6][0]).to.equal(errs[1].toString(false));
                 expect(log.args[7][0]).to.equal('cherries');
@@ -810,7 +810,7 @@ describe('Unit: UI', function () {
                 expect(stripAnsi(log.args[4][0])).to.match(/Message: Error 2/);
                 expect(log.args[5][0]).to.equal('cherries');
                 expect(stripAnsi(log.args[6][0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(log.args[7][0]).to.match(/You can always refer to https:\/\/docs.ghost.org/);
+                expect(log.args[7][0]).to.match(/You can always refer to https:\/\/ghost.org\/docs\//);
             });
 
             it('non-verbose with log output', function () {
@@ -841,7 +841,7 @@ describe('Unit: UI', function () {
                 expect(log.args[5][0]).to.equal('cherries');
                 expect(log.args[6][0]).to.match(/Additional log info available in/);
                 expect(stripAnsi(log.args[7][0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(log.args[8][0]).to.match(/You can always refer to https:\/\/docs.ghost.org/);
+                expect(log.args[8][0]).to.match(/You can always refer to https:\/\/ghost.org\/docs\//);
             });
         });
 
@@ -872,7 +872,7 @@ describe('Unit: UI', function () {
                 expectedErrors.forEach(function (err, i) {
                     expect(log.args[i * 5 + 2][0]).to.match(/Additional log info/);
                     expect(stripAnsi(log.args[i * 5 + 3][0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                    expect(log.args[i * 5 + 4][0]).to.match(/You can always refer to https:\/\/docs\.ghost\.org/);
+                    expect(log.args[i * 5 + 4][0]).to.match(/You can always refer to https:\/\/ghost\.org\/docs\//);
                     expect(stripAnsi(log.args[i * 5][0]).split(/\n/)).to.deep.equal(err);
                 });
             });
@@ -892,7 +892,7 @@ describe('Unit: UI', function () {
                 expect(system.writeErrorLog.calledOnce).to.be.true;
                 expect(log.args[2][0]).to.match(/Additional log info/);
                 expect(stripAnsi(log.args[3][0])).to.match(/Try running ghost doctor to check your system for known issues./);
-                expect(log.args[4][0]).to.match(/You can always refer to https:\/\/docs\.ghost\.org/);
+                expect(log.args[4][0]).to.match(/You can always refer to https:\/\/ghost\.org\/docs\//);
                 expect(stripAnsi(log.args[0][0]).split(/\n/)).to.deep.equal(expectedError);
             });
         });
