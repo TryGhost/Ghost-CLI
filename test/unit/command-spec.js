@@ -6,8 +6,15 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../../lib/command';
 
 describe('Unit: Command', function () {
+    let oldEnv;
+
+    beforeEach(() => {
+        oldEnv = process.env.NODE_ENV;
+    });
+
     afterEach(() => {
         sinon.restore();
+        process.env.NODE_ENV = oldEnv;
     });
 
     describe('configure', function () {
@@ -327,7 +334,6 @@ describe('Unit: Command', function () {
 
             const runStub = sinon.stub(TestCommand.prototype, 'run');
             const onStub = sinon.stub(process, 'on').returnsThis();
-            const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
             await TestCommand._run('test', {
@@ -351,8 +357,6 @@ describe('Unit: Command', function () {
             expect(onStub.calledTwice).to.be.true;
             expect(onStub.calledWith('SIGINT')).to.be.true;
             expect(onStub.calledWith('SIGTERM')).to.be.true;
-
-            process.env.NODE_ENV = oldEnv;
         });
 
         it('runs updateCheck if checkVersion property is true on command class', async function () {
@@ -372,7 +376,6 @@ describe('Unit: Command', function () {
             TestCommand.runPreChecks = true;
 
             const runStub = sinon.stub(TestCommand.prototype, 'run');
-            const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'development';
 
             await TestCommand._run('test', {
@@ -395,8 +398,6 @@ describe('Unit: Command', function () {
             expect(preChecksStub.calledWithExactly({ui: true}, {setEnvironment: setEnvironmentStub})).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
-
-            process.env.NODE_ENV = oldEnv;
         });
 
         it('catches errors, passes them to ui error method, then exits', async function () {
@@ -418,7 +419,6 @@ describe('Unit: Command', function () {
             TestCommand.global = true;
 
             const runStub = sinon.spy(TestCommand.prototype, 'run');
-            const oldEnv = process.env.NODE_ENV;
             process.env.NODE_ENV = 'production';
             const exitStub = sinon.stub(process, 'exit');
 
@@ -442,8 +442,6 @@ describe('Unit: Command', function () {
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-
-            process.env.NODE_ENV = oldEnv;
         });
     });
 
