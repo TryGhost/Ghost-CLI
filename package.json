@@ -72,7 +72,7 @@
     "ora": "3.4.0",
     "package-json": "6.5.0",
     "path-is-root": "0.1.0",
-    "portfinder": "1.0.21",
+    "portfinder": "1.0.23",
     "prettyjson": "1.2.1",
     "read-last-lines": "1.7.1",
     "replace-in-file": "4.1.3",
