@@ -22,7 +22,7 @@ install:
   - if [ "$TRAVIS_NODE_VERSION" == "12" ]; then yarn --ignore-engines; else yarn; fi
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then yarn lint; else yarn test:all; fi
+  - if [ "$TEST_SUITE" == "lint" ]; then yarn lint; else yarn --ignore-engines test:all; fi
 
 after_success:
  - if [[ "$TRAVIS_NODE_VERSION" == "10" && "$TEST_SUITE" != "lint" ]]; then yarn coverage; fi
