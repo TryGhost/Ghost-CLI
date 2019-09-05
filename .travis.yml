@@ -3,7 +3,6 @@ language: node_js
 node_js:
   - 8
   - 10
-  - 12
 
 cache: yarn
 
@@ -11,6 +10,9 @@ jobs:
   include:
     - node_js: "10"
       env: TEST_SUITE=lint
+  include:
+    - node_js: "12"
+      env: GHOST_NODE_VERSION_CHECK=false
 
 # Don't run builds for renovate PRs
 if: NOT head_branch =~ ^renovate
