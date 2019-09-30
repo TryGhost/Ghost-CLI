@@ -912,19 +912,18 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('version', function () {
-        it('resolves with true if rollback is true', function () {
+        it('resolves with true if rollback is true', async function () {
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
 
-            return instance.version({rollback: true}).then((result) => {
-                expect(result).to.be.true;
-            });
+            const result = await instance.version({rollback: true});
+            expect(result).to.be.true;
         });
 
-        it('calls resolveVersion util with correct args and sets version and installPath in context', function () {
+        it('calls resolveVersion util with correct args and sets version and installPath in context', async function () {
             const resolveVersion = sinon.stub().resolves('1.0.1');
             const UpdateCommand = proxyquire(modulePath, {
-                '../utils/resolve-version': resolveVersion
+                '../utils/version': {resolveVersion}
             });
             const instance = new UpdateCommand({}, {});
             const context = {
@@ -936,21 +935,19 @@ describe('Unit: Commands > Update', function () {
             };
             sinon.stub(process, 'cwd').returns('/var/www/ghost');
 
-            return instance.version(context).then((result) => {
-                expect(result).to.be.true;
-                expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, '1.0.0', true, false)).to.be.true;
-                expect(context.version).to.equal('1.0.1');
-                expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
-            });
+            const result = await instance.version(context);
+            expect(result).to.be.true;
+            expect(resolveVersion.calledOnce).to.be.true;
+            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: true, force: false})).to.be.true;
+            expect(context.version).to.equal('1.0.1');
+            expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
         });
 
-        it('calls versionFromZip resolver with zip path if zip is passed', function () {
+        it('calls versionFromZip resolver with zip path if zip is passed', async function () {
             const resolveVersion = sinon.stub().resolves('1.0.1');
-            const zipVersion = sinon.stub().resolves('1.1.0');
+            const versionFromZip = sinon.stub().resolves('1.1.0');
             const UpdateCommand = proxyquire(modulePath, {
-                '../utils/resolve-version': resolveVersion,
-                '../utils/version-from-zip': zipVersion
+                '../utils/version': {resolveVersion, versionFromZip}
             });
             const instance = new UpdateCommand({}, {});
             const context = {
@@ -963,20 +960,19 @@ describe('Unit: Commands > Update', function () {
             };
             sinon.stub(process, 'cwd').returns('/var/www/ghost');
 
-            return instance.version(context).then((result) => {
-                expect(result).to.be.true;
-                expect(resolveVersion.called).to.be.false;
-                expect(zipVersion.calledOnce).to.be.true;
-                expect(zipVersion.calledWithExactly('/some/zip/file.zip', '1.0.0', false)).to.be.true;
-                expect(context.version).to.equal('1.1.0');
-                expect(context.installPath).to.equal('/var/www/ghost/versions/1.1.0');
-            });
+            const result = await instance.version(context);
+            expect(result).to.be.true;
+            expect(resolveVersion.called).to.be.false;
+            expect(versionFromZip.calledOnce).to.be.true;
+            expect(versionFromZip.calledWithExactly('/some/zip/file.zip', '1.0.0', {force: false})).to.be.true;
+            expect(context.version).to.equal('1.1.0');
+            expect(context.installPath).to.equal('/var/www/ghost/versions/1.1.0');
         });
 
-        it('swallows CliErrors from resolveVersion util', function () {
-            const resolveVersion = sinon.stub().rejects(new errors.CliError('No valid versions found'));
+        it('returns false if resolveVersion returns null', async function () {
+            const resolveVersion = sinon.stub().resolves(null);
             const UpdateCommand = proxyquire(modulePath, {
-                '../utils/resolve-version': resolveVersion
+                '../utils/version': {resolveVersion}
             });
             const instance = new UpdateCommand({}, {});
             const context = {
@@ -987,36 +983,10 @@ describe('Unit: Commands > Update', function () {
                 v1: false
             };
 
-            return instance.version(context).then((result) => {
-                expect(result).to.be.false;
-                expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, '1.0.0', false, true)).to.be.true;
-            });
-        });
-
-        it('re-throws non CliErrors from resolveVersion util', function () {
-            const resolveVersion = sinon.stub().callsFake(() => Promise.reject(new Error('something bad'))
-            );
-            const UpdateCommand = proxyquire(modulePath, {
-                '../utils/resolve-version': resolveVersion
-            });
-            const instance = new UpdateCommand({}, {});
-            const context = {
-                rollback: false,
-                force: true,
-                version: null,
-                activeVersion: '1.0.0',
-                v1: false
-            };
-
-            return instance.version(context).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(Error);
-                expect(error.message).to.equal('something bad');
-                expect(resolveVersion.calledOnce).to.be.true;
-                expect(resolveVersion.calledWithExactly(null, '1.0.0', false, true)).to.be.true;
-            });
+            const result = await instance.version(context);
+            expect(result).to.be.false;
+            expect(resolveVersion.calledOnce).to.be.true;
+            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: false, force: true})).to.be.true;
         });
     });
 
