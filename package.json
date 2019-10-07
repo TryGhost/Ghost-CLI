@@ -85,7 +85,7 @@
     "systeminformation": "4.14.11",
     "tail": "2.0.3",
     "validator": "7.2.0",
-    "yargs": "14.0.0",
+    "yargs": "14.2.0",
     "yarn": "1.17.3"
   },
   "devDependencies": {
