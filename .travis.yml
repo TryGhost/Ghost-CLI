@@ -16,7 +16,7 @@ jobs:
 if: NOT head_branch =~ ^renovate
 
 script:
-  - if [ "$TEST_SUITE" == "lint" ]; then yarn lint; else yarn test:all; fi
+  - if [ "$TEST_SUITE" == "lint" ]; then yarn lint; else GHOST_NODE_VERSION_CHECK=false yarn test:all; fi
 
 after_success:
  - if [[ "$TRAVIS_NODE_VERSION" == "10" && "$TEST_SUITE" != "lint" ]]; then yarn coverage; fi
