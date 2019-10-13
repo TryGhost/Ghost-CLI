@@ -11,6 +11,9 @@ jobs:
   include:
     - node_js: '10'
       env: TEST_SUITE=lint
+    - node_js: '12'
+  allow_failures:
+    - node_js: '12'
 
 # Don't run builds for renovate PRs
 if: NOT head_branch =~ ^renovate
