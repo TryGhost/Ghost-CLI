@@ -3,7 +3,6 @@ language: node_js
 node_js:
   - 8
   - 10
-  - 12
 
 cache: yarn
 
@@ -11,6 +10,7 @@ jobs:
   include:
     - node_js: '10'
       env: TEST_SUITE=lint
+    - node_js: '12'
   allow_failures:
     - node_js: '12'
 
