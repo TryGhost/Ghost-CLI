@@ -1,21 +1,31 @@
 dist: xenial
 language: node_js
 node_js:
-      - 8
-      - 10
+  - 8
+  - 10
 
 cache: yarn
 
 jobs:
   include:
-    - node_js: "10"
+    - node_js: '10'
       env: TEST_SUITE=lint
+    - node_js: '12'
+  allow_failures:
+    - node_js: '12'
 
 # Don't run builds for renovate PRs
 if: NOT head_branch =~ ^renovate
 
-script:
-  - if [ "$TEST_SUITE" == "lint" ]; then yarn run lint; else yarn run test:all; fi
+script: |
+  if [ "$TEST_SUITE" == "lint" ]; then
+    yarn lint
+  elif [ "$TRAVIS_NODE_VERSION" == "12" ]; then
+    yarn test:unit
+    GHOST_NODE_VERSION_CHECK=false yarn test:acceptance
+  else
+    yarn test:all
+  fi
 
 after_success:
- - if [[ "$TRAVIS_NODE_VERSION" == "10" && "$TEST_SUITE" != "lint" ]]; then yarn run coverage; fi
+ - if [[ "$TRAVIS_NODE_VERSION" == "10" && "$TEST_SUITE" != "lint" ]]; then yarn coverage; fi
