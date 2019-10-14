@@ -86,7 +86,7 @@
     "tail": "2.0.3",
     "validator": "7.2.0",
     "yargs": "14.2.0",
-    "yarn": "1.19.0"
+    "yarn": "1.19.1"
   },
   "devDependencies": {
     "chai": "4.2.0",
