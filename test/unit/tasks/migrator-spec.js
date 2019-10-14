@@ -276,6 +276,28 @@ describe('Unit: Tasks > Migrator', function () {
             });
         });
 
+        it('throws ghost error if rollback includes an irreversible migration', function () {
+            const config = configStub();
+            const execaStub = sinon.stub().returns(Promise.reject({stdout: 'There are irreversible migrations when rolling back to the selected version, this typically means data required for earlier versions has been deleted. Please restore from a backup instead.'}));
+            const useGhostUserStub = sinon.stub().returns(false);
+
+            const migrator = proxyquire(migratePath, {
+                execa: execaStub,
+                '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
+            });
+
+            return migrator.rollback({
+                activeVersion: '3.0.0',
+                version: '2.36.0',
+                instance: {config, version: '3.0.0', previousVersion: '2.36.0', dir: '/some-dir', system: {environment: 'testing'}}
+            }).then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.GhostError);
+                expect(error.message).to.match(/not possible to roll back database changes from 3.0.0 to 2.36.0/);
+            });
+        });
+
         it('knex-migrator complains that no more migrations to rollback available', function () {
             const config = configStub();
             const execaStub = sinon.stub().returns(Promise.reject({stderr: 'No migrations available to rollback'}));
