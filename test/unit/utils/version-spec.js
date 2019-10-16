@@ -130,7 +130,7 @@ describe('Unit: Utils: version', function () {
     describe('checkActiveVersion', function () {
         it('throws if --v1 is passed and active version is >= 2.0', function () {
             try {
-                checkActiveVersion('2.0.0', '2.1.0', {v1: true});
+                checkActiveVersion('2.0.0', '2.1.0', '1.0.0', {v1: true});
             } catch (error) {
                 expect(error).to.be.an.instanceof(CliError);
                 expect(error.message).to.contain('v2 or greater');
@@ -157,8 +157,13 @@ describe('Unit: Utils: version', function () {
             expect.fail('expected an error to be thrown');
         });
 
+        it('allows upgrading from v1 if on latest v1', function () {
+            const result = checkActiveVersion('1.0.0', '2.0.0', '1.0.0');
+            expect(result).to.equal('2.0.0');
+        });
+
         it('returns version if active === latest and --force is supplied', function () {
-            const result = checkActiveVersion('3.0.0', '3.0.0', {force: true});
+            const result = checkActiveVersion('3.0.0', '3.0.0', '1.0.0', {force: true});
             expect(result).to.equal('3.0.0');
         });
 
