@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.12.0-beta.0"></a>
+# [1.12.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.11.0...1.12.0-beta.0) (2019-10-16)
+
+
+### Bug Fixes
+
+* **version:** allow v2 update if on latest v1 ([28a39b0](https://github.com/TryGhost/Ghost-CLI/commit/28a39b0))
+
+
+### Features
+
+* **gscan:** use dynamic major version for gscan checks ([e74d1fc](https://github.com/TryGhost/Ghost-CLI/commit/e74d1fc))
+* **node:** add initial node v12 support & update min versions ([#1003](https://github.com/TryGhost/Ghost-CLI/issues/1003)) ([212f4aa](https://github.com/TryGhost/Ghost-CLI/commit/212f4aa))
+* **v3:** make v2 specific logic work for v3 ([3d3a0e7](https://github.com/TryGhost/Ghost-CLI/commit/3d3a0e7))
+
+
+
 <a name="1.11.0"></a>
 # [1.11.0](https://github.com/TryGhost/Ghost-CLI/compare/1.10.1...1.11.0) (2019-06-03)
 
