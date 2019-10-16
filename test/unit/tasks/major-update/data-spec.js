@@ -23,7 +23,9 @@ describe('Unit: Tasks > Major Update > Data', function () {
 
         data = proxyquire('../../../../lib/tasks/major-update/data', {
             '/var/www/ghost/versions/2.0.0/node_modules/knex': knexMock,
-            '/var/www/ghost/versions/2.0.0/node_modules/gscan': gscanMock
+            '/var/www/ghost/versions/2.0.0/node_modules/gscan': gscanMock,
+            '/var/www/ghost/versions/3.0.0/node_modules/knex': knexMock,
+            '/var/www/ghost/versions/3.0.0/node_modules/gscan': gscanMock
         });
     });
 
@@ -61,7 +63,8 @@ describe('Unit: Tasks > Major Update > Data', function () {
                 client: 'sqlite3'
             },
             dir: '/var/www/ghost/',
-            versionFolder: 'versions/2.0.0/'
+            versionFolder: 'versions/2.0.0/',
+            version: '2.0.0'
         });
 
         expect(response.gscanReport.formatted).to.be.true;
@@ -71,6 +74,10 @@ describe('Unit: Tasks > Major Update > Data', function () {
         expect(connection.raw.calledTwice).to.be.true;
 
         expect(gscanMock.check.calledOnce).to.be.true;
+        expect(gscanMock.check.calledWithExactly(
+            '/var/www/ghost/versions/2.0.0/content/themes/casper',
+            {checkVersion: 'v2'}
+        )).to.be.true;
         expect(gscanMock.format.calledOnce).to.be.true;
 
         expect(knexMock.calledOnce).to.be.true;
@@ -88,7 +95,8 @@ describe('Unit: Tasks > Major Update > Data', function () {
                 client: 'mysql'
             },
             dir: '/var/www/ghost/',
-            versionFolder: 'versions/2.0.0/'
+            versionFolder: 'versions/2.0.0/',
+            version: '2.0.0'
         });
 
         expect(response.gscanReport.formatted).to.be.true;
@@ -98,6 +106,10 @@ describe('Unit: Tasks > Major Update > Data', function () {
         expect(connection.raw.calledTwice).to.be.true;
 
         expect(gscanMock.check.calledOnce).to.be.true;
+        expect(gscanMock.check.calledWithExactly(
+            '/var/www/ghost/content/themes/not-casper',
+            {checkVersion: 'v2'}
+        )).to.be.true;
         expect(gscanMock.format.calledOnce).to.be.true;
 
         expect(knexMock.calledOnce).to.be.true;
@@ -115,7 +127,8 @@ describe('Unit: Tasks > Major Update > Data', function () {
                     client: 'mysql'
                 },
                 dir: '/var/www/ghost/',
-                versionFolder: 'versions/2.0.0/'
+                versionFolder: 'versions/3.0.0/',
+                version: '3.0.0'
             });
         } catch (err) {
             expect(err.message).to.eql('oops');
@@ -123,6 +136,10 @@ describe('Unit: Tasks > Major Update > Data', function () {
             expect(connection.raw.calledOnce).to.be.true;
 
             expect(gscanMock.check.calledOnce).to.be.true;
+            expect(gscanMock.check.calledWithExactly(
+                '/var/www/ghost/versions/3.0.0/content/themes/casper',
+                {checkVersion: 'v3'}
+            )).to.be.true;
             expect(gscanMock.format.called).to.be.false;
 
             expect(knexMock.calledOnce).to.be.true;
