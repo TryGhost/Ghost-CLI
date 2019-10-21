@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.12.0"></a>
+# [1.12.0](https://github.com/TryGhost/Ghost-CLI/compare/1.12.0-beta.1...1.12.0) (2019-10-21)
+
+
+
 <a name="1.12.0-beta.1"></a>
 # [1.12.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.12.0-beta.0...1.12.0-beta.1) (2019-10-17)
 
