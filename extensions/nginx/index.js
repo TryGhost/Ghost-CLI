@@ -281,7 +281,7 @@ class NginxExtension extends Extension {
 
     isSupported() {
         try {
-            execa.shellSync(`dpkg -l | grep ${nginxProgramName}`, {stdio: 'ignore'});
+            execa.shellSync(`which ${nginxProgramName}`, {stdio: 'ignore'});
             return true;
         } catch (e) {
             return false;

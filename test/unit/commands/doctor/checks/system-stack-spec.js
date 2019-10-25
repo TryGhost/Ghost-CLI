@@ -155,8 +155,8 @@ describe('Unit: Doctor Checks > systemStack', function () {
         const confirmStub = sinon.stub().resolves(false);
 
         execaStub.withArgs('lsb_release -a').resolves({stdout: 'Ubuntu 16'});
-        execaStub.withArgs('dpkg -l | grep nginx').rejects();
-        execaStub.withArgs('dpkg -l | grep systemd').rejects();
+        execaStub.withArgs('which nginx').rejects();
+        execaStub.withArgs('which systemd').rejects();
 
         const listrStub = sinon.stub().callsFake(function (tasks, ctx, opts) {
             expect(opts.renderer).to.equal('verbose');
