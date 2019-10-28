@@ -61,6 +61,7 @@
     "generate-password": "1.4.2",
     "global-modules": "2.0.0",
     "got": "9.6.0",
+    "https-proxy-agent": "^3.0.1",
     "inquirer": "7.0.0",
     "is-running": "2.1.0",
     "latest-version": "5.1.0",
@@ -85,7 +86,6 @@
     "symlink-or-copy": "1.2.0",
     "systeminformation": "4.14.11",
     "tail": "2.0.3",
-    "tunnel": "0.0.6",
     "validator": "7.2.0",
     "yargs": "14.2.0",
     "yarn": "1.19.1"
