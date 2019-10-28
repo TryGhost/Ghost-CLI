@@ -147,6 +147,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
                 expect(ctx).to.deep.equal({
+                    agent: false,
                     version: '1.5.0',
                     shasum: 'asdf1234',
                     tarball: 'something.tgz'
@@ -195,6 +196,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
                 expect(ctx).to.deep.equal({
+                    agent: false,
                     version: '1.5.0',
                     shasum: 'asdf1234',
                     tarball: 'something.tgz'
@@ -214,6 +216,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
                 expect(ctx).to.deep.equal({
+                    agent: false,
                     version: '1.5.0',
                     shasum: 'asdf1234',
                     tarball: 'something.tgz'
