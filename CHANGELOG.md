@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.12.1"></a>
+## [1.12.1](https://github.com/TryGhost/Ghost-CLI/compare/1.12.0...1.12.1) (2019-11-04)
+
+
+### Bug Fixes
+
+* **config:** allow root user to run config command ([#982](https://github.com/TryGhost/Ghost-CLI/issues/982)) ([870fd0d](https://github.com/TryGhost/Ghost-CLI/commit/870fd0d)), closes [#981](https://github.com/TryGhost/Ghost-CLI/issues/981)
+* **systemd:** delete bootstrap-socket config once ghost is started ([#837](https://github.com/TryGhost/Ghost-CLI/issues/837)) ([892b399](https://github.com/TryGhost/Ghost-CLI/commit/892b399)), closes [#805](https://github.com/TryGhost/Ghost-CLI/issues/805)
+
+
+### Features
+
+* **doctor:** add binary dependency check ([#1040](https://github.com/TryGhost/Ghost-CLI/issues/1040)) ([1716b38](https://github.com/TryGhost/Ghost-CLI/commit/1716b38))
+* **verbose:** add verbose yarn output ([#1037](https://github.com/TryGhost/Ghost-CLI/issues/1037)) ([223c29f](https://github.com/TryGhost/Ghost-CLI/commit/223c29f)), closes [#1036](https://github.com/TryGhost/Ghost-CLI/issues/1036)
+
+
+
 <a name="1.12.0"></a>
 # [1.12.0](https://github.com/TryGhost/Ghost-CLI/compare/1.12.0-beta.1...1.12.0) (2019-10-21)
 
