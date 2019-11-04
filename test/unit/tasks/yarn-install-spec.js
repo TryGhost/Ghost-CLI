@@ -49,6 +49,39 @@ describe('Unit: Tasks > yarn-install', function () {
         });
     });
 
+    it('verbose option', function () {
+        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const yarnInstall = proxyquire(modulePath, {
+            '../utils/yarn': yarnStub
+        });
+        const subTasks = yarnInstall.subTasks;
+        const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
+        const listrStub = sinon.stub().callsFake((tasks) => {
+            expect(tasks).to.have.length(3);
+
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
+        });
+
+        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const downloadTaskStub = sinon.stub(subTasks, 'download');
+
+        return yarnInstall({listr: listrStub, verbose: true}).then(() => {
+            expect(listrStub.calledOnce).to.be.true;
+            expect(distTaskStub.calledOnce).to.be.true;
+            expect(downloadTaskStub.calledOnce).to.be.true;
+            expect(yarnStub.calledOnce).to.be.true;
+            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress', '--verbose']);
+            expect(yarnStub.args[0][1]).to.deep.equal({
+                cwd: '/var/www/ghost/versions/1.5.0',
+                env: {NODE_ENV: 'production'},
+                observe: true
+            });
+        });
+    });
+
     it('base function can take zip file', function () {
         const decompressStub = sinon.stub().resolves();
         const listrStub = sinon.stub().resolves();
