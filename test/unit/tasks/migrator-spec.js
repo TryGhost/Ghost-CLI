@@ -122,7 +122,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.GhostError);
+                expect(error).to.be.an.instanceof(errors.ProcessError);
                 expect(error.options.stderr).to.match(/YA_GOOFED/);
                 expect(error.options.suggestion).to.eql('ghost update --rollback');
                 expect(error.options.help).to.exist;
@@ -148,7 +148,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.GhostError);
+                expect(error).to.be.an.instanceof(errors.ProcessError);
                 expect(error.options.stderr).to.match(/YA_GOOFED/);
                 expect(error.options.suggestion).to.not.exist;
                 expect(error.options.help).to.exist;
@@ -293,7 +293,7 @@ describe('Unit: Tasks > Migrator', function () {
             }).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.GhostError);
+                expect(error).to.be.an.instanceof(errors.ProcessError);
                 expect(error.message).to.match(/not possible to roll back database changes from 3.0.0 to 2.36.0/);
             });
         });
@@ -329,7 +329,7 @@ describe('Unit: Tasks > Migrator', function () {
                 expect(false, 'error should have been thrown').to.be.true;
                 process.argv = originalArgv;
             }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.GhostError);
+                expect(error).to.be.an.instanceof(errors.ProcessError);
                 expect(error.options.stderr).to.match(/YA_GOOFED/);
                 expect(error.options.suggestion).to.eql('ghost update --rollback');
                 expect(error.options.help).to.exist;
