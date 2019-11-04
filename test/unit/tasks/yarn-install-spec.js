@@ -120,7 +120,7 @@ describe('Unit: Tasks > yarn-install', function () {
             const dist = proxyquire(modulePath, {
                 'package-json': infoStub
             }).subTasks.dist;
-            const ctx = {version: '1.5.0'};
+            const ctx = {version: '1.5.0', agent: false};
 
             return dist(ctx).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -128,7 +128,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.equal('Ghost v1.5.0 is not compatible with the current Node version.');
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
             });
         });
 
@@ -141,14 +141,15 @@ describe('Unit: Tasks > yarn-install', function () {
             const dist = proxyquire(modulePath, {
                 'package-json': infoStub
             }).subTasks.dist;
-            const ctx = {version: '1.5.0'};
+            const ctx = {version: '1.5.0', agent: false};
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
             return dist(ctx).then(() => {
                 delete process.env.GHOST_NODE_VERSION_CHECK;
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
                 expect(ctx).to.deep.equal({
+                    agent: false,
                     version: '1.5.0',
                     shasum: 'asdf1234',
                     tarball: 'something.tgz'
@@ -169,7 +170,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 'package-json': infoStub,
                 '../../package.json': {version: '1.0.0'}
             }).subTasks.dist;
-            const ctx = {version: '1.5.0'};
+            const ctx = {version: '1.5.0', agent: false};
 
             return dist(ctx).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -177,7 +178,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.equal('Ghost v1.5.0 is not compatible with this version of the CLI.');
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
             });
         });
 
@@ -191,12 +192,13 @@ describe('Unit: Tasks > yarn-install', function () {
                 'package-json': infoStub,
                 '../../package.json': {version: '1.10.0-beta.0'}
             }).subTasks.dist;
-            const ctx = {version: '1.5.0'};
+            const ctx = {version: '1.5.0', agent: false};
 
             return dist(ctx).then(() => {
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
                 expect(ctx).to.deep.equal({
+                    agent: false,
                     version: '1.5.0',
                     shasum: 'asdf1234',
                     tarball: 'something.tgz'
@@ -210,12 +212,13 @@ describe('Unit: Tasks > yarn-install', function () {
             const dist = proxyquire(modulePath, {
                 'package-json': infoStub
             }).subTasks.dist;
-            const ctx = {version: '1.5.0'};
+            const ctx = {version: '1.5.0', agent: false};
 
             return dist(ctx).then(() => {
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
                 expect(ctx).to.deep.equal({
+                    agent: false,
                     version: '1.5.0',
                     shasum: 'asdf1234',
                     tarball: 'something.tgz'
