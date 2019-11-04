@@ -46,6 +46,18 @@ describe('Unit: yarn', function () {
         });
     });
 
+    it('adds verbose option correctly', function () {
+        const execa = sinon.stub().resolves();
+        const yarn = setup({execa});
+
+        return yarn(['cache', 'clear'], {verbose: true}).then(function () {
+            expect(execa.calledOnce).to.be.true;
+            expect(execa.args[0]).to.be.ok;
+            expect(execa.args[0]).to.have.lengthOf(3);
+            expect(execa.args[0][1]).to.deep.equal(['cache', 'clear', '--verbose']);
+        });
+    });
+
     it('correctly passes through options', function () {
         const execa = sinon.stub().resolves();
         const yarn = setup({execa});
@@ -169,6 +181,42 @@ describe('Unit: yarn', function () {
                 expect(execa.calledOnce).to.be.true;
                 expect(subscriber.next.calledOnce).to.be.true;
                 expect(subscriber.next.calledWithExactly('test message')).to.be.true;
+                expect(subscriber.error.called).to.be.false;
+                expect(subscriber.complete.calledOnce).to.be.true;
+            });
+        });
+
+        it('passes data through with verbose', function () {
+            const execa = sinon.stub().callsFake(() => {
+                const promise = Promise.resolve();
+                promise.stdout = getReadableStream(function () {
+                    this.push('test message\n');
+                    this.push(null);
+                });
+                promise.stderr = getReadableStream(function () {
+                    this.push('test stderr message\n');
+                    this.push(null);
+                });
+                return promise;
+            });
+            const yarn = setup({execa});
+
+            const res = yarn([], {observe: true, verbose: true});
+            expect(isObservable(res)).to.be.true;
+
+            const subscriber = {
+                next: sinon.stub(),
+                error: sinon.stub(),
+                complete: sinon.stub()
+            };
+
+            res.subscribe(subscriber);
+
+            return res.toPromise().then(() => {
+                expect(execa.calledOnce).to.be.true;
+                expect(subscriber.next.calledTwice).to.be.true;
+                expect(subscriber.next.calledWithExactly('test message')).to.be.true;
+                expect(subscriber.next.calledWithExactly('test stderr message')).to.be.true;
                 expect(subscriber.error.called).to.be.false;
                 expect(subscriber.complete.calledOnce).to.be.true;
             });
