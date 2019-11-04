@@ -44,7 +44,8 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
                 env: {NODE_ENV: 'production'},
-                observe: true
+                observe: true,
+                verbose: false
             });
         });
     });
@@ -90,7 +91,7 @@ describe('Unit: Tasks > yarn-install', function () {
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
-        return yarnInstall({listr: listrStub}).then(() => {
+        return yarnInstall({listr: listrStub, verbose: true}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error.message).to.equal('an error occurred');
@@ -102,7 +103,8 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: env.dir,
                 env: {NODE_ENV: 'production'},
-                observe: true
+                observe: true,
+                verbose: true
             });
             expect(fs.existsSync(env.dir)).to.be.false;
         });
