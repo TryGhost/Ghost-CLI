@@ -1096,6 +1096,7 @@ describe('Unit: Commands > Update', function () {
             expect(fs.readlinkSync(path.join(env.dir, 'current'))).to.equal(path.join(env.dir, 'versions/1.0.1'));
             expect(instance.version).to.equal('1.0.1');
             expect(instance.previousVersion).to.equal('1.0.0');
+            expect(instance.nodeVersion).to.equal(process.versions.node);
         });
 
         it('does things correctly with rollback', function () {
@@ -1120,6 +1121,7 @@ describe('Unit: Commands > Update', function () {
             expect(fs.readlinkSync(path.join(env.dir, 'current'))).to.equal(path.join(env.dir, 'versions/1.0.0'));
             expect(instance.version).to.equal('1.0.0');
             expect(instance.previousVersion).to.be.null;
+            expect(instance.nodeVersion).to.equal(process.versions.node);
         });
     });
 });

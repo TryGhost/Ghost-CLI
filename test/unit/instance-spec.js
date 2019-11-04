@@ -7,10 +7,10 @@ const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
 const ProcessManager = require('../../lib/process-manager');
 
-function testConfigAccessors(instanceProp, configProp) {
+function testConfigAccessors(instanceProp, configProp, defaultValue = null) {
     return () => {
         const config = createConfigStub();
-        config.get.withArgs(configProp, null).returns('1.0.0');
+        config.get.withArgs(configProp, defaultValue).returns('1.0.0');
 
         const instance = new Instance({}, {}, '');
         instance._cliConfig = config;
@@ -157,6 +157,7 @@ describe('Unit: Instance', function () {
     it('version getter/setter works', testConfigAccessors('version', 'active-version'));
     it('cliVersion getter/setter works', testConfigAccessors('cliVersion', 'cli-version'));
     it('previousVersion getter/setter works', testConfigAccessors('previousVersion', 'previous-version'));
+    it('nodeVersion getter/setter works', testConfigAccessors('nodeVersion', 'node-version', process.versions.node));
 
     it('isSetup accessor works', function () {
         const hasInstance = sinon.stub();
