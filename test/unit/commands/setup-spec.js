@@ -60,7 +60,7 @@ describe('Unit: Commands > Setup', function () {
             });
         });
 
-        it('wraps tasks correctly', function () {
+        it('wraps tasks correctly', async function () {
             const task1stub = sinon.stub().resolves();
             const task2stub = sinon.stub().resolves();
             const steps = [
@@ -112,51 +112,48 @@ describe('Unit: Commands > Setup', function () {
 
             const skip = sinon.stub().resolves();
 
-            return task1.task({single: true}).then(() => {
-                expect(ui.confirm.called).to.be.false;
-                expect(task1stub.calledOnce).to.be.true;
+            await task1.task({single: true});
+            expect(ui.confirm.called).to.be.false;
+            expect(task1stub.calledOnce).to.be.true;
 
-                task1stub.resetHistory();
-                return task1.task({single: false}, {skip});
-            }).then(() => {
-                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up Testing?', true)).to.be.true;
-                expect(task1stub.called).to.be.false;
-                expect(skip.calledOnce).to.be.true;
+            task1stub.resetHistory();
+            await task1.task({single: false}, {skip});
+            expect(ui.confirm.calledOnceWithExactly('Do you wish to set up Testing?', true)).to.be.true;
+            expect(task1stub.called).to.be.false;
+            expect(skip.calledOnce).to.be.true;
 
-                skip.resetHistory();
-                ui.confirm.resetHistory();
-                ui.confirm.resolves(true);
-                return task1.task({single: false}, {skip});
-            }).then(() => {
-                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up Testing?', true)).to.be.true;
-                expect(task1stub.calledOnce).to.be.true;
-                expect(skip.called).to.be.false;
+            skip.resetHistory();
+            ui.confirm.resetHistory();
+            ui.confirm.resolves(true);
 
-                ui.confirm.reset();
-                ui.confirm.resolves(false);
-                skip.resetHistory();
+            await task1.task({single: false}, {skip});
+            expect(ui.confirm.calledOnceWithExactly('Do you wish to set up Testing?', true)).to.be.true;
+            expect(task1stub.calledOnce).to.be.true;
+            expect(skip.called).to.be.false;
 
-                return task2.task({single: true}, {skip});
-            }).then(() => {
-                expect(ui.confirm.called).to.be.false;
-                expect(task2stub.calledOnce).to.be.true;
+            ui.confirm.reset();
+            ui.confirm.resolves(false);
+            skip.resetHistory();
 
-                task2stub.resetHistory();
-                return task2.task({single: false}, {skip});
-            }).then(() => {
-                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up testing-2?', true)).to.be.true;
-                expect(task2stub.called).to.be.false;
-                expect(skip.calledOnce).to.be.true;
+            await task2.task({single: true}, {skip});
+            expect(ui.confirm.called).to.be.false;
+            expect(task2stub.calledOnce).to.be.true;
 
-                skip.resetHistory();
-                ui.confirm.resetHistory();
-                ui.confirm.resolves(true);
-                return task2.task({single: false}, {skip});
-            }).then(() => {
-                expect(ui.confirm.calledOnceWithExactly('Do you wish to set up testing-2?', true)).to.be.true;
-                expect(task2stub.calledOnce).to.be.true;
-                expect(skip.called).to.be.false;
-            });
+            task2stub.resetHistory();
+            await task2.task({single: false}, {skip});
+
+            expect(ui.confirm.calledOnceWithExactly('Do you wish to set up testing-2?', true)).to.be.true;
+            expect(task2stub.called).to.be.false;
+            expect(skip.calledOnce).to.be.true;
+
+            skip.resetHistory();
+            ui.confirm.resetHistory();
+            ui.confirm.resolves(true);
+
+            await task2.task({single: false}, {skip});
+            expect(ui.confirm.calledOnceWithExactly('Do you wish to set up testing-2?', true)).to.be.true;
+            expect(task2stub.calledOnce).to.be.true;
+            expect(skip.called).to.be.false;
         });
 
         describe('internal (default) tasks', function () {
@@ -266,7 +263,7 @@ describe('Unit: Commands > Setup', function () {
     });
 
     describe('run', function () {
-        it('Handles local setup properly', function () {
+        it('Handles local setup properly', async function () {
             const setup = new SetupCommand({}, {setEnvironment: () => {
                 throw new Error('Take a break');
             }});
@@ -274,15 +271,17 @@ describe('Unit: Commands > Setup', function () {
             const localArgs = sinon.stub(setup, 'localArgs');
 
             try {
-                setup.run({local: true});
-                expect(false, 'An error should have been thrown').to.be.true;
+                await setup.run({local: true});
             } catch (error) {
                 expect(error.message).to.equal('Take a break');
                 expect(localArgs.calledOnce).to.be.true;
+                return;
             }
+
+            expect.fail('an error should have been thrown');
         });
 
-        it('calls correct methods when stages are passed in', function () {
+        it('calls correct methods when stages are passed in', async function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
@@ -299,39 +298,38 @@ describe('Unit: Commands > Setup', function () {
             ui.listr.returns(listr);
             ui.confirm.resolves(true);
 
-            return setup.run({local: false, stages: ['test1', 'test2']}).then(() => {
-                expect(system.getInstance.calledOnce).to.be.true;
-                expect(checkEnvironment.calledOnce).to.be.true;
-                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
-                expect(taskStub.calledOnce).to.be.true;
-                expect(taskStub.args[0]).to.deep.equal([
-                    [{step1: true}, {step2: true}]
-                ]);
-                expect(ui.listr.calledOnce).to.be.true;
-                expect(ui.listr.args[0]).to.deep.equal([
-                    tasks,
-                    false,
-                    {exitOnError: false}
-                ]);
-                expect(run.calledOnce).to.be.true;
-                const [[runArgs]] = run.args;
-                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
-                expect(runArgs.ui).to.equal(ui);
-                expect(runArgs.system).to.equal(system);
-                expect(runArgs.instance).to.equal(instance);
-                expect(runArgs.tasks).to.deep.equal({
-                    test: tasks[0],
-                    test2: tasks[1]
-                });
-                expect(runArgs.listr).to.equal(listr);
-                expect(runArgs.argv).to.deep.equal({local: false, stages: ['test1', 'test2']});
-                expect(runArgs.single).to.be.true;
-                expect(ui.confirm.called).to.be.false;
-                expect(runCommand.called).to.be.false;
+            await setup.run({local: false, stages: ['test1', 'test2']});
+            expect(system.getInstance.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+            expect(taskStub.calledOnce).to.be.true;
+            expect(taskStub.args[0]).to.deep.equal([
+                [{step1: true}, {step2: true}]
+            ]);
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.listr.args[0]).to.deep.equal([
+                tasks,
+                false,
+                {exitOnError: false}
+            ]);
+            expect(run.calledOnce).to.be.true;
+            const [[runArgs]] = run.args;
+            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(runArgs.ui).to.equal(ui);
+            expect(runArgs.system).to.equal(system);
+            expect(runArgs.instance).to.equal(instance);
+            expect(runArgs.tasks).to.deep.equal({
+                test: tasks[0],
+                test2: tasks[1]
             });
+            expect(runArgs.listr).to.equal(listr);
+            expect(runArgs.argv).to.deep.equal({local: false, stages: ['test1', 'test2']});
+            expect(runArgs.single).to.be.true;
+            expect(ui.confirm.called).to.be.false;
+            expect(runCommand.called).to.be.false;
         });
 
-        it('doesn\'t prompt and doesn\'t start when argv.start is false', function () {
+        it('doesn\'t prompt and doesn\'t start when argv.start is false', async function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
@@ -346,22 +344,22 @@ describe('Unit: Commands > Setup', function () {
             ui.listr.returns({run, tasks: []});
             ui.confirm.resolves(true);
 
-            return setup.run({start: false}).then(() => {
-                expect(system.getInstance.calledOnce).to.be.true;
-                expect(checkEnvironment.calledOnce).to.be.false;
-                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
-                expect(taskStub.calledOnce).to.be.true;
-                expect(ui.listr.calledOnce).to.be.true;
-                expect(run.calledOnce).to.be.true;
-                const [[runArgs]] = run.args;
-                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
-                expect(runArgs.single).to.be.false;
-                expect(ui.confirm.called).to.be.false;
-                expect(runCommand.called).to.be.false;
-            });
+            await setup.run({start: false});
+
+            expect(system.getInstance.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.false;
+            expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+            expect(taskStub.calledOnce).to.be.true;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            const [[runArgs]] = run.args;
+            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(runArgs.single).to.be.false;
+            expect(ui.confirm.called).to.be.false;
+            expect(runCommand.called).to.be.false;
         });
 
-        it('doesn\'t prompt and starts when argv.start is true', function () {
+        it('doesn\'t prompt and starts when argv.start is true', async function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
@@ -376,22 +374,21 @@ describe('Unit: Commands > Setup', function () {
             ui.listr.returns({run, tasks: []});
             ui.confirm.resolves(true);
 
-            return setup.run({start: true}).then(() => {
-                expect(system.getInstance.calledOnce).to.be.true;
-                expect(checkEnvironment.calledOnce).to.be.false;
-                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
-                expect(taskStub.calledOnce).to.be.true;
-                expect(ui.listr.calledOnce).to.be.true;
-                expect(run.calledOnce).to.be.true;
-                const [[runArgs]] = run.args;
-                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
-                expect(runArgs.single).to.be.false;
-                expect(ui.confirm.called).to.be.false;
-                expect(runCommand.called).to.be.true;
-            });
+            await setup.run({start: true});
+            expect(system.getInstance.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.false;
+            expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+            expect(taskStub.calledOnce).to.be.true;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            const [[runArgs]] = run.args;
+            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(runArgs.single).to.be.false;
+            expect(ui.confirm.called).to.be.false;
+            expect(runCommand.called).to.be.true;
         });
 
-        it('prompts and follows start prompt', function () {
+        it('prompts and follows start prompt', async function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
@@ -406,19 +403,18 @@ describe('Unit: Commands > Setup', function () {
             ui.listr.returns({run, tasks: []});
             ui.confirm.resolves(false);
 
-            return setup.run({}).then(() => {
-                expect(system.getInstance.calledOnce).to.be.true;
-                expect(checkEnvironment.calledOnce).to.be.false;
-                expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
-                expect(taskStub.calledOnce).to.be.true;
-                expect(ui.listr.calledOnce).to.be.true;
-                expect(run.calledOnce).to.be.true;
-                const [[runArgs]] = run.args;
-                expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
-                expect(runArgs.single).to.be.false;
-                expect(ui.confirm.calledOnce).to.be.true;
-                expect(runCommand.called).to.be.false;
-            });
+            await setup.run({});
+            expect(system.getInstance.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.false;
+            expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
+            expect(taskStub.calledOnce).to.be.true;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            const [[runArgs]] = run.args;
+            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(runArgs.single).to.be.false;
+            expect(ui.confirm.calledOnce).to.be.true;
+            expect(runCommand.called).to.be.false;
         });
     });
 

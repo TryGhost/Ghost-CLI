@@ -51,7 +51,7 @@ describe('Unit: Command > Config', function () {
     });
 
     describe('run', function () {
-        it('outputs key if key defined and value is not', function () {
+        it('outputs key if key defined and value is not', async function () {
             const ConfigCommand = fake();
             const log = sinon.stub();
             const checkEnvironment = sinon.stub();
@@ -61,19 +61,17 @@ describe('Unit: Command > Config', function () {
 
             const cmd = new ConfigCommand({log}, {getInstance});
 
-            return cmd.run({key: 'url'}).then(() => {
-                expect(checkEnvironment.calledOnce).to.be.true;
-                expect(log.calledOnce).to.be.true;
-                expect(log.args[0][0]).to.equal('http://localhost:2368');
+            await cmd.run({key: 'url'});
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(log.calledOnce).to.be.true;
+            expect(log.args[0][0]).to.equal('http://localhost:2368');
 
-                return cmd.run({key: 'nope'});
-            }).then(() => {
-                expect(checkEnvironment.calledTwice).to.be.true;
-                expect(log.calledOnce).to.be.true;
-            });
+            await cmd.run({key: 'nope'});
+            expect(checkEnvironment.calledTwice).to.be.true;
+            expect(log.calledOnce).to.be.true;
         });
 
-        it('sets value if both key and value defined', function () {
+        it('sets value if both key and value defined', async function () {
             const ConfigCommand = fake();
             const checkEnvironment = sinon.stub();
             const config = new Config('config.json');
@@ -84,16 +82,15 @@ describe('Unit: Command > Config', function () {
 
             const cmd = new ConfigCommand({log}, {getInstance});
 
-            return cmd.run({key: 'url', value: 'http://localhost:2368'}).then(() => {
-                expect(checkEnvironment.calledOnce).to.be.true;
-                expect(setStub.calledOnce).to.be.true;
-                expect(saveStub.calledOnce).to.be.true;
-                expect(setStub.args[0]).to.deep.equal(['url', 'http://localhost:2368']);
-                expect(log.calledOnce).to.be.true;
-            });
+            await cmd.run({key: 'url', value: 'http://localhost:2368'});
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(setStub.calledOnce).to.be.true;
+            expect(saveStub.calledOnce).to.be.true;
+            expect(setStub.args[0]).to.deep.equal(['url', 'http://localhost:2368']);
+            expect(log.calledOnce).to.be.true;
         });
 
-        it('calls configure if key and value aren\'t provided', function () {
+        it('calls configure if key and value aren\'t provided', async function () {
             const configureStub = sinon.stub().resolves();
             const ConfigCommand = fake({
                 '../tasks/configure': configureStub
@@ -105,14 +102,13 @@ describe('Unit: Command > Config', function () {
             const argv = {url: 'http://ghost.test', dbhost: 'localhost', dbuser: 'root', db: 'mysql'};
             const cmd = new ConfigCommand(ui, {getInstance, environment: 'testing'});
 
-            return cmd.run(argv).then(() => {
-                expect(configureStub.calledOnce).to.be.true;
-                expect(configureStub.args[0][0]).to.deep.equal(ui);
-                expect(configureStub.args[0][1]).to.deep.equal(config);
-                expect(configureStub.args[0][2]).to.deep.equal(argv);
-                expect(configureStub.args[0][3]).to.equal('testing');
-                expect(configureStub.args[0][4]).to.equal(false);
-            });
+            await cmd.run(argv);
+            expect(configureStub.calledOnce).to.be.true;
+            expect(configureStub.args[0][0]).to.deep.equal(ui);
+            expect(configureStub.args[0][1]).to.deep.equal(config);
+            expect(configureStub.args[0][2]).to.deep.equal(argv);
+            expect(configureStub.args[0][3]).to.equal('testing');
+            expect(configureStub.args[0][4]).to.equal(false);
         });
     });
 });
