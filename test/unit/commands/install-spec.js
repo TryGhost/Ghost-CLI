@@ -132,6 +132,76 @@ describe('Unit: Commands > Install', function () {
             });
         });
 
+        it('handles case with custom version and export file', function () {
+            const dirEmptyStub = sinon.stub().returns(true);
+            const yarnInstallStub = sinon.stub().resolves();
+            const ensureStructureStub = sinon.stub().resolves();
+            const parseExport = sinon.stub().returns({version: '1.4.0'});
+            const log = sinon.stub();
+            const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
+
+            const InstallCommand = proxyquire(modulePath, {
+                '../tasks/yarn-install': yarnInstallStub,
+                '../tasks/ensure-structure': ensureStructureStub,
+                '../utils/dir-is-empty': dirEmptyStub,
+                '../tasks/import': {parseExport}
+            });
+            const testInstance = new InstallCommand({listr: listrStub, log}, {cliVersion: '1.0.0'});
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
+            const versionStub = sinon.stub(testInstance, 'version').resolves();
+            const linkStub = sinon.stub(testInstance, 'link').resolves();
+            const casperStub = sinon.stub(testInstance, 'casper').resolves();
+
+            const argv = {version: '1.0.0', setup: false, fromExport: 'test-import.json'};
+            return testInstance.run(argv).then(() => {
+                expect(dirEmptyStub.calledOnce).to.be.true;
+                expect(log.calledOnce).to.be.true;
+                expect(listrStub.calledTwice).to.be.true;
+                expect(yarnInstallStub.calledOnce).to.be.true;
+                expect(ensureStructureStub.calledOnce).to.be.true;
+                expect(versionStub.calledOnce).to.be.true;
+                expect(versionStub.calledWithExactly({argv: {...argv, version: '1.4.0'}, cliVersion: '1.0.0'}));
+                expect(linkStub.calledOnce).to.be.true;
+                expect(casperStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledOnce).to.be.true;
+            });
+        });
+
+        it('handles case with 0.x export file', function () {
+            const dirEmptyStub = sinon.stub().returns(true);
+            const yarnInstallStub = sinon.stub().resolves();
+            const ensureStructureStub = sinon.stub().resolves();
+            const parseExport = sinon.stub().returns({version: '0.11.14'});
+            const log = sinon.stub();
+            const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
+
+            const InstallCommand = proxyquire(modulePath, {
+                '../tasks/yarn-install': yarnInstallStub,
+                '../tasks/ensure-structure': ensureStructureStub,
+                '../utils/dir-is-empty': dirEmptyStub,
+                '../tasks/import': {parseExport}
+            });
+            const testInstance = new InstallCommand({listr: listrStub, log}, {cliVersion: '1.0.0'});
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
+            const versionStub = sinon.stub(testInstance, 'version').resolves();
+            const linkStub = sinon.stub(testInstance, 'link').resolves();
+            const casperStub = sinon.stub(testInstance, 'casper').resolves();
+
+            const argv = {setup: false, fromExport: 'test-import.json'};
+            return testInstance.run(argv).then(() => {
+                expect(dirEmptyStub.calledOnce).to.be.true;
+                expect(log.calledOnce).to.be.true;
+                expect(listrStub.calledTwice).to.be.true;
+                expect(yarnInstallStub.calledOnce).to.be.true;
+                expect(ensureStructureStub.calledOnce).to.be.true;
+                expect(versionStub.calledOnce).to.be.true;
+                expect(versionStub.calledWithExactly({argv: {...argv, version: null, v1: true}, cliVersion: '1.0.0'}));
+                expect(linkStub.calledOnce).to.be.true;
+                expect(casperStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledOnce).to.be.true;
+            });
+        });
+
         it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
             const dirEmptyStub = sinon.stub().returns(true);
             const yarnInstallStub = sinon.stub().resolves();
