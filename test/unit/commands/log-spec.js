@@ -29,7 +29,7 @@ function configGet(what) {
 }
 
 const defaultInstance = {
-    running: () => Promise.resolve(true),
+    isRunning: () => Promise.resolve(true),
     config: {get: configGet},
     dir: '/var/www/ghost'
 };
@@ -80,7 +80,7 @@ describe('Unit: Commands > Log', function () {
             stubs.running = sinon.stub().rejects(new Error('running'));
             const ext = proxyLog();
             const instance = {
-                running: stubs.running
+                isRunning: stubs.running
             };
             stubs.gi = sinon.stub().returns(instance);
             ext.system = {getInstance: stubs.gi};
@@ -100,7 +100,7 @@ describe('Unit: Commands > Log', function () {
             stubs.running = sinon.stub().resolves(false);
             const ext = proxyLog();
             const instance = {
-                running: stubs.running,
+                isRunning: stubs.running,
                 checkEnvironment: stubs.ce
             };
             stubs.gi = sinon.stub().returns(instance);
@@ -119,7 +119,7 @@ describe('Unit: Commands > Log', function () {
         it('Rejects when logging to file is disabled', function () {
             const ext = proxyLog();
             const instance = {
-                running: () => Promise.resolve(true),
+                isRunning: () => Promise.resolve(true),
                 config: {get: () => ['a', 'b', 'c']}
             };
             ext.system = {getInstance: () => instance};
@@ -229,7 +229,7 @@ describe('Unit: Commands > Log', function () {
                 'read-last-lines': {read: stubs.ll}
             });
             const instance = {
-                running: () => Promise.resolve(true),
+                isRunning: () => Promise.resolve(true),
                 config: {get: sinon.stub().callsFake(configGet)},
                 dir: '/var/www/ghost'
             };

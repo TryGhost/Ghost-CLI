@@ -334,8 +334,8 @@ describe('Unit: System', function () {
             const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
             const getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            const instanceA = {running: () => Promise.resolve(true), cwd: '/dir/a', name: 'testa'};
-            const instanceB = {running: () => Promise.resolve(false), cwd: '/dir/b', name: 'testb'};
+            const instanceA = {isRunning: () => Promise.resolve(true), cwd: '/dir/a', name: 'testa'};
+            const instanceB = {isRunning: () => Promise.resolve(false), cwd: '/dir/b', name: 'testb'};
 
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
@@ -372,8 +372,8 @@ describe('Unit: System', function () {
             const systemInstance = stubGlobalConfig(System, {get: () => instances, set: setStub});
             const getInstanceStub = sinon.stub(systemInstance, 'getInstance');
 
-            const instanceA = {running: () => Promise.resolve(true), cwd: '/dir/a', name: 'testa'};
-            const instanceB = {running: () => Promise.resolve(false), cwd: '/dir/b', name: 'testb'};
+            const instanceA = {isRunning: () => Promise.resolve(true), cwd: '/dir/a', name: 'testa'};
+            const instanceB = {isRunning: () => Promise.resolve(false), cwd: '/dir/b', name: 'testb'};
 
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);

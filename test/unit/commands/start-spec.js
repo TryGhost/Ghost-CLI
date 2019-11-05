@@ -13,7 +13,7 @@ describe('Unit: Commands > Start', function () {
         beforeEach(function () {
             myInstance = {
                 checkEnvironment: () => true,
-                running: () => Promise.resolve(false),
+                isRunning: () => Promise.resolve(false),
                 config: {get: sinon.stub()}
             };
 
@@ -32,7 +32,7 @@ describe('Unit: Commands > Start', function () {
             const logStub = sinon.stub();
             const ui = {log: logStub, logHelp: logStub};
             const start = new StartCommand(ui, mySystem);
-            myInstance.running = runningStub;
+            myInstance.isRunning = runningStub;
 
             return start.run({}).then(() => {
                 expect(runningStub.calledOnce).to.be.true;
@@ -64,7 +64,8 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('runs instance start', function () {
-            myInstance.running = sinon.stub().resolves(false);
+            myInstance.isRunning = sinon.stub().resolves(false);
+            myInstance.setRunningMode = sinon.stub();
             myInstance.process = {start: sinon.stub()};
             mySystem.environment = 'Ghost';
             const ui = {
@@ -80,14 +81,15 @@ describe('Unit: Commands > Start', function () {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('UI_RUN');
                 expect(runCommandStub.calledOnce).to.be.true;
-                const running = myInstance.running;
+                const running = myInstance.isRunning;
                 const proces = myInstance.process.start;
 
                 expect(ui.run.calledOnce).to.be.true;
                 return ui.run.args[0][0]().then(() => {
-                    expect(running.calledTwice).to.be.true;
-                    expect(running.args[0]).to.be.empty;
-                    expect(running.args[1][0]).to.equal('Ghost');
+                    expect(running.calledOnce).to.be.true;
+
+                    expect(myInstance.setRunningMode.calledOnce).to.be.true;
+                    expect(myInstance.setRunningMode.args[0][0]).to.equal('Ghost');
 
                     expect(proces.calledOnce).to.be.true;
                     expect(proces.args[0][0]).to.equal(process.cwd());

@@ -57,7 +57,7 @@ describe('Unit: Commands > Stop', function () {
 
         it('gracefully notifies of already stopped instance', function () {
             const runningFake = () => Promise.resolve(false);
-            const gIfake = () => ({running: runningFake});
+            const gIfake = () => ({isRunning: runningFake});
             const logStub = sinon.stub();
             const stop = proxiedCommand();
             const context = {
@@ -75,8 +75,10 @@ describe('Unit: Commands > Stop', function () {
             const stop = proxiedCommand();
             const stopStub = sinon.stub().resolves();
             const runningStub = sinon.stub().resolves(true);
+            const setRunningStub = sinon.stub();
             const gIstub = sinon.stub().returns({
-                running: runningStub,
+                isRunning: runningStub,
+                setRunningMode: setRunningStub,
                 process: {stop: stopStub},
                 loadRunningEnvironment: () => true
             });
@@ -87,8 +89,9 @@ describe('Unit: Commands > Stop', function () {
                 return fn().then(() => {
                     expect(stopStub.calledOnce).to.be.true;
                     expect(stopStub.args[0][0]).to.equal(process.cwd());
-                    expect(runningStub.calledTwice).to.be.true;
-                    expect(runningStub.args[1][0]).to.equal(null);
+                    expect(runningStub.calledOnce).to.be.true;
+                    expect(setRunningStub.calledOnce).to.be.true;
+                    expect(setRunningStub.args[0][0]).to.equal(null);
                 });
             };
 
@@ -103,7 +106,7 @@ describe('Unit: Commands > Stop', function () {
         describe('handles disabling', function () {
             it('skips disabling if disable flag is not set', function () {
                 const instance = {
-                    running: () => Promise.resolve(true),
+                    isRunning: () => Promise.resolve(true),
                     process: {
                         enable: () => Promise.resolve(),
                         disable: sinon.stub().resolves(),
@@ -132,7 +135,7 @@ describe('Unit: Commands > Stop', function () {
 
             it('skips disabling if process manager doesn\'t support enable behavior', function () {
                 const instance = {
-                    running: () => Promise.resolve(true),
+                    isRunning: () => Promise.resolve(true),
                     process: {
                         stop: sinon.stub().resolves(),
                         isEnabled: sinon.stub().resolves(false)
@@ -159,7 +162,7 @@ describe('Unit: Commands > Stop', function () {
 
             it('skips disabling if isEnabled returns false', function () {
                 const instance = {
-                    running: () => Promise.resolve(true),
+                    isRunning: () => Promise.resolve(true),
                     process: {
                         enable: () => Promise.resolve(),
                         disable: sinon.stub().resolves(),
@@ -189,7 +192,8 @@ describe('Unit: Commands > Stop', function () {
 
             it('disables if necessary', function () {
                 const instance = {
-                    running: () => Promise.resolve(true),
+                    isRunning: () => Promise.resolve(true),
+                    setRunningMode: () => {},
                     process: {
                         enable: () => Promise.resolve(),
                         disable: sinon.stub().resolves(),
