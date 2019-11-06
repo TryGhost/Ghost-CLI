@@ -449,6 +449,136 @@ describe('Unit: Instance', function () {
         });
     });
 
+    describe('start', function () {
+        it('skips enable functionality if enable param is false', async function () {
+            const process = {
+                name: 'local',
+                start: sinon.stub().resolves(),
+                isEnabled: sinon.stub().resolves(true),
+                enable: sinon.stub().resolves()
+            };
+
+            const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+            instance._process = process;
+            const runningStub = sinon.stub(instance, 'setRunningMode');
+
+            await instance.start();
+            expect(process.start.calledOnce).to.be.true;
+            expect(process.start.calledWithExactly('/var/www/ghost', 'testing'));
+            expect(process.isEnabled.called).to.be.false;
+            expect(process.enable.called).to.be.false;
+            expect(runningStub.calledOnce).to.be.true;
+            expect(runningStub.calledWithExactly('testing')).to.be.true;
+        });
+
+        it('skips enabling if process manager already enabled', async function () {
+            const process = {
+                name: 'local',
+                start: sinon.stub().resolves(),
+                isEnabled: sinon.stub().resolves(true),
+                enable: sinon.stub().resolves()
+            };
+
+            const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+            instance._process = process;
+            const runningStub = sinon.stub(instance, 'setRunningMode');
+
+            await instance.start(true);
+            expect(process.start.calledOnce).to.be.true;
+            expect(process.start.calledWithExactly('/var/www/ghost', 'testing'));
+            expect(process.isEnabled.calledOnce).to.be.true;
+            expect(process.enable.called).to.be.false;
+            expect(runningStub.calledOnce).to.be.true;
+            expect(runningStub.calledWithExactly('testing')).to.be.true;
+        });
+
+        it('runs enable if not already enabled', async function () {
+            const process = {
+                name: 'local',
+                start: sinon.stub().resolves(),
+                isEnabled: sinon.stub().resolves(false),
+                enable: sinon.stub().resolves()
+            };
+
+            const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+            instance._process = process;
+            const runningStub = sinon.stub(instance, 'setRunningMode');
+
+            await instance.start(true);
+            expect(process.start.calledOnce).to.be.true;
+            expect(process.start.calledWithExactly('/var/www/ghost', 'testing'));
+            expect(process.isEnabled.calledOnce).to.be.true;
+            expect(process.enable.calledOnce).to.be.true;
+            expect(runningStub.calledOnce).to.be.true;
+            expect(runningStub.calledWithExactly('testing')).to.be.true;
+        });
+    });
+
+    describe('stop', function () {
+        it('skips disable functionality if disable param is false', async function () {
+            const process = {
+                name: 'local',
+                stop: sinon.stub().resolves(),
+                isEnabled: sinon.stub().resolves(false),
+                disable: sinon.stub().resolves()
+            };
+
+            const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+            instance._process = process;
+            const runningStub = sinon.stub(instance, 'setRunningMode');
+
+            await instance.stop();
+            expect(process.stop.calledOnce).to.be.true;
+            expect(process.stop.calledWithExactly('/var/www/ghost'));
+            expect(process.isEnabled.called).to.be.false;
+            expect(process.disable.called).to.be.false;
+            expect(runningStub.calledOnce).to.be.true;
+            expect(runningStub.calledWithExactly(null)).to.be.true;
+        });
+
+        it('skips disabling if process manager not enabled', async function () {
+            const process = {
+                name: 'local',
+                stop: sinon.stub().resolves(),
+                isEnabled: sinon.stub().resolves(false),
+                disable: sinon.stub().resolves()
+            };
+
+            const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+            instance._process = process;
+            const runningStub = sinon.stub(instance, 'setRunningMode');
+
+            await instance.stop(true);
+            expect(process.stop.calledOnce).to.be.true;
+            expect(process.stop.calledWithExactly('/var/www/ghost'));
+            expect(process.isEnabled.calledOnce).to.be.true;
+            expect(process.disable.called).to.be.false;
+            expect(runningStub.calledOnce).to.be.true;
+            expect(runningStub.calledWithExactly(null)).to.be.true;
+        });
+
+        it('runs disable if already enabled', async function () {
+            const process = {
+                name: 'local',
+                stop: sinon.stub().resolves(),
+                isEnabled: sinon.stub().resolves(true),
+                disable: sinon.stub().resolves()
+            };
+
+            const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+            instance._process = process;
+            const runningStub = sinon.stub(instance, 'setRunningMode');
+
+            await instance.stop(true);
+            expect(process.stop.calledOnce).to.be.true;
+            expect(process.stop.calledWithExactly('/var/www/ghost'));
+            expect(process.isEnabled.calledOnce).to.be.true;
+            expect(process.disable.calledOnce).to.be.true;
+            expect(runningStub.calledOnce).to.be.true;
+            expect(runningStub.calledWithExactly(null)).to.be.true;
+        });
+    });
+
     describe('summary', function () {
         it('returns shortened object if running is false', async function () {
             const get = sinon.stub();

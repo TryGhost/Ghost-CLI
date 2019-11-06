@@ -2,332 +2,180 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
+const createConfigStub = require('../../utils/config-stub');
+
+const Instance = require('../../../lib/instance');
+const System = require('../../../lib/system');
+const UI = require('../../../lib/ui');
+const DoctorCommand = require('../../../lib/commands/doctor');
 
 const modulePath = '../../../lib/commands/start';
 const StartCommand = require(modulePath);
 
+function getStubs(dir) {
+    const ui = new UI({});
+    const system = new System(ui, []);
+    const instance = new Instance(ui, system, dir);
+    instance._config = createConfigStub();
+
+    instance._cliConfig = createConfigStub();
+    instance._cliConfig.get.withArgs('name').returns('testing');
+
+    const getInstance = sinon.stub(system, 'getInstance').returns(instance);
+
+    return {
+        ui, system, instance, getInstance
+    };
+}
+
 describe('Unit: Commands > Start', function () {
     describe('run', function () {
-        let myInstance, mySystem;
+        const oldArgv = process.argv;
 
-        beforeEach(function () {
-            myInstance = {
-                checkEnvironment: () => true,
-                isRunning: () => Promise.resolve(false),
-                config: {get: sinon.stub()}
-            };
-
-            mySystem = {
-                getInstance: () => myInstance,
-                environment: 'production'
-            };
+        afterEach(() => {
+            process.argv = oldArgv;
         });
 
-        afterEach(function () {
-            sinon.restore();
+        it('notifies and exits for already running instance', async function () {
+            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(true);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            const log = sinon.stub(ui, 'log');
+            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
+            const start = sinon.stub(instance, 'start').resolves();
+
+            const cmd = new StartCommand(ui, system);
+            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
+
+            await cmd.run({});
+            expect(getInstance.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+            expect(log.calledOnce).to.be.true;
+
+            expect(checkEnvironment.called).to.be.false;
+            expect(runCommand.called).to.be.false;
+            expect(run.called).to.be.false;
+            expect(start.called).to.be.false;
         });
 
-        it('gracefully notifies of already running instance', function () {
-            const runningStub = sinon.stub().resolves(true);
-            const logStub = sinon.stub();
-            const ui = {log: logStub, logHelp: logStub};
-            const start = new StartCommand(ui, mySystem);
-            myInstance.isRunning = runningStub;
+        it('runs startup checks and starts correctly', async function () {
+            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            const log = sinon.stub(ui, 'log');
+            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
+            const start = sinon.stub(instance, 'start').resolves();
 
-            return start.run({}).then(() => {
-                expect(runningStub.calledOnce).to.be.true;
-                expect(logStub.calledOnce).to.be.true;
-                expect(logStub.args[0][0]).to.match(/Ghost is already running!/);
-            });
+            const cmd = new StartCommand(ui, system);
+            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
+
+            instance.config.get.withArgs('admin.url').returns('http://localhost:2368');
+
+            await cmd.run({checkMem: false});
+            expect(getInstance.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(runCommand.calledOnce).to.be.true;
+            expect(runCommand.calledWithExactly(DoctorCommand, {
+                categories: ['start'],
+                quiet: true,
+                checkMem: false
+            })).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(start.calledOnce).to.be.true;
+            expect(log.calledTwice).to.be.true;
+            expect(instance.config.get.calledOnce).to.be.true;
         });
 
-        it('runs startup checks', function () {
-            const listr = sinon.stub().resolves();
-            const StartCommand = proxyquire(modulePath, {
-                './doctor': {doctorCommand: true}
-            });
-            const start = new StartCommand({listr: listr}, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').rejects(new Error('runCommand'));
+        it('doesn\'t log if quiet is set to true', async function () {
+            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            const log = sinon.stub(ui, 'log');
+            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
+            const start = sinon.stub(instance, 'start').resolves();
 
-            return start.run({argv: true}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('runCommand');
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledWithExactly(
-                    {doctorCommand: true},
-                    {categories: ['start'], quiet: true, argv: true}
-                )).to.be.true;
-                expect(listr.called).to.be.false;
-            });
+            const cmd = new StartCommand(ui, system);
+            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
+
+            await cmd.run({checkMem: false, quiet: true});
+            expect(getInstance.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(runCommand.calledOnce).to.be.true;
+            expect(runCommand.calledWithExactly(DoctorCommand, {
+                categories: ['start'],
+                quiet: true,
+                checkMem: false
+            })).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(start.calledOnce).to.be.true;
+            expect(log.called).to.be.false;
+            expect(instance.config.get.called).to.be.false;
         });
 
-        it('runs instance start', function () {
-            myInstance.isRunning = sinon.stub().resolves(false);
-            myInstance.setRunningMode = sinon.stub();
-            myInstance.process = {start: sinon.stub()};
-            mySystem.environment = 'Ghost';
-            const ui = {
-                listr: () => Promise.resolve(),
-                run: sinon.stub().rejects(new Error('UI_RUN'))
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
+        it('logs more information during install', async function () {
+            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            const log = sinon.stub(ui, 'log');
+            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
+            const start = sinon.stub(instance, 'start').resolves();
 
-            return start.run({}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('UI_RUN');
-                expect(runCommandStub.calledOnce).to.be.true;
-                const running = myInstance.isRunning;
-                const proces = myInstance.process.start;
-
-                expect(ui.run.calledOnce).to.be.true;
-                return ui.run.args[0][0]().then(() => {
-                    expect(running.calledOnce).to.be.true;
-
-                    expect(myInstance.setRunningMode.calledOnce).to.be.true;
-                    expect(myInstance.setRunningMode.args[0][0]).to.equal('Ghost');
-
-                    expect(proces.calledOnce).to.be.true;
-                    expect(proces.args[0][0]).to.equal(process.cwd());
-                    expect(proces.args[0][1]).to.equal('Ghost');
-                });
-            });
-        });
-
-        describe('enables instance if needed', function () {
-            it('normal conditions', function () {
-                const ui = {
-                    run: sinon.stub(),
-                    listr: () => Promise.resolve()
-                };
-                ui.run.onFirstCall().resolves();
-                ui.run.onSecondCall().callsFake(fn => Promise.resolve(fn()));
-                myInstance.process = {
-                    isEnabled: sinon.stub().resolves(false),
-                    enable: sinon.stub().resolves(),
-                    disable: 'yes'
-                };
-                const start = new StartCommand(ui, mySystem);
-                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-
-                return start.run({quiet: true, enable: true}).then(() => {
-                    const ie = myInstance.process.isEnabled;
-                    const enable = myInstance.process.enable;
-                    expect(runCommandStub.calledOnce).to.be.true;
-                    expect(ie.calledOnce).to.be.true;
-                    expect(enable.calledOnce).to.be.true;
-                    expect(ui.run.calledTwice).to.be.true;
-                });
-            });
-
-            it('not when it\'s not possible (already enabled)', function () {
-                const ui = {
-                    run: sinon.stub().resolves(),
-                    listr: () => Promise.resolve()
-                };
-                myInstance.process = {
-                    isEnabled: sinon.stub().resolves(true),
-                    enable: sinon.stub().resolves(),
-                    disable: 'yes'
-                };
-                const start = new StartCommand(ui, mySystem);
-                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-                return start.run({quiet: true, enable: true}).then(() => {
-                    const ie = myInstance.process.isEnabled;
-                    const enable = myInstance.process.enable;
-                    expect(runCommandStub.calledOnce).to.be.true;
-                    expect(ie.calledOnce).to.be.true;
-                    expect(enable.called).to.be.false;
-                    expect(ui.run.calledOnce).to.be.true;
-                });
-            });
-
-            it('not when it\'s not possible (unsupported)', function () {
-                const ui = {
-                    run: sinon.stub().resolves(),
-                    listr: () => Promise.resolve()
-                };
-                myInstance.process = {
-                    isEnabled: sinon.stub().resolves(true),
-                    enable: sinon.stub().resolves()
-                };
-                const start = new StartCommand(ui, mySystem);
-                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-                return start.run({quiet: true, enable: true}).then(() => {
-                    const ie = myInstance.process.isEnabled;
-                    const enable = myInstance.process.enable;
-                    expect(runCommandStub.calledOnce).to.be.true;
-                    expect(ie.called).to.be.false;
-                    expect(enable.called).to.be.false;
-                    expect(ui.run.calledOnce).to.be.true;
-                });
-            });
-
-            it('not when enabled flag is false', function () {
-                const ui = {
-                    run: sinon.stub().resolves(),
-                    listr: () => Promise.resolve()
-                };
-                myInstance.process = {
-                    isEnabled: sinon.stub().resolves(true),
-                    enable: sinon.stub().resolves(),
-                    disable: sinon.stub().resolves()
-                };
-                const start = new StartCommand(ui, mySystem);
-                const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-                return start.run({quiet: true, enable: false}).then(() => {
-                    const ie = myInstance.process.isEnabled;
-                    const enable = myInstance.process.enable;
-                    expect(runCommandStub.calledOnce).to.be.true;
-                    expect(ie.called).to.be.false;
-                    expect(enable.called).to.be.false;
-                    expect(ui.run.calledOnce).to.be.true;
-                });
-            });
-        });
-
-        it('is normally loud', function () {
-            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
-            myInstance.process = {};
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: () => Promise.resolve(),
-                log: sinon.stub(),
-                logHelp: sinon.stub()
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-            return start.run({enable: false}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.include('---------------');
-                expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
-                expect(ui.log.args[1][1]).to.eql('https://my-amazing.blog.com/ghost/');
-            });
-        });
-
-        it('is normally loud (subdir)', function () {
-            myInstance.config.get.withArgs('url').returns('https://my-amazing.site/blog');
-            myInstance.process = {};
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: () => Promise.resolve(),
-                log: sinon.stub(),
-                logHelp: sinon.stub()
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-            return start.run({enable: false}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.include('---------------');
-                expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
-                expect(ui.log.args[1][1]).to.include('https://my-amazing.site/blog/ghost/');
-            });
-        });
-
-        it('shows custom admin url', function () {
-            const oldArgv = process.argv;
-            process.argv = ['', '', 'start'];
-            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
-            myInstance.config.get.withArgs('admin.url').returns('https://admin.my-amazing.blog.com');
-            myInstance.process = {};
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: () => Promise.resolve(),
-                log: sinon.stub(),
-                logHelp: sinon.stub()
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-            return start.run({enable: false}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.include('---------------');
-                expect(ui.log.args[1][0]).to.match(/Your admin interface is located at/);
-                expect(ui.log.args[1][1]).to.include('https://admin.my-amazing.blog.com/ghost');
-
-                process.argv = oldArgv;
-            });
-        });
-
-        it('shows different message after fresh install', function () {
-            const oldArgv = process.argv;
             process.argv = ['', '', 'install'];
-            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
-            myInstance.process = {};
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: () => Promise.resolve(),
-                log: sinon.stub(),
-                logHelp: sinon.stub()
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-            return start.run({enable: false}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.include('---------------');
-                expect(ui.log.args[1][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
-                expect(ui.log.args[1][1]).to.eql('https://my-amazing.blog.com/ghost/');
+            instance.config.get.withArgs('admin.url').returns(null);
+            instance.config.get.withArgs('url').returns('http://localhost:2368');
+            instance.config.get.withArgs('mail.transport').returns('Mailgun');
 
-                process.argv = oldArgv;
-            });
+            const cmd = new StartCommand(ui, system);
+            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
+
+            await cmd.run({checkMem: false});
+            expect(getInstance.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(runCommand.calledOnce).to.be.true;
+            expect(runCommand.calledWithExactly(DoctorCommand, {
+                categories: ['start'],
+                quiet: true,
+                checkMem: false
+            })).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(start.calledOnce).to.be.true;
+            expect(log.calledTwice).to.be.true;
+            expect(instance.config.get.calledThrice).to.be.true;
         });
 
-        it('does not show setup message after fresh LOCAL install without custom domain', function () {
-            const oldArgv = process.argv;
+        it('logs more information during install with direct mail transport', async function () {
+            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
+            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
+            const log = sinon.stub(ui, 'log');
+            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
+            const start = sinon.stub(instance, 'start').resolves();
+
             process.argv = ['', '', 'install'];
-            myInstance.config.get.withArgs('url').returns('http://123.56.6.1');
-            myInstance.config.get.withArgs('process').returns('local');
-            myInstance.process = {};
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: () => Promise.resolve(),
-                log: sinon.stub(),
-                logHelp: sinon.stub()
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-            return start.run({enable: false}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.callCount).to.eql(2);
-                expect(ui.log.args[0][0]).to.include('---------------');
-                expect(ui.log.args[1][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
-                expect(ui.log.args[1][1]).to.eql('http://123.56.6.1/ghost/');
+            instance.config.get.withArgs('admin.url').returns(null);
+            instance.config.get.withArgs('url').returns('http://localhost:2368');
+            instance.config.get.withArgs('mail.transport').returns('Direct');
 
-                process.argv = oldArgv;
-            });
-        });
+            const cmd = new StartCommand(ui, system);
+            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
 
-        it('warns of direct mail transport on install', function () {
-            const oldArgv = process.argv;
-            process.argv = ['', '', 'install'];
-            myInstance.config.get.withArgs('url').returns('https://my-amazing.blog.com');
-            myInstance.config.get.withArgs('mail.transport').returns('Direct');
-            myInstance.process = {};
-            const ui = {
-                run: () => Promise.resolve(),
-                listr: () => Promise.resolve(),
-                log: sinon.stub(),
-                logHelp: sinon.stub()
-            };
-            const start = new StartCommand(ui, mySystem);
-            const runCommandStub = sinon.stub(start, 'runCommand').resolves();
-            return start.run({enable: false}).then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(ui.log.callCount).to.equal(3);
-                expect(ui.log.args[0][0]).to.match(/Ghost uses direct mail/);
-                expect(ui.log.args[1][0]).to.include('---------------');
-                expect(ui.log.args[2][0]).to.match(/Ghost was installed successfully! To complete setup of your publication, visit/);
-                expect(ui.log.args[2][1]).to.eql('https://my-amazing.blog.com/ghost/');
-
-                process.argv = oldArgv;
-            });
+            await cmd.run({checkMem: false});
+            expect(getInstance.calledOnce).to.be.true;
+            expect(isRunning.calledOnce).to.be.true;
+            expect(checkEnvironment.calledOnce).to.be.true;
+            expect(runCommand.calledOnce).to.be.true;
+            expect(runCommand.calledWithExactly(DoctorCommand, {
+                categories: ['start'],
+                quiet: true,
+                checkMem: false
+            })).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(start.calledOnce).to.be.true;
+            expect(log.calledThrice).to.be.true;
+            expect(instance.config.get.calledThrice).to.be.true;
         });
     });
 
