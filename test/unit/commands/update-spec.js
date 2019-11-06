@@ -58,7 +58,7 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('run', function () {
-        it('restarts only if required: not specified + running', function () {
+        it('restarts only if required: not specified + running', async function () {
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': sinon.stub().resolves(),
                 '../tasks/major-update': {
@@ -79,29 +79,29 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
-            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link', 'stop']
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link']
                 .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
 
-            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false}).then(() => {
-                expect(ui.listr.calledOnce).to.be.true;
-                const [tasks, ctx] = ui.listr.args[0];
-                expect(tasks).to.be.an('array');
-                expect(ctx).to.be.an('object');
-                let ranRestart = false;
+            await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false});
 
-                tasks.forEach((task) => {
-                    if (task.title.toLowerCase().indexOf('restarting') >= 0) {
-                        ranRestart = true;
-                        expect(task.enabled(ctx)).to.be.true;
-                    }
-                });
+            expect(ui.listr.calledOnce).to.be.true;
+            const [tasks, ctx] = ui.listr.args[0];
+            expect(tasks).to.be.an('array');
+            expect(ctx).to.be.an('object');
+            let ranRestart = false;
 
-                expect(ranRestart).to.be.true;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            tasks.forEach((task) => {
+                if (task.title.toLowerCase().indexOf('restarting') >= 0) {
+                    ranRestart = true;
+                    expect(task.enabled(ctx)).to.be.true;
+                }
             });
+
+            expect(ranRestart).to.be.true;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
         });
 
-        it('restarts only if required: not specified + not running', function () {
+        it('restarts only if required: not specified + not running', async function () {
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': sinon.stub().resolves(),
                 '../tasks/major-update': {
@@ -122,29 +122,28 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
-            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link', 'stop']
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link']
                 .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
 
-            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false}).then(() => {
-                expect(ui.listr.calledOnce).to.be.true;
-                const [tasks, ctx] = ui.listr.args[0];
-                expect(tasks).to.be.an('array');
-                expect(ctx).to.be.an('object');
-                let ranRestart = false;
+            await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false});
+            expect(ui.listr.calledOnce).to.be.true;
+            const [tasks, ctx] = ui.listr.args[0];
+            expect(tasks).to.be.an('array');
+            expect(ctx).to.be.an('object');
+            let ranRestart = false;
 
-                tasks.forEach((task) => {
-                    if (task.title.toLowerCase().indexOf('restarting') >= 0) {
-                        ranRestart = true;
-                        expect(task.enabled(ctx)).to.be.undefined;
-                    }
-                });
-
-                expect(ranRestart).to.be.true;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            tasks.forEach((task) => {
+                if (task.title.toLowerCase().indexOf('restarting') >= 0) {
+                    ranRestart = true;
+                    expect(task.enabled(ctx)).to.be.undefined;
+                }
             });
+
+            expect(ranRestart).to.be.true;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
         });
 
-        it('restarts only if required: specified', function () {
+        it('restarts only if required: specified', async function () {
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': sinon.stub().resolves(),
                 '../tasks/major-update': {
@@ -165,29 +164,28 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
-            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link', 'stop']
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link']
                 .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
 
-            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: true}).then(() => {
-                expect(ui.listr.calledOnce).to.be.true;
-                const [tasks, ctx] = ui.listr.args[0];
-                expect(tasks).to.be.an('array');
-                expect(ctx).to.be.an('object');
-                let ranRestart = false;
+            await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: true});
+            expect(ui.listr.calledOnce).to.be.true;
+            const [tasks, ctx] = ui.listr.args[0];
+            expect(tasks).to.be.an('array');
+            expect(ctx).to.be.an('object');
+            let ranRestart = false;
 
-                tasks.forEach((task) => {
-                    if (task.title.toLowerCase().indexOf('restarting') >= 0) {
-                        ranRestart = true;
-                        expect(task.enabled(ctx)).to.be.true;
-                    }
-                });
-
-                expect(ranRestart).to.be.true;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            tasks.forEach((task) => {
+                if (task.title.toLowerCase().indexOf('restarting') >= 0) {
+                    ranRestart = true;
+                    expect(task.enabled(ctx)).to.be.true;
+                }
             });
+
+            expect(ranRestart).to.be.true;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
         });
 
-        it('doesn\'t run database migrations if active blog version is ^2.0.0', function () {
+        it('doesn\'t run database migrations if active blog version is ^2.0.0', async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -221,6 +219,7 @@ describe('Unit: Commands > Update', function () {
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.isRunning.resolves(true);
+            fakeInstance.stop.resolves();
             const cmdInstance = new UpdateCommand(ui, system);
 
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
@@ -228,38 +227,36 @@ describe('Unit: Commands > Update', function () {
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate').resolves();
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions').resolves();
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
-            const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
 
-            return cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: false}).then(() => {
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.args[0][0]).to.deep.equal({
-                    version: '2.0.1',
-                    force: false,
-                    instance: fakeInstance,
-                    activeVersion: '2.0.0',
-                    zip: '',
-                    v1: false
-                });
-                expect(ui.log.calledOnce).to.be.false;
-                expect(ui.listr.calledOnce).to.be.true;
-                expect(removeOldVersionsStub.calledOnce).to.be.true;
-                expect(stopStub.calledOnce).to.be.true;
-                expect(linkStub.calledOnce).to.be.true;
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
-                expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
-                expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
-
-                expect(migratorStub.migrate.called).to.be.false;
-                expect(migratorStub.rollback.called).to.be.false;
-
-                expect(majorUpdateStub.called).to.be.false;
+            await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: false});
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(versionStub.args[0][0]).to.deep.equal({
+                version: '2.0.1',
+                force: false,
+                instance: fakeInstance,
+                activeVersion: '2.0.0',
+                zip: '',
+                v1: false
             });
+            expect(ui.log.calledOnce).to.be.false;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(removeOldVersionsStub.calledOnce).to.be.true;
+            expect(linkStub.calledOnce).to.be.true;
+            expect(downloadStub.calledOnce).to.be.true;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            expect(fakeInstance.stop.calledOnce).to.be.true;
+            expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
+            expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
+
+            expect(migratorStub.migrate.called).to.be.false;
+            expect(migratorStub.rollback.called).to.be.false;
+
+            expect(majorUpdateStub.called).to.be.false;
         });
 
-        it('doesn\'t run database migrations if version to migrate to is ^2.0.0', function () {
+        it('doesn\'t run database migrations if version to migrate to is ^2.0.0', async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -293,6 +290,7 @@ describe('Unit: Commands > Update', function () {
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.isRunning.resolves(true);
+            fakeInstance.stop.resolves();
             const cmdInstance = new UpdateCommand(ui, system);
 
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
@@ -300,38 +298,36 @@ describe('Unit: Commands > Update', function () {
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate').resolves();
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions').resolves();
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
-            const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
 
-            return cmdInstance.run({version: '2.0.0', force: false, zip: '', v1: false, restart: false}).then(() => {
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.args[0][0]).to.deep.equal({
-                    version: '2.0.0',
-                    force: false,
-                    instance: fakeInstance,
-                    activeVersion: '1.25.0',
-                    zip: '',
-                    v1: false
-                });
-                expect(ui.log.calledOnce).to.be.false;
-                expect(ui.listr.calledOnce).to.be.true;
-                expect(removeOldVersionsStub.calledOnce).to.be.true;
-                expect(stopStub.calledOnce).to.be.true;
-                expect(linkStub.calledOnce).to.be.true;
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
-                expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
-                expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
-
-                expect(migratorStub.migrate.called).to.be.false;
-                expect(migratorStub.rollback.called).to.be.false;
-
-                expect(majorUpdateStub.called).to.be.true;
+            await cmdInstance.run({version: '2.0.0', force: false, zip: '', v1: false, restart: false});
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(versionStub.args[0][0]).to.deep.equal({
+                version: '2.0.0',
+                force: false,
+                instance: fakeInstance,
+                activeVersion: '1.25.0',
+                zip: '',
+                v1: false
             });
+            expect(ui.log.calledOnce).to.be.false;
+            expect(ui.listr.calledOnce).to.be.true;
+            expect(removeOldVersionsStub.calledOnce).to.be.true;
+            expect(linkStub.calledOnce).to.be.true;
+            expect(downloadStub.calledOnce).to.be.true;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            expect(fakeInstance.stop.calledOnce).to.be.true;
+            expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
+            expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
+
+            expect(migratorStub.migrate.called).to.be.false;
+            expect(migratorStub.rollback.called).to.be.false;
+
+            expect(majorUpdateStub.called).to.be.true;
         });
 
-        it('doesn\'t run tasks if no new versions are available', function () {
+        it('doesn\'t run tasks if no new versions are available', async function () {
             const UpdateCommand = require(modulePath);
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
@@ -345,29 +341,28 @@ describe('Unit: Commands > Update', function () {
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({version: '1.0.0', force: false, zip: '', v1: false}).then(() => {
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.args[0][0]).to.deep.equal({
-                    version: '1.0.0',
-                    force: false,
-                    instance: fakeInstance,
-                    activeVersion: '1.0.0',
-                    zip: '',
-                    v1: false
-                });
-                expect(ui.log.calledTwice).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/install is using out-of-date configuration/);
-                expect(ui.log.args[1][0]).to.match(/up to date/);
-                expect(ui.listr.called).to.be.false;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
-                expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
-                expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
+            await cmdInstance.run({version: '1.0.0', force: false, zip: '', v1: false});
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(versionStub.args[0][0]).to.deep.equal({
+                version: '1.0.0',
+                force: false,
+                instance: fakeInstance,
+                activeVersion: '1.0.0',
+                zip: '',
+                v1: false
             });
+            expect(ui.log.calledTwice).to.be.true;
+            expect(ui.log.args[0][0]).to.match(/install is using out-of-date configuration/);
+            expect(ui.log.args[1][0]).to.match(/up to date/);
+            expect(ui.listr.called).to.be.false;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
+            expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
         });
 
-        it('rejects if rollback is passed and no previous version exists', function () {
+        it('rejects if rollback is passed and no previous version exists', async function () {
             const UpdateCommand = require(modulePath);
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
@@ -381,9 +376,9 @@ describe('Unit: Commands > Update', function () {
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({rollback: true}).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
+            try {
+                await cmdInstance.run({rollback: true});
+            } catch (error) {
                 expect(runCommandStub.called).to.be.false;
                 expect(error).to.be.an.instanceof(Error);
                 expect(error.message).to.equal('No previous version found');
@@ -391,10 +386,13 @@ describe('Unit: Commands > Update', function () {
                 expect(versionStub.called).to.be.false;
                 expect(ui.log.called).to.be.false;
                 expect(ui.listr.called).to.be.false;
-            });
+                return;
+            }
+
+            expect.fail('run should have thrown an error');
         });
 
-        it('populates context with correct data if rollback is passed and previous version exists', function () {
+        it('populates context with correct data if rollback is passed and previous version exists', async function () {
             const UpdateCommand = require(modulePath);
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
@@ -409,30 +407,29 @@ describe('Unit: Commands > Update', function () {
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
             sinon.stub(process, 'cwd').returns(fakeInstance.dir);
 
-            return cmdInstance.run({rollback: true, force: false, zip: '', v1: false}).then(() => {
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.args[0][0]).to.deep.equal({
-                    version: '1.0.0',
-                    force: false,
-                    instance: fakeInstance,
-                    activeVersion: '1.1.0',
-                    installPath: '/var/www/ghost/versions/1.0.0',
-                    rollback: true,
-                    zip: '',
-                    v1: false
-                });
-                expect(ui.log.calledOnce).to.be.true;
-                expect(ui.log.args[0][0]).to.match(/up to date/);
-                expect(ui.listr.called).to.be.false;
-                expect(fakeInstance.isRunning.calledOnce).to.be.true;
-                expect(fakeInstance.loadRunningEnvironment.called).to.be.false;
-                expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
+            await cmdInstance.run({rollback: true, force: false, zip: '', v1: false});
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(versionStub.args[0][0]).to.deep.equal({
+                version: '1.0.0',
+                force: false,
+                instance: fakeInstance,
+                activeVersion: '1.1.0',
+                installPath: '/var/www/ghost/versions/1.0.0',
+                rollback: true,
+                zip: '',
+                v1: false
             });
+            expect(ui.log.calledOnce).to.be.true;
+            expect(ui.log.args[0][0]).to.match(/up to date/);
+            expect(ui.listr.called).to.be.false;
+            expect(fakeInstance.isRunning.calledOnce).to.be.true;
+            expect(fakeInstance.loadRunningEnvironment.called).to.be.false;
+            expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
         });
 
-        it('runs all tasks if rollback is false and running is true', function () {
+        it('runs all tasks if rollback is false and running is true', async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -460,36 +457,35 @@ describe('Unit: Commands > Update', function () {
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.isRunning.resolves(true);
+            fakeInstance.stop.resolves();
+            fakeInstance.start.resolves();
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
-            const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
-            const restartStub = sinon.stub(cmdInstance, 'restart').resolves();
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
             sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({version: '1.1.0', rollback: false, force: false, restart: true}).then(() => {
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(ui.log.called).to.be.false;
-                expect(ui.listr.called).to.be.true;
+            await cmdInstance.run({version: '1.1.0', rollback: false, force: false, restart: true});
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(ui.log.called).to.be.false;
+            expect(ui.listr.called).to.be.true;
 
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(stopStub.calledOnce).to.be.true;
-                expect(linkStub.calledOnce).to.be.true;
-                expect(migratorStub.migrate.calledOnce).to.be.true;
-                expect(migratorStub.rollback.calledOnce).to.be.false;
-                expect(restartStub.calledOnce).to.be.true;
-                expect(removeOldVersionsStub.calledOnce).to.be.true;
+            expect(downloadStub.calledOnce).to.be.true;
+            expect(fakeInstance.stop.calledOnce).to.be.true;
+            expect(linkStub.calledOnce).to.be.true;
+            expect(migratorStub.migrate.calledOnce).to.be.true;
+            expect(migratorStub.rollback.calledOnce).to.be.false;
+            expect(fakeInstance.start.calledOnce).to.be.true;
+            expect(removeOldVersionsStub.calledOnce).to.be.true;
 
-                expect(majorUpdateStub.called).to.be.false;
-            });
+            expect(majorUpdateStub.called).to.be.false;
         });
 
-        it('skips download, migrate, and removeOldVersion tasks if rollback is true', function () {
+        it('skips download, migrate, and removeOldVersion tasks if rollback is true', async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -520,45 +516,47 @@ describe('Unit: Commands > Update', function () {
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.isRunning.resolves(false);
+            fakeInstance.stop.resolves();
+            fakeInstance.start.resolves();
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
-            sinon.stub(cmdInstance, 'stop').resolves();
-            sinon.stub(cmdInstance, 'restart').resolves();
             sinon.stub(cmdInstance, 'link').resolves();
             sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: true}).then(() => {
-                const expectedCtx = {
-                    version: '1.0.0',
-                    force: false,
-                    instance: fakeInstance,
-                    activeVersion: '1.1.0',
-                    installPath: '/var/www/ghost/versions/1.0.0',
-                    rollback: true,
-                    zip: '',
-                    v1: true
-                };
+            await cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: true});
+            const expectedCtx = {
+                version: '1.0.0',
+                force: false,
+                instance: fakeInstance,
+                activeVersion: '1.1.0',
+                installPath: '/var/www/ghost/versions/1.0.0',
+                rollback: true,
+                zip: '',
+                v1: true
+            };
 
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.args[0][0]).to.deep.equal(expectedCtx);
-                expect(ui.log.called).to.be.false;
-                expect(ui.listr.called).to.be.true;
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(versionStub.args[0][0]).to.deep.equal(expectedCtx);
+            expect(ui.log.called).to.be.false;
+            expect(ui.listr.called).to.be.true;
 
-                expect(downloadStub.called).to.be.false;
-                expect(migratorStub.migrate.called).to.be.false;
-                expect(migratorStub.rollback.called).to.be.true;
-                expect(removeOldVersionsStub.called).to.be.false;
+            expect(fakeInstance.stop.called).to.be.false;
+            expect(fakeInstance.start.calledOnce).to.be.true;
 
-                expect(majorUpdateStub.called).to.be.false;
-            });
+            expect(downloadStub.called).to.be.false;
+            expect(migratorStub.migrate.called).to.be.false;
+            expect(migratorStub.rollback.called).to.be.true;
+            expect(removeOldVersionsStub.called).to.be.false;
+
+            expect(majorUpdateStub.called).to.be.false;
         });
 
-        it('skips stop task if running returns false', function () {
+        it('skips stop task if running returns false', async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -581,40 +579,40 @@ describe('Unit: Commands > Update', function () {
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
             fakeInstance.isRunning.resolves(false);
+            fakeInstance.stop.resolves();
+            fakeInstance.start.resolves();
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
-            const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
-            sinon.stub(cmdInstance, 'restart').resolves();
             sinon.stub(cmdInstance, 'link').resolves();
             sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             sinon.stub(cmdInstance, 'downloadAndUpdate');
             sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
 
-            return cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: false}).then(() => {
-                const expectedCtx = {
-                    version: '1.0.0',
-                    force: false,
-                    instance: fakeInstance,
-                    activeVersion: '1.1.0',
-                    installPath: '/var/www/ghost/versions/1.0.0',
-                    rollback: true,
-                    zip: '',
-                    v1: false
-                };
+            await cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: false});
+            const expectedCtx = {
+                version: '1.0.0',
+                force: false,
+                instance: fakeInstance,
+                activeVersion: '1.1.0',
+                installPath: '/var/www/ghost/versions/1.0.0',
+                rollback: true,
+                zip: '',
+                v1: false
+            };
 
-                expect(runCommandStub.calledTwice).to.be.true;
-                expect(ui.run.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.args[0][0]).to.deep.equal(expectedCtx);
-                expect(ui.log.called).to.be.false;
-                expect(ui.listr.called).to.be.true;
+            expect(runCommandStub.calledTwice).to.be.true;
+            expect(ui.run.calledOnce).to.be.true;
+            expect(versionStub.calledOnce).to.be.true;
+            expect(versionStub.args[0][0]).to.deep.equal(expectedCtx);
+            expect(ui.log.called).to.be.false;
+            expect(ui.listr.called).to.be.true;
 
-                expect(stopStub.called).to.be.false;
-            });
+            expect(fakeInstance.stop.called).to.be.false;
+            expect(fakeInstance.start.calledOnce).to.be.true;
         });
 
-        it('attempts to auto-rollback on ghost error', function () {
+        it('attempts to auto-rollback on ghost error', async function () {
             const UpdateCommand = require(modulePath);
             const errObj = new errors.GhostError('should_rollback');
 
@@ -637,16 +635,19 @@ describe('Unit: Commands > Update', function () {
                 return true;
             });
 
-            return cmdInstance.run({}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
+            try {
+                await cmdInstance.run({});
+            } catch (error) {
                 expect(error.message).to.equal('rollback_successful');
                 expect(rollback.calledOnce).to.be.true;
                 expect(rollback.calledWithExactly(errObj, '1.1.1', undefined)).to.be.true;
-            });
+                return;
+            }
+
+            expect.fail('run should have thrown an error');
         });
 
-        it('does not attempts to auto-rollback on cli error', function () {
+        it('does not attempts to auto-rollback on cli error', async function () {
             const UpdateCommand = require(modulePath);
             const errObj = new Error('do_nothing');
 
@@ -669,15 +670,18 @@ describe('Unit: Commands > Update', function () {
                 return true;
             });
 
-            return cmdInstance.run({}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
+            try {
+                await cmdInstance.run({});
+            } catch (error) {
                 expect(error.message).to.equal('do_nothing');
                 expect(rollback.called).to.be.false;
-            });
+                return;
+            }
+
+            expect.fail('run should have thrown an error');
         });
 
-        it('does not attempts to auto-rollback on ghost error if rollback is used', function () {
+        it('does not attempts to auto-rollback on ghost error if rollback is used', async function () {
             const UpdateCommand = require(modulePath);
             const errObj = new errors.GhostError('do_nothing');
 
@@ -700,17 +704,20 @@ describe('Unit: Commands > Update', function () {
                 return true;
             });
 
-            return cmdInstance.run({rollback: true}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
+            try {
+                await cmdInstance.run({rollback: true});
+            } catch (error) {
                 expect(error.message).to.equal('do_nothing');
                 expect(rollback.called).to.be.false;
-            });
+                return;
+            }
+
+            expect.fail('run should have thrown an error');
         });
     });
 
     describe('downloadAndUpdate task', function () {
-        it('runs yarnInstall task, sets title', function () {
+        it('runs yarnInstall task, sets title', async function () {
             const yarnInstallStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/yarn-install': yarnInstallStub
@@ -723,13 +730,12 @@ describe('Unit: Commands > Update', function () {
             };
             const task = {};
 
-            return instance.downloadAndUpdate(ctx, task).then(() => {
-                expect(yarnInstallStub.calledOnce).to.be.true;
-                expect(task.title).to.equal('Downloading and updating Ghost to v1.0.0');
-            });
+            await instance.downloadAndUpdate(ctx, task);
+            expect(yarnInstallStub.calledOnce).to.be.true;
+            expect(task.title).to.equal('Downloading and updating Ghost to v1.0.0');
         });
 
-        it('skips if install path exists and force is false', function () {
+        it('skips if install path exists and force is false', async function () {
             const yarnInstallStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/yarn-install': yarnInstallStub
@@ -748,14 +754,13 @@ describe('Unit: Commands > Update', function () {
 
             expect(fs.existsSync(ctx.installPath)).to.be.true;
 
-            return instance.downloadAndUpdate(ctx, task).then(() => {
-                expect(fs.existsSync(ctx.installPath)).to.be.true;
-                expect(yarnInstallStub.called).to.be.false;
-                expect(task.skip.calledOnce).to.be.true;
-            });
+            await instance.downloadAndUpdate(ctx, task);
+            expect(fs.existsSync(ctx.installPath)).to.be.true;
+            expect(yarnInstallStub.called).to.be.false;
+            expect(task.skip.calledOnce).to.be.true;
         });
 
-        it('removes install path if it exists and force is true', function () {
+        it('removes install path if it exists and force is true', async function () {
             const yarnInstallStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/yarn-install': yarnInstallStub
@@ -773,79 +778,14 @@ describe('Unit: Commands > Update', function () {
 
             expect(fs.existsSync(ctx.installPath)).to.be.true;
 
-            return instance.downloadAndUpdate(ctx, {}).then(() => {
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-                expect(yarnInstallStub.calledOnce).to.be.true;
-            });
-        });
-    });
-
-    describe('stop task', function () {
-        it('runs stop command', function () {
-            const UpdateCommand = proxyquire(modulePath, {
-                './stop': {StopCommand: true}
-            });
-            const instance = new UpdateCommand({}, {});
-            const runCommandStub = sinon.stub(instance, 'runCommand').resolves();
-
-            return instance.stop().then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(runCommandStub.args[0][0]).to.deep.equal({StopCommand: true});
-                expect(runCommandStub.args[0][1]).to.deep.equal({quiet: true});
-            });
-        });
-
-        it('swallows SystemError with "no instance running" message', function () {
-            const UpdateCommand = proxyquire(modulePath, {
-                './stop': {StopCommand: true}
-            });
-            const instance = new UpdateCommand({}, {});
-            const runCommandStub = sinon.stub(instance, 'runCommand').rejects(new errors.SystemError(
-                'No running Ghost instance found here'
-            ));
-
-            return instance.stop().then(() => {
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(runCommandStub.args[0][0]).to.deep.equal({StopCommand: true});
-                expect(runCommandStub.args[0][1]).to.deep.equal({quiet: true});
-            });
-        });
-
-        it('rethrows any unexpected error', function () {
-            const UpdateCommand = proxyquire(modulePath, {
-                './stop': {StopCommand: true}
-            });
-            const instance = new UpdateCommand({}, {});
-            const runCommandStub = sinon.stub(instance, 'runCommand').rejects(new Error('uh-oh'));
-
-            return instance.stop().then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(Error);
-                expect(error.message).to.equal('uh-oh');
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(runCommandStub.args[0][0]).to.deep.equal({StopCommand: true});
-                expect(runCommandStub.args[0][1]).to.deep.equal({quiet: true});
-            });
-        });
-    });
-
-    it('restart task runs start command', function () {
-        const UpdateCommand = proxyquire(modulePath, {
-            './start': {StartCommand: true}
-        });
-        const instance = new UpdateCommand({}, {});
-        const runCommandStub = sinon.stub(instance, 'runCommand').resolves();
-
-        return instance.restart().then(() => {
-            expect(runCommandStub.calledOnce).to.be.true;
-            expect(runCommandStub.args[0][0]).to.deep.equal({StartCommand: true});
-            expect(runCommandStub.args[0][1]).to.deep.equal({quiet: true});
+            await instance.downloadAndUpdate(ctx, {});
+            expect(fs.existsSync(ctx.installPath)).to.be.false;
+            expect(yarnInstallStub.calledOnce).to.be.true;
         });
     });
 
     describe('removeOldVersions', function () {
-        it('skips if there are 5 or fewer versions installed', function () {
+        it('skips if there are 5 or fewer versions installed', async function () {
             const dirs = [
                 'versions/1.4.0',
                 'versions/1.5.0',
@@ -858,16 +798,15 @@ describe('Unit: Commands > Update', function () {
             sinon.stub(process, 'cwd').returns(env.dir);
             const skipStub = sinon.stub();
 
-            return instance.removeOldVersions({}, {skip: skipStub}).then(() => {
-                expect(skipStub.calledOnce).to.be.true;
+            await instance.removeOldVersions({}, {skip: skipStub});
+            expect(skipStub.calledOnce).to.be.true;
 
-                dirs.forEach((version) => {
-                    expect(fs.existsSync(path.join(env.dir, version))).to.be.true;
-                });
+            dirs.forEach((version) => {
+                expect(fs.existsSync(path.join(env.dir, version))).to.be.true;
             });
         });
 
-        it('keeps only the 5 most recent versions', function () {
+        it('keeps only the 5 most recent versions', async function () {
             const envCfg = {
                 dirs: [
                     'versions/1.0.0-beta.2',
@@ -899,14 +838,13 @@ describe('Unit: Commands > Update', function () {
                 '1.0.2'
             ];
 
-            return instance.removeOldVersions().then(() => {
-                keptVersions.forEach((version) => {
-                    expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.true;
-                });
+            await instance.removeOldVersions();
+            keptVersions.forEach((version) => {
+                expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.true;
+            });
 
-                removedVersions.forEach((version) => {
-                    expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.false;
-                });
+            removedVersions.forEach((version) => {
+                expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.false;
             });
         });
     });
@@ -1009,65 +947,63 @@ describe('Unit: Commands > Update', function () {
             ui.error.reset();
         });
 
-        it('Asks to rollback by default', function () {
+        it('Asks to rollback by default', async function () {
             const UpdateCommand = require(modulePath);
             const expectedQuestion = 'Unable to upgrade Ghost from v1.0.0 to v1.1.1. Would you like to revert back to v1.0.0?';
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
             ui.confirm.resolves(true);
             update.run = sinon.stub().resolves();
 
-            return update.rollbackFromFail(false, '1.1.1').then(() => {
-                expect(ui.log.calledOnce).to.be.true;
-                expect(ui.error.calledOnce).to.be.true;
+            await update.rollbackFromFail(false, '1.1.1');
 
-                expect(ui.confirm.calledOnce).to.be.true;
-                expect(ui.confirm.calledWithExactly(expectedQuestion, true)).to.be.true;
-                expect(update.run.calledOnce).to.be.true;
-            });
+            expect(ui.log.calledOnce).to.be.true;
+            expect(ui.error.calledOnce).to.be.true;
+
+            expect(ui.confirm.calledOnce).to.be.true;
+            expect(ui.confirm.calledWithExactly(expectedQuestion, true)).to.be.true;
+            expect(update.run.calledOnce).to.be.true;
         });
 
-        it('Listens to the user', function () {
+        it('Listens to the user', async function () {
             const UpdateCommand = require(modulePath);
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
 
             ui.confirm.resolves(false);
             update.run = sinon.stub().resolves();
 
-            return update.rollbackFromFail(false, '1.1.1').then(() => {
-                expect(ui.log.calledOnce).to.be.true;
-                expect(ui.error.calledOnce).to.be.true;
+            await update.rollbackFromFail(false, '1.1.1');
 
-                expect(ui.confirm.calledOnce).to.be.true;
-                expect(update.run.called).to.be.false;
-            });
+            expect(ui.log.calledOnce).to.be.true;
+            expect(ui.error.calledOnce).to.be.true;
+
+            expect(ui.confirm.calledOnce).to.be.true;
+            expect(update.run.called).to.be.false;
         });
 
-        it('Force update', function () {
+        it('Force update', async function () {
             const UpdateCommand = require(modulePath);
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
             update.run = sinon.stub().resolves();
 
-            return update.rollbackFromFail(new Error('test'), '1.1.1', true).then(() => {
-                expect(ui.log.calledOnce).to.be.true;
-                expect(ui.error.calledOnce).to.be.true;
+            await update.rollbackFromFail(new Error('test'), '1.1.1', true);
+            expect(ui.log.calledOnce).to.be.true;
+            expect(ui.error.calledOnce).to.be.true;
 
-                expect(ui.confirm.called).to.be.false;
-                expect(update.run.calledOnce).to.be.true;
-            });
+            expect(ui.confirm.called).to.be.false;
+            expect(update.run.calledOnce).to.be.true;
         });
 
-        it('Re-runs `run` using rollback', function () {
+        it('Re-runs `run` using rollback', async function () {
             const UpdateCommand = require(modulePath);
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
 
             update.run = sinon.stub().resolves();
-            return update.rollbackFromFail(false, '1.1.1', true).then(() => {
-                expect(ui.log.calledOnce).to.be.true;
-                expect(ui.error.calledOnce).to.be.true;
+            await update.rollbackFromFail(false, '1.1.1', true);
+            expect(ui.log.calledOnce).to.be.true;
+            expect(ui.error.calledOnce).to.be.true;
 
-                expect(update.run.calledOnce).to.be.true;
-                expect(update.run.calledWithExactly({rollback: true, restart: true})).to.be.true;
-            });
+            expect(update.run.calledOnce).to.be.true;
+            expect(update.run.calledWithExactly({rollback: true, restart: true})).to.be.true;
         });
     });
 
