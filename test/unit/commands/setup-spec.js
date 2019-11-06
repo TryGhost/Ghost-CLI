@@ -262,7 +262,7 @@ describe('Unit: Commands > Setup', function () {
 
             it('import', function () {
                 const importTaskStub = sinon.stub();
-                const {tasks} = getTasks({'../tasks/import': importTaskStub});
+                const {tasks} = getTasks({'../tasks/import': {importTask: importTaskStub}});
                 const [,,,,,importTask] = tasks;
 
                 expect(importTask.id).to.equal('import');

@@ -1,9 +1,11 @@
 const {expect} = require('chai');
 const nock = require('nock');
 const path = require('path');
+const tmp = require('tmp');
+const fs = require('fs-extra');
 
 const {SystemError} = require('../../../../lib/errors');
-const {getBaseUrl, isSetup, setup, runImport} = require('../../../../lib/tasks/import/api');
+const {getBaseUrl, isSetup, setup, runImport, downloadExport} = require('../../../../lib/tasks/import/api');
 
 const testUrl = 'http://localhost:2368';
 
@@ -167,6 +169,155 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect(sessionScope.isDone()).to.be.true;
             expect(importScope.isDone()).to.be.true;
+        });
+    });
+
+    describe('downloadExport', function () {
+        it('1.x', async function () {
+            const clientId = 'client-id';
+            const clientSecret = 'client-secret';
+            const configBody = {
+                configuration: [{
+                    clientId, clientSecret
+                }]
+            };
+
+            const tokenRequestBody = {
+                grant_type: 'password',
+                client_id: clientId,
+                client_secret: clientSecret,
+                username: 'test@example.com',
+                password: 'password'
+            };
+
+            const tokenResponseBody = {
+                access_token: 'access-token'
+            };
+
+            const configScope = nock(testUrl)
+                .get('/ghost/api/v0.1/configuration/')
+                .reply(200, configBody);
+
+            const tokenScope = nock(testUrl)
+                .post('/ghost/api/v0.1/authentication/token/', tokenRequestBody)
+                .reply(201, tokenResponseBody);
+
+            const exportData = {
+                db: [{
+                    meta: {
+                        version: '1.0.0'
+                    },
+                    data: {
+                        users: []
+                    }
+                }]
+            };
+            const exportScope = nock(testUrl, {
+                reqheaders: {
+                    Authorization: 'Bearer access-token'
+                }
+            }).get('/ghost/api/v0.1/db/').reply(200, exportData);
+
+            const tmpDir = tmp.dirSync();
+            const outputFile = path.join(tmpDir.name, '1.x.json');
+
+            await downloadExport('1.0.0', testUrl, {
+                username: 'test@example.com',
+                password: 'password'
+            }, outputFile);
+
+            expect(configScope.isDone()).to.be.true;
+            expect(tokenScope.isDone()).to.be.true;
+            expect(exportScope.isDone()).to.be.true;
+            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+        });
+
+        it('2.x', async function () {
+            const sessionScope = nock(testUrl, {
+                reqheaders: {
+                    Origin: testUrl
+                }
+            }).post('/ghost/api/v2/admin/session/', {
+                username: 'test@example.com',
+                password: 'password'
+            }).reply(201, 'Success', {
+                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
+
+            const exportData = {
+                db: [{
+                    meta: {
+                        version: '2.0.0'
+                    },
+                    data: {
+                        users: []
+                    }
+                }]
+            };
+            const exportScope = nock(testUrl, {
+                reqheaders: {
+                    cookie: [
+                        'ghost-admin-api-session=test-session-data'
+                    ],
+                    origin: testUrl
+                }
+            }).get('/ghost/api/v2/admin/db/').reply(200, exportData);
+
+            const tmpDir = tmp.dirSync();
+            const outputFile = path.join(tmpDir.name, '2.x.json');
+
+            await downloadExport('2.0.0', 'http://localhost:2368', {
+                username: 'test@example.com',
+                password: 'password'
+            }, outputFile);
+
+            expect(sessionScope.isDone()).to.be.true;
+            expect(exportScope.isDone()).to.be.true;
+            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+        });
+
+        it('3.x', async function () {
+            const sessionScope = nock(testUrl, {
+                reqheaders: {
+                    Origin: testUrl
+                }
+            }).post('/ghost/api/v3/admin/session/', {
+                username: 'test@example.com',
+                password: 'password'
+            }).reply(201, 'Success', {
+                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
+
+            const exportData = {
+                db: [{
+                    meta: {
+                        version: '3.0.0'
+                    },
+                    data: {
+                        users: []
+                    }
+                }]
+            };
+            const exportScope = nock(testUrl, {
+                reqheaders: {
+                    cookie: [
+                        'ghost-admin-api-session=test-session-data'
+                    ],
+                    origin: testUrl
+                }
+            }).get('/ghost/api/v3/admin/db/').reply(200, exportData);
+
+            const tmpDir = tmp.dirSync();
+            const outputFile = path.join(tmpDir.name, '3.x.json');
+
+            await downloadExport('3.0.0', 'http://localhost:2368', {
+                username: 'test@example.com',
+                password: 'password'
+            }, outputFile);
+
+            expect(sessionScope.isDone()).to.be.true;
+            expect(exportScope.isDone()).to.be.true;
+            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
     });
 });

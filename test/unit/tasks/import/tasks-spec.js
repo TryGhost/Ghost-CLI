@@ -4,16 +4,16 @@ const proxyquire = require('proxyquire').noCallThru();
 const Promise = require('bluebird');
 const createConfigStub = require('../../../utils/config-stub');
 
-const modulePath = '../../../../lib/tasks/import';
+const modulePath = '../../../../lib/tasks/import/tasks';
 
-describe('Unit: Tasks > Import', function () {
+describe('Unit: Tasks > Import > Import task', function () {
     it('works with already set up blog', async function () {
         const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
         const isSetup = sinon.stub().resolves(true);
         const setup = sinon.stub().resolves();
         const runImport = sinon.stub().resolves();
 
-        const task = proxyquire(modulePath, {
+        const {importTask} = proxyquire(modulePath, {
             './parse-export': parseExport,
             './api': {isSetup, setup, runImport}
         });
@@ -29,7 +29,7 @@ describe('Unit: Tasks > Import', function () {
         const config = createConfigStub();
         config.get.withArgs('url').returns('http://localhost:2368');
 
-        await task({prompt, listr}, {config, version: '1.0.0'}, 'test-export.json');
+        await importTask({prompt, listr}, {config, version: '1.0.0'}, 'test-export.json');
 
         expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
         expect(isSetup.calledOnceWithExactly('1.0.0', 'http://localhost:2368')).to.be.true;
@@ -58,7 +58,7 @@ describe('Unit: Tasks > Import', function () {
         const setup = sinon.stub().resolves();
         const runImport = sinon.stub().resolves();
 
-        const task = proxyquire(modulePath, {
+        const {importTask} = proxyquire(modulePath, {
             './parse-export': parseExport,
             './api': {isSetup, setup, runImport}
         });
@@ -74,7 +74,7 @@ describe('Unit: Tasks > Import', function () {
         const config = createConfigStub();
         config.get.withArgs('url').returns('http://localhost:2368');
 
-        await task({prompt, listr}, {config, version: '1.0.0'}, 'test-export.json');
+        await importTask({prompt, listr}, {config, version: '1.0.0'}, 'test-export.json');
 
         expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
         expect(isSetup.calledOnceWithExactly('1.0.0', 'http://localhost:2368')).to.be.true;
