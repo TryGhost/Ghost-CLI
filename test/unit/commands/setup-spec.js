@@ -54,7 +54,7 @@ describe('Unit: Commands > Setup', function () {
 
         it('returns default tasks correctly', function () {
             const {tasks} = getTasks();
-            expect(tasks).to.have.length(5);
+            expect(tasks).to.have.length(6);
             tasks.forEach((task) => {
                 expect(task).to.include.all.keys('id', 'task', 'enabled', 'title');
             });
@@ -80,7 +80,7 @@ describe('Unit: Commands > Setup', function () {
             const {tasks, ui} = getTasks({}, steps);
 
             // there should only be 2 tasks added
-            expect(tasks).to.have.length(7);
+            expect(tasks).to.have.length(8);
 
             const task1 = tasks[3];
             const task2 = tasks[4];
@@ -258,6 +258,20 @@ describe('Unit: Commands > Setup', function () {
                 expect(migrateTask.enabled({argv: {stages: []}, instance})).to.be.true;
                 instance.version = '2.0.0';
                 expect(migrateTask.enabled({argv: {stages: []}, instance})).to.be.false;
+            });
+
+            it('import', function () {
+                const importTaskStub = sinon.stub();
+                const {tasks} = getTasks({'../tasks/import': importTaskStub});
+                const [,,,,,importTask] = tasks;
+
+                expect(importTask.id).to.equal('import');
+                expect(importTask.title).to.equal('Importing content');
+                expect(importTask.enabled({argv: {stages: []}})).to.be.false;
+                expect(importTask.enabled({argv: {stages: [], fromExport: 'test-file.json'}})).to.be.true;
+
+                importTask.task({ui: 'ui', instance: 'instance', argv: {fromExport: 'test-file.json', stages: []}});
+                expect(importTaskStub.calledOnceWithExactly('ui', 'instance', 'test-file.json')).to.be.true;
             });
 
             describe('start', function () {
