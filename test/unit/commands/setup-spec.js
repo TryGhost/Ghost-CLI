@@ -54,7 +54,7 @@ describe('Unit: Commands > Setup', function () {
 
         it('returns default tasks correctly', function () {
             const {tasks} = getTasks();
-            expect(tasks).to.have.length(4);
+            expect(tasks).to.have.length(5);
             tasks.forEach((task) => {
                 expect(task).to.include.all.keys('id', 'task', 'enabled', 'title');
             });
@@ -80,7 +80,7 @@ describe('Unit: Commands > Setup', function () {
             const {tasks, ui} = getTasks({}, steps);
 
             // there should only be 2 tasks added
-            expect(tasks).to.have.length(6);
+            expect(tasks).to.have.length(7);
 
             const task1 = tasks[3];
             const task2 = tasks[4];
@@ -259,6 +259,60 @@ describe('Unit: Commands > Setup', function () {
                 instance.version = '2.0.0';
                 expect(migrateTask.enabled({argv: {stages: []}, instance})).to.be.false;
             });
+
+            describe('start', function () {
+                function getStartTask() {
+                    const {tasks} = getTasks();
+                    return tasks[4];
+                }
+
+                it('basic information', function () {
+                    const startTask = getStartTask();
+                    expect(startTask.id).to.equal('start');
+                    expect(startTask.title).to.equal('Starting Ghost');
+
+                    expect(startTask.enabled({argv: {stages: [], single: true}})).to.be.false;
+                    expect(startTask.enabled({argv: {stages: [], single: false, start: false}})).to.be.false;
+                    expect(startTask.enabled({argv: {stages: [], single: false}})).to.be.true;
+                });
+
+                it('task', async function () {
+                    const startTask = getStartTask();
+                    const start = sinon.stub().resolves();
+
+                    await startTask.task({instance: {start}, argv: {enable: true}});
+                    expect(start.calledOnceWithExactly(true)).to.be.true;
+                });
+
+                it('skip returns true when isRunning is true', async function () {
+                    const startTask = getStartTask();
+                    const isRunning = sinon.stub().resolves(true);
+
+                    const result = await startTask.skip({instance: {isRunning}});
+                    expect(result).to.be.true;
+                    expect(isRunning.calledOnce).to.be.true;
+                });
+
+                it('skip returns false if argv.start is true', async function () {
+                    const startTask = getStartTask();
+                    const isRunning = sinon.stub().resolves(false);
+
+                    const result = await startTask.skip({instance: {isRunning}, argv: {start: true}});
+                    expect(result).to.be.false;
+                    expect(isRunning.calledOnce).to.be.true;
+                });
+
+                it('skip returns prompt result', async function () {
+                    const startTask = getStartTask();
+                    const isRunning = sinon.stub().resolves(false);
+                    const confirm = sinon.stub().resolves(true);
+
+                    const result = await startTask.skip({instance: {isRunning}, argv: {}, ui: {confirm}});
+                    expect(result).to.be.false;
+                    expect(isRunning.calledOnce).to.be.true;
+                    expect(confirm.calledOnce).to.be.true;
+                });
+            });
         });
     });
 
@@ -285,7 +339,6 @@ describe('Unit: Commands > Setup', function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
-            const runCommand = sinon.stub(setup, 'runCommand').resolves();
             const run = sinon.stub().resolves([]);
             const checkEnvironment = sinon.stub();
             const instance = {checkEnvironment};
@@ -296,7 +349,6 @@ describe('Unit: Commands > Setup', function () {
             system.getInstance.returns(instance);
             system.hook.resolves([{step1: true}, {step2: true}]);
             ui.listr.returns(listr);
-            ui.confirm.resolves(true);
 
             await setup.run({local: false, stages: ['test1', 'test2']});
             expect(system.getInstance.calledOnce).to.be.true;
@@ -325,96 +377,94 @@ describe('Unit: Commands > Setup', function () {
             expect(runArgs.listr).to.equal(listr);
             expect(runArgs.argv).to.deep.equal({local: false, stages: ['test1', 'test2']});
             expect(runArgs.single).to.be.true;
-            expect(ui.confirm.called).to.be.false;
-            expect(runCommand.called).to.be.false;
         });
 
-        it('doesn\'t prompt and doesn\'t start when argv.start is false', async function () {
+        it('calls correct methods with no stages', async function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
-            const runCommand = sinon.stub(setup, 'runCommand').resolves();
+            const run = sinon.stub().resolves([]);
+            const checkEnvironment = sinon.stub();
+            const config = configStub();
+            const instance = {checkEnvironment, config};
             const taskStub = sinon.stub(setup, 'tasks').returns([]);
-            const run = sinon.stub().resolves([]);
-            const checkEnvironment = sinon.stub();
-            const instance = {checkEnvironment};
+            const listr = {tasks: [], run};
 
             system.getInstance.returns(instance);
             system.hook.resolves([]);
-            ui.listr.returns({run, tasks: []});
-            ui.confirm.resolves(true);
+            ui.listr.returns(listr);
 
-            await setup.run({start: false});
+            config.get.withArgs('mail.transport').returns('Mailgun');
+            config.get.withArgs('admin.url').returns('http://localhost:2368');
+            config.get.withArgs('url').returns('http://localhost:2368');
 
+            await setup.run({local: false});
             expect(system.getInstance.calledOnce).to.be.true;
-            expect(checkEnvironment.calledOnce).to.be.false;
+            expect(checkEnvironment.called).to.be.false;
             expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
             expect(taskStub.calledOnce).to.be.true;
+            expect(taskStub.args[0]).to.deep.equal([[]]);
             expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.listr.args[0]).to.deep.equal([
+                [],
+                false,
+                {exitOnError: false}
+            ]);
             expect(run.calledOnce).to.be.true;
             const [[runArgs]] = run.args;
             expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(runArgs.ui).to.equal(ui);
+            expect(runArgs.system).to.equal(system);
+            expect(runArgs.instance).to.equal(instance);
+            expect(runArgs.listr).to.equal(listr);
+            expect(runArgs.argv).to.deep.equal({local: false, stages: []});
             expect(runArgs.single).to.be.false;
-            expect(ui.confirm.called).to.be.false;
-            expect(runCommand.called).to.be.false;
+            expect(config.get.calledThrice).to.be.true;
+            expect(ui.log.calledTwice).to.be.true;
         });
 
-        it('doesn\'t prompt and starts when argv.start is true', async function () {
+        it('logs mail message', async function () {
             const ui = sinon.createStubInstance(UI);
             const system = sinon.createStubInstance(System);
             const setup = new SetupCommand(ui, system);
-            const runCommand = sinon.stub(setup, 'runCommand').resolves();
-            const taskStub = sinon.stub(setup, 'tasks').returns(['some', 'tasks']);
             const run = sinon.stub().resolves([]);
             const checkEnvironment = sinon.stub();
-            const instance = {checkEnvironment};
+            const config = configStub();
+            const instance = {checkEnvironment, config};
+            const taskStub = sinon.stub(setup, 'tasks').returns([]);
+            const listr = {tasks: [], run};
 
             system.getInstance.returns(instance);
             system.hook.resolves([]);
-            ui.listr.returns({run, tasks: []});
-            ui.confirm.resolves(true);
+            ui.listr.returns(listr);
 
-            await setup.run({start: true});
+            config.get.withArgs('mail.transport').returns('Direct');
+            config.get.withArgs('admin.url').returns('http://localhost:2368');
+            config.get.withArgs('url').returns('http://localhost:2368');
+
+            await setup.run();
             expect(system.getInstance.calledOnce).to.be.true;
-            expect(checkEnvironment.calledOnce).to.be.false;
+            expect(checkEnvironment.called).to.be.false;
             expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
             expect(taskStub.calledOnce).to.be.true;
+            expect(taskStub.args[0]).to.deep.equal([[]]);
             expect(ui.listr.calledOnce).to.be.true;
+            expect(ui.listr.args[0]).to.deep.equal([
+                [],
+                false,
+                {exitOnError: false}
+            ]);
             expect(run.calledOnce).to.be.true;
             const [[runArgs]] = run.args;
             expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(runArgs.ui).to.equal(ui);
+            expect(runArgs.system).to.equal(system);
+            expect(runArgs.instance).to.equal(instance);
+            expect(runArgs.listr).to.equal(listr);
+            expect(runArgs.argv).to.deep.equal({stages: []});
             expect(runArgs.single).to.be.false;
-            expect(ui.confirm.called).to.be.false;
-            expect(runCommand.called).to.be.true;
-        });
-
-        it('prompts and follows start prompt', async function () {
-            const ui = sinon.createStubInstance(UI);
-            const system = sinon.createStubInstance(System);
-            const setup = new SetupCommand(ui, system);
-            const runCommand = sinon.stub(setup, 'runCommand').resolves();
-            const taskStub = sinon.stub(setup, 'tasks').returns(['some', 'tasks']);
-            const run = sinon.stub().resolves([]);
-            const checkEnvironment = sinon.stub();
-            const instance = {checkEnvironment};
-
-            system.getInstance.returns(instance);
-            system.hook.resolves([]);
-            ui.listr.returns({run, tasks: []});
-            ui.confirm.resolves(false);
-
-            await setup.run({});
-            expect(system.getInstance.calledOnce).to.be.true;
-            expect(checkEnvironment.calledOnce).to.be.false;
-            expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
-            expect(taskStub.calledOnce).to.be.true;
-            expect(ui.listr.calledOnce).to.be.true;
-            expect(run.calledOnce).to.be.true;
-            const [[runArgs]] = run.args;
-            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
-            expect(runArgs.single).to.be.false;
-            expect(ui.confirm.calledOnce).to.be.true;
-            expect(runCommand.called).to.be.false;
+            expect(config.get.calledThrice).to.be.true;
+            expect(ui.log.calledThrice).to.be.true;
         });
     });
 
