@@ -7,40 +7,49 @@ const RestartCommand = require(modulePath);
 
 describe('Unit: Command > Restart', function () {
     it('warns of stopped instance and starts instead', async function () {
-        const instance = {isRunning: () => Promise.resolve(false)};
-        const logStub = sinon.stub();
+        const instance = {
+            isRunning: sinon.stub().resolves(false),
+            start: sinon.stub().resolves()
+        };
+        const ui = {
+            log: sinon.stub(),
+            run: sinon.stub().callsFake(fn => fn())
+        };
+        const system = {
+            getInstance: sinon.stub().returns(instance)
+        };
 
-        const command = new RestartCommand({log: logStub}, {getInstance: () => instance});
-        const runCommand = sinon.stub(command, 'runCommand').resolves();
-
+        const command = new RestartCommand(ui, system);
         await command.run();
-        expect(runCommand.calledOnce).to.be.true;
-        expect(runCommand.args[0][0].description).to.equal('Start an instance of Ghost');
-        expect(logStub.calledOnce).to.be.true;
-        expect(logStub.args[0][0]).to.match(/not running!/);
+
+        expect(instance.isRunning.calledOnce).to.be.true;
+        expect(ui.log.calledOnce).to.be.true;
+        expect(ui.log.args[0][0]).to.match(/not running!/);
+        expect(ui.run.calledOnce).to.be.true;
+        expect(instance.start.calledOnce).to.be.true;
     });
 
     it('calls process restart method if instance is running', async function () {
-        const runStub = sinon.stub().resolves();
-        const restartStub = sinon.stub().resolves();
-        const lreStub = sinon.stub();
         const instance = {
-            process: {restart: restartStub},
-            loadRunningEnvironment: lreStub,
-            isRunning: () => Promise.resolve(true)
+            isRunning: sinon.stub().resolves(true),
+            loadRunningEnvironment: sinon.stub(),
+            restart: sinon.stub().resolves()
+        };
+        const ui = {
+            log: sinon.stub(),
+            run: sinon.stub().callsFake(fn => fn())
+        };
+        const system = {
+            getInstance: sinon.stub().returns(instance)
         };
 
-        const command = new RestartCommand({run: runStub}, {
-            environment: 'testing',
-            getInstance: () => instance
-        });
-
+        const command = new RestartCommand(ui, system);
         await command.run();
 
-        expect(lreStub.calledOnce).to.be.true;
-        expect(lreStub.args[0][0]).to.be.true;
-        expect(restartStub.calledOnce).to.be.true;
-        expect(restartStub.args[0]).to.deep.equal([process.cwd(), 'testing']);
-        expect(runStub.calledOnce).to.be.true;
+        expect(instance.isRunning.calledOnce).to.be.true;
+        expect(ui.log.called).to.be.false;
+        expect(instance.loadRunningEnvironment.calledOnce).to.be.true;
+        expect(ui.run.calledOnce).to.be.true;
+        expect(instance.restart.calledOnce).to.be.true;
     });
 });

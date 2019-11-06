@@ -579,6 +579,19 @@ describe('Unit: Instance', function () {
         });
     });
 
+    it('restart', async function () {
+        const restart = sinon.stub().resolves();
+        const instance = new Instance({}, {environment: 'testing'}, '/var/www/ghost');
+
+        instance._process = {
+            name: 'local',
+            restart
+        };
+
+        await instance.restart();
+        expect(restart.calledOnceWithExactly('/var/www/ghost', 'testing')).to.be.true;
+    });
+
     describe('summary', function () {
         it('returns shortened object if running is false', async function () {
             const get = sinon.stub();
