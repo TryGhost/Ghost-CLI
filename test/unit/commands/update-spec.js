@@ -75,7 +75,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance = () => fakeInstance;
-            fakeInstance.running.resolves(true);
+            fakeInstance.isRunning.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
@@ -97,7 +97,7 @@ describe('Unit: Commands > Update', function () {
                 });
 
                 expect(ranRestart).to.be.true;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
             });
         });
 
@@ -118,7 +118,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance = () => fakeInstance;
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
@@ -140,7 +140,7 @@ describe('Unit: Commands > Update', function () {
                 });
 
                 expect(ranRestart).to.be.true;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
             });
         });
 
@@ -161,7 +161,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance = () => fakeInstance;
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
@@ -183,7 +183,7 @@ describe('Unit: Commands > Update', function () {
                 });
 
                 expect(ranRestart).to.be.true;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
             });
         });
 
@@ -220,7 +220,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(true);
+            fakeInstance.isRunning.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
 
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
@@ -248,7 +248,7 @@ describe('Unit: Commands > Update', function () {
                 expect(stopStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;
                 expect(downloadStub.calledOnce).to.be.true;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
                 expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
                 expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
 
@@ -292,7 +292,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.25.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(true);
+            fakeInstance.isRunning.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
 
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
@@ -320,7 +320,7 @@ describe('Unit: Commands > Update', function () {
                 expect(stopStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;
                 expect(downloadStub.calledOnce).to.be.true;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
                 expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
                 expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
 
@@ -340,7 +340,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.0.0', '1.0.0-beta.1');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(true);
+            fakeInstance.isRunning.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
@@ -361,7 +361,7 @@ describe('Unit: Commands > Update', function () {
                 expect(ui.log.args[0][0]).to.match(/install is using out-of-date configuration/);
                 expect(ui.log.args[1][0]).to.match(/up to date/);
                 expect(ui.listr.called).to.be.false;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
                 expect(fakeInstance.loadRunningEnvironment.calledOnce).to.be.true;
                 expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
             });
@@ -376,7 +376,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(true);
+            fakeInstance.isRunning.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
@@ -403,7 +403,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(false);
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
@@ -426,7 +426,7 @@ describe('Unit: Commands > Update', function () {
                 expect(ui.log.calledOnce).to.be.true;
                 expect(ui.log.args[0][0]).to.match(/up to date/);
                 expect(ui.listr.called).to.be.false;
-                expect(fakeInstance.running.calledOnce).to.be.true;
+                expect(fakeInstance.isRunning.calledOnce).to.be.true;
                 expect(fakeInstance.loadRunningEnvironment.called).to.be.false;
                 expect(fakeInstance.checkEnvironment.calledOnce).to.be.true;
             });
@@ -459,7 +459,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(true);
+            fakeInstance.isRunning.resolves(true);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
@@ -519,7 +519,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             sinon.stub(cmdInstance, 'stop').resolves();
@@ -580,7 +580,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             const stopStub = sinon.stub(cmdInstance, 'stop').resolves();
@@ -627,7 +627,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
             const rollback = cmdInstance.rollbackFromFail = sinon.stub().rejects(new Error('rollback_successful'));
@@ -659,7 +659,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
             const rollback = cmdInstance.rollbackFromFail = sinon.stub();
@@ -690,7 +690,7 @@ describe('Unit: Commands > Update', function () {
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            fakeInstance.running.resolves(false);
+            fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
             const rollback = cmdInstance.rollbackFromFail = sinon.stub();

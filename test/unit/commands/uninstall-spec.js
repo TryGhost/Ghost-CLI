@@ -79,7 +79,7 @@ describe('Unit: Commands > Uninstall', function () {
             it('step 1 (stopping ghost) - skips when ghost is not running', function () {
                 const command = createInstance();
                 const instance = {
-                    running: sinon.stub().resolves(false),
+                    isRunning: sinon.stub().resolves(false),
                     loadRunningEnvironment: sinon.stub()
                 };
                 const runCommandStub = sinon.stub(command.instance, 'runCommand').resolves();
@@ -93,7 +93,7 @@ describe('Unit: Commands > Uninstall', function () {
 
                     return task.task(null, {skip: skipStub});
                 }).then(() => {
-                    expect(instance.running.calledOnce).to.be.true;
+                    expect(instance.isRunning.calledOnce).to.be.true;
                     expect(skipStub.calledOnce).to.be.true;
                     expect(instance.loadRunningEnvironment.calledOnce).to.be.false;
                     expect(runCommandStub.calledOnce).to.be.false;
@@ -103,7 +103,7 @@ describe('Unit: Commands > Uninstall', function () {
             it('step 1 (stopping ghost) - doesn\'t skip when ghost is running', function () {
                 const command = createInstance();
                 const instance = {
-                    running: sinon.stub().resolves(true),
+                    isRunning: sinon.stub().resolves(true),
                     loadRunningEnvironment: sinon.stub()
                 };
                 const runCommandStub = sinon.stub(command.instance, 'runCommand').resolves();
@@ -117,7 +117,7 @@ describe('Unit: Commands > Uninstall', function () {
 
                     return task.task(null, {skip: skipStub});
                 }).then(() => {
-                    expect(instance.running.calledOnce).to.be.true;
+                    expect(instance.isRunning.calledOnce).to.be.true;
                     expect(skipStub.calledOnce).to.be.false;
                     expect(instance.loadRunningEnvironment.calledOnce).to.be.true;
                     expect(runCommandStub.calledOnce).to.be.true;

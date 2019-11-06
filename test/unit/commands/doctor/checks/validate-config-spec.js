@@ -29,7 +29,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         const runningStub = sinon.stub().resolves(true);
         const skipStub = sinon.stub();
 
-        return validateConfig({instance: {running: runningStub}}, {skip: skipStub}).then(() => {
+        return validateConfig({instance: {isRunning: runningStub}}, {skip: skipStub}).then(() => {
             expect(runningStub.calledOnce).to.be.true;
             expect(skipStub.calledOnce).to.be.true;
         });
@@ -42,7 +42,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {running: runningStub}
+            instance: {isRunning: runningStub}
         }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
@@ -61,7 +61,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {running: runningStub}
+            instance: {isRunning: runningStub}
         }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
@@ -83,7 +83,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {running: runningStub}
+            instance: {isRunning: runningStub}
         }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
@@ -106,7 +106,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {running: runningStub}
+            instance: {isRunning: runningStub}
         }).then(() => {
             expect(urlStub.called).to.be.false;
             expect(portStub.calledOnce).to.be.true;
