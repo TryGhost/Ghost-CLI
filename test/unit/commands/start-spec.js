@@ -69,7 +69,7 @@ describe('Unit: Commands > Start', function () {
             const cmd = new StartCommand(ui, system);
             const runCommand = sinon.stub(cmd, 'runCommand').resolves();
 
-            instance.config.get.withArgs('admin.url').returns('http://localhost:2368');
+            instance.config.get.returns('http://localhost:2368');
 
             await cmd.run({checkMem: false});
             expect(getInstance.calledOnce).to.be.true;
@@ -84,7 +84,7 @@ describe('Unit: Commands > Start', function () {
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.calledTwice).to.be.true;
-            expect(instance.config.get.calledOnce).to.be.true;
+            expect(instance.config.get.calledTwice).to.be.true;
         });
 
         it('doesn\'t log if quiet is set to true', async function () {
@@ -112,70 +112,6 @@ describe('Unit: Commands > Start', function () {
             expect(start.calledOnce).to.be.true;
             expect(log.called).to.be.false;
             expect(instance.config.get.called).to.be.false;
-        });
-
-        it('logs more information during install', async function () {
-            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
-            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
-            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
-            const log = sinon.stub(ui, 'log');
-            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
-            const start = sinon.stub(instance, 'start').resolves();
-
-            process.argv = ['', '', 'install'];
-            instance.config.get.withArgs('admin.url').returns(null);
-            instance.config.get.withArgs('url').returns('http://localhost:2368');
-            instance.config.get.withArgs('mail.transport').returns('Mailgun');
-
-            const cmd = new StartCommand(ui, system);
-            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
-
-            await cmd.run({checkMem: false});
-            expect(getInstance.calledOnce).to.be.true;
-            expect(isRunning.calledOnce).to.be.true;
-            expect(checkEnvironment.calledOnce).to.be.true;
-            expect(runCommand.calledOnce).to.be.true;
-            expect(runCommand.calledWithExactly(DoctorCommand, {
-                categories: ['start'],
-                quiet: true,
-                checkMem: false
-            })).to.be.true;
-            expect(run.calledOnce).to.be.true;
-            expect(start.calledOnce).to.be.true;
-            expect(log.calledTwice).to.be.true;
-            expect(instance.config.get.calledThrice).to.be.true;
-        });
-
-        it('logs more information during install with direct mail transport', async function () {
-            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
-            const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
-            const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
-            const log = sinon.stub(ui, 'log');
-            const run = sinon.stub(ui, 'run').callsFake(fn => fn());
-            const start = sinon.stub(instance, 'start').resolves();
-
-            process.argv = ['', '', 'install'];
-            instance.config.get.withArgs('admin.url').returns(null);
-            instance.config.get.withArgs('url').returns('http://localhost:2368');
-            instance.config.get.withArgs('mail.transport').returns('Direct');
-
-            const cmd = new StartCommand(ui, system);
-            const runCommand = sinon.stub(cmd, 'runCommand').resolves();
-
-            await cmd.run({checkMem: false});
-            expect(getInstance.calledOnce).to.be.true;
-            expect(isRunning.calledOnce).to.be.true;
-            expect(checkEnvironment.calledOnce).to.be.true;
-            expect(runCommand.calledOnce).to.be.true;
-            expect(runCommand.calledWithExactly(DoctorCommand, {
-                categories: ['start'],
-                quiet: true,
-                checkMem: false
-            })).to.be.true;
-            expect(run.calledOnce).to.be.true;
-            expect(start.calledOnce).to.be.true;
-            expect(log.calledThrice).to.be.true;
-            expect(instance.config.get.calledThrice).to.be.true;
         });
     });
 
