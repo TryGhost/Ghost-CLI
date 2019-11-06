@@ -43,25 +43,6 @@ describe('Unit: Process Manager', function () {
         });
     });
 
-    describe('supportsEnableBehavior', function () {
-        const ProcessManager = require(modulePath);
-
-        it('returns false if the class does not implement all of the methods for enable behavior', function () {
-            const instance = new ProcessManager({}, {}, {});
-            expect(ProcessManager.supportsEnableBehavior(instance)).to.be.false;
-        });
-
-        it('returns true if all the methods for enable behavior are implemented', function () {
-            class TestProcess extends ProcessManager {
-                isEnabled() { }
-                enable() { }
-                disable() { }
-            }
-            const instance = new TestProcess({}, {}, {});
-            expect(ProcessManager.supportsEnableBehavior(instance)).to.be.true;
-        });
-    });
-
     describe('ensureStarted', function () {
         const portPollingStub = sinon.stub();
         const ProcessManager = proxyquire(modulePath, {
@@ -212,6 +193,28 @@ describe('Unit: Process Manager', function () {
         return instance.isRunning().then((result) => {
             expect(result).to.be.false;
         });
+    });
+
+    it('base isEnabled returns true', async function () {
+        const ProcessManager = require(modulePath);
+        const instance = new ProcessManager({}, {}, {});
+
+        const result = await instance.isEnabled();
+        expect(result).to.be.false;
+    });
+
+    it('base enable method', async function () {
+        const ProcessManager = require(modulePath);
+        const instance = new ProcessManager({}, {}, {});
+
+        await instance.enable();
+    });
+
+    it('base disable method', async function () {
+        const ProcessManager = require(modulePath);
+        const instance = new ProcessManager({}, {}, {});
+
+        await instance.disable();
     });
 
     it('base willRun method returns true', function () {
