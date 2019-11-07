@@ -947,7 +947,8 @@ describe('Unit: UI', function () {
             operatingSystem: {
                 os: 'Ubuntu',
                 version: '16'
-            }
+            },
+            getInstance: () => ({version: null})
         };
         const SPACES = '    ';
         const UI = require(modulePath);
@@ -955,6 +956,32 @@ describe('Unit: UI', function () {
         const expected = ['Debug Information:',
             `${SPACES}OS: Ubuntu, v16`,
             `${SPACES}Node Version: ${process.version}`,
+            `${SPACES}Ghost-CLI Version: 0.9.1.8`,
+            `${SPACES}Environment: Earth`,
+            `${SPACES}Command: 'ghost ${process.argv.slice(2).join(' ')}'`
+        ];
+        const actual = ui._formatDebug(system).split('\n');
+
+        expect(expected).to.deep.equal(actual);
+    });
+
+    it('_formatDebug shows a ghost version if it exists', function () {
+        const system = {
+            cliVersion: '0.9.1.8',
+            environment: 'Earth',
+            operatingSystem: {
+                os: 'Ubuntu',
+                version: '16'
+            },
+            getInstance: () => ({version: '1.0.0'})
+        };
+        const SPACES = '    ';
+        const UI = require(modulePath);
+        const ui = new UI();
+        const expected = ['Debug Information:',
+            `${SPACES}OS: Ubuntu, v16`,
+            `${SPACES}Node Version: ${process.version}`,
+            `${SPACES}Ghost Version: 1.0.0`,
             `${SPACES}Ghost-CLI Version: 0.9.1.8`,
             `${SPACES}Environment: Earth`,
             `${SPACES}Command: 'ghost ${process.argv.slice(2).join(' ')}'`
