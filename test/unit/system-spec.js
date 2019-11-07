@@ -112,34 +112,20 @@ describe('Unit: System', function () {
         });
     });
 
-    describe('operatingSystem getter', function () {
-        it('caches and returns the correct OS', function () {
-            const getOsStub = sinon.stub().returns({
-                os: 'Ubuntu',
-                version: '16'
-            });
-            const System = proxyquire(modulePath, {
-                './utils/get-os': getOsStub
-            });
+    it('operatingSystem getter', function () {
+        const System = require(modulePath);
+        const sys = new System({}, []);
 
-            const instance = new System({}, []);
-            const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const operatingSystem = instance.operatingSystem;
+        expect(sys.operatingSystem).to.deep.equal({});
 
-            expect(platformStub.calledOnce).to.be.true;
-            expect(getOsStub.calledOnce).to.be.true;
-            expect(operatingSystem).to.be.an('object');
-            expect(operatingSystem.os).to.equal('Ubuntu');
-            expect(operatingSystem.version).to.equal('16');
+        sys._osInfo = {
+            platform: 'Linux',
+            distro: 'Ubuntu',
+            release: '18.04 LTS',
+            kernel: 'kernel'
+        };
 
-            // do the second call to see that it gets cached
-            const newOperatingSystem = instance.operatingSystem;
-            expect(newOperatingSystem).to.be.an('object');
-            expect(newOperatingSystem.os).to.equal('Ubuntu');
-            expect(newOperatingSystem.version).to.equal('16');
-            expect(newOperatingSystem).to.deep.equal(operatingSystem);
-            expect(getOsStub.calledOnce).to.be.true;
-        });
+        expect(sys.operatingSystem).to.deep.equal(sys._osInfo);
     });
 
     describe('setEnvironment', function () {
@@ -576,6 +562,32 @@ describe('Unit: System', function () {
             systemd: './systemd'
         });
         expect(getInstanceStub.calledTwice).to.be.true;
+    });
+
+    it('loadOsInfo returns if info already loaded', async function () {
+        const osInfo = sinon.stub().rejects();
+        const System = proxyquire(modulePath, {
+            'systeminformation/lib/osinfo': {osInfo}
+        });
+
+        const sys = new System({}, []);
+        sys._osInfo = {distro: 'Mac OS X', release: '10.15'};
+
+        await sys.loadOsInfo();
+        expect(osInfo.called).to.be.false;
+    });
+
+    it('loadOsInfo loads operating system information', async function () {
+        const osInfo = sinon.stub().resolves({distro: 'Windows', release: '10'});
+        const System = proxyquire(modulePath, {
+            'systeminformation/lib/osinfo': {osInfo}
+        });
+
+        const sys = new System({}, []);
+
+        await sys.loadOsInfo();
+        expect(osInfo.calledOnce).to.be.true;
+        expect(sys._osInfo).to.deep.equal({distro: 'Windows', release: '10'});
     });
 
     it('writeErrorLog works', function () {

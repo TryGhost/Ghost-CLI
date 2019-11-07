@@ -283,9 +283,11 @@ describe('Unit: Command', function () {
         });
 
         it('loads system and ui dependencies, calls run method', async function () {
-            const uiStub = sinon.stub().returns({ui: true});
+            const run = sinon.stub().callsFake(fn => fn());
+            const uiStub = sinon.stub().returns({ui: true, run});
             const setEnvironmentStub = sinon.stub();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
+            const loadOsInfo = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -312,15 +314,19 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(loadOsInfo.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true, auto: false})).to.be.true;
         });
 
         it('binds cleanup handler if cleanup method is defined', async function () {
-            const uiStub = sinon.stub().returns({ui: true});
+            const run = sinon.stub().callsFake(fn => fn());
+            const uiStub = sinon.stub().returns({ui: true, run});
             const setEnvironmentStub = sinon.stub();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
+            const loadOsInfo = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -351,7 +357,9 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(loadOsInfo.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
             expect(onStub.calledTwice).to.be.true;
@@ -360,9 +368,11 @@ describe('Unit: Command', function () {
         });
 
         it('runs updateCheck if checkVersion property is true on command class', async function () {
-            const uiStub = sinon.stub().returns({ui: true});
+            const run = sinon.stub().callsFake(fn => fn());
+            const uiStub = sinon.stub().returns({ui: true, run});
             const setEnvironmentStub = sinon.stub();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
+            const loadOsInfo = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
             const preChecksStub = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
@@ -393,18 +403,22 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({ui: true}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(loadOsInfo.calledOnce).to.be.true;
             expect(preChecksStub.calledOnce).to.be.true;
-            expect(preChecksStub.calledWithExactly({ui: true}, {setEnvironment: setEnvironmentStub})).to.be.true;
+            expect(preChecksStub.calledWithExactly({ui: true, run}, {setEnvironment: setEnvironmentStub, loadOsInfo})).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
         });
 
         it('catches errors, passes them to ui error method, then exits', async function () {
+            const run = sinon.stub().callsFake(fn => fn());
             const errorStub = sinon.stub();
-            const uiStub = sinon.stub().returns({error: errorStub});
+            const uiStub = sinon.stub().returns({error: errorStub, run});
+            const loadOsInfo = sinon.stub().resolves();
             const setEnvironmentStub = sinon.stub();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub});
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -437,7 +451,9 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({error: errorStub}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({error: errorStub, run}, [{extensiona: true}])).to.be.true;
+            expect(run.calledOnce).to.be.true;
+            expect(loadOsInfo.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
