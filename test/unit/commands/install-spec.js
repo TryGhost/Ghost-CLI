@@ -308,9 +308,10 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 '../utils/version': {resolveVersion, versionFromZip}
             });
+            const log = sinon.stub();
 
             const testInstance = new InstallCommand({}, {});
-            const context = {argv: {version: '1.0.0', zip: '/some/zip/file.zip'}};
+            const context = {argv: {zip: '/some/zip/file.zip'}, ui: {log}};
 
             await testInstance.version(context);
             expect(resolveVersion.called).to.be.false;
@@ -318,6 +319,27 @@ describe('Unit: Commands > Install', function () {
             expect(versionFromZip.calledWith('/some/zip/file.zip')).to.be.true;
             expect(context.version).to.equal('1.5.2');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.2'));
+            expect(log.called).to.be.false;
+        });
+
+        it('logs if both version and zip are passed', async function () {
+            const resolveVersion = sinon.stub().resolves('1.5.0');
+            const versionFromZip = sinon.stub().resolves('1.5.2');
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/version': {resolveVersion, versionFromZip}
+            });
+            const log = sinon.stub();
+
+            const testInstance = new InstallCommand({}, {});
+            const context = {argv: {version: '1.0.0', zip: '/some/zip/file.zip'}, ui: {log}};
+
+            await testInstance.version(context);
+            expect(resolveVersion.called).to.be.false;
+            expect(versionFromZip.calledOnce).to.be.true;
+            expect(versionFromZip.calledWith('/some/zip/file.zip')).to.be.true;
+            expect(context.version).to.equal('1.5.2');
+            expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.2'));
+            expect(log.calledOnce).to.be.true;
         });
     });
 
