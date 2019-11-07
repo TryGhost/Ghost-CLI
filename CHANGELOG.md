@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.13.0-beta.0"></a>
+# [1.13.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.12.1...1.13.0-beta.0) (2019-11-07)
+
+
+### Bug Fixes
+
+* **import:** fix import path for parseExport ([b2629e5](https://github.com/TryGhost/Ghost-CLI/commit/b2629e5))
+* **import:** improve handling of auth errors ([#1051](https://github.com/TryGhost/Ghost-CLI/issues/1051)) ([fb6b431](https://github.com/TryGhost/Ghost-CLI/commit/fb6b431))
+* **import:** remove usage of stream.finished ([e0d05c5](https://github.com/TryGhost/Ghost-CLI/commit/e0d05c5))
+* **migrator:** use ProcessError instead of GhostError ([#1041](https://github.com/TryGhost/Ghost-CLI/issues/1041)) ([6e8c98c](https://github.com/TryGhost/Ghost-CLI/commit/6e8c98c)), closes [#978](https://github.com/TryGhost/Ghost-CLI/issues/978)
+* **uninstall:** pass argv.force to ui.confirm as default ([be69f38](https://github.com/TryGhost/Ghost-CLI/commit/be69f38))
+
+
+### Features
+
+* **export:** add export command ([#1050](https://github.com/TryGhost/Ghost-CLI/issues/1050)) ([f540af7](https://github.com/TryGhost/Ghost-CLI/commit/f540af7)), closes [#468](https://github.com/TryGhost/Ghost-CLI/issues/468)
+* **import:** add import functionality ([#1043](https://github.com/TryGhost/Ghost-CLI/issues/1043)) ([0d07841](https://github.com/TryGhost/Ghost-CLI/commit/0d07841)), closes [#468](https://github.com/TryGhost/Ghost-CLI/issues/468)
+
+
+
 <a name="1.12.1"></a>
 ## [1.12.1](https://github.com/TryGhost/Ghost-CLI/compare/1.12.0...1.12.1) (2019-11-04)
 
