@@ -233,6 +233,34 @@ describe('Unit: Utils: version', function () {
             expect(result).to.equal('2.0.0');
         });
 
+        it('returns latest v1 version if only 1 is specified', async function () {
+            loadVersions.resolves({
+                latest: '2.2.0',
+                latestMajor: {
+                    v1: '1.1.0',
+                    v2: '2.2.0'
+                },
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.1.0', '1.0.0']
+            });
+
+            const result = await resolveVersion('1');
+            expect(result).to.equal('1.1.0');
+        });
+
+        it('returns latest v2 version if only v2 is specified', async function () {
+            loadVersions.resolves({
+                latest: '2.2.0',
+                latestMajor: {
+                    v1: '1.1.0',
+                    v2: '2.2.0'
+                },
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.1.0', '1.0.0']
+            });
+
+            const result = await resolveVersion('v2');
+            expect(result).to.equal('2.2.0');
+        });
+
         it('returns latest version if active version and no custom version', async function () {
             loadVersions.resolves({
                 latest: '2.2.0',
