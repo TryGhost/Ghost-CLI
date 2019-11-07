@@ -945,8 +945,8 @@ describe('Unit: UI', function () {
             cliVersion: '0.9.1.8',
             environment: 'Earth',
             operatingSystem: {
-                os: 'Ubuntu',
-                version: '16'
+                distro: 'Ubuntu',
+                release: '16'
             },
             getInstance: () => ({version: null})
         };
@@ -970,8 +970,8 @@ describe('Unit: UI', function () {
             cliVersion: '0.9.1.8',
             environment: 'Earth',
             operatingSystem: {
-                os: 'Ubuntu',
-                version: '16'
+                distro: 'Ubuntu',
+                release: '16'
             },
             getInstance: () => ({version: '1.0.0'})
         };
