@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.13.1"></a>
+## [1.13.1](https://github.com/TryGhost/Ghost-CLI/compare/1.13.0...1.13.1) (2019-11-08)
+
+
+### Bug Fixes
+
+* **install:** allow specifying custom version with import flag ([#1058](https://github.com/TryGhost/Ghost-CLI/issues/1058)) ([f16f471](https://github.com/TryGhost/Ghost-CLI/commit/f16f471))
+
+
+
 <a name="1.13.0"></a>
 # [1.13.0](https://github.com/TryGhost/Ghost-CLI/compare/1.13.0-beta.1...1.13.0) (2019-11-08)
 
