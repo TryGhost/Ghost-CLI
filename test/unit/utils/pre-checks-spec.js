@@ -41,7 +41,7 @@ describe('Unit: Utils > pre-checks', function () {
             }).catch((err) => {
                 expect(err.message).to.equal(testError.message);
                 expect(latestVersion.calledOnce).to.be.true;
-                expect(latestVersion.calledWithExactly('ghost')).to.be.true;
+                expect(latestVersion.calledWithExactly('ghost', {agent: false})).to.be.true;
                 done();
             });
         });
@@ -57,7 +57,7 @@ describe('Unit: Utils > pre-checks', function () {
             }, {log}).then(([task]) => task.task()).then(() => {
                 expect(log.called).to.be.false;
                 expect(latestVersion.calledOnce).to.be.true;
-                expect(latestVersion.calledWithExactly('ghost')).to.be.true;
+                expect(latestVersion.calledWithExactly('ghost', {agent: false})).to.be.true;
             });
         });
 
@@ -76,7 +76,7 @@ describe('Unit: Utils > pre-checks', function () {
                 expect(stripAnsi(msg)).to.match(/You are running an outdated version of Ghost-CLI/);
 
                 expect(latestVersion.calledOnce).to.be.true;
-                expect(latestVersion.calledWithExactly('ghost')).to.be.true;
+                expect(latestVersion.calledWithExactly('ghost', {agent: false})).to.be.true;
             });
         });
 
