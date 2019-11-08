@@ -160,76 +160,6 @@ describe('Unit: Commands > Install', function () {
             });
         });
 
-        it('handles case with custom version and export file', function () {
-            const dirEmptyStub = sinon.stub().returns(true);
-            const yarnInstallStub = sinon.stub().resolves();
-            const ensureStructureStub = sinon.stub().resolves();
-            const parseExport = sinon.stub().returns({version: '1.4.0'});
-            const log = sinon.stub();
-            const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
-
-            const InstallCommand = proxyquire(modulePath, {
-                '../tasks/yarn-install': yarnInstallStub,
-                '../tasks/ensure-structure': ensureStructureStub,
-                '../utils/dir-is-empty': dirEmptyStub,
-                '../tasks/import': {parseExport}
-            });
-            const testInstance = new InstallCommand({listr: listrStub, log}, {cliVersion: '1.0.0'});
-            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            const versionStub = sinon.stub(testInstance, 'version').resolves();
-            const linkStub = sinon.stub(testInstance, 'link').resolves();
-            const casperStub = sinon.stub(testInstance, 'casper').resolves();
-
-            const argv = {version: '1.0.0', setup: false, fromExport: 'test-import.json'};
-            return testInstance.run(argv).then(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(log.calledOnce).to.be.true;
-                expect(listrStub.calledTwice).to.be.true;
-                expect(yarnInstallStub.calledOnce).to.be.true;
-                expect(ensureStructureStub.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.calledWithExactly({argv: {...argv, version: '1.4.0'}, cliVersion: '1.0.0'}));
-                expect(linkStub.calledOnce).to.be.true;
-                expect(casperStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-            });
-        });
-
-        it('handles case with 0.x export file', function () {
-            const dirEmptyStub = sinon.stub().returns(true);
-            const yarnInstallStub = sinon.stub().resolves();
-            const ensureStructureStub = sinon.stub().resolves();
-            const parseExport = sinon.stub().returns({version: '0.11.14'});
-            const log = sinon.stub();
-            const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
-
-            const InstallCommand = proxyquire(modulePath, {
-                '../tasks/yarn-install': yarnInstallStub,
-                '../tasks/ensure-structure': ensureStructureStub,
-                '../utils/dir-is-empty': dirEmptyStub,
-                '../tasks/import': {parseExport}
-            });
-            const testInstance = new InstallCommand({listr: listrStub, log}, {cliVersion: '1.0.0'});
-            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            const versionStub = sinon.stub(testInstance, 'version').resolves();
-            const linkStub = sinon.stub(testInstance, 'link').resolves();
-            const casperStub = sinon.stub(testInstance, 'casper').resolves();
-
-            const argv = {setup: false, fromExport: 'test-import.json'};
-            return testInstance.run(argv).then(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(log.calledOnce).to.be.true;
-                expect(listrStub.calledTwice).to.be.true;
-                expect(yarnInstallStub.calledOnce).to.be.true;
-                expect(ensureStructureStub.calledOnce).to.be.true;
-                expect(versionStub.calledOnce).to.be.true;
-                expect(versionStub.calledWithExactly({argv: {...argv, version: null, v1: true}, cliVersion: '1.0.0'}));
-                expect(linkStub.calledOnce).to.be.true;
-                expect(casperStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-            });
-        });
-
         it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
             const dirEmptyStub = sinon.stub().returns(true);
             const yarnInstallStub = sinon.stub().resolves();
@@ -340,6 +270,72 @@ describe('Unit: Commands > Install', function () {
             expect(context.version).to.equal('1.5.2');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.2'));
             expect(log.calledOnce).to.be.true;
+        });
+
+        it('handles v0.x export case', async function () {
+            const resolveVersion = sinon.stub().resolves('1.5.0');
+            const parseExport = sinon.stub().returns({version: '0.11.14'});
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/version': {resolveVersion},
+                '../tasks/import': {parseExport}
+            });
+            const log = sinon.stub();
+
+            const testInstance = new InstallCommand({}, {});
+            const context = {argv: {version: '2.0.0', fromExport: 'test-export.json'}, ui: {log}};
+
+            await testInstance.version(context);
+            expect(resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined})).to.be.true;
+            expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
+            expect(context.version).to.equal('1.5.0');
+            expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
+            expect(log.calledOnce).to.be.true;
+        });
+
+        it('uses export version if none defined', async function () {
+            const resolveVersion = sinon.stub().resolves('2.0.0');
+            const parseExport = sinon.stub().returns({version: '2.0.0'});
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/version': {resolveVersion},
+                '../tasks/import': {parseExport}
+            });
+            const log = sinon.stub();
+
+            const testInstance = new InstallCommand({}, {});
+            const context = {argv: {fromExport: 'test-export.json'}, ui: {log}};
+
+            await testInstance.version(context);
+            expect(resolveVersion.calledOnceWithExactly('2.0.0', null, {v1: undefined})).to.be.true;
+            expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
+            expect(context.version).to.equal('2.0.0');
+            expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/2.0.0'));
+            expect(log.called).to.be.false;
+        });
+
+        it('errors if custom version is less than export version', async function () {
+            const resolveVersion = sinon.stub().resolves('2.0.0');
+            const parseExport = sinon.stub().returns({version: '3.0.0'});
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/version': {resolveVersion},
+                '../tasks/import': {parseExport}
+            });
+            const log = sinon.stub();
+
+            const testInstance = new InstallCommand({}, {});
+            const context = {argv: {version: 'v2', fromExport: 'test-export.json'}, ui: {log}};
+
+            try {
+                await testInstance.version(context);
+            } catch (error) {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.include('v3.0.0 into v2.0.0');
+                expect(resolveVersion.calledOnceWithExactly('v2', null, {v1: undefined})).to.be.true;
+                expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
+                expect(log.called).to.be.false;
+                return;
+            }
+
+            expect.fail('version should have errored');
         });
     });
 
