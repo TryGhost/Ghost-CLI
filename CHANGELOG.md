@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.13.0-beta.1"></a>
+# [1.13.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.13.0-beta.0...1.13.0-beta.1) (2019-11-08)
+
+
+### Bug Fixes
+
+* **ui:** add ghost instance version to debug error output ([#1052](https://github.com/TryGhost/Ghost-CLI/issues/1052)) ([185fb2c](https://github.com/TryGhost/Ghost-CLI/commit/185fb2c))
+* **ux:** add warning when custom version and --zip are passed ([c7875c9](https://github.com/TryGhost/Ghost-CLI/commit/c7875c9))
+
+
+### Features
+
+* **install:** allow specifying short versions ([46f4da5](https://github.com/TryGhost/Ghost-CLI/commit/46f4da5))
+* **install:** improved local install ux ([9494d51](https://github.com/TryGhost/Ghost-CLI/commit/9494d51))
+* **system:** use systeminformation for os version information ([1fc845d](https://github.com/TryGhost/Ghost-CLI/commit/1fc845d))
+
+
+
 <a name="1.13.0-beta.0"></a>
 # [1.13.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.12.1...1.13.0-beta.0) (2019-11-07)
 
