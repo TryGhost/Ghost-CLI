@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.13.0"></a>
+# [1.13.0](https://github.com/TryGhost/Ghost-CLI/compare/1.13.0-beta.1...1.13.0) (2019-11-08)
+
+
+### Bug Fixes
+
+* **proxy:** only create proxy agent once ([b12b4c7](https://github.com/TryGhost/Ghost-CLI/commit/b12b4c7))
+
+
+### Features
+
+* **proxy:** add support for cli behind proxy ([#1042](https://github.com/TryGhost/Ghost-CLI/issues/1042)) ([ee2c3d0](https://github.com/TryGhost/Ghost-CLI/commit/ee2c3d0))
+
+
+
 <a name="1.13.0-beta.1"></a>
 # [1.13.0-beta.1](https://github.com/TryGhost/Ghost-CLI/compare/1.13.0-beta.0...1.13.0-beta.1) (2019-11-08)
 
