@@ -54,7 +54,7 @@
     "debug": "4.1.1",
     "decompress": "4.2.0",
     "download": "7.1.0",
-    "execa": "1.0.0",
+    "execa": "3.4.0",
     "find-plugins": "1.1.7",
     "fkill": "6.2.0",
     "form-data": "2.5.1",
