@@ -178,22 +178,22 @@ describe('Unit: Command', function () {
     });
 
     describe('_run', function () {
-        it('calls checkValidInstall when global option is not set', async function () {
-            const checkValidInstall = sinon.stub();
+        it('calls findValidInstall when global option is not set', async function () {
+            const findValidInstall = sinon.stub();
             const Command = proxyquire(modulePath, {
-                './utils/check-valid-install': checkValidInstall
+                './utils/find-valid-install': findValidInstall
             });
 
             const TestCommand = class extends Command {};
-            checkValidInstall.throws();
+            findValidInstall.throws();
 
             try {
                 await TestCommand._run('test', {});
-                throw new Error('checkValidInstall not called');
+                throw new Error('findValidInstall not called');
             } catch (e) {
-                expect(e.message).to.not.equal('checkValidInstall not called');
-                expect(checkValidInstall.calledOnce).to.be.true;
-                expect(checkValidInstall.args[0][0]).to.equal('test');
+                expect(e.message).to.not.equal('findValidInstall not called');
+                expect(findValidInstall.calledOnce).to.be.true;
+                expect(findValidInstall.args[0][0]).to.equal('test');
             }
         });
 
