@@ -90,7 +90,7 @@
     "tough-cookie": "3.0.1",
     "validator": "7.2.0",
     "yargs": "14.2.2",
-    "yarn": "1.21.1"
+    "yarn": "1.22.0"
   },
   "devDependencies": {
     "chai": "4.2.0",
