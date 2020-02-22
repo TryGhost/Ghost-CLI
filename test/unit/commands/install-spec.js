@@ -160,6 +160,34 @@ describe('Unit: Commands > Install', function () {
             });
         });
 
+        it('normalizes version to a string', function () {
+            const dirEmptyStub = sinon.stub().returns(true);
+            const listrStub = sinon.stub();
+            listrStub.onFirstCall().resolves();
+            listrStub.onSecondCall().rejects();
+            const setEnvironmentStub = sinon.stub();
+
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/dir-is-empty': dirEmptyStub
+            });
+            const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
+
+            return testInstance.run({version: 2, zip: '', v1: false, _: ['install', 'local']}).then(() => {
+                expect(false, 'run should have rejected').to.be.true;
+            }).catch(() => {
+                expect(dirEmptyStub.calledOnce).to.be.true;
+                expect(runCommandStub.calledOnce).to.be.true;
+                expect(listrStub.calledOnce).to.be.true;
+                expect(listrStub.args[0][1]).to.deep.equal({
+                    argv: {version: '2', zip: '', v1: false, _: ['install', 'local']},
+                    cliVersion: '1.0.0'
+                });
+                expect(setEnvironmentStub.calledOnce).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            });
+        });
+
         it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
             const dirEmptyStub = sinon.stub().returns(true);
             const yarnInstallStub = sinon.stub().resolves();
