@@ -50,6 +50,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         await ui(ctx);
         expect(ctx.ui.log.callCount).to.eql(4);
         expect(ctx.ui.confirm.calledOnce).to.be.true;
+        expect(ctx.ui.confirm.args[0][1], 'confirm prompt default should be true').to.be.true;
     });
 
     it('theme has warnings', async function () {
@@ -75,6 +76,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         await ui(ctx);
         expect(ctx.ui.log.callCount).to.eql(6);
         expect(ctx.ui.confirm.calledTwice).to.be.true;
+        expect(ctx.ui.confirm.args[1][1], 'confirm prompt default should be false').to.be.false;
 
         const output = stripAnsi(ctx.ui.log.args.join(' '));
 
@@ -111,6 +113,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         await ui(ctx);
         expect(ctx.ui.log.callCount).to.eql(7);
         expect(ctx.ui.confirm.calledTwice).to.be.true;
+        expect(ctx.ui.confirm.args[1][1], 'confirm prompt default should be false').to.be.false;
 
         const output = stripAnsi(ctx.ui.log.args.join(' '));
 
