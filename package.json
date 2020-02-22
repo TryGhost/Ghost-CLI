@@ -49,7 +49,7 @@
     "abbrev": "1.1.1",
     "adm-zip": "0.4.14",
     "bluebird": "3.7.2",
-    "chalk": "2.4.2",
+    "chalk": "3.0.0",
     "cli-table3": "0.5.0",
     "debug": "4.1.1",
     "decompress": "4.2.0",
