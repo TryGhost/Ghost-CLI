@@ -4245,10 +4245,10 @@ standard-version@4.3.0:
     semver "^5.1.0"
     yargs "^8.0.1"
 
-stat-mode@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/stat-mode/-/stat-mode-0.3.0.tgz#69283b081f851582b328d2a4ace5f591ce52f54b"
-  integrity sha512-QjMLR0A3WwFY2aZdV0okfFEJB5TRjkggXZjxP3A1RsWsNHNu3YPv8btmtc6iCFZ0Rul3FE93OYogvhOUClU+ng==
+stat-mode@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/stat-mode/-/stat-mode-1.0.0.tgz#68b55cb61ea639ff57136f36b216a291800d1465"
+  integrity sha512-jH9EhtKIjuXZ2cWxmXS8ZP80XyC3iasQxMDV8jzhNJpfDb7VbQLVW4Wvsxz9QZvzV+G4YoSfBUVKDOyxLzi/sg==
 
 strict-uri-encode@^1.0.0:
   version "1.1.0"
