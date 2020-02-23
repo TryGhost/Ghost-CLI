@@ -3748,10 +3748,10 @@ rc@^1.2.8:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-read-last-lines@1.7.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/read-last-lines/-/read-last-lines-1.7.1.tgz#7a3b2ccd96c67e2d03e1903cc65edd9d08ff6502"
-  integrity sha512-X98EcfP8dUNBg52Mhwdu/WTNI9TaGHnBeximG9Wp/bV6PmILeS9gQ0FHkrqcPIvbbZb/2jjWCzvA2r1HScnEqA==
+read-last-lines@1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/read-last-lines/-/read-last-lines-1.7.2.tgz#d96d40566d70aca260a85acefb00d523ea3e74ad"
+  integrity sha512-K0yUvTYAYn6qpyLJufaJ7yC6BeL23qpgZ8SKM7/fA1R1rHotCDxB/zDp9i1I2JHvexWBW6/35jkt07iiIKKp4g==
   dependencies:
     mz "^2.7.0"
 

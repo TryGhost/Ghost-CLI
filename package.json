@@ -77,7 +77,7 @@
     "portfinder": "1.0.25",
     "prettyjson": "1.2.1",
     "proxy-from-env": "1.0.0",
-    "read-last-lines": "1.7.1",
+    "read-last-lines": "1.7.2",
     "replace-in-file": "5.0.2",
     "rxjs": "6.5.3",
     "semver": "7.1.3",
