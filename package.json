@@ -76,7 +76,7 @@
     "path-is-root": "0.1.0",
     "portfinder": "1.0.25",
     "prettyjson": "1.2.1",
-    "proxy-from-env": "1.0.0",
+    "proxy-from-env": "1.1.0",
     "read-last-lines": "1.7.2",
     "replace-in-file": "5.0.2",
     "rxjs": "6.5.4",
