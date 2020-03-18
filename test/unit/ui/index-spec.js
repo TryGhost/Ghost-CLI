@@ -14,6 +14,11 @@ const execa = require('execa');
 const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {
+    before(() => {
+        // Workaround because GitHub Actions doesn't currently report a TTY
+        process.stdout.isTTY = true;
+    });
+
     afterEach(() => {
         sinon.restore();
     });
