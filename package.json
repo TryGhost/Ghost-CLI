@@ -61,7 +61,7 @@
     "fs-extra": "8.1.0",
     "generate-password": "1.5.1",
     "global-modules": "2.0.0",
-    "got": "9.6.0",
+    "got": "10.7.0",
     "https-proxy-agent": "5.0.0",
     "inquirer": "7.1.0",
     "is-running": "2.1.0",
