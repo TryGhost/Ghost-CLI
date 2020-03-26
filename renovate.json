@@ -3,10 +3,6 @@
     "@tryghost:quietJS",
     ":semanticCommitTypeAll(chore)"
   ],
-  "travis": { "enabled": true },
-  "node": {
-    "supportPolicy": ["lts"]
-  },
   "ignoreDeps": [
     "cli-table3",
     "standard-version",
