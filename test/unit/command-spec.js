@@ -362,9 +362,10 @@ describe('Unit: Command', function () {
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
-            expect(onStub.calledTwice).to.be.true;
+            expect(onStub.calledThrice).to.be.true;
             expect(onStub.calledWith('SIGINT')).to.be.true;
             expect(onStub.calledWith('SIGTERM')).to.be.true;
+            expect(onStub.calledWith('exit')).to.be.true;
         });
 
         it('runs updateCheck if checkVersion property is true on command class', async function () {
