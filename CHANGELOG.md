@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.14.0-beta.0"></a>
+# [1.14.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.13.1...1.14.0-beta.0) (2020-04-03)
+
+
+### Bug Fixes
+
+* **cleanup:** ensure cleanup gets run on process.exit calls ([8ad78f3](https://github.com/TryGhost/Ghost-CLI/commit/8ad78f3))
+* **major:** allow automatic major upgrades for clean themes ([ceca111](https://github.com/TryGhost/Ghost-CLI/commit/ceca111))
+* **version:** ensure custom version is handled as a string ([#1112](https://github.com/TryGhost/Ghost-CLI/issues/1112)) ([056bb0d](https://github.com/TryGhost/Ghost-CLI/commit/056bb0d))
+
+
+### Features
+
+* **node:** drop node v8 support ([#1111](https://github.com/TryGhost/Ghost-CLI/issues/1111)) ([988f95d](https://github.com/TryGhost/Ghost-CLI/commit/988f95d))
+
+
+
 <a name="1.13.1"></a>
 ## [1.13.1](https://github.com/TryGhost/Ghost-CLI/compare/1.13.0...1.13.1) (2019-11-08)
 
