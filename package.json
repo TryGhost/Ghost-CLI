@@ -80,7 +80,7 @@
     "read-last-lines": "1.7.2",
     "replace-in-file": "5.0.2",
     "rxjs": "6.5.5",
-    "semver": "7.2.1",
+    "semver": "7.2.3",
     "shasum": "1.0.2",
     "stat-mode": "1.0.0",
     "strip-ansi": "5.2.0",
