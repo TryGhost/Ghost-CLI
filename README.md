@@ -1,8 +1,7 @@
 # Ghost in the Shell
 
 [![CI Status](https://github.com/TryGhost/Ghost-CLI/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/Ghost-In-The-Shell/actions)
-[![Coverage Status](https://coveralls.io/repos/github/TryGhost/
-/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-In-The-Shell?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/TryGhost/Ghost-CLI/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-In-The-Shell?branch=master)
 [![npm version](https://img.shields.io/npm/v/ghost-cli.svg)](https://npmjs.com/package/ghost-in-the-shell/)
 [![ghost-in-the-shell dependencies](https://david-dm.org/TryGhost/Ghost-CLI.svg)](https://david-dm.org/TryGhost/Ghost-In-The-Shell)
 
