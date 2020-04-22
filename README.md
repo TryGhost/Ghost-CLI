@@ -1,13 +1,14 @@
-# Ghost-CLI
+# Ghost in the Shell
 
-[![CI Status](https://github.com/TryGhost/Ghost-CLI/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/Ghost-CLI/actions)
-[![Coverage Status](https://coveralls.io/repos/github/TryGhost/Ghost-CLI/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-CLI?branch=master)
-[![npm version](https://img.shields.io/npm/v/ghost-cli.svg)](https://npmjs.com/package/ghost-cli/)
-[![ghost-cli dependencies](https://david-dm.org/TryGhost/Ghost-CLI.svg)](https://david-dm.org/TryGhost/Ghost-CLI)
+[![CI Status](https://github.com/TryGhost/Ghost-In-The-Shell/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/Ghost-In-The-Shell/actions)
+[![Coverage Status](https://coveralls.io/repos/github/TryGhost/
+/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-In-The-Shell?branch=master)
+[![npm version](https://img.shields.io/npm/v/ghost-cli.svg)](https://npmjs.com/package/ghost-in-the-shell/)
+[![ghost-in-the-shell dependencies](https://david-dm.org/TryGhost/Ghost-CLI.svg)](https://david-dm.org/TryGhost/Ghost-In-The-Shell)
 
 ## Basic Setup
 
-- `npm install -g ghost-cli@latest`
+- `npm install -g ghost-in-the-shell@latest`
 - `ghost install` (for a production linux setup, including Nginx, SSL, and Systemd)
 - `ghost install local` (for a local setup, useful for theme development/testing)
 
@@ -16,17 +17,17 @@
 ## Documentation
 
 - [Complete Setup Guide](https://ghost.org/docs/install/ubuntu/)
-- [Command Reference](https://ghost.org/docs/api/ghost-cli/)
-- [Knowledgebase](https://ghost.org/docs/api/ghost-cli/knowledgebase/)
+- [Command Reference](https://ghost.org/docs/api/ghost-in-the-shell/)
+- [Knowledgebase](https://ghost.org/docs/api/ghost-in-the-shell/knowledgebase/)
 - [Forum](https://forum.ghost.org)
 
 ## Project Goals
 
 The objective of the Ghost CLI project is to make setting up and maintaining a Ghost site as straight forward as possible for people who do not want to use Ghost(Pro).
 
-Ghost-CLI is aimed at people who are comfortable in a command line environment, and therefore some technical knowledge is assumed. The design goal of Ghost CLI was to make it possible to install or update Ghost in a single command.
+Ghost in the Shell is aimed at people who are comfortable in a command line environment, and therefore some technical knowledge is assumed. The design goal of Ghost CLI was to make it possible to install or update Ghost in a single command.
 
-In order to keep these goals obtainable & maintainable by Ghost's small team, we have a recommended system stack that Ghost-CLI works with, and minimal configuration options.
+In order to keep these goals obtainable & maintainable by Ghost's small team, we have a recommended system stack that Ghost in the Shell works with, and minimal configuration options.
 
 ### Recommended stack
 
@@ -52,13 +53,13 @@ The secondary focus is on improving the CLI itself. We want to ensure that the U
 
 We aren't able to provide support in GitHub, but we do keep track of common issues with the `known-issue` label and regularly update documentation & error messages to be clearer.
 
-The documentation for Ghost-CLI can be found at https://ghost.org/docs/api/ghost-cli/. Community support can be found in our [forum](https://forum.ghost.org).
+The documentation for Ghost in the Shell can be found at https://ghost.org/docs/api/ghost-in-the-shell/. Community support can be found in our [forum](https://forum.ghost.org).
 
 
 ## Developer Setup (for contributing)
 
 1. Fork this repo
-2. `git clone https://github.com/<your-username>/Ghost-CLI path/to/your/workspace`
+2. `git clone https://github.com/<your-username>/Ghost-In-The-Shell path/to/your/workspace`
 3. `cd path/to/your/workspace`
 4. `yarn install`
 
