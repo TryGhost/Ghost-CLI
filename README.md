@@ -22,9 +22,9 @@
 
 ## Project Goals
 
-The objective of the Ghost CLI project is to make setting up and maintaining a Ghost site as straight forward as possible for people who do not want to use Ghost(Pro).
+The objective of the Ghost in the Shell project is to make setting up and maintaining a Ghost site as straight forward as possible for people who do not want to use Ghost(Pro).
 
-Ghost in the Shell is aimed at people who are comfortable in a command line environment, and therefore some technical knowledge is assumed. The design goal of Ghost CLI was to make it possible to install or update Ghost in a single command.
+Ghost in the Shell is aimed at people who are comfortable in a command line environment, and therefore some technical knowledge is assumed. The design goal of Ghost in the Shell was to make it possible to install or update Ghost in a single command.
 
 In order to keep these goals obtainable & maintainable by Ghost's small team, we have a recommended system stack that Ghost in the Shell works with, and minimal configuration options.
 
@@ -32,7 +32,7 @@ In order to keep these goals obtainable & maintainable by Ghost's small team, we
 
 We officially recommend the stack [described here](https://ghost.org/docs/install/ubuntu/) for production installs.
 
-The team behind Ghost CLI _only_ supports this stack. This restriction is very deliberate, as every additional option for configuration or divergent piece of code required to support an additional environment creates exponential complexity and maintenance overhead.
+The team behind Ghost in the Shell _only_ supports this stack. This restriction is very deliberate, as every additional option for configuration or divergent piece of code required to support an additional environment creates exponential complexity and maintenance overhead.
 
 Our primary focus for the project is ensuring that everyone that uses the recommended system stack is able to **install**, **configure**, **start**, **stop**, **restart**, **update** & **list** their Ghost sites. This includes developing better testing to ensure we are able to prevent regressions, and stabilising the code to ensure that edge cases within the recommended stack are accounted for.
 
