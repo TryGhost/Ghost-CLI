@@ -69,7 +69,7 @@
     "listr": "0.14.3",
     "lodash": "4.17.15",
     "log-symbols": "3.0.0",
-    "moment": "2.25.2",
+    "moment": "2.25.3",
     "mysql": "2.18.1",
     "ora": "3.4.0",
     "package-json": "6.5.0",
