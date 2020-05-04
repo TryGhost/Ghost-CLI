@@ -3287,10 +3287,10 @@ module-not-found-error@^1.0.1:
   resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
   integrity sha1-z4tP9PKWQGdNbN0CsOO8UjwrvcA=
 
-moment@2.25.2:
-  version "2.25.2"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.25.2.tgz#0f521c1c99322cc55dee08678225fb4e3b4393ca"
-  integrity sha512-2BZ14aoZMfyeTmjPi2LHdPKLvb6v4uz8QruMFzHTWd1Rl98p3TWLK6GsRFqQoJOKDZmVetzYO1iU6u1QgGJelQ==
+moment@2.25.3:
+  version "2.25.3"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.25.3.tgz#252ff41319cf41e47761a1a88cab30edfe9808c0"
+  integrity sha512-PuYv0PHxZvzc15Sp8ybUCoQ+xpyPWvjOuK72a5ovzp2LI32rJXOiIfyoFoYvG3s6EwwrdkMyWuRiEHSZRLJNdg==
 
 ms@2.1.1:
   version "2.1.1"
