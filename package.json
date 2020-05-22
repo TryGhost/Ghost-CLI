@@ -78,7 +78,7 @@
     "prettyjson": "1.2.1",
     "proxy-from-env": "1.1.0",
     "read-last-lines": "1.7.2",
-    "replace-in-file": "5.0.2",
+    "replace-in-file": "6.0.0",
     "rxjs": "6.5.5",
     "semver": "7.3.2",
     "shasum": "1.0.2",
