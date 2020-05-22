@@ -119,6 +119,10 @@ describe('Unit: Utils > local-process', function () {
 
         it('writes pid to file, rejects on error event', function (done) {
             const cp = new EventEmitter();
+            cp.stderr = {
+                on: sinon.stub(),
+                destroy: sinon.stub()
+            };
             cp.pid = 42;
             const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
             const writeFileStub = sinon.stub(fs, 'writeFileSync');
@@ -136,6 +140,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An error occurred while starting Ghost.');
                 expect(spawnStub.calledOnce).to.be.true;
+                expect(cp.stderr.on.calledOnce).to.be.true;
                 expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
                 done();
             });
@@ -145,6 +150,10 @@ describe('Unit: Utils > local-process', function () {
 
         it('writes pid to file, rejects on exit event', function (done) {
             const cp = new EventEmitter();
+            cp.stderr = {
+                on: sinon.stub(),
+                destroy: sinon.stub()
+            };
             cp.pid = 42;
             const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
             const writeFileStub = sinon.stub(fs, 'writeFileSync');
@@ -163,6 +172,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.message).to.equal('Ghost process exited with code: 1');
                 expect(spawnStub.calledOnce).to.be.true;
+                expect(cp.stderr.on.calledOnce).to.be.true;
                 expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
                 done();
@@ -173,6 +183,10 @@ describe('Unit: Utils > local-process', function () {
 
         it('writes pid to file, rejects on message event with error', function (done) {
             const cp = new EventEmitter();
+            cp.stderr = {
+                on: sinon.stub(),
+                destroy: sinon.stub()
+            };
             cp.pid = 42;
             const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
             const writeFileStub = sinon.stub(fs, 'writeFileSync');
@@ -191,6 +205,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.message).to.equal('Test Error Message');
                 expect(spawnStub.called).to.be.true;
+                expect(cp.stderr.on.calledOnce).to.be.true;
                 expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
                 done();
@@ -201,6 +216,10 @@ describe('Unit: Utils > local-process', function () {
 
         it('writes pid to file, resolves on start message', function (done) {
             const cp = new EventEmitter();
+            cp.stderr = {
+                on: sinon.stub(),
+                destroy: sinon.stub()
+            };
             cp.pid = 42;
             cp.unref = sinon.stub();
             cp.disconnect = sinon.stub();
@@ -218,6 +237,8 @@ describe('Unit: Utils > local-process', function () {
             startPromise.then(() => {
                 expect(spawnStub.calledOnce).to.be.true;
                 expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
+                expect(cp.stderr.on.calledOnce).to.be.true;
+                expect(cp.stderr.destroy.calledOnce).to.be.true;
                 expect(cp.disconnect.calledOnce).to.be.true;
                 expect(cp.unref.calledOnce).to.be.true;
                 done();
