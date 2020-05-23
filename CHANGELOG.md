@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.14.0"></a>
+# [1.14.0](https://github.com/TryGhost/Ghost-CLI/compare/1.14.0-beta.0...1.14.0) (2020-05-23)
+
+
+### Bug Fixes
+
+* **instance:** remove return values from setters ([03dc51a](https://github.com/TryGhost/Ghost-CLI/commit/03dc51a))
+* **local-process:** output Ghost error message when process exits ([#1202](https://github.com/TryGhost/Ghost-CLI/issues/1202)) ([264e619](https://github.com/TryGhost/Ghost-CLI/commit/264e619)), closes [#1201](https://github.com/TryGhost/Ghost-CLI/issues/1201)
+
+
+### Features
+
+* **instance:** traverse up directory tree to find instance ([#820](https://github.com/TryGhost/Ghost-CLI/issues/820)) ([f2f2370](https://github.com/TryGhost/Ghost-CLI/commit/f2f2370))
+
+
+
 <a name="1.14.0-beta.0"></a>
 # [1.14.0-beta.0](https://github.com/TryGhost/Ghost-CLI/compare/1.13.1...1.14.0-beta.0) (2020-04-03)
 
