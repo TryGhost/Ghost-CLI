@@ -96,7 +96,7 @@
     "chai": "4.2.0",
     "coveralls": "3.1.0",
     "eslint": "7.1.0",
-    "eslint-plugin-ghost": "1.4.1",
+    "eslint-plugin-ghost": "1.5.0",
     "has-ansi": "4.0.0",
     "mocha": "7.2.0",
     "nock": "12.0.3",
