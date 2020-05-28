@@ -1,4 +1,4 @@
-'use strict';
+// @ts-check
 
 const fs = require('fs-extra');
 const path = require('path');
@@ -10,6 +10,17 @@ const {Extension, errors} = require('../../lib');
 const {ProcessError, SystemError} = errors;
 
 class SystemdExtension extends Extension {
+    migrations() {
+        const migrations = require('./migrations');
+
+        return [{
+            before: '1.15.0',
+            title: 'Saving node binary',
+            skip: ({instance}) => instance.process.name !== 'systemd' || instance.nodeBinaryIsKnown(),
+            task: migrations.saveNodeExecPath
+        }];
+    }
+
     setup() {
         return [{
             id: 'systemd',

@@ -10,6 +10,7 @@ const fs = require('fs-extra');
 const modulePath = '../index';
 const errors = require('../../../lib/errors');
 const SystemdExtension = require('../index');
+const migrations = require('../migrations');
 
 describe('Unit: Systemd > Extension', function () {
     afterEach(function () {
@@ -190,5 +191,44 @@ describe('Unit: Systemd > Extension', function () {
                 expect(sudoStub.called).to.be.false;
             });
         });
+    });
+
+    it('migrations hook', function () {
+        const extension = new SystemdExtension({}, {}, {}, '/some/dir');
+
+        const Instance = require('../../../lib/instance');
+        const instance = new Instance({}, {}, '');
+        let name = 'systemd';
+        instance._process = {name};
+
+        // Stub the config
+        instance.config;
+        instance._config.get = sinon.stub().withArgs('process').callsFake(() => name);
+
+        const migrateStub = sinon.stub(migrations, 'saveNodeExecPath');
+        const result = extension.migrations();
+
+        expect(result).to.have.length(1);
+        const [task] = result;
+
+        expect(task.before).to.equal('1.15.0');
+        expect(task.title).to.equal('Saving node binary');
+
+        task.task({instance});
+        expect(migrateStub.calledOnce).to.be.true;
+
+        instance._process.name = 'local';
+        name = 'local';
+        expect(task.skip({instance})).to.be.true;
+
+        instance._process.name = 'systemd';
+        name = 'systemd';
+        const knowsBinary = sinon.stub(instance, 'nodeBinaryIsKnown').returns(true);
+        expect(task.skip({instance})).to.be.true;
+        expect(knowsBinary.calledOnce).to.be.true;
+
+        knowsBinary.returns(false);
+        expect(task.skip({instance})).to.be.false;
+        expect(knowsBinary.calledTwice).to.be.true;
     });
 });
