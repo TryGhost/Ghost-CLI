@@ -1,4 +1,3 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
@@ -44,7 +43,7 @@ describe('Unit: Doctor Checks > Memory', function () {
     });
 
     it('fails if not enough memory is available', function () {
-        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 10});
+        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 10, swapfree: 0});
         const memCheck = require(modulePath);
 
         return memCheck.task().catch((error) => {
@@ -55,7 +54,16 @@ describe('Unit: Doctor Checks > Memory', function () {
     });
 
     it('passes if there is enough memory', function () {
-        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 157286400});
+        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 157286400, swapfree: 0});
+        const memCheck = require(modulePath);
+
+        return memCheck.task().then(() => {
+            expect(memStub.calledOnce).to.be.true;
+        });
+    });
+
+    it('passes if there is enough memory (using swap space)', function () {
+        const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 10, swapfree: 157286400});
         const memCheck = require(modulePath);
 
         return memCheck.task().then(() => {
