@@ -1,6 +1,4 @@
-'use strict';
-
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const createConfig = require('../utils/config-stub');
 
@@ -52,5 +50,35 @@ describe('Unit: Migrations', function () {
                 expect(fsStub.calledWithExactly('/var/www/ghost/content/settings')).to.be.true;
             });
         });
+    });
+
+    it('makeSqliteAbsolute makes sqlite filepaths absolute', async () => {
+        const configs = {
+            development: createConfig(),
+            staging: createConfig(),
+            production: createConfig()
+        };
+
+        configs.development.get.withArgs('database.connection.filename', null).returns('./content/data/ghost.db');
+        configs.staging.get.withArgs('database.connection.filename', null).returns('/absolute/path/content/data/ghost.db');
+        configs.production.get.withArgs('database.connection.filename', null).returns(null);
+
+        const instance = {
+            getAvailableConfigs: sinon.stub().resolves(configs),
+            dir: '/test/instance/dir'
+        };
+
+        await migrations[1].task({instance});
+
+        expect(instance.getAvailableConfigs.calledOnce).to.be.true;
+        expect(configs.development.get.calledOnce).to.be.true;
+        expect(configs.development.set.calledWithExactly('database.connection.filename', '/test/instance/dir/content/data/ghost.db')).to.be.true;
+        expect(configs.development.save.calledOnce).to.be.true;
+        expect(configs.staging.get.calledOnce).to.be.true;
+        expect(configs.staging.set.called).to.be.false;
+        expect(configs.staging.save.called).to.be.false;
+        expect(configs.production.get.calledOnce).to.be.true;
+        expect(configs.production.set.called).to.be.false;
+        expect(configs.production.save.called).to.be.false;
     });
 });
