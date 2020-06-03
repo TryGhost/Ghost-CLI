@@ -1,7 +1,7 @@
-'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const createConfigStub = require('../utils/config-stub');
+const {setupTestFolder} = require('../utils/test-folder');
 
 const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
@@ -447,6 +447,52 @@ describe('Unit: Instance', function () {
             expect(envStub.calledOnce).to.be.true;
             expect(envStub.args[0]).to.deep.equal([true, false]);
         });
+    });
+
+    it('getAvailableConfigs returns available configs', async function () {
+        const {dir, cleanup} = setupTestFolder({
+            files: [{
+                path: 'config.development.json',
+                content: {
+                    env: 'development'
+                },
+                json: true
+            }, {
+                path: 'config.staging.json',
+                content: {
+                    env: 'staging'
+                },
+                json: true
+            }, {
+                path: 'config.production.json',
+                content: {
+                    env: 'production'
+                },
+                json: true
+            }, {
+                path: 'somefile.txt',
+                content: 'filecontents'
+            }]
+        });
+
+        try {
+            const instance = new Instance({}, {}, dir);
+            const results = await instance.getAvailableConfigs();
+
+            expect(results.development).to.exist;
+            expect(results.development).to.be.an.instanceof(Config);
+            expect(results.development.get('env')).to.equal('development');
+
+            expect(results.staging).to.exist;
+            expect(results.staging).to.be.an.instanceof(Config);
+            expect(results.staging.get('env')).to.equal('staging');
+
+            expect(results.production).to.exist;
+            expect(results.production).to.be.an.instanceof(Config);
+            expect(results.production.get('env')).to.equal('production');
+        } finally {
+            cleanup();
+        }
     });
 
     describe('start', function () {
