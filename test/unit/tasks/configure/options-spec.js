@@ -2,6 +2,7 @@ const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const Promise = require('bluebird');
+const path = require('path');
 
 const options = require('../../../../lib/tasks/configure/options');
 const urlUtils = require('../../../../lib/utils/url');
@@ -64,8 +65,8 @@ describe('Unit: Tasks: Configure > options', function () {
     it('dbpath', function () {
         expect(options.dbpath).to.exist;
         expect(options.dbpath.defaultValue({get: () => 'mysql'})).to.be.null;
-        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'development')).to.equal('./content/data/ghost-dev.db');
-        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'production')).to.equal('./content/data/ghost.db');
+        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'development')).to.equal(path.resolve('./content/data/ghost-dev.db'));
+        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'production')).to.equal(path.resolve('./content/data/ghost.db'));
     });
 
     it('mail', function () {
