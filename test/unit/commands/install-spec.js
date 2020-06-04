@@ -403,7 +403,8 @@ describe('Unit: Commands > Install', function () {
             expect(getInstanceStub.calledOnce).to.be.true;
             expect(config).to.deep.equal({
                 version: '1.5.0',
-                cliVersion: '1.0.0'
+                cliVersion: '1.0.0',
+                nodeBinary: process.argv[0]
             });
         });
     });
