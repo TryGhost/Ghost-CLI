@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 10, 12 ]
+        node: [ '10.21.0', '12.18.0' ]
         os: [ ubuntu-18.04, windows-latest ]
     env:
       FORCE_COLOR: 1
