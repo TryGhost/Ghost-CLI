@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.14.1"></a>
+## [1.14.1](https://github.com/TryGhost/Ghost-CLI/compare/1.14.0...1.14.1) (2020-06-07)
+
+
+### Bug Fixes
+
+* **memcheck:** include free swap space in memory check ([#1209](https://github.com/TryGhost/Ghost-CLI/issues/1209)) ([9640827](https://github.com/TryGhost/Ghost-CLI/commit/9640827)), closes [#1185](https://github.com/TryGhost/Ghost-CLI/issues/1185)
+
+
+### Features
+
+* **instance:** add method for retrieving all available configs ([#1210](https://github.com/TryGhost/Ghost-CLI/issues/1210)) ([d654bf4](https://github.com/TryGhost/Ghost-CLI/commit/d654bf4))
+* **sqlite:** ensure sqlite db path is absolute ([3f07b05](https://github.com/TryGhost/Ghost-CLI/commit/3f07b05))
+
+
+
 <a name="1.14.0"></a>
 # [1.14.0](https://github.com/TryGhost/Ghost-CLI/compare/1.14.0-beta.0...1.14.0) (2020-05-23)
 
