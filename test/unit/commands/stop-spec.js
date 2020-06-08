@@ -19,17 +19,17 @@ describe('Unit: Commands > Stop', function () {
         });
 
         it('checks for valid install if name not specified', async function () {
-            const checkStub = sinon.stub().throws(new Error('checkValidInstall'));
+            const findStub = sinon.stub().throws(new Error('findValidInstall'));
             const Command = proxyquire(modulePath, {
-                '../utils/check-valid-install': checkStub
+                '../utils/find-valid-install': findStub
             });
             const stop = new Command();
 
             try {
                 await stop.run({});
             } catch (error) {
-                expect(error.message).to.equal('checkValidInstall');
-                expect(checkStub.calledOnce).to.be.true;
+                expect(error.message).to.equal('findValidInstall');
+                expect(findStub.calledOnce).to.be.true;
                 return;
             }
 
