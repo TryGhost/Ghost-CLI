@@ -69,16 +69,16 @@ describe('Unit: Commands > Doctor', function () {
                 task: 'someTask'
             }])
         };
-        const checkValidStub = sinon.stub();
+        const findValidStub = sinon.stub();
 
         const DoctorCommand = proxyquire(modulePath, {
-            '../../utils/check-valid-install': checkValidStub,
+            '../../utils/find-valid-install': findValidStub,
             './checks': [{}]
         });
         const instance = new DoctorCommand(ui, system);
 
         return instance.run({test: true, a: 'b'}).then(() => {
-            expect(checkValidStub.calledOnce).to.be.true;
+            expect(findValidStub.calledOnce).to.be.true;
             expect(system.getInstance.calledOnce).to.be.true;
             expect(system.hook.calledOnce).to.be.true;
             expect(system.hook.calledWithExactly('doctor')).to.be.true;
@@ -111,16 +111,16 @@ describe('Unit: Commands > Doctor', function () {
                 task: 'someTask'
             }])
         };
-        const checkValidStub = sinon.stub();
+        const findValidStub = sinon.stub();
 
         const DoctorCommand = proxyquire(modulePath, {
-            '../../utils/check-valid-install': checkValidStub,
+            '../../utils/find-valid-install': findValidStub,
             './checks': [{}]
         });
         const instance = new DoctorCommand(ui, system);
 
         return instance.run({skipInstanceCheck: true, local: true, argv: true}).then(() => {
-            expect(checkValidStub.called).to.be.false;
+            expect(findValidStub.called).to.be.false;
             expect(system.getInstance.called).to.be.false;
             expect(system.hook.calledOnce).to.be.true;
             expect(system.hook.calledWithExactly('doctor')).to.be.true;
@@ -153,10 +153,10 @@ describe('Unit: Commands > Doctor', function () {
                 task: 'someTask'
             }])
         };
-        const checkValidStub = sinon.stub();
+        const findValidStub = sinon.stub();
 
         const DoctorCommand = proxyquire(modulePath, {
-            '../../utils/check-valid-install': checkValidStub,
+            '../../utils/find-valid-install': findValidStub,
             './checks': [{category: ['install']}]
         });
         const instance = new DoctorCommand(ui, system);
@@ -168,7 +168,7 @@ describe('Unit: Commands > Doctor', function () {
             categories: ['install'],
             _: ['doctor']
         }).then(() => {
-            expect(checkValidStub.called).to.be.false;
+            expect(findValidStub.called).to.be.false;
             expect(system.getInstance.called).to.be.false;
             expect(system.hook.calledOnce).to.be.true;
             expect(system.hook.calledWithExactly('doctor')).to.be.true;

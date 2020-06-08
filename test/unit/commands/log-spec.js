@@ -51,7 +51,7 @@ describe('Unit: Commands > Log', function () {
 
     describe('run', function () {
         it('Checks installation if name isn\'t provided', function () {
-            ext = proxyLog({'../utils/check-valid-install': stubs.cvi});
+            ext = proxyLog({'../utils/find-valid-install': stubs.cvi});
             try {
                 ext.run({});
             } catch (error) {
