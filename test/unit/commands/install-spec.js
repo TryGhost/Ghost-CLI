@@ -1,5 +1,4 @@
-'use strict';
-const expect = require('chai').expect;
+const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const Promise = require('bluebird');
@@ -230,6 +229,31 @@ describe('Unit: Commands > Install', function () {
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
             return testInstance.run({version: 'local', setup: true, zip: ''}).then(() => {
+                expect(dirEmptyStub.calledOnce).to.be.true;
+                expect(listrStub.calledOnce).to.be.true;
+                expect(setEnvironmentStub.calledOnce).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly(true, true));
+                expect(runCommandStub.calledTwice).to.be.true;
+                expect(runCommandStub.calledWithExactly(
+                    {SetupCommand: true},
+                    {version: 'local', local: true, zip: ''}
+                ));
+            });
+        });
+
+        it('allows running in non-empty directory if --force is passed', function () {
+            const dirEmptyStub = sinon.stub().returns(false);
+            const listrStub = sinon.stub().resolves();
+            const setEnvironmentStub = sinon.stub();
+
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/dir-is-empty': dirEmptyStub,
+                './setup': {SetupCommand: true}
+            });
+            const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
+
+            return testInstance.run({version: 'local', setup: true, zip: '', force: true}).then(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
