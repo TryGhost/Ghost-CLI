@@ -42,7 +42,7 @@ describe('Unit: Commands > Install', function () {
             });
             const testInstance = new InstallCommand({}, {});
 
-            return testInstance.run({version: '1.0.0'}).then(() => {
+            return testInstance.run({version: '1.0.0', 'check-empty': true}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
@@ -88,14 +88,14 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: 'local', zip: '', v1: true}).then(() => {
+            return testInstance.run({version: 'local', zip: '', v1: true, 'check-empty': true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: null, zip: '', v1: true},
+                    argv: {version: null, zip: '', v1: true, 'check-empty': true},
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -116,14 +116,14 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: '1.5.0', local: true, zip: '', v1: false}).then(() => {
+            return testInstance.run({version: '1.5.0', local: true, zip: '', v1: false, 'check-empty': true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: '1.5.0', zip: '', v1: false, local: true},
+                    argv: {version: '1.5.0', zip: '', v1: false, local: true, 'check-empty': true},
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -144,14 +144,14 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: '1.5.0', zip: '', v1: false, _: ['install', 'local']}).then(() => {
+            return testInstance.run({version: '1.5.0', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: '1.5.0', zip: '', v1: false, _: ['install', 'local']},
+                    argv: {version: '1.5.0', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true},
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -172,14 +172,14 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: 2, zip: '', v1: false, _: ['install', 'local']}).then(() => {
+            return testInstance.run({version: 2, zip: '', v1: false, _: ['install', 'local'], 'check-empty': true}).then(() => {
                 expect(false, 'run should have rejected').to.be.true;
             }).catch(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(runCommandStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: '2', zip: '', v1: false, _: ['install', 'local']},
+                    argv: {version: '2', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true},
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -204,7 +204,7 @@ describe('Unit: Commands > Install', function () {
             const linkStub = sinon.stub(testInstance, 'link').resolves();
             const casperStub = sinon.stub(testInstance, 'casper').resolves();
 
-            return testInstance.run({version: '1.0.0', setup: false}).then(() => {
+            return testInstance.run({version: '1.0.0', setup: false, 'check-empty': true}).then(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(listrStub.calledTwice).to.be.true;
                 expect(yarnInstallStub.calledOnce).to.be.true;
@@ -228,7 +228,7 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: 'local', setup: true, zip: ''}).then(() => {
+            return testInstance.run({version: 'local', setup: true, zip: '', 'check-empty': true}).then(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -236,12 +236,12 @@ describe('Unit: Commands > Install', function () {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(runCommandStub.calledWithExactly(
                     {SetupCommand: true},
-                    {version: 'local', local: true, zip: ''}
+                    {version: 'local', local: true, zip: '', 'check-empty': true}
                 ));
             });
         });
 
-        it('allows running in non-empty directory if --force is passed', function () {
+        it('allows running in non-empty directory if --no-check-empty is passed', function () {
             const dirEmptyStub = sinon.stub().returns(false);
             const listrStub = sinon.stub().resolves();
             const setEnvironmentStub = sinon.stub();
@@ -253,7 +253,7 @@ describe('Unit: Commands > Install', function () {
             const testInstance = new InstallCommand({listr: listrStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
 
-            return testInstance.run({version: 'local', setup: true, zip: '', force: true}).then(() => {
+            return testInstance.run({version: 'local', setup: true, zip: '', 'check-empty': false}).then(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(listrStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledOnce).to.be.true;
@@ -261,7 +261,7 @@ describe('Unit: Commands > Install', function () {
                 expect(runCommandStub.calledTwice).to.be.true;
                 expect(runCommandStub.calledWithExactly(
                     {SetupCommand: true},
-                    {version: 'local', local: true, zip: ''}
+                    {version: 'local', local: true, zip: '', 'check-empty': false}
                 ));
             });
         });
