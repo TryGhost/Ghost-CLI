@@ -785,20 +785,17 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('removeOldVersions', function () {
-        it('skips if there are 5 or fewer versions installed', async function () {
+        it('skips if there are 2 or fewer versions installed', async function () {
             const dirs = [
-                'versions/1.4.0',
-                'versions/1.5.0',
                 'versions/1.5.1',
                 'versions/1.5.2'
             ];
             const env = setupTestFolder({dirs: dirs});
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
-            sinon.stub(process, 'cwd').returns(env.dir);
             const skipStub = sinon.stub();
 
-            await instance.removeOldVersions({}, {skip: skipStub});
+            await instance.removeOldVersions({instance: {dir: env.dir}}, {skip: skipStub});
             expect(skipStub.calledOnce).to.be.true;
 
             dirs.forEach((version) => {
@@ -825,9 +822,6 @@ describe('Unit: Commands > Update', function () {
             const instance = new UpdateCommand({}, {});
             sinon.stub(process, 'cwd').returns(env.dir);
             const keptVersions = [
-                '1.1.0',
-                '1.2.0',
-                '1.3.0',
                 '1.4.0',
                 '1.5.0'
             ];
@@ -835,10 +829,13 @@ describe('Unit: Commands > Update', function () {
                 '1.0.0-beta.2',
                 '1.0.0-RC.1',
                 '1.0.0',
-                '1.0.2'
+                '1.0.2',
+                '1.1.0',
+                '1.2.0',
+                '1.3.0'
             ];
 
-            await instance.removeOldVersions();
+            await instance.removeOldVersions({instance: {dir: env.dir}});
             keptVersions.forEach((version) => {
                 expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.true;
             });
