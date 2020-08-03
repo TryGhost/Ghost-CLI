@@ -51,7 +51,7 @@ describe('Unit: Mysql extension', function () {
         const MysqlExtension = require(modulePath);
         const listr = sinon.stub();
         const config = configStub();
-        const dbConfig = {host: 'localhost', user: 'root', password: 'password'};
+        const dbConfig = {host: 'localhost', user: 'root', password: 'YES'};
         config.get.returns(dbConfig);
 
         const inst = new MysqlExtension({listr}, {}, {}, '/some/dir');
