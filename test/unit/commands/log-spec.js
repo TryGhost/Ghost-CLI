@@ -132,6 +132,22 @@ describe('Unit: Commands > Log', function () {
             });
         });
 
+        it('Rejects without crashing when logging to file is disabled', function () {
+            const ext = proxyLog();
+            const instance = {
+                isRunning: () => Promise.resolve(true),
+                config: {get: (key, fallback) => fallback}
+            };
+            ext.system = {getInstance: () => instance};
+
+            return ext.run({name: 'ghost_org'}).then(() => {
+                expect(false, 'An error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.ok;
+                expect(error).to.be.instanceOf(Errors.ConfigError);
+            });
+        });
+
         it('Reads error log when requested', function () {
             stubs.es.throws(new Error('SHORT_CIRCUIT'));
             const ext = proxyLog({fs: {existsSync: stubs.es}});
