@@ -16,6 +16,9 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
     beforeEach(() => {
         originalArgv = process.argv;
         originalEnv = process.env;
+
+        process.argv = [];
+        process.env = {};
     });
 
     afterEach(() => {
