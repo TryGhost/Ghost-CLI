@@ -111,6 +111,10 @@ describe('Unit: Tasks > yarn-install', function () {
     });
 
     describe('dist subtask', function () {
+        beforeEach(() => {
+            process.env = {};
+        });
+
         it('rejects if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is not set', function () {
             const data = {
                 engines: {node: '^0.10.0'},

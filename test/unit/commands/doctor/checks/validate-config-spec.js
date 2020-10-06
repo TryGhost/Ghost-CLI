@@ -55,7 +55,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
     });
 
     it('rejects if environment is passed and the config file is not valid json', function () {
-        const env = setupTestFolder({files: [{path: 'config.testing.json', contents: 'not json'}]});
+        const env = setupTestFolder({files: [{path: 'config.testing.json', content: 'not json'}]});
         const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
