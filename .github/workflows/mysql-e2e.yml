@@ -43,5 +43,6 @@ jobs:
           --dbport 3690 \
           --dbname mysql-${{ matrix.mysql }} \
           --url http://localhost:2368 \
-          --no-prompt
+          --no-prompt \
+          --verbose
           curl http://localhost:2368 | grep ghost
