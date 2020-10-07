@@ -14,7 +14,8 @@ class SystemdExtension extends Extension {
         return [{
             id: 'systemd',
             name: 'Systemd',
-            enabled: ({instance, argv}) => !argv.local && instance.config.get('process') === 'systemd',
+            enabled: ({instance, argv}) => !argv.local &&
+                 (instance.config.get('process') === 'systemd' || (argv.stages && argv.stages.includes('systemd'))),
             task: (...args) => this._setup(...args),
             skip: ({instance}) => {
                 if (fs.existsSync(`/lib/systemd/system/ghost_${instance.name}.service`)) {
@@ -22,16 +23,26 @@ class SystemdExtension extends Extension {
                 }
 
                 return false;
+            },
+            onUserSkip: ({instance, ui}) => {
+                ui.log('Systemd setup skipped, reverting to local process manager', 'yellow');
+                instance.config.set('process', 'local').save();
             }
         }];
     }
 
-    _setup({instance}, task) {
+    _setup({instance, ui}, task) {
         const uid = getUid(instance.dir);
 
         // getUid returns either the uid or null
         if (!uid) {
             return task.skip('The "ghost" user has not been created, try running `ghost setup linux-user` first');
+        }
+
+        if (instance.config.get('process') !== 'systemd') {
+            const currentProcessManager = instance.config.get('process');
+            ui.log(`Changing process manager from ${currentProcessManager} to systemd`, 'yellow');
+            instance.config.set('process', 'systemd').save();
         }
 
         const serviceFilename = `ghost_${instance.name}.service`;
