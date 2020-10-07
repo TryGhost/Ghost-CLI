@@ -18,9 +18,12 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+      - name: Stop Github MySQL
+        run: sudo systemctl stop mysql.service
       - uses: mirromutth/mysql-action@v1.1
         with:
-          host port: 3690
+          # host port: 3690
+          host port: 3306
           mysql version: ${{ matrix.mysql }}
           mysql database: mysql-${{ matrix.mysql }}
           mysql root password: root
@@ -33,5 +36,7 @@ jobs:
           --dbhost 127.0.0.1 \
           --dbuser root \
           --dbpass root \
-          --dbname mysql-${{ matrix.mysql }}
+          --dbport 3690 \
+          --dbname mysql-${{ matrix.mysql }} \
+          --no-prompt
           curl http://localhost:2368 | grep ghost
