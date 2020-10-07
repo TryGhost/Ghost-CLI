@@ -29,6 +29,8 @@ jobs:
           mysql database: mysql-${{ matrix.mysql }}
           mysql root password: root
           authentication plugin: mysql_native_password
+      - name: Install nginx
+        run: sudo apt install -y nginx
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
       - run: |
