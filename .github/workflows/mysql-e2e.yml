@@ -20,17 +20,19 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Stop Github MySQL
         run: sudo systemctl stop mysql.service
-      - uses: mirromutth/mysql-action@v1.1
+      # Waiting for https://github.com/mirromutth/mysql-action/pull/7 to get merged
+      - uses: haltuf/mysql-action@1d829fdd34e83de9a72b768924ec109f83e4d78c
         with:
           # host port: 3690
           host port: 3306
           mysql version: ${{ matrix.mysql }}
           mysql database: mysql-${{ matrix.mysql }}
           mysql root password: root
+          authentication plugin: mysql_native_password
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
       - run: |
-          ./bin/ghost install --local \
+          ./bin/ghost install --no-setup-linux-user --no-setup-nginx --no-setup-systemd \
           -d e2e-test \
           --db mysql \
           --dbhost 127.0.0.1 \
