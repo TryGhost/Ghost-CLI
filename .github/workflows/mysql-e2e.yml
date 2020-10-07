@@ -18,7 +18,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - uses: ensure
       - uses: mirromutth/mysql-action@v1.1
         with:
           host port: 3690
