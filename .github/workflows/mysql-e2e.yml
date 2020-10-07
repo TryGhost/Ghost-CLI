@@ -28,7 +28,7 @@ jobs:
         run: yarn install --frozen-lockfile
       - run: |
           ./bin/ghost install --local \
-          -d e2e-test
+          -d e2e-test \
           --db mysql \
           --dbhost 127.0.0.1 \
           --dbuser root \
