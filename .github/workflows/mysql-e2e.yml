@@ -1,0 +1,35 @@
+name: MySQL End to End
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  mysql-e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mysql: [ 5.7, 8.0 ]
+        node: [ 12 ]
+    name: MySQL ${{ matrix.mysql }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: ensure
+      - uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3690
+          mysql version: ${{ matrix.mysql }}
+          mysql database: mysql-${{ matrix.mysql }}
+          mysql root password: root
+      - run: |
+          ./bin/ghost install --local \
+          --db mysql \
+          --dbhost 127.0.0.1 \
+          --dbuser root \
+          --dbpass root \
+          --dbname mysql-${{ matrix.mysql }}
+          curl http://localhost:2368 | grep ghost
