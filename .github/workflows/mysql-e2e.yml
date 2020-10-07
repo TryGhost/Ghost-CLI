@@ -24,6 +24,8 @@ jobs:
           mysql version: ${{ matrix.mysql }}
           mysql database: mysql-${{ matrix.mysql }}
           mysql root password: root
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
       - run: |
           ./bin/ghost install --local \
           --db mysql \
