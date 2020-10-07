@@ -7,7 +7,7 @@ const AcceptanceTest = require('../utils/acceptance-test');
 
 describe('Acceptance: Install Local (~35second test)', function () {
     it('can do a local install, anywhere!', function () {
-        const timeout = 100000;
+        const timeout = 120000;
 
         // This command is slow
         this.timeout(timeout);
