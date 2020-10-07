@@ -29,7 +29,7 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint bin/* lib test extensions",
     "test:unit": "nyc --reporter=html --reporter=text mocha -t 5000 --recursive test/unit extensions/**/test",
-    "test:acceptance": "mocha --timeout 10000 test/acceptance/**/*-spec.js",
+    "test:acceptance": "mocha test/acceptance/**/*-spec.js",
     "test:all": "yarn test:unit && yarn test:acceptance",
     "test": "yarn test:all",
     "posttest": "yarn lint",
