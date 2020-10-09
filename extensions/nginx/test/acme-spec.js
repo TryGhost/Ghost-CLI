@@ -93,7 +93,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(false, 'Promise should have been rejected').to.be.true;
             }).catch((reject) => {
                 expect(reject).to.exist;
-                expect(reject.message).to.match(/query github/i);
+                expect(reject.message).to.match(/fetch download URL/i);
                 expect(reject.err.message).to.match(/not found/i);
                 expect(logStub.calledTwice).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
@@ -127,7 +127,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(false, 'Promise should have been rejected').to.be.true;
             }).catch((reject) => {
                 expect(reject).to.exist;
-                expect(reject.message).to.match(/parse github/i);
+                expect(reject.message).to.match(/fetch download URL/i);
                 expect(reject.err.message).to.match(/unexpected token/i);
                 expect(logStub.calledTwice).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
@@ -138,30 +138,32 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('Rejects when acme.sh fails', function () {
-            const gotStub = sinon.stub().rejects({stderr: 'CODE: ENOTFOUND', cmd: 'acme'});
-            const emptyStub = sinon.stub();
+            const gotStub = sinon.stub().resolves({body: '{"tarball_url": "test"}'});
+            const emptyStub = sinon.stub().resolves();
             const existsStub = sinon.stub().returns(false);
             const downloadStub = sinon.stub().resolves();
+            const readdirStub = sinon.stub().returns(['/tmp']);
 
             const acme = proxyquire(modulePath, {
                 got: gotStub,
                 download: downloadStub,
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub, readdirSync: readdirStub}
             });
 
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
+            sudoStub.onSecondCall().rejects({stderr: 'CODE: ENOTFOUND', cmd: 'acme'});
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
                 expect(false, 'Promise should have been rejected').to.be.true;
             }).catch((reject) => {
                 expect(reject.message).to.equal('Error occurred running command: \'acme\'');
                 expect(reject.options.stderr).to.equal('CODE: ENOTFOUND');
-                expect(logStub.calledTwice).to.be.true;
-                expect(sudoStub.calledOnce).to.be.true;
+                expect(logStub.calledThrice).to.be.true;
+                expect(sudoStub.calledTwice).to.be.true;
                 expect(emptyStub.calledOnce).to.be.true;
                 expect(gotStub.calledOnce).to.be.true;
-                expect(downloadStub.called).to.be.false;
+                expect(downloadStub.calledOnce).to.be.true;
             });
         });
     });

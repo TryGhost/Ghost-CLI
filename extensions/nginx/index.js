@@ -1,17 +1,17 @@
-'use strict';
-
 const fs = require('fs-extra');
 const os = require('os');
 const dns = require('dns');
 const url = require('url');
 const isIP = require('validator/lib/isIP');
 const path = require('path');
-const execa = require('execa');
 const Promise = require('bluebird');
 const template = require('lodash/template');
+const sysinfo = require('systeminformation');
 
 const {Extension, errors} = require('../../lib');
-const {CliError, ProcessError} = errors;
+const {CliError} = errors;
+
+const {errorWrapper} = require('./utils');
 
 const nginxConfigPath = process.env.NGINX_CONFIG_PATH || '/etc/nginx';
 const nginxProgramName = process.env.NGINX_PROGRAM_NAME || 'nginx';
@@ -35,10 +35,11 @@ class NginxExtension extends Extension {
         return [{
             id: 'nginx',
             name: 'Nginx',
-            task: (...args) => this.setupNginx(...args),
+            task: errorWrapper((...args) => this.setupNginx(...args)),
             enabled,
-            skip: ({instance}) => {
-                if (!this.isSupported()) {
+            skip: async ({instance}) => {
+                const isSupported = await this.isSupported();
+                if (!isSupported) {
                     return 'Nginx is not installed. Skipping Nginx setup.';
                 }
 
@@ -94,7 +95,7 @@ class NginxExtension extends Extension {
         }];
     }
 
-    setupNginx({instance}) {
+    async setupNginx({instance}) {
         const {hostname, pathname} = url.parse(instance.config.get('url'));
         const conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
 
@@ -108,18 +109,9 @@ class NginxExtension extends Extension {
             port: instance.config.get('server.port')
         });
 
-        return this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`).then(
-            () => this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`)
-        ).then(
-            () => this.restartNginx()
-        ).catch((error) => {
-            // CASE: error is already a cli error, just pass it along
-            if (error instanceof CliError) {
-                return Promise.reject(error);
-            }
-
-            return Promise.reject(new ProcessError(error));
-        });
+        await this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`);
+        await this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`);
+        await this.restartNginx();
     }
 
     setupSSL({instance, argv}) {
@@ -158,23 +150,18 @@ class NginxExtension extends Extension {
             })
         }, {
             title: 'Getting additional configuration',
-            task: () => {
-                let promise;
-
+            task: async () => {
                 if (argv.sslemail) {
-                    promise = Promise.resolve(argv.sslemail);
-                } else {
-                    promise = this.ui.prompt({
-                        name: 'email',
-                        type: 'input',
-                        message: 'Enter your email (For SSL Certificate)',
-                        validate: value => Boolean(value) || 'You must supply an email'
-                    }).then(({email}) => {
-                        argv.sslemail = email;
-                    });
+                    return;
                 }
 
-                return promise;
+                const {email} = await this.ui.prompt({
+                    name: 'email',
+                    type: 'input',
+                    message: 'Enter your email (For SSL Certificate)',
+                    validate: value => Boolean(value) || 'You must supply an email'
+                });
+                argv.sslemail = email;
             }
         }, {
             title: 'Installing acme.sh',
@@ -185,22 +172,18 @@ class NginxExtension extends Extension {
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: () => fs.existsSync(dhparamFile),
-            task: () => this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`)
-                .catch(error => Promise.reject(new ProcessError(error)))
+            task: errorWrapper(() => this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`))
         }, {
             title: 'Generating SSL security headers',
             skip: () => fs.existsSync(sslParamsFile),
-            task: () => {
+            task: errorWrapper(async () => {
                 const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
-
-                return fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'})
-                    .then(() => this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`).catch(
-                        error => Promise.reject(new ProcessError(error))
-                    ));
-            }
+                await fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'});
+                await this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`);
+            })
         }, {
             title: 'Generating SSL configuration',
-            task: () => {
+            task: errorWrapper(async () => {
                 const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
                 const sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
                 const generatedSslConfig = sslConf({
@@ -213,77 +196,81 @@ class NginxExtension extends Extension {
                     port: instance.config.get('server.port')
                 });
 
-                return this.template(instance, generatedSslConfig, 'ssl config', confFile, `${nginxConfigPath}/sites-available`).then(
-                    () => this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`)
-                ).catch(error => Promise.reject(new ProcessError(error)));
-            }
+                await this.template(instance, generatedSslConfig, 'ssl config', confFile, `${nginxConfigPath}/sites-available`);
+                await this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`);
+            })
         }, {
             title: 'Restarting Nginx',
             task: () => this.restartNginx()
         }], false);
     }
 
-    uninstall({config}) {
+    async uninstall({config}) {
         const instanceUrl = config.get('url');
 
         if (!instanceUrl) {
-            return Promise.resolve();
+            return;
         }
 
         const parsedUrl = url.parse(instanceUrl);
         const confFile = `${parsedUrl.hostname}.conf`;
         const sslConfFile = `${parsedUrl.hostname}-ssl.conf`;
 
-        const promises = [];
+        let restart = false;
 
         if (fs.existsSync(`${nginxConfigPath}/sites-available/${confFile}`)) {
+            restart = true;
+
             // Nginx config exists, remove it
-            promises.push(
-                Promise.all([
-                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${confFile}`),
-                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${confFile}`)
-                ]).catch(error => Promise.reject(new CliError({
+            try {
+                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${confFile}`);
+                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${confFile}`);
+            } catch (error) {
+                throw new CliError({
                     message: `Nginx config file link could not be removed, you will need to do this manually for ${nginxConfigPath}/sites-available/${confFile}.`,
                     help: `Try running 'rm -f ${nginxConfigPath}/sites-available/${confFile} && rm -f ${nginxConfigPath}/sites-enabled/${confFile}'`,
                     err: error
-                })))
-            );
+                });
+            }
         }
 
         if (fs.existsSync(`${nginxConfigPath}/sites-available/${sslConfFile}`)) {
+            restart = true;
+
             // SSL config exists, remove it
-            promises.push(
-                Promise.all([
-                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${sslConfFile}`),
-                    this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${sslConfFile}`)
-                ]).catch(error => Promise.reject(new CliError({
+            try {
+                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${sslConfFile}`);
+                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${sslConfFile}`);
+            } catch (error) {
+                throw new CliError({
                     message: `SSL config file link could not be removed, you will need to do this manually for ${nginxConfigPath}/sites-available/${sslConfFile}.`,
                     help: `Try running 'rm -f ${nginxConfigPath}/sites-available/${sslConfFile} && rm -f ${nginxConfigPath}/sites-enabled/${sslConfFile}'`,
                     err: error
-                })))
-            );
+                });
+            }
         }
 
-        if (!promises.length) {
-            return Promise.resolve();
+        if (restart) {
+            await this.restartNginx();
         }
-
-        return Promise.all(promises).then(() => this.restartNginx());
     }
 
-    restartNginx() {
-        return this.ui.sudo(`${nginxProgramName} -s reload`)
-            .catch(error => Promise.reject(new CliError({
+    async restartNginx() {
+        try {
+            await this.ui.sudo(`${nginxProgramName} -s reload`);
+        } catch (error) {
+            throw new CliError({
                 message: 'Failed to restart Nginx.',
                 err: error
-            })));
+            });
+        }
     }
 
-    isSupported() {
+    async isSupported() {
         try {
-            execa.shellSync(`dpkg -l | grep ${nginxProgramName}`, {stdio: 'ignore'});
-            return true;
-        } catch (e) {
+            const services = await sysinfo.services('*');
+            return services.some(s => s.name === nginxProgramName);
+        } catch (error) {
             return false;
         }
     }
