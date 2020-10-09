@@ -1,10 +1,9 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const configStub = require('../../../../utils/config-stub');
 
-const execa = require('execa');
-const errors = require('../../../../../lib/errors');
+const sysinfo = require('systeminformation');
+const {SystemError} = require('../../../../../lib/errors');
 
 const mysqlCheck = require('../../../../../lib/commands/doctor/checks/mysql');
 
@@ -53,67 +52,62 @@ describe('Unit: Doctor Checks > mysql', function () {
         });
     });
 
-    it('appends sbin to path if platform is linux', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
-        const ctx = {system: {platform: {linux: true}}};
+    it('resolves if mysql is found and is running', async function () {
+        const services = sinon.stub(sysinfo, 'services').resolves([{name: 'mysql', running: true}]);
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
+        const skipStub = sinon.stub();
 
-        return mysqlCheck.task(ctx).then(() => {
-            expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.args[0][1].env).to.exist;
-            expect(execaStub.args[0][1].env.PATH).to.match(/^\/usr\/sbin:/);
-        });
+        const ctx = {
+            ui: {log: logStub, confirm: confirmStub, allowPrompt: true}
+        };
+        await mysqlCheck.task(ctx, {skip: skipStub});
+        expect(services.calledOnceWithExactly('mysql')).to.be.true;
+        expect(logStub.called).to.be.false;
+        expect(confirmStub.called).to.be.false;
+        expect(skipStub.called).to.be.false;
     });
 
-    it('does not append sbin to path if platform is not linux', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves();
-        const ctx = {system: {platform: {linux: false}}};
-
-        return mysqlCheck.task(ctx).then(() => {
-            expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.args[0][1]).to.be.empty;
-        });
-    });
-
-    it('calls confirm if execa rejects and allowPrompt is true', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects();
+    it('calls confirm if mysql not found and allowPrompt is true', async function () {
+        const services = sinon.stub(sysinfo, 'services').resolves([]);
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(true);
         const skipStub = sinon.stub();
 
         const ctx = {
-            ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
-            system: {platform: {linux: true}}
+            ui: {log: logStub, confirm: confirmStub, allowPrompt: true}
         };
 
-        return mysqlCheck.task(ctx, {skip: skipStub}).then(() => {
-            expect(execaStub.calledOnce).to.be.true;
-            expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/MySQL install not found/);
-            expect(confirmStub.calledOnce).to.be.true;
-            expect(skipStub.calledOnce).to.be.true;
-        });
+        await mysqlCheck.task(ctx, {skip: skipStub});
+        expect(services.calledOnce).to.be.true;
+        expect(logStub.calledOnce).to.be.true;
+        expect(logStub.args[0][0]).to.match(/MySQL install was not found or is stopped/);
+        expect(confirmStub.calledOnce).to.be.true;
+        expect(skipStub.calledOnce).to.be.true;
     });
 
-    it('rejects if confirm says no', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects();
+    it('rejects if confirm says no', async function () {
+        const services = sinon.stub(sysinfo, 'services').rejects();
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
 
         const ctx = {
-            ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
-            system: {platform: {linux: true}}
+            ui: {log: logStub, confirm: confirmStub, allowPrompt: true}
         };
 
-        return mysqlCheck.task(ctx).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
+        try {
+            await mysqlCheck.task(ctx);
+        } catch (error) {
+            expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.equal('MySQL check failed.');
 
-            expect(execaStub.calledOnce).to.be.true;
+            expect(services.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/MySQL install not found/);
+            expect(logStub.args[0][0]).to.match(/MySQL install was not found or is stopped/);
             expect(confirmStub.calledOnce).to.be.true;
-        });
+            return;
+        }
+
+        expect(false, 'error should have been thrown').to.be.true;
     });
 });
