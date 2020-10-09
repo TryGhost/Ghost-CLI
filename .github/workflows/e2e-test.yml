@@ -1,0 +1,102 @@
+name: End-To-End Testing
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  ubuntu-16:
+    runs-on: ubuntu-16.04
+    name: 'Ubuntu 16.04'
+    steps:
+      - run: sudo systemctl start mysql.service && sudo apt-get update && sudo apt-get install -y nginx
+        name: 'Setting up required services'
+      - run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+        name: 'Updating hosts file'
+      - uses: actions/checkout@v2
+        with:
+          path: 'cli'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: cd cli && yarn && sudo yarn link --link-folder /usr/bin/
+      - name: Setting up Ghost instance
+        run: |
+          ghost install \
+            -d ghost \
+            --auto \
+            --no-prompt \
+            --url http://cli-testing.ghost.org \
+            --db mysql \
+            --dbhost localhost \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost-ubuntu16
+      - name: Verifying Installation
+        run: curl http://cli-testing.ghost.org | grep ghost
+
+  ubuntu-18:
+    runs-on: ubuntu-18.04
+    name: 'Ubuntu 18.04'
+    steps:
+      - run: sudo systemctl start mysql.service && sudo apt-get update && sudo apt-get install -y nginx
+        name: 'Setting up required services'
+      - run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+        name: 'Updating hosts file'
+      - uses: actions/checkout@v2
+        with:
+          path: 'cli'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: cd cli && yarn && sudo yarn link --link-folder /usr/bin/
+      - name: Setting up Ghost instance
+        run: |
+          ghost install \
+            -d ghost \
+            --auto \
+            --no-prompt \
+            --url http://cli-testing.ghost.org \
+            --db mysql \
+            --dbhost localhost \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost-ubuntu18
+      - name: Verifying Installation
+        run: curl http://cli-testing.ghost.org | grep ghost
+
+  ubuntu-20:
+    runs-on: ubuntu-20.04
+    name: 'Ubuntu 20.04'
+    steps:
+      - run: sudo systemctl start mysql.service && sudo apt-get update && sudo apt-get install -y nginx
+        name: 'Setting up required services'
+      - run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+        name: 'Updating hosts file'
+      - run: |
+          echo "ALTER USER root@localhost IDENTIFIED WITH mysql_native_password BY 'password';" >> tmp.sql
+          mysql -u root -proot < tmp.sql
+        name: Applying MySQL root password fix
+      - uses: actions/checkout@v2
+        with:
+          path: 'cli'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: cd cli && yarn && sudo yarn link --link-folder /usr/bin/
+      - name: Setting up Ghost instance
+        run: |
+          ghost install \
+            -d ghost \
+            --auto \
+            --no-prompt \
+            --url http://cli-testing.ghost.org \
+            --db mysql \
+            --dbhost localhost \
+            --dbuser root \
+            --dbpass password \
+            --dbname ghost-ubuntu20
+      - name: Verifying Installation
+        run: curl http://cli-testing.ghost.org | grep ghost
+
