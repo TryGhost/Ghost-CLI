@@ -394,7 +394,7 @@ describe('Unit: Mysql extension', function () {
 
             return instance.grantPermissions({mysql: {username: 'testuser', host: '%'}}, {host: 'localhost', database: 'ghost'}).then(() => {
                 expect(queryStub.calledTwice).to.be.true;
-                expect(queryStub.calledWithExactly('GRANT ALL PRIVILEGES ON ghost.* TO \'testuser\'@\'%\';')).to.be.true;
+                expect(queryStub.calledWithExactly('GRANT ALL PRIVILEGES ON `ghost`.* TO \'testuser\'@\'%\';')).to.be.true;
                 expect(queryStub.calledWithExactly('FLUSH PRIVILEGES;')).to.be.true;
                 expect(logStub.calledTwice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/Successfully granted privileges/);

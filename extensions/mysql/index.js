@@ -62,7 +62,7 @@ class MySQLExtension extends Extension {
         try {
             const result = await this._query('SELECT @@version AS version');
             if (result && result[0] && result[0].version) {
-                return semver.parse(result[0].version);
+                return semver.parse(result[0].version, true);
             }
 
             return null;
@@ -138,7 +138,7 @@ class MySQLExtension extends Extension {
         });
 
         await this._query('SET old_passwords = 0;');
-        this.ui.logVerbose('MySQL: successfully disabled old_password', 'green');
+        this.ui.logVerbose('MySQL: successfully disabled old_passwords', 'green');
 
         const result = await this._query(`SELECT PASSWORD('${randomPassword}') AS password;`);
 
@@ -217,7 +217,7 @@ class MySQLExtension extends Extension {
 
     async grantPermissions(ctx, dbconfig) {
         try {
-            await this._query(`GRANT ALL PRIVILEGES ON ${dbconfig.database}.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`);
+            await this._query(`GRANT ALL PRIVILEGES ON \`${dbconfig.database}\`.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`);
             this.ui.logVerbose(`MySQL: Successfully granted privileges for user "${ctx.mysql.username}"`, 'green');
 
             await this._query('FLUSH PRIVILEGES;');
