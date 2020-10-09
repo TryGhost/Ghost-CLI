@@ -128,10 +128,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('returns without error when both systemd/nginx are found', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
-        const processes = sinon.stub(sysinfo, 'processes').resolves({
-            list: [{pid: 1, name: 'systemd'}]
-        });
-        const services = sinon.stub(sysinfo, 'services').resolves([{name: 'nginx'}]);
+        const services = sinon.stub(sysinfo, 'services');
+
+        services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
+        services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);
 
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -143,15 +143,16 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
         await systemStack.task(ctx);
         expect(osInfo.calledOnce).to.be.true;
-        expect(processes.calledOnce).to.be.true;
-        expect(services.calledOnce).to.be.true;
+        expect(services.calledTwice).to.be.true;
         expect(logStub.called).to.be.false;
     });
 
     it('throws when systemd not found', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
-        const processes = sinon.stub(sysinfo, 'processes').resolves({list: []});
-        const services = sinon.stub(sysinfo, 'services').resolves([{name: 'nginx'}]);
+        const services = sinon.stub(sysinfo, 'services');
+
+        services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
+        services.withArgs('systemd').resolves([]);
 
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -167,8 +168,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): systemd\'');
             expect(osInfo.calledOnce).to.be.true;
-            expect(processes.calledOnce).to.be.true;
-            expect(services.calledOnce).to.be.true;
+            expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
             expect(logStub.args[0][0]).to.match(/package\(s\): systemd/);
@@ -181,8 +181,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('throws when systemd check errors', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
-        const processes = sinon.stub(sysinfo, 'processes').rejects(new Error('test error'));
-        const services = sinon.stub(sysinfo, 'services').resolves([{name: 'nginx'}]);
+        const services = sinon.stub(sysinfo, 'services');
+
+        services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
+        services.withArgs('systemd').rejects();
 
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -198,8 +200,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): systemd\'');
             expect(osInfo.calledOnce).to.be.true;
-            expect(processes.calledOnce).to.be.true;
-            expect(services.calledOnce).to.be.true;
+            expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
             expect(logStub.args[0][0]).to.match(/package\(s\): systemd/);
@@ -212,8 +213,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('throws when nginx not found', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
-        const processes = sinon.stub(sysinfo, 'processes').resolves({list: [{pid: 1, name: 'systemd'}]});
-        const services = sinon.stub(sysinfo, 'services').resolves([]);
+        const services = sinon.stub(sysinfo, 'services');
+
+        services.withArgs('nginx').resolves([]);
+        services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);
 
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -229,8 +232,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): nginx\'');
             expect(osInfo.calledOnce).to.be.true;
-            expect(processes.calledOnce).to.be.true;
-            expect(services.calledOnce).to.be.true;
+            expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
             expect(logStub.args[0][0]).to.match(/package\(s\): nginx/);
@@ -243,8 +245,10 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('throws when nginx check errors', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
-        const processes = sinon.stub(sysinfo, 'processes').resolves({list: [{pid: 1, name: 'systemd'}]});
         const services = sinon.stub(sysinfo, 'services').rejects(new Error('test error'));
+
+        services.withArgs('nginx').rejects();
+        services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);
 
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -260,8 +264,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): nginx\'');
             expect(osInfo.calledOnce).to.be.true;
-            expect(processes.calledOnce).to.be.true;
-            expect(services.calledOnce).to.be.true;
+            expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
             expect(logStub.args[0][0]).to.match(/package\(s\): nginx/);
