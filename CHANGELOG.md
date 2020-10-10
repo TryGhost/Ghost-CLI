@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.15.0"></a>
+# [1.15.0](https://github.com/TryGhost/Ghost-CLI/compare/1.14.1...1.15.0) (2020-10-10)
+
+
+### Bug Fixes
+
+* **install:** rename force flag to 'check-empty' ([#1237](https://github.com/TryGhost/Ghost-CLI/issues/1237)) ([6281eaa](https://github.com/TryGhost/Ghost-CLI/commit/6281eaa))
+* **local-process:** ensure string argument is passed to writeFileSync ([47ad7f6](https://github.com/TryGhost/Ghost-CLI/commit/47ad7f6))
+* **log:** prevent error when no transports exist ([#1306](https://github.com/TryGhost/Ghost-CLI/issues/1306)) ([291f1f5](https://github.com/TryGhost/Ghost-CLI/commit/291f1f5))
+* **major-update:** make theme demo prompt dynamic ([4f7c80c](https://github.com/TryGhost/Ghost-CLI/commit/4f7c80c))
+* **mysql:** fix errors raised during testing ([173efbc](https://github.com/TryGhost/Ghost-CLI/commit/173efbc))
+* **node:** bump minimum supported node to 14.13 ([0c79cf4](https://github.com/TryGhost/Ghost-CLI/commit/0c79cf4))
+* **stack:** refactor nginx/systemd checks to use same method ([0cdadab](https://github.com/TryGhost/Ghost-CLI/commit/0cdadab))
+* **yarn:** ignore engines when GHOST_NODE_VERSION_CHECK is false ([9e12e0a](https://github.com/TryGhost/Ghost-CLI/commit/9e12e0a))
+* update usages of check-valid-install ([0bee88c](https://github.com/TryGhost/Ghost-CLI/commit/0bee88c))
+
+
+### Features
+
+* **ci:** add end-to-end github actions tests for standard stack ([35d6eb4](https://github.com/TryGhost/Ghost-CLI/commit/35d6eb4))
+* **doctor:** add free disk space check ([#1284](https://github.com/TryGhost/Ghost-CLI/issues/1284)) ([d5e5ed3](https://github.com/TryGhost/Ghost-CLI/commit/d5e5ed3)), closes [#1282](https://github.com/TryGhost/Ghost-CLI/issues/1282)
+* **extensions:** add `user skipped` task hook ([cd12cbd](https://github.com/TryGhost/Ghost-CLI/commit/cd12cbd)), closes [#308](https://github.com/TryGhost/Ghost-CLI/issues/308) [#1115](https://github.com/TryGhost/Ghost-CLI/issues/1115)
+* **install:** add force flag to allow install in non-empty directory ([21d3e98](https://github.com/TryGhost/Ghost-CLI/commit/21d3e98))
+* **mysql:** support MySQL version 8 ([0eb2771](https://github.com/TryGhost/Ghost-CLI/commit/0eb2771)), closes [#1265](https://github.com/TryGhost/Ghost-CLI/issues/1265)
+* **mysql:** update mysql check to use systeminformation ([8ea7f7f](https://github.com/TryGhost/Ghost-CLI/commit/8ea7f7f))
+* **nginx:** refactor to use async/await ([65d3da5](https://github.com/TryGhost/Ghost-CLI/commit/65d3da5))
+* **stack:** refactor stack check & allow ubuntu 20 ([9ad75e0](https://github.com/TryGhost/Ghost-CLI/commit/9ad75e0)), closes [#853](https://github.com/TryGhost/Ghost-CLI/issues/853) [#1265](https://github.com/TryGhost/Ghost-CLI/issues/1265)
+* **update:** reduce number of kept versions to 2 ([#1238](https://github.com/TryGhost/Ghost-CLI/issues/1238)) ([badb662](https://github.com/TryGhost/Ghost-CLI/commit/badb662))
+
+
+
 <a name="1.14.1"></a>
 ## [1.14.1](https://github.com/TryGhost/Ghost-CLI/compare/1.14.0...1.14.1) (2020-06-07)
 
