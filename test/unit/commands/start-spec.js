@@ -10,6 +10,7 @@ const UI = require('../../../lib/ui');
 const DoctorCommand = require('../../../lib/commands/doctor');
 
 const modulePath = '../../../lib/commands/start';
+const StartCommand = require(modulePath);
 
 function getStubs(dir) {
     const ui = new UI({});
