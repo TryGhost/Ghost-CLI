@@ -13,6 +13,10 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        password: [root]
+        include:
+          os: ubuntu-20.04
+          password: [password]
     steps:
       - name: Installing nginx
         run: sudo apt-get update && sudo apt-get install -y nginx
@@ -26,6 +30,11 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Start MySQL service
         run: sudo systemctl start mysql.service
+      - name: Fix MySQL Password
+        if: ${{ matrix.os == ubuntu-20.04 }}
+        run: |
+          echo "ALTER USER root@localhost IDENTIFIED WITH mysql_native_password BY '${{ matrix.password }}';" >> tmp.sql
+          mysql -u root -proot < tmp.sql
       - name: Prepare CLI
         run: |
           cd cli
@@ -41,7 +50,7 @@ jobs:
             --db mysql \
             --dbhost localhost \
             --dbuser root \
-            --dbpass root \
+            --dbpass ${{ matrix.password }} \
             --dbname ghost-mysql
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
