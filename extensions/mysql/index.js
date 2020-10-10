@@ -46,7 +46,7 @@ class MySQLExtension extends Extension {
         }, {
             title: 'Setting up database (MySQL 8)',
             task: () => this.createMySQL8Database(dbconfig),
-            enabled: ({mysql: mysqlCtx}) => mysqlCtx && mysqlCtx.version && mysqlCtx.version.major === 8
+            enabled: ({mysql: mysqlCtx}) => mysqlCtx && isMySQL8(mysqlCtx.version)
         }, {
             title: 'Saving new config',
             task: () => {
@@ -62,7 +62,7 @@ class MySQLExtension extends Extension {
         try {
             const result = await this._query('SELECT @@version AS version');
             if (result && result[0] && result[0].version) {
-                return semver.parse(result[0].version);
+                return semver.parse(result[0].version, true);
             }
 
             return null;
@@ -77,10 +77,6 @@ class MySQLExtension extends Extension {
 
         try {
             await Promise.fromCallback(cb => this.connection.connect(cb));
-            const version = await this.getServerVersion();
-            if (version) {
-                ctx.mysql = {version};
-            }
         } catch (error) {
             if (error.code === 'ECONNREFUSED') {
                 throw new ConfigError({
@@ -110,6 +106,18 @@ class MySQLExtension extends Extension {
                 err: error
             });
         }
+
+        const version = await this.getServerVersion();
+        if (version) {
+            if (isUnsupportedMySQL(version)) {
+                throw new SystemError({
+                    message: `Error: unsupported MySQL version (${version.raw})`,
+                    help: 'Update your MySQL server to at least MySQL v5.7 in order to run Ghost'
+                });
+            }
+
+            ctx.mysql = {version};
+        }
     }
 
     randomUsername() {
@@ -130,64 +138,46 @@ class MySQLExtension extends Extension {
         });
 
         await this._query('SET old_passwords = 0;');
-        this.ui.logVerbose('MySQL: successfully disabled old_password', 'green');
+        this.ui.logVerbose('MySQL: successfully disabled old_passwords', 'green');
 
-        const result = await this._query(`SELECT PASSSWORD('${randomPassword}') AS password;`);
+        const result = await this._query(`SELECT PASSWORD('${randomPassword}') AS password;`);
 
         if (!result || !result[0] || !result[0].password) {
             throw new Error('MySQL password generation failed');
         }
 
         this.ui.logVerbose('MySQL: successfully created password hash.', 'green');
-        return result[0].password;
+        return {
+            password: randomPassword,
+            hash: result[0].password
+        };
     }
 
     async createMySQL5User(host) {
         const username = this.randomUsername();
-        const password = await this.getMySQL5Password();
-
-        try {
-            await this._query(`CREATE USER '${username}'@'${host}' IDENTIFIED WITH mysql_native_password AS '${password}'`);
-            this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
-            return {username, password};
-        } catch (error) {
-            if (error.err && error.err.errno === 1396) {
-                this.ui.logVerbose('MySQL: user exists, re-trying user creation with new username', 'yellow');
-                return this.createGhostUser(host);
-            }
-
-            error.message = `Creating new MySQL user errored with message: ${error.message}`;
-            throw error;
-        }
+        const {password, hash} = await this.getMySQL5Password();
+        await this._query(`CREATE USER '${username}'@'${host}' IDENTIFIED WITH mysql_native_password AS '${hash}';`);
+        this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
+        return {username, password};
     }
 
     async createMySQL8User(host) {
         const username = this.randomUsername();
 
-        try {
-            const result = await this._query(
-                `CREATE USER '${username}'@'${host}' IDENTIFIED WITH mysql_native_password BY RANDOM PASSWORD`
-            );
+        const result = await this._query(
+            `CREATE USER '${username}'@'${host}' IDENTIFIED WITH mysql_native_password BY RANDOM PASSWORD`
+        );
 
-            if (!result || !result[0] || !result[0]['generated password']) {
-                throw new Error('MySQL user creation did not return a generated password');
-            }
-
-            this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
-
-            return {
-                username,
-                password: result[0]['generated password']
-            };
-        } catch (error) {
-            if (error.err && error.err.errno === 1396) {
-                this.ui.logVerbose('MySQL: user exists, re-trying user creation with new username', 'yellow');
-                return this.createGhostUser(host);
-            }
-
-            error.message = `Creating new MySQL user errored with message: ${error.message}`;
-            throw error;
+        if (!result || !result[0] || !result[0]['generated password']) {
+            throw new Error('MySQL user creation did not return a generated password');
         }
+
+        this.ui.logVerbose(`MySQL: successfully created new user ${username}`, 'green');
+
+        return {
+            username,
+            password: result[0]['generated password']
+        };
     }
 
     async createUser(ctx, dbconfig) {
@@ -195,12 +185,12 @@ class MySQLExtension extends Extension {
         // If the db connection host is something _other_ than localhost (e.g. a remote db connection)
         // we want the host to be `%` rather than the db host.
         const host = !localhostAliases.includes(dbconfig.host) ? '%' : dbconfig.host;
-        const {version: serverVersion} = ctx.mysql || {};
+        const {version} = ctx.mysql || {};
 
         try {
             let user = {};
 
-            if (serverVersion && serverVersion.major === 8) {
+            if (isMySQL8(version)) {
                 user = await this.createMySQL8User(host);
             } else {
                 user = await this.createMySQL5User(host);
@@ -212,6 +202,11 @@ class MySQLExtension extends Extension {
                 host
             };
         } catch (error) {
+            if (error.err && error.err.errno === 1396) {
+                this.ui.logVerbose('MySQL: user exists, re-trying user creation with new username', 'yellow');
+                return this.createUser(ctx, dbconfig);
+            }
+
             this.ui.logVerbose('MySQL: Unable to create custom Ghost user', 'red');
             this.connection.end(); // Ensure we end the connection
 
@@ -222,7 +217,7 @@ class MySQLExtension extends Extension {
 
     async grantPermissions(ctx, dbconfig) {
         try {
-            await this._query(`GRANT ALL PRIVILEGES ON ${dbconfig.database}.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`);
+            await this._query(`GRANT ALL PRIVILEGES ON \`${dbconfig.database}\`.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`);
             this.ui.logVerbose(`MySQL: Successfully granted privileges for user "${ctx.mysql.username}"`, 'green');
 
             await this._query('FLUSH PRIVILEGES;');
@@ -257,7 +252,8 @@ class MySQLExtension extends Extension {
     async _query(queryString) {
         this.ui.logVerbose(`MySQL: running query > ${queryString}`, 'gray');
         try {
-            return Promise.fromCallback(cb => this.connection.query(queryString, cb));
+            const result = await Promise.fromCallback(cb => this.connection.query(queryString, cb));
+            return result;
         } catch (error) {
             if (error instanceof CliError) {
                 throw error;
