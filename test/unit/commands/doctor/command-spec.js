@@ -191,7 +191,7 @@ describe('Unit: Commands > Doctor', function () {
         });
     });
 
-    it('skips instance check if category is start, uses correct context', function () {
+    it('skips instance check if category is start, uses correct context', async function () {
         const ui = {listr: sinon.stub().resolves()};
         const instanceStub = {checkEnvironment: sinon.stub()};
         const system = {
@@ -209,34 +209,34 @@ describe('Unit: Commands > Doctor', function () {
         });
         const instance = new DoctorCommand(ui, system);
 
-        return instance.run({
+        await instance.run({
             skipInstanceCheck: false,
             local: true,
             argv: true,
             categories: ['start'],
             _: ['doctor']
-        }).then(() => {
-            expect(checkValidStub.called).to.be.false;
-            expect(system.getInstance.called).to.be.false;
-            expect(system.hook.calledOnce).to.be.true;
-            expect(system.hook.calledWithExactly('doctor')).to.be.true;
-            expect(instanceStub.checkEnvironment.called).to.be.false;
-            expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.listr.args[0][0]).to.deep.equal([{category: ['start']}]);
-            const context = ui.listr.args[0][1];
-            expect(context.argv).to.deep.equal({
-                skipInstanceCheck: false,
-                local: true,
-                argv: true,
-                categories: ['start'],
-                _: ['doctor']
-            });
-            expect(context.system).to.equal(system);
-            expect(context.instance).to.not.exist;
-            expect(context.ui).to.equal(ui);
-            expect(context.local).to.be.true;
-            expect(context.isDoctorCommand).to.be.true;
         });
+
+        expect(checkValidStub.called).to.be.false;
+        expect(system.getInstance.called).to.be.false;
+        expect(system.hook.calledOnce).to.be.true;
+        expect(system.hook.calledWithExactly('doctor')).to.be.true;
+        expect(instanceStub.checkEnvironment.called).to.be.false;
+        expect(ui.listr.calledOnce).to.be.true;
+        expect(ui.listr.args[0][0]).to.deep.equal([{category: ['start']}]);
+        const context = ui.listr.args[0][1];
+        expect(context.argv).to.deep.equal({
+            skipInstanceCheck: false,
+            local: true,
+            argv: true,
+            categories: ['start'],
+            _: ['doctor']
+        });
+        expect(context.system).to.equal(system);
+        expect(context.instance).to.not.exist;
+        expect(context.ui).to.equal(ui);
+        expect(context.local).to.be.true;
+        expect(context.isDoctorCommand).to.be.true;
     });
 
     describe('filters checks correctly', function () {
