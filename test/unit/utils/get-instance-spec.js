@@ -1,4 +1,3 @@
-'use strict';
 const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
@@ -42,7 +41,7 @@ describe('Unit: Utils > getInstance', function () {
             expect(false, 'Promise should have rejected').to.be.true;
         } catch (error) {
             expect(error).to.be.instanceof(SystemError);
-            expect(error.message).to.equal('Ghost instance "ghosted" does not exist');
+            expect(error.message).to.equal('Ghost instance \'ghosted\' does not exist');
         }
     });
 
