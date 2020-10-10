@@ -1,4 +1,3 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
@@ -19,17 +18,17 @@ describe('Unit: Commands > Stop', function () {
         });
 
         it('checks for valid install if name not specified', async function () {
-            const findStub = sinon.stub().throws(new Error('findValidInstall'));
+            const getInstance = sinon.stub().throws(new Error('getInstance'));
             const Command = proxyquire(modulePath, {
-                '../utils/find-valid-install': findStub
+                '../utils/get-instance': getInstance
             });
             const stop = new Command();
 
             try {
                 await stop.run({});
             } catch (error) {
-                expect(error.message).to.equal('findValidInstall');
-                expect(findStub.calledOnce).to.be.true;
+                expect(error.message).to.equal('getInstance');
+                expect(getInstance.calledOnce).to.be.true;
                 return;
             }
 
@@ -54,12 +53,13 @@ describe('Unit: Commands > Stop', function () {
             const log = sinon.stub();
             const isRunning = sinon.stub().resolves(false);
             const getInstance = sinon.stub().returns({isRunning});
-            const stop = new StopCommand({log}, {getInstance});
+            const Command = proxyquire(modulePath, {'../utils/get-instance': getInstance});
+            const stop = new Command({log});
 
             await stop.run({name: 'testing'});
 
             expect(getInstance.calledOnce).to.be.true;
-            expect(getInstance.calledWithExactly('testing')).to.be.true;
+            expect(getInstance.args[0][0]).to.equal('testing');
             expect(isRunning.calledOnce).to.be.true;
             expect(log.calledOnce).to.be.true;
         });
@@ -72,12 +72,13 @@ describe('Unit: Commands > Stop', function () {
             const stop = sinon.stub().resolves();
 
             const getInstance = sinon.stub().returns({isRunning, stop});
+            const Command = proxyquire(modulePath, {'../utils/get-instance': getInstance});
 
-            const cmd = new StopCommand({log, run}, {getInstance});
+            const cmd = new Command({log, run});
             await cmd.run({name: 'testing'});
 
             expect(getInstance.calledOnce).to.be.true;
-            expect(getInstance.calledWithExactly('testing')).to.be.true;
+            expect(getInstance.args[0][0]).to.equal('testing');
             expect(isRunning.calledOnce).to.be.true;
             expect(run.calledOnce).to.be.true;
             expect(stop.calledOnce).to.be.true;
