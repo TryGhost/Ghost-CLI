@@ -31,7 +31,7 @@ jobs:
       - name: Start MySQL service
         run: sudo systemctl start mysql.service
       - name: Fix MySQL Password
-        if: ${{ matrix.os == ubuntu-20.04 }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           echo "ALTER USER root@localhost IDENTIFIED WITH mysql_native_password BY '${{ matrix.password }}';" >> tmp.sql
           mysql -u root -proot < tmp.sql
