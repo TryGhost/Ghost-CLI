@@ -7,20 +7,51 @@ on:
 
 jobs:
   e2e:
-    runs-on: ubuntu-16.04
-    name: 'Ubuntu 16.04'
+    runs-on: ${{ matrix.os }}
+    name: Ubuntu ${{ matrix.os }} x MySQL ${{ matrix.mysql }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        existing_mysql: [5.7]
+        mysql: [5.7]
+        node: [12.x]
+        include:
+          - os: ubuntu-18.04
+            mysql: 8.0
     steps:
-      - name: 'Setting up required services'
-        run: sudo systemctl start mysql.service && sudo apt-get update && sudo apt-get install -y nginx
-      - name: 'Updating hosts file'
+      - name: Installing nginx
+        run: sudo apt-get update && sudo apt-get install -y nginx
+      - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
       - uses: actions/checkout@v2
         with:
           path: 'cli'
       - uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
-      - run: cd cli && yarn && sudo yarn link --link-folder /usr/bin/
+          node-version: ${{ matrix.node }}
+      - name: Start MySQL service
+        if: ${{ matrix.mysql == matrix.existing_mysql }}
+        run: sudo systemctl start mysql.service
+      - name: Stop existing MySQL service
+        if: ${{ matrix.mysql != matrix.existing_mysql }}
+        run: sudo systemctl stop mysql.service
+      - name: Install new MySQL service
+        if: ${{ matrix.mysql != matrix.existing_mysql }}
+        # Waiting for https://github.com/mirromutth/mysql-action/pull/7 to get merged
+        uses: haltuf/mysql-action@1d829fdd34e83de9a72b768924ec109f83e4d78c
+        with:
+          # host port: 3690
+          host port: 3306
+          mysql version: ${{ matrix.mysql }}
+          mysql database: ghost-mysql-${{ matrix.mysql }}
+          mysql root password: root
+          authentication plugin: mysql_native_password
+      - name: Prepare CLI
+        run: |
+          cd cli
+          yarn install --frozen-lockfile
+          sudo yarn link --link-folder /usr/bin/
       - name: Setting up Ghost instance
         run: |
           ghost install \
@@ -32,7 +63,7 @@ jobs:
             --dbhost localhost \
             --dbuser root \
             --dbpass root \
-            --dbname ghost-ubuntu16
+            --dbname ghost-mysql-${{ matrix.mysql }}
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
 
