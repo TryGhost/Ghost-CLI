@@ -8,17 +8,11 @@ on:
 jobs:
   e2e:
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} x MySQL ${{ matrix.mysql }}
+    name: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
-        existing_mysql: [5.7]
-        mysql: [5.7]
-        node: [12.x]
-        include:
-          - os: ubuntu-18.04
-            mysql: 8.0
     steps:
       - name: Installing nginx
         run: sudo apt-get update && sudo apt-get install -y nginx
@@ -31,22 +25,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Start MySQL service
-        if: ${{ matrix.mysql == matrix.existing_mysql }}
         run: sudo systemctl start mysql.service
-      - name: Stop existing MySQL service
-        if: ${{ matrix.mysql != matrix.existing_mysql }}
-        run: sudo systemctl stop mysql.service
-      - name: Install new MySQL service
-        if: ${{ matrix.mysql != matrix.existing_mysql }}
-        # Waiting for https://github.com/mirromutth/mysql-action/pull/7 to get merged
-        uses: haltuf/mysql-action@1d829fdd34e83de9a72b768924ec109f83e4d78c
-        with:
-          # host port: 3690
-          host port: 3306
-          mysql version: ${{ matrix.mysql }}
-          mysql database: ghost-mysql-${{ matrix.mysql }}
-          mysql root password: root
-          authentication plugin: mysql_native_password
       - name: Prepare CLI
         run: |
           cd cli
@@ -63,7 +42,7 @@ jobs:
             --dbhost localhost \
             --dbuser root \
             --dbpass root \
-            --dbname ghost-mysql-${{ matrix.mysql }}
+            --dbname ghost-mysql
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
 
