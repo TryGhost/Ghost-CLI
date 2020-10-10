@@ -8,7 +8,7 @@ on:
 jobs:
   e2e:
     runs-on: ${{ matrix.os }}
-    name: Ubuntu ${{ matrix.os }} x MySQL ${{ matrix.mysql }}
+    name: ${{ matrix.os }} x MySQL ${{ matrix.mysql }}
     strategy:
       fail-fast: true
       matrix:
