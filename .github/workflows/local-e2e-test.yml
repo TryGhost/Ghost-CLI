@@ -1,0 +1,30 @@
+name: Local E2E Tests
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  local-e2e:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [10.x]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: 'cli'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Prepare CLI
+        run: yarn --cwd cli install --frozen-lockfile
+      - name: Setting up Ghost instance
+        run: node ./cli/bin/ghost install local -d ghost
+      - name: Verifying Installation
+        run: curl http://localhost:2368 | grep ghost
+
