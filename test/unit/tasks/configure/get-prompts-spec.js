@@ -41,11 +41,10 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com'}, 'development');
 
-        expect(prompts).to.have.length(5);
+        expect(prompts).to.have.length(4);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbuser')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbpass')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbport')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
@@ -54,7 +53,7 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         config.set('database.connection.password', 'password');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql'}, 'development');
 
-        expect(prompts).to.have.length(5);
+        expect(prompts).to.have.length(4);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
 
         const userprompt = prompts.find(prompt => prompt.name === 'dbuser');
@@ -66,11 +65,6 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         expect(passprompt).to.be.ok;
         expect(passprompt.message).to.match(/skip to keep current/);
         expect(passprompt.default).to.equal('password');
-
-        const portprompt = prompts.find(prompt => prompt.name === 'dbport');
-        expect(portprompt).to.be.ok;
-        expect(portprompt.message).to.match(/Enter your MySQL port/);
-        expect(portprompt.default).to.equal(3306);
 
         const nameprompt = prompts.find(prompt => prompt.name === 'dbname');
         expect(nameprompt).to.be.ok;
@@ -84,11 +78,10 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbhost: 'localhost'}, 'development');
 
-        expect(prompts).to.have.length(4);
+        expect(prompts).to.have.length(3);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.not.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbuser')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbpass')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbport')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
@@ -96,11 +89,10 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbuser: 'root'}, 'development');
 
-        expect(prompts).to.have.length(4);
+        expect(prompts).to.have.length(3);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbuser')).to.not.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbpass')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbport')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
@@ -108,23 +100,10 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbpass: 'password'}, 'development');
 
-        expect(prompts).to.have.length(4);
+        expect(prompts).to.have.length(3);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbuser')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbpass')).to.not.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbport')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
-    });
-
-    it('doesn\'t return dbport prompt if dbport provided', function () {
-        const config = new Config('config.json');
-        const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbport: 3306}, 'development');
-
-        expect(prompts).to.have.length(4);
-        expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbuser')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbpass')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbport')).to.not.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
@@ -132,11 +111,10 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbname: 'ghost'}, 'development');
 
-        expect(prompts).to.have.length(4);
+        expect(prompts).to.have.length(3);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbuser')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbpass')).to.be.ok;
-        expect(prompts.find(prompt => prompt.name === 'dbport')).to.be.ok;
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.not.be.ok;
     });
 
@@ -147,7 +125,6 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
             db: 'mysql',
             dbhost: 'localhost',
             dbuser: 'ghost_rnd',
-            dbport: 3306,
             dbpass: 'good_pass'
         };
 
