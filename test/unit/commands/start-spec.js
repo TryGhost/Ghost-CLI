@@ -125,7 +125,8 @@ describe('Unit: Commands > Start', function () {
             expect(runCommand.calledWithExactly(DoctorCommand, {
                 categories: ['start'],
                 quiet: true,
-                checkMem: false
+                checkMem: false,
+                skipInstanceCheck: true
             })).to.be.true;
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
@@ -152,7 +153,8 @@ describe('Unit: Commands > Start', function () {
             expect(runCommand.calledWithExactly(DoctorCommand, {
                 categories: ['start'],
                 quiet: true,
-                checkMem: false
+                checkMem: false,
+                skipInstanceCheck: true
             })).to.be.true;
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
