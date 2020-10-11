@@ -5,6 +5,8 @@ const path = require('path');
 const proxyquire = require('proxyquire').noCallThru();
 const configStub = require('../../../test/utils/config-stub');
 
+const uiStub = () => ({log: sinon.stub()});
+
 const fs = require('fs-extra');
 
 const modulePath = '../index';
@@ -24,7 +26,7 @@ describe('Unit: Systemd > Extension', function () {
         expect(tasks[0].id).to.equal('systemd');
         expect(tasks[0].name).to.equal('Systemd');
 
-        const [{enabled, task, skip}] = tasks;
+        const [{enabled, task, skip, onUserSkip}] = tasks;
         const config = configStub();
         const instance = {config, name: 'test_instance'};
 
@@ -32,8 +34,11 @@ describe('Unit: Systemd > Extension', function () {
         expect(enabled({argv: {local: true}, instance})).to.be.false;
         expect(config.get.called).to.be.false;
 
-        expect(enabled({argv: {local: false}, instance})).to.be.false;
+        expect(enabled({argv: {local: false}, instance})).not.be.ok;
         expect(config.get.calledOnce).to.be.true;
+
+        expect(enabled({argv: {local: false, stages: ['nginx', 'systemd']}, instance})).to.be.true;
+        expect(config.get.calledTwice).to.be.true;
 
         config.get.withArgs('process').returns('systemd');
         config.get.resetHistory();
@@ -55,6 +60,11 @@ describe('Unit: Systemd > Extension', function () {
 
         expect(skip({instance})).to.be.false;
         expect(exists.calledOnce).to.be.true;
+
+        config.set.resetHistory();
+        expect(onUserSkip).to.be.a('function');
+        onUserSkip({instance, ui: uiStub()});
+        expect(config.set.calledOnceWithExactly('process', 'local')).to.be.true;
     });
 
     describe('setup stage', function () {
@@ -88,10 +98,12 @@ describe('Unit: Systemd > Extension', function () {
             const sudoStub = sinon.stub().resolves();
             const skipStub = sinon.stub();
             const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
-            const instance = {dir: '/some/dir', name: 'test'};
+            const instance = {dir: '/some/dir', name: 'test', config: configStub()};
             const templateStub = sinon.stub(testInstance, 'template').resolves();
 
-            return testInstance._setup({instance: instance}, {skip: skipStub}).then(() => {
+            instance.config.get.withArgs('process').returns('local');
+
+            return testInstance._setup({instance, ui: uiStub()}, {skip: skipStub}).then(() => {
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
                 expect(readFileSyncStub.calledOnce).to.be.true;
@@ -101,6 +113,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(sudoStub.calledWithExactly('systemctl daemon-reload')).to.be.true;
                 expect(logStub.called).to.be.false;
                 expect(skipStub.called).to.be.false;
+                expect(instance.config.set.calledOnceWithExactly('process', 'systemd')).to.be.true;
             });
         });
 
@@ -118,9 +131,9 @@ describe('Unit: Systemd > Extension', function () {
             const skipStub = sinon.stub();
             const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
             const templateStub = sinon.stub(testInstance, 'template').resolves();
-            const instance = {dir: '/some/dir', name: 'test'};
+            const instance = {dir: '/some/dir', name: 'test', config: configStub()};
 
-            return testInstance._setup({instance: instance}, {skip: skipStub}).then(() => {
+            return testInstance._setup({instance, ui: uiStub()}, {skip: skipStub}).then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
             }).catch((error) => {
                 expect(error).to.exist;

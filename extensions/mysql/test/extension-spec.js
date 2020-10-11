@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const configStub = require('../../../test/utils/config-stub');
+const semver = require('semver');
 
 const modulePath = '../index';
 const errors = require('../../../lib/errors');
@@ -58,36 +59,37 @@ describe('Unit: Mysql extension', function () {
         const context = {instance: {config}};
         inst.setupMySQL(context);
 
-        expect(config.get.calledOnce).to.be.true;
-        expect(config.get.calledWithExactly('database.connection')).to.be.true;
+        expect(config.get.calledOnceWithExactly('database.connection')).to.be.true;
         expect(listr.calledOnce).to.be.true;
         const [tasks, ctx] = listr.args[0];
-        expect(tasks).to.have.length(4);
+        expect(tasks).to.have.length(5);
         expect(ctx).to.be.false;
 
         const canConnect = sinon.stub(inst, 'canConnect');
         expect(tasks[0].title).to.equal('Connecting to database');
         tasks[0].task();
-        expect(canConnect.calledOnce).to.be.true;
-        expect(canConnect.calledWithExactly(context, dbConfig)).to.be.true;
+        expect(canConnect.calledOnceWithExactly(context, dbConfig)).to.be.true;
 
         const createUser = sinon.stub(inst, 'createUser');
         expect(tasks[1].title).to.equal('Creating new MySQL user');
         tasks[1].task();
-        expect(createUser.calledOnce).to.be.true;
-        expect(createUser.calledWithExactly(context, dbConfig)).to.be.true;
+        expect(createUser.calledOnceWithExactly(context, dbConfig)).to.be.true;
 
         const grantPermissions = sinon.stub(inst, 'grantPermissions');
         expect(tasks[2].title).to.equal('Granting new user permissions');
         tasks[2].task();
-        expect(grantPermissions.calledOnce).to.be.true;
-        expect(grantPermissions.calledWithExactly(context, dbConfig)).to.be.true;
+        expect(grantPermissions.calledOnceWithExactly(context, dbConfig)).to.be.true;
+
+        const setupDatabase = sinon.stub(inst, 'createMySQL8Database');
+        expect(tasks[3].title).to.equal('Setting up database (MySQL 8)');
+        tasks[3].task();
+        expect(setupDatabase.calledOnceWithExactly(dbConfig)).to.be.true;
 
         const end = sinon.stub();
         inst.connection = {end};
         context.mysql = {username: 'new', password: 'new'};
-        expect(tasks[3].title).to.equal('Saving new config');
-        tasks[3].task();
+        expect(tasks[4].title).to.equal('Saving new config');
+        tasks[4].task();
         expect(config.set.calledTwice).to.be.true;
         expect(config.set.calledWithExactly('database.connection.user', 'new')).to.be.true;
         expect(config.set.calledWithExactly('database.connection.password', 'new')).to.be.true;
@@ -96,19 +98,70 @@ describe('Unit: Mysql extension', function () {
     });
 
     describe('canConnect', function () {
-        it('creates connection and connects', function () {
+        it('creates connection and connects', async function () {
             const connectStub = sinon.stub().callsArg(0);
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
                 mysql: {createConnection: createConnectionStub}
             });
-            const instance = new MysqlExtension({}, {}, {}, '/some/dir');
+            const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
+            const getServerVersion = sinon.stub(instance, 'getServerVersion').resolves(null);
 
-            return instance.canConnect({}, {user: 'someuser', password: 'somepass', database: 'testing'}).then(() => {
+            const ctx = {};
+
+            await instance.canConnect(ctx, {user: 'someuser', password: 'somepass', database: 'testing'});
+            expect(createConnectionStub.calledOnce).to.be.true;
+            expect(createConnectionStub.calledWithExactly({user: 'someuser', password: 'somepass'})).to.be.true;
+            expect(connectStub.calledOnce).to.be.true;
+            expect(getServerVersion.calledOnce).to.be.true;
+            expect(ctx.mysql).to.not.exist;
+        });
+
+        it('sets version if version found', async function () {
+            const connectStub = sinon.stub().callsArg(0);
+            const createConnectionStub = sinon.stub().returns({connect: connectStub});
+            const MysqlExtension = proxyquire(modulePath, {
+                mysql: {createConnection: createConnectionStub}
+            });
+            const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
+
+            const version = semver.parse('8.0.0');
+            const getServerVersion = sinon.stub(instance, 'getServerVersion').resolves(version);
+
+            const ctx = {};
+
+            await instance.canConnect(ctx, {user: 'someuser', password: 'somepass', database: 'testing'});
+            expect(createConnectionStub.calledOnce).to.be.true;
+            expect(createConnectionStub.calledWithExactly({user: 'someuser', password: 'somepass'})).to.be.true;
+            expect(connectStub.calledOnce).to.be.true;
+            expect(getServerVersion.calledOnce).to.be.true;
+            expect(ctx.mysql.version).to.exist;
+            expect(semver.eq(ctx.mysql.version, version)).to.be.true;
+        });
+
+        it('throws error on MySQL 5.6', async function () {
+            const connectStub = sinon.stub().callsArg(0);
+            const createConnectionStub = sinon.stub().returns({connect: connectStub});
+            const MysqlExtension = proxyquire(modulePath, {
+                mysql: {createConnection: createConnectionStub}
+            });
+            const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
+
+            const version = semver.parse('5.6.47');
+            const getServerVersion = sinon.stub(instance, 'getServerVersion').resolves(version);
+
+            try {
+                await instance.canConnect({}, {user: 'someuser', password: 'somepass', database: 'testing'});
+            } catch (error) {
+                expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(createConnectionStub.calledOnce).to.be.true;
                 expect(createConnectionStub.calledWithExactly({user: 'someuser', password: 'somepass'})).to.be.true;
                 expect(connectStub.calledOnce).to.be.true;
-            });
+                expect(getServerVersion.calledOnce).to.be.true;
+                return;
+            }
+
+            throw new Error('canConnect should have thrown');
         });
 
         it('throws configerror if error is ECONNREFUSED', function () {
@@ -181,75 +234,77 @@ describe('Unit: Mysql extension', function () {
     describe('createUser', function () {
         const MysqlExtension = require(modulePath);
 
-        it('runs correct queries and logs things', function () {
+        it('runs correct queries and logs things', async function () {
             const logStub = sinon.stub();
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
             const queryStub = sinon.stub(instance, '_query').resolves();
             queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
             const ctx = {};
 
-            return instance.createUser(ctx, {host: 'localhost'}).then(() => {
-                expect(queryStub.calledThrice).to.be.true;
-                expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
-                expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
-                expect(logStub.calledThrice).to.be.true;
-                expect(logStub.args[0][0]).to.match(/disabled old_password/);
-                expect(logStub.args[1][0]).to.match(/created password hash/);
-                expect(logStub.args[2][0]).to.match(/successfully created new user/);
-                expect(ctx.mysql).to.exist;
-                expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
-            });
+            await instance.createUser(ctx, {host: 'localhost'});
+            expect(queryStub.calledThrice).to.be.true;
+            expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
+            expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
+            expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
+            expect(logStub.calledThrice).to.be.true;
+            expect(logStub.args[0][0]).to.match(/disabled old_password/);
+            expect(logStub.args[1][0]).to.match(/created password hash/);
+            expect(logStub.args[2][0]).to.match(/successfully created new user/);
+            expect(ctx.mysql).to.exist;
+            expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
+            expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
         });
 
-        it('uses % for user host if db host is not localhost or 127.0.0.1', function () {
+        it('uses % for user host if db host is not localhost or 127.0.0.1', async function () {
             const logStub = sinon.stub();
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
             const queryStub = sinon.stub(instance, '_query').resolves();
             queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
             const ctx = {};
 
-            return instance.createUser(ctx, {host: '117.241.162.107'}).then(() => {
-                expect(queryStub.calledThrice).to.be.true;
-                expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
-                expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'%' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
-                expect(logStub.calledThrice).to.be.true;
-                expect(logStub.args[0][0]).to.match(/disabled old_password/);
-                expect(logStub.args[1][0]).to.match(/created password hash/);
-                expect(logStub.args[2][0]).to.match(/successfully created new user/);
-                expect(ctx.mysql).to.exist;
-                expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
-            });
+            await instance.createUser(ctx, {host: '117.241.162.107'});
+            expect(queryStub.calledThrice).to.be.true;
+            expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
+            expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
+            expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'%' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
+            expect(logStub.calledThrice).to.be.true;
+            expect(logStub.args[0][0]).to.match(/disabled old_password/);
+            expect(logStub.args[1][0]).to.match(/created password hash/);
+            expect(logStub.args[2][0]).to.match(/successfully created new user/);
+            expect(ctx.mysql).to.exist;
+            expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
+            expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
         });
 
-        it('retries creating user if username already exists', function () {
+        it('retries creating user if username already exists', async function () {
             const logStub = sinon.stub();
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
             const queryStub = sinon.stub(instance, '_query').resolves();
             queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
+            queryStub.onCall(4).resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
             const err = new Error();
             err.errno = 1396;
             queryStub.onThirdCall().rejects(new errors.CliError({message: 'User exists already', err: err}));
             const ctx = {};
 
-            return instance.createUser(ctx, {host: 'localhost'}).then(() => {
-                expect(queryStub.callCount).to.equal(4);
-                expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
-                expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
-                expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
-                expect(queryStub.args[3][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
-                expect(logStub.callCount).to.equal(4);
-                expect(logStub.args[0][0]).to.match(/disabled old_password/);
-                expect(logStub.args[1][0]).to.match(/created password hash/);
-                expect(logStub.args[2][0]).to.match(/user exists, re-trying user creation/);
-                expect(logStub.args[3][0]).to.match(/successfully created new user/);
-                expect(ctx.mysql).to.exist;
-                expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
-                expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
-            });
+            await instance.createUser(ctx, {host: 'localhost'});
+            expect(queryStub.callCount).to.equal(6);
+            expect(queryStub.args[0][0]).to.equal('SET old_passwords = 0;');
+            expect(queryStub.args[1][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
+            expect(queryStub.args[2][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
+            expect(queryStub.args[3][0]).to.equal('SET old_passwords = 0;');
+            expect(queryStub.args[4][0]).to.match(/^SELECT PASSWORD\('[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*'\) AS password;$/);
+            expect(queryStub.args[5][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED WITH mysql_native_password AS '\*[0-9A-F]*';$/);
+            expect(logStub.callCount).to.equal(6);
+            expect(logStub.args[0][0]).to.match(/disabled old_password/);
+            expect(logStub.args[1][0]).to.match(/created password hash/);
+            expect(logStub.args[2][0]).to.match(/user exists, re-trying user creation/);
+            expect(logStub.args[3][0]).to.match(/disabled old_password/);
+            expect(logStub.args[4][0]).to.match(/created password hash/);
+            expect(logStub.args[5][0]).to.match(/successfully created new user/);
+            expect(ctx.mysql).to.exist;
+            expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
+            expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
         });
 
         it('rejects if error occurs during user creation', function () {
@@ -339,7 +394,7 @@ describe('Unit: Mysql extension', function () {
 
             return instance.grantPermissions({mysql: {username: 'testuser', host: '%'}}, {host: 'localhost', database: 'ghost'}).then(() => {
                 expect(queryStub.calledTwice).to.be.true;
-                expect(queryStub.calledWithExactly('GRANT ALL PRIVILEGES ON ghost.* TO \'testuser\'@\'%\';')).to.be.true;
+                expect(queryStub.calledWithExactly('GRANT ALL PRIVILEGES ON `ghost`.* TO \'testuser\'@\'%\';')).to.be.true;
                 expect(queryStub.calledWithExactly('FLUSH PRIVILEGES;')).to.be.true;
                 expect(logStub.calledTwice).to.be.true;
                 expect(logStub.args[0][0]).to.match(/Successfully granted privileges/);
@@ -391,7 +446,7 @@ describe('Unit: Mysql extension', function () {
 
         it('rejects with correct CliError', function () {
             const MysqlExtension = require(modulePath);
-            const queryStub = sinon.stub().throws(new Error('failed executing'));
+            const queryStub = sinon.stub().callsFake((_, cb) => cb(new Error('failed executing')));
             const logStub = sinon.stub();
 
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');

@@ -141,7 +141,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error.message).to.equal('An error occurred while starting Ghost.');
                 expect(spawnStub.calledOnce).to.be.true;
                 expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
+                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
                 done();
             });
 
@@ -173,7 +173,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error.message).to.equal('Ghost process exited with code: 1');
                 expect(spawnStub.calledOnce).to.be.true;
                 expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
+                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
                 done();
             });
@@ -206,7 +206,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error.message).to.equal('Test Error Message');
                 expect(spawnStub.called).to.be.true;
                 expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
+                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
                 done();
             });
@@ -236,7 +236,7 @@ describe('Unit: Utils > local-process', function () {
 
             startPromise.then(() => {
                 expect(spawnStub.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', 42)).to.be.true;
+                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
                 expect(cp.stderr.on.calledOnce).to.be.true;
                 expect(cp.stderr.destroy.calledOnce).to.be.true;
                 expect(cp.disconnect.calledOnce).to.be.true;

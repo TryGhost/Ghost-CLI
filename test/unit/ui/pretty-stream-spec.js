@@ -92,10 +92,10 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mCODE: HEY_JUDE\u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mCODE: HEY_JUDE\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mstack\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m\n`);
             });
 
@@ -157,9 +157,9 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m "GET /test" \u001b[33m400\u001b[39m 39ms
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: message\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: message\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mstack\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m\n`);
             });
         });
@@ -183,9 +183,9 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mstack\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m\n\n`);
             });
 
@@ -207,15 +207,15 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" \u001b[36m300\u001b[39m 39ms
 \u001b[90m\u001b[39m
-\u001b[90m\u001b[33mREQ\u001b[90m\u001b[39m
-\u001b[90m\u001b[32mip: \u001b[90m         127.0.01\u001b[39m
-\u001b[90m\u001b[32moriginalUrl: \u001b[90m/test\u001b[39m
-\u001b[90m\u001b[32mmethod: \u001b[90m     GET\u001b[39m
-\u001b[90m\u001b[32mbody: \u001b[90m\u001b[39m
-\u001b[90m  \u001b[32ma: \u001b[90mb\u001b[39m
+\u001b[90m\u001b[33mREQ\u001b[39m\u001b[90m\u001b[39m
+\u001b[90m\u001b[32mip: \u001b[39m\u001b[90m         127.0.01\u001b[39m
+\u001b[90m\u001b[32moriginalUrl: \u001b[39m\u001b[90m/test\u001b[39m
+\u001b[90m\u001b[32mmethod: \u001b[39m\u001b[90m     GET\u001b[39m
+\u001b[90m\u001b[32mbody: \u001b[39m\u001b[90m\u001b[39m
+\u001b[90m  \u001b[32ma: \u001b[39m\u001b[90mb\u001b[39m
 \u001b[90m\u001b[39m
-\u001b[90m\u001b[33mRES\u001b[90m\u001b[39m
-\u001b[90m\u001b[32mresponseTime: \u001b[90m39ms\u001b[39m
+\u001b[90m\u001b[33mRES\u001b[39m\u001b[90m\u001b[39m
+\u001b[90m\u001b[32mresponseTime: \u001b[39m\u001b[90m39ms\u001b[39m
 \u001b[90m\u001b[39m\n`);
             });
 
@@ -240,19 +240,19 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m "GET /test" \u001b[31m500\u001b[39m 39ms
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mstack\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[90m\u001b[39m
-\u001b[90m\u001b[33mREQ\u001b[90m\u001b[39m
-\u001b[90m\u001b[32moriginalUrl: \u001b[90m/test\u001b[39m
-\u001b[90m\u001b[32mmethod: \u001b[90m     GET\u001b[39m
-\u001b[90m\u001b[32mbody: \u001b[90m\u001b[39m
-\u001b[90m  \u001b[32ma: \u001b[90mb\u001b[39m
+\u001b[90m\u001b[33mREQ\u001b[39m\u001b[90m\u001b[39m
+\u001b[90m\u001b[32moriginalUrl: \u001b[39m\u001b[90m/test\u001b[39m
+\u001b[90m\u001b[32mmethod: \u001b[39m\u001b[90m     GET\u001b[39m
+\u001b[90m\u001b[32mbody: \u001b[39m\u001b[90m\u001b[39m
+\u001b[90m  \u001b[32ma: \u001b[39m\u001b[90mb\u001b[39m
 \u001b[90m\u001b[39m
-\u001b[90m\u001b[33mRES\u001b[90m\u001b[39m
-\u001b[90m\u001b[32mresponseTime: \u001b[90m39ms\u001b[39m
+\u001b[90m\u001b[33mRES\u001b[39m\u001b[90m\u001b[39m
+\u001b[90m\u001b[32mresponseTime: \u001b[39m\u001b[90m39ms\u001b[39m
 \u001b[90m\u001b[39m\n`);
             });
 
@@ -272,18 +272,18 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mERROR DETAILS:\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    level:    error\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    rule:     Templates must contain valid Handlebars.\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    failures: \u001b[31m\u001b[39m
-\u001b[31m\u001b[31m      - \u001b[31m\u001b[39m
-\u001b[31m\u001b[31m        ref:     default.hbs\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m        message: Missing helper: "image"\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    code:     GS005-TPL-ERR\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mERROR DETAILS:\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    level:    error\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    rule:     Templates must contain valid Handlebars.\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    failures: \u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m      - \u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m        ref:     default.hbs\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m        message: Missing helper: "image"\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    code:     GS005-TPL-ERR\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mstack\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m\n\n`);
             });
 
@@ -303,18 +303,18 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mERROR DETAILS:\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    level:    error\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    rule:     Templates must contain valid Handlebars.\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    failures: \u001b[31m\u001b[39m
-\u001b[31m\u001b[31m      - \u001b[31m\u001b[39m
-\u001b[31m\u001b[31m        ref:     default.hbs\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m        message: Missing helper: "image"\u001b[31m\u001b[39m
-\u001b[31m\u001b[31m    code:     GS005-TPL-ERR\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mERROR DETAILS:\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    level:    error\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    rule:     Templates must contain valid Handlebars.\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    failures: \u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m      - \u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m        ref:     default.hbs\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m        message: Missing helper: "image"\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31m    code:     GS005-TPL-ERR\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mstack\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m\n\n`);
             });
 
@@ -333,13 +333,13 @@ describe('Unit: UI > PrettyStream', function () {
                     }
                 }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[31mNAME: InternalServerError\u001b[31m\u001b[39m
-\u001b[31m\u001b[31mMESSAGE: whoops\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mNAME: InternalServerError\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[31mMESSAGE: whoops\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mlevel: error\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mlevel: error\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
-\u001b[31m\u001b[37mContext is key\u001b[31m\u001b[39m
-\u001b[31m\u001b[37mGo to docs\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mContext is key\u001b[39m\u001b[31m\u001b[39m
+\u001b[31m\u001b[37mGo to docs\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m\n\n`);
             });
         });

@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 10, 12 ]
+        node: [ 10, 12, 14 ]
         os: [ ubuntu-18.04, windows-latest ]
     env:
       FORCE_COLOR: 1
@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+      - if: matrix.node == 14
+        run: 'echo "GHOST_NODE_VERSION_CHECK=false" >> $GITHUB_ENV'
       - run: yarn
       - run: yarn lint
       - run: yarn test:all
