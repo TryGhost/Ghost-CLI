@@ -1,9 +1,9 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const tmp = require('tmp');
-const path = require('path');
 const fs = require('fs-extra');
+const os = require('os');
+const path = require('path');
 const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../../lib/extension';
@@ -45,137 +45,74 @@ describe('Unit: Extension', function () {
     describe('template', function () {
         const Extension = require(modulePath);
 
-        it('immediately calls _generateTemplate if ui.allowPrompt is false', function () {
-            const promptStub = sinon.stub().resolves();
-            const testExtension = new Extension({
-                prompt: promptStub,
-                allowPrompt: false,
-                verbose: true
-            }, {}, {}, '');
-            const generateStub = sinon.stub(testExtension, '_generateTemplate').resolves(true);
-
-            return testExtension.template({}, 'some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.called).to.be.false;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(generateStub.args[0][1]).to.equal('some contents');
-            });
+        afterEach(() => {
+            sinon.restore();
         });
 
-        it('immediately calls _generateTemplate if ui.verbose is false', function () {
-            const promptStub = sinon.stub().resolves();
-            const testExtension = new Extension({
-                prompt: promptStub,
-                allowPrompt: true,
-                verbose: false
-            }, {}, {}, '');
-            const generateStub = sinon.stub(testExtension, '_generateTemplate').resolves(true);
+        it('skips log if verbose is false', async function () {
+            const ensureDir = sinon.stub(fs, 'ensureDir').resolves();
+            const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
+            const writeFile = sinon.stub(fs, 'writeFile').resolves();
+            const sudo = sinon.stub().resolves();
+            const confirm = sinon.stub().rejects();
+            const log = sinon.stub();
 
-            return testExtension.template({}, 'some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.called).to.be.false;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(generateStub.args[0][1]).to.equal('some contents');
-            });
+            const ext = new Extension({sudo, confirm, log, verbose: false});
+            const instance = {name: 'test'};
+
+            await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
+            expect(confirm.called).to.be.false;
+            expect(log.called).to.be.false;
+            expect(tmpdir.calledOnce).to.be.true;
+            expect(ensureDir.calledOnceWithExactly('/tmp/test')).to.be.true;
+            expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
+            expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
         });
 
-        it('immediately calls _generateTemplate if ui.allowPrompt and ui.verbose is false', function () {
-            const promptStub = sinon.stub().resolves();
-            const testExtension = new Extension({
-                prompt: promptStub,
-                allowPrompt: true,
-                verbose: false
-            }, {}, {}, '');
-            const generateStub = sinon.stub(testExtension, '_generateTemplate').resolves(true);
+        it('skips log if confirm returns false', async function () {
+            const ensureDir = sinon.stub(fs, 'ensureDir').resolves();
+            const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
+            const writeFile = sinon.stub(fs, 'writeFile').resolves();
+            const sudo = sinon.stub().resolves();
+            const confirm = sinon.stub().resolves(false);
+            const log = sinon.stub();
 
-            return testExtension.template({}, 'some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.called).to.be.false;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(generateStub.args[0][1]).to.equal('some contents');
-            });
+            const ext = new Extension({sudo, confirm, log, verbose: true});
+            const instance = {name: 'test'};
+
+            await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
+            expect(confirm.calledOnceWithExactly(
+                'Would you like to view the test file file?',
+                false
+            )).to.be.true;
+            expect(log.called).to.be.false;
+            expect(tmpdir.calledOnce).to.be.true;
+            expect(ensureDir.calledOnceWithExactly('/tmp/test')).to.be.true;
+            expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
+            expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
         });
 
-        it('generates template if the choice is to continue (with --verbose)', function () {
-            const promptStub = sinon.stub().resolves({choice: 'continue'});
-            const testExtension = new Extension({prompt: promptStub, allowPrompt: true, verbose: true}, {}, {}, '');
-            const generateStub = sinon.stub(testExtension, '_generateTemplate').resolves(true);
+        it('logs contents if confirm returns true', async function () {
+            const ensureDir = sinon.stub(fs, 'ensureDir').resolves();
+            const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
+            const writeFile = sinon.stub(fs, 'writeFile').resolves();
+            const sudo = sinon.stub().resolves();
+            const confirm = sinon.stub().resolves(true);
+            const log = sinon.stub();
 
-            return testExtension.template({}, 'some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(promptStub.calledOnce).to.be.true;
-                expect(generateStub.args[0]).to.deep.equal([{}, 'some contents', 'a file', 'file.txt', '/some/dir']);
-            });
-        });
+            const ext = new Extension({sudo, confirm, log, verbose: true});
+            const instance = {name: 'test'};
 
-        it('logs and calls template method again if choice is view (with --verbose)', function () {
-            const promptStub = sinon.stub();
-            promptStub.onCall(0).resolves({choice: 'view'});
-            promptStub.onCall(1).resolves({choice: 'continue'});
-            const logStub = sinon.stub();
-            const testExtension = new Extension({log: logStub, prompt: promptStub, allowPrompt: true, verbose: true}, {}, {}, '');
-            const generateStub = sinon.stub(testExtension, '_generateTemplate').resolves(true);
-
-            return testExtension.template({}, 'some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.calledTwice).to.be.true;
-                expect(logStub.calledOnce).to.be.true;
-                expect(logStub.args[0][0]).to.equal('some contents');
-                expect(generateStub.calledOnce).to.be.true;
-                expect(generateStub.args[0]).to.deep.equal([{}, 'some contents', 'a file', 'file.txt', '/some/dir']);
-            });
-        });
-
-        it('opens editor and generates template with contents if choice is edit (with --verbose)', function () {
-            const promptStub = sinon.stub();
-            promptStub.onCall(0).resolves({choice: 'edit'});
-            promptStub.onCall(1).resolves({contents: 'some edited contents'});
-            const testExtension = new Extension({prompt: promptStub, allowPrompt: true, verbose: true}, {}, {}, '');
-            const generateStub = sinon.stub(testExtension, '_generateTemplate').resolves(true);
-
-            return testExtension.template({}, 'some contents', 'a file', 'file.txt', '/some/dir').then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.calledTwice).to.be.true;
-                expect(generateStub.calledOnce).to.be.true;
-                expect(generateStub.args[0][1]).to.equal('some edited contents');
-            });
-        });
-    });
-
-    describe('_generateTemplate', function () {
-        const Extension = require(modulePath);
-
-        it('writes out template to correct directory but doesn\'t link if no dir is passed', function () {
-            const dir = tmp.dirSync({unsafeCleanup: true}).name;
-            const successStub = sinon.stub();
-            const testExtension = new Extension({success: successStub}, {}, {}, '');
-
-            return testExtension._generateTemplate({dir}, 'some contents', 'a file', 'file.txt').then((result) => {
-                expect(result).to.be.true;
-                const fpath = path.join(dir, 'system', 'files', 'file.txt');
-                expect(fs.existsSync(fpath)).to.be.true;
-                expect(fs.readFileSync(fpath, 'utf8')).to.equal('some contents');
-                expect(successStub.calledOnce).to.be.true;
-            });
-        });
-
-        it('writes out template and links it correctly if dir is passed', function () {
-            const dir = tmp.dirSync({unsafeCleanup: true}).name;
-            const sudoStub = sinon.stub().resolves();
-            const successStub = sinon.stub();
-            const testExtension = new Extension({sudo: sudoStub, success: successStub}, {}, '');
-
-            return testExtension._generateTemplate({dir}, 'some contents', 'a file', 'file.txt', '/another/dir').then((result) => {
-                expect(result).to.be.true;
-                const fpath = path.join(dir, 'system', 'files', 'file.txt');
-                expect(fs.existsSync(fpath)).to.be.true;
-                expect(fs.readFileSync(fpath, 'utf8')).to.equal('some contents');
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.equal(`ln -sf ${fpath} /another/dir/file.txt`);
-                expect(successStub.calledOnce).to.be.true;
-                expect(successStub.firstCall.args[0]).to.match(/^Creating a file file at/);
-            });
+            await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
+            expect(confirm.calledOnceWithExactly(
+                'Would you like to view the test file file?',
+                false
+            )).to.be.true;
+            expect(log.calledOnceWithExactly('test file contents')).to.be.true;
+            expect(tmpdir.calledOnce).to.be.true;
+            expect(ensureDir.calledOnceWithExactly('/tmp/test')).to.be.true;
+            expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
+            expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
         });
     });
 
@@ -268,7 +205,6 @@ describe('Unit: Extension', function () {
         });
 
         it('returns an extension subclass if everything works out', function () {
-            const path = require('path');
             const Extension = require(modulePath);
             const testExtPath = '../fixtures/TestExtension';
             const TestExt = require(testExtPath);
