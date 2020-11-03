@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.15.2"></a>
+## [1.15.2](https://github.com/TryGhost/Ghost-CLI/compare/1.15.1...1.15.2) (2020-11-03)
+
+
+### Bug Fixes
+
+* **run:** don't write to parent stderr after Ghost is started ([66fe2b1](https://github.com/TryGhost/Ghost-CLI/commit/66fe2b1))
+
+
+
 <a name="1.15.1"></a>
 ## [1.15.1](https://github.com/TryGhost/Ghost-CLI/compare/1.15.0...1.15.1) (2020-11-03)
 
