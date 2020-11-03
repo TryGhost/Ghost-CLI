@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const EventEmitter = require('events');
+const {getReadableStream} = require('../../utils/stream');
 
 const modulePath = '../../../lib/commands/run';
 const errors = require('../../../lib/errors');
@@ -146,6 +147,8 @@ describe('Unit: Commands > Run', function () {
         this.timeout(5000);
 
         const childStub = new EventEmitter();
+        childStub.stderr = getReadableStream();
+
         const spawnStub = sinon.stub().returns(childStub);
         const RunCommand = proxyquire(modulePath, {
             child_process: {spawn: spawnStub}
@@ -161,7 +164,7 @@ describe('Unit: Commands > Run', function () {
         expect(spawnStub.calledOnce).to.be.true;
         expect(spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
             cwd: '/var/www/ghost',
-            stdio: [0, 1, 2, 'ipc']
+            stdio: [0, 1, 'pipe', 'ipc']
         })).to.be.true;
         expect(instance.child).to.equal(childStub);
 
