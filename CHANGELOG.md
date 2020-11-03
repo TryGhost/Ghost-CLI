@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.15.1"></a>
+## [1.15.1](https://github.com/TryGhost/Ghost-CLI/compare/1.15.0...1.15.1) (2020-11-03)
+
+
+### Features
+
+* **ci:** rework test setup ([a2cbfc0](https://github.com/TryGhost/Ghost-CLI/commit/a2cbfc0))
+* **extension:** rewrite template method ([2931f7e](https://github.com/TryGhost/Ghost-CLI/commit/2931f7e))
+* **mysql:** Add dbport option for db setup ([#1260](https://github.com/TryGhost/Ghost-CLI/issues/1260)) ([f733d94](https://github.com/TryGhost/Ghost-CLI/commit/f733d94)), closes [#1135](https://github.com/TryGhost/Ghost-CLI/issues/1135)
+* **node:** bump minimum node version to 14.15 ([e460191](https://github.com/TryGhost/Ghost-CLI/commit/e460191))
+
+
+
 <a name="1.15.0"></a>
 # [1.15.0](https://github.com/TryGhost/Ghost-CLI/compare/1.14.1...1.15.0) (2020-10-10)
 
