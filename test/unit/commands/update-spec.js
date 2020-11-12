@@ -191,11 +191,13 @@ describe('Unit: Commands > Update', function () {
                 rollback: sinon.stub().resolves()
             };
 
+            const releaseNotesStub = sinon.stub().resolves();
             const majorUpdateStub = sinon.stub();
 
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': migratorStub,
-                '../tasks/major-update': majorUpdateStub
+                '../tasks/major-update': majorUpdateStub,
+                '../tasks/release-notes': releaseNotesStub
             });
 
             const ghostConfig = configStub();
@@ -262,11 +264,13 @@ describe('Unit: Commands > Update', function () {
                 rollback: sinon.stub().resolves()
             };
 
+            const releaseNotesStub = sinon.stub().resolves();
             const majorUpdateStub = sinon.stub();
 
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': migratorStub,
-                '../tasks/major-update': majorUpdateStub
+                '../tasks/major-update': majorUpdateStub,
+                '../tasks/release-notes': releaseNotesStub
             });
 
             const ghostConfig = configStub();
@@ -435,11 +439,13 @@ describe('Unit: Commands > Update', function () {
                 rollback: sinon.stub().resolves()
             };
 
+            const releaseNotesStub = sinon.stub().resolves();
             const majorUpdateStub = sinon.stub();
 
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': migratorStub,
-                '../tasks/major-update': majorUpdateStub
+                '../tasks/major-update': majorUpdateStub,
+                '../tasks/release-notes': releaseNotesStub
             });
 
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
@@ -490,11 +496,13 @@ describe('Unit: Commands > Update', function () {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
             };
+            const releaseNotesStub = sinon.stub().resolves();
             const majorUpdateStub = sinon.stub();
 
             const UpdateCommand = proxyquire(modulePath, {
                 '../tasks/migrator': migratorStub,
-                '../tasks/major-update': majorUpdateStub
+                '../tasks/major-update': majorUpdateStub,
+                '../tasks/release-notes': releaseNotesStub
             });
 
             const config = configStub();
@@ -561,8 +569,10 @@ describe('Unit: Commands > Update', function () {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
             };
+            const releaseNotesStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/migrator': migratorStub
+                '../tasks/migrator': migratorStub,
+                '../tasks/release-notes': releaseNotesStub
             });
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
