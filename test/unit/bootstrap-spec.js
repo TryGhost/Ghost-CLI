@@ -123,7 +123,8 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('is registered', function () {
-            expect(process.listenerCount('unhandledRejection')).to.equal(1);
+            // mocha itself registers an unhandledRejection listener, so this is 2 instead of 1
+            expect(process.listenerCount('unhandledRejection')).to.equal(2);
         });
 
         it('throws reason and logs to console if it exists', function () {
