@@ -48,7 +48,7 @@
     "bluebird": "3.7.2",
     "chalk": "4.1.0",
     "cli-table3": "0.5.0",
-    "debug": "4.2.0",
+    "debug": "4.3.1",
     "decompress": "4.2.1",
     "download": "8.0.0",
     "execa": "1.0.0",
