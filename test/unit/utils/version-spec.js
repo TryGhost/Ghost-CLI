@@ -14,8 +14,17 @@ const {
 
 describe('Unit: Utils: version', function () {
     describe('loadVersions', function () {
-        const stub = (versionList = []) => {
-            const versions = versionList.reduce((obj, v) => ({...obj, [v]: true}), {});
+        const stub = (versionList = [], deprecated = []) => {
+            const versions = versionList.reduce((obj, v) => {
+                if (deprecated.includes(v)) {
+                    return {
+                        ...obj,
+                        [v]: {deprecated: 'test deprecation notice'}
+                    };
+                }
+
+                return {...obj, [v]: true};
+            }, {});
             const {loadVersions} = proxyquire(modulePath, {
                 'package-json': async () => ({versions})
             });
@@ -30,22 +39,31 @@ describe('Unit: Utils: version', function () {
             expect(result).to.deep.equal({
                 latest: null,
                 latestMajor: {},
-                all: []
+                all: [],
+                deprecations: {}
             });
         });
 
         it('returns correct all versions/latest versions, sorted desc', async function () {
-            const loadVersions = stub(['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0']);
+            const loadVersions = stub(
+                ['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0', '3.1.0'],
+                ['1.0.4', '2.22.0', '3.1.0']
+            );
             const result = await loadVersions();
 
             expect(result).to.deep.equal({
                 latest: '3.0.0',
                 latestMajor: {
-                    v1: '1.0.4',
-                    v2: '2.22.0',
+                    v1: '1.0.3',
+                    v2: '2.1.0',
                     v3: '3.0.0'
                 },
-                all: ['3.0.0', '2.22.0', '2.1.0', '2.0.0', '1.0.4', '1.0.3', '1.0.2', '1.0.1', '1.0.0']
+                all: ['3.1.0', '3.0.0', '2.22.0', '2.1.0', '2.0.0', '1.0.4', '1.0.3', '1.0.2', '1.0.1', '1.0.0'],
+                deprecations: {
+                    '1.0.4': 'test deprecation notice',
+                    '2.22.0': 'test deprecation notice',
+                    '3.1.0': 'test deprecation notice'
+                }
             });
         });
     });
@@ -185,7 +203,7 @@ describe('Unit: Utils: version', function () {
         });
 
         it('returns null if no versions found', async function () {
-            loadVersions.resolves({all: []});
+            loadVersions.resolves({all: [], deprecations: {}});
             const result = await resolveVersion();
 
             expect(result).to.be.null;
@@ -198,7 +216,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.0.0',
                     v2: '2.0.0'
                 },
-                all: ['2.0.0', '1.0.0']
+                all: ['2.0.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion(null, null, {v1: true});
@@ -212,7 +231,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.0.0',
                     v2: '2.0.0'
                 },
-                all: ['2.0.0', '1.0.0']
+                all: ['2.0.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion();
@@ -226,7 +246,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.0.0',
                     v2: '2.2.0'
                 },
-                all: ['2.2.0', '2.1.0', '2.0.0', '1.0.0']
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion('2.0.0');
@@ -240,7 +261,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.1.0',
                     v2: '2.2.0'
                 },
-                all: ['2.2.0', '2.1.0', '2.0.0', '1.1.0', '1.0.0']
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.1.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion('1');
@@ -254,7 +276,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.1.0',
                     v2: '2.2.0'
                 },
-                all: ['2.2.0', '2.1.0', '2.0.0', '1.1.0', '1.0.0']
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.1.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion('v2');
@@ -268,7 +291,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.0.0',
                     v2: '2.2.0'
                 },
-                all: ['2.2.0', '2.1.0', '2.0.0', '1.0.0']
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion(null, '2.0.0');
@@ -282,7 +306,8 @@ describe('Unit: Utils: version', function () {
                     v1: '1.0.0',
                     v2: '2.2.0'
                 },
-                all: ['2.2.0', '2.1.0', '2.0.0', '1.0.0']
+                all: ['2.2.0', '2.1.0', '2.0.0', '1.0.0'],
+                deprecations: {}
             });
 
             const result = await resolveVersion('2.1.0', '2.0.0');

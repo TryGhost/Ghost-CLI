@@ -275,11 +275,11 @@ describe('Unit: Commands > Install', function () {
             });
 
             const testInstance = new InstallCommand({}, {});
-            const context = {argv: {version: '1.0.0', v1: false}};
+            const context = {argv: {version: '1.0.0', v1: false, force: false}};
 
             await testInstance.version(context);
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false})).to.be.true;
+            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false})).to.be.true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
         });
@@ -337,7 +337,7 @@ describe('Unit: Commands > Install', function () {
             const context = {argv: {version: '2.0.0', fromExport: 'test-export.json'}, ui: {log}};
 
             await testInstance.version(context);
-            expect(resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined})).to.be.true;
+            expect(resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined, force: undefined})).to.be.true;
             expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
@@ -357,7 +357,7 @@ describe('Unit: Commands > Install', function () {
             const context = {argv: {fromExport: 'test-export.json'}, ui: {log}};
 
             await testInstance.version(context);
-            expect(resolveVersion.calledOnceWithExactly('2.0.0', null, {v1: undefined})).to.be.true;
+            expect(resolveVersion.calledOnceWithExactly('2.0.0', null, {v1: undefined, force: undefined})).to.be.true;
             expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
             expect(context.version).to.equal('2.0.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/2.0.0'));
@@ -381,7 +381,7 @@ describe('Unit: Commands > Install', function () {
             } catch (error) {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.include('v3.0.0 into v2.0.0');
-                expect(resolveVersion.calledOnceWithExactly('v2', null, {v1: undefined})).to.be.true;
+                expect(resolveVersion.calledOnceWithExactly('v2', null, {v1: undefined, force: undefined})).to.be.true;
                 expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
                 expect(log.called).to.be.false;
                 return;
