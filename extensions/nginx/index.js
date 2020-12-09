@@ -172,7 +172,7 @@ class NginxExtension extends Extension {
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: () => fs.existsSync(dhparamFile),
-            task: errorWrapper(() => this.ui.sudo(`openssl dhparam -out ${dhparamFile} 2048`))
+            task: errorWrapper(() => this.ui.sudo(`openssl dhparam -dsaparam -out ${dhparamFile} 2048`))
         }, {
             title: 'Generating SSL security headers',
             skip: () => fs.existsSync(sslParamsFile),
