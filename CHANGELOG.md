@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.15.3"></a>
+## [1.15.3](https://github.com/TryGhost/Ghost-CLI/compare/1.15.2...1.15.3) (2020-12-10)
+
+
+### Bug Fixes
+
+* **notes:** add 5 second timeout for release notes call ([#1355](https://github.com/TryGhost/Ghost-CLI/issues/1355)) ([5edae63](https://github.com/TryGhost/Ghost-CLI/commit/5edae63))
+* **ssl:** update dhparam generation parameters ([#1354](https://github.com/TryGhost/Ghost-CLI/issues/1354)) ([2862388](https://github.com/TryGhost/Ghost-CLI/commit/2862388))
+
+
+### Features
+
+* **update:** display release notes when updating Ghost ([898a762](https://github.com/TryGhost/Ghost-CLI/commit/898a762))
+* **version:** add handling for deprecated Ghost versions ([5da2252](https://github.com/TryGhost/Ghost-CLI/commit/5da2252))
+
+
+
 <a name="1.15.2"></a>
 ## [1.15.2](https://github.com/TryGhost/Ghost-CLI/compare/1.15.1...1.15.2) (2020-11-03)
 
