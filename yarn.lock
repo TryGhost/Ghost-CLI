@@ -4799,10 +4799,10 @@ table@^6.0.4:
     slice-ansi "^4.0.0"
     string-width "^4.2.0"
 
-tail@2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/tail/-/tail-2.0.4.tgz#4824de583004df17606d04854aa3cc3491b17010"
-  integrity sha512-xHkZdNWIzO++g+V/rHGqVoHd2LRxz+8t8bj6FGelfb8FHBjg5yjkX7Su/8sQSBo5alIspYkRp/fU0A2SM5h+5A==
+tail@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/tail/-/tail-2.1.0.tgz#7e61885e59953f3c6b39adfa9b1984e4970abb8c"
+  integrity sha512-2Evooz7G1rpOfjVauh0S+9YEfa4VUUaZpQc5BDgYlhEcSBTmWB58wAaup6gd221mZ2c2BDvjLRpP5xvzcXP3qQ==
 
 tar-stream@^1.5.2:
   version "1.6.2"
