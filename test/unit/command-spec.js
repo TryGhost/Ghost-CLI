@@ -241,6 +241,30 @@ describe('Unit: Command', function () {
             }
         });
 
+        it('doesn\'t check for root when --allow-root is passed', async function () {
+            const checkRootUserStub = sinon.stub().throws('let them be freeee');
+            class ShortCircuit {
+                constructor() {
+                    throw new Error('you shall not pass');
+                }
+            }
+            const Command = proxyquire(modulePath, {
+                './utils/check-root-user': checkRootUserStub,
+                './system': ShortCircuit
+            });
+
+            const TestCommand = class extends Command {};
+            TestCommand.global = true;
+
+            try {
+                await TestCommand._run('test', {dir: '.', allowRoot: true});
+            } catch (e) {
+                expect(e).to.exist;
+                expect(e.message).to.equal('you shall not pass');
+                expect(checkRootUserStub.calledOnce).to.be.false;
+            }
+        });
+
         it('Changes directory if needed', async function () {
             sinon.stub(process, 'exit').throws(new Error('exit_stub'));
             const outStub = sinon.stub(process.stderr, 'write');
