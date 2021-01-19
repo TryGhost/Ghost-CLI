@@ -15,8 +15,8 @@
 ## Documentation
 
 - [Complete Setup Guide](https://ghost.org/docs/install/ubuntu/)
-- [Command Reference](https://ghost.org/docs/api/ghost-cli/)
-- [Knowledgebase](https://ghost.org/docs/api/ghost-cli/knowledgebase/)
+- [Command Reference](https://ghost.org/docs/ghost-cli/)
+- [Knowledgebase](https://ghost.org/docs/ghost-cli/#knowledgebase)
 - [Forum](https://forum.ghost.org)
 
 ## Project Goals
@@ -51,7 +51,7 @@ The secondary focus is on improving the CLI itself. We want to ensure that the U
 
 We aren't able to provide support in GitHub, but we do keep track of common issues with the `known-issue` label and regularly update documentation & error messages to be clearer.
 
-The documentation for Ghost-CLI can be found at https://ghost.org/docs/api/ghost-cli/. Community support can be found in our [forum](https://forum.ghost.org).
+The documentation for Ghost-CLI can be found at https://ghost.org/docs/ghost-cli/. Community support can be found in our [forum](https://forum.ghost.org).
 
 
 ## Developer Setup (for contributing)

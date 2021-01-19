@@ -37,7 +37,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('downloads acme.sh', function () {
-            const dwUrl = 'https://ghost.org/download';
+            const dwUrl = 'https://ghost.org/docs/install/';
             const fakeResponse = {
                 body: JSON.stringify({tarball_url: dwUrl}),
                 statusCode: 200
