@@ -876,14 +876,15 @@ describe('Unit: Commands > Update', function () {
                 force: false,
                 version: null,
                 activeVersion: '1.0.0',
-                v1: true
+                v1: true,
+                instance: {channel: 'stable'}
             };
             sinon.stub(process, 'cwd').returns('/var/www/ghost');
 
             const result = await instance.version(context);
             expect(result).to.be.true;
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: true, force: false})).to.be.true;
+            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: true, force: false, channel: 'stable'})).to.be.true;
             expect(context.version).to.equal('1.0.1');
             expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
         });
@@ -925,13 +926,14 @@ describe('Unit: Commands > Update', function () {
                 force: true,
                 version: null,
                 activeVersion: '1.0.0',
-                v1: false
+                v1: false,
+                instance: {channel: 'stable'}
             };
 
             const result = await instance.version(context);
             expect(result).to.be.false;
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: false, force: true})).to.be.true;
+            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: false, force: true, channel: 'stable'})).to.be.true;
         });
     });
 

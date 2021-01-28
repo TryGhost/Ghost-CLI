@@ -275,11 +275,27 @@ describe('Unit: Commands > Install', function () {
             });
 
             const testInstance = new InstallCommand({}, {});
-            const context = {argv: {version: '1.0.0', v1: false, force: false}};
+            const context = {argv: {version: '1.0.0', v1: false, force: false, channel: 'stable'}};
 
             await testInstance.version(context);
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false})).to.be.true;
+            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false, channel: 'stable'})).to.be.true;
+            expect(context.version).to.equal('1.5.0');
+            expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
+        });
+
+        it('calls resolveVersion, sets version and install path (prereleases)', async function () {
+            const resolveVersion = sinon.stub().resolves('1.5.0');
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/version': {resolveVersion}
+            });
+
+            const testInstance = new InstallCommand({}, {});
+            const context = {argv: {version: '1.0.0', v1: false, force: false, channel: 'next'}};
+
+            await testInstance.version(context);
+            expect(resolveVersion.calledOnce).to.be.true;
+            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false, channel: 'next'})).to.be.true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
         });
@@ -337,7 +353,7 @@ describe('Unit: Commands > Install', function () {
             const context = {argv: {version: '2.0.0', fromExport: 'test-export.json'}, ui: {log}};
 
             await testInstance.version(context);
-            expect(resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined, force: undefined})).to.be.true;
+            expect(resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined, force: undefined, channel: undefined})).to.be.true;
             expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
@@ -357,7 +373,7 @@ describe('Unit: Commands > Install', function () {
             const context = {argv: {fromExport: 'test-export.json'}, ui: {log}};
 
             await testInstance.version(context);
-            expect(resolveVersion.calledOnceWithExactly('2.0.0', null, {v1: undefined, force: undefined})).to.be.true;
+            expect(resolveVersion.calledOnceWithExactly('2.0.0', null, {v1: undefined, force: undefined, channel: undefined})).to.be.true;
             expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
             expect(context.version).to.equal('2.0.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/2.0.0'));
@@ -381,7 +397,7 @@ describe('Unit: Commands > Install', function () {
             } catch (error) {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.include('v3.0.0 into v2.0.0');
-                expect(resolveVersion.calledOnceWithExactly('v2', null, {v1: undefined, force: undefined})).to.be.true;
+                expect(resolveVersion.calledOnceWithExactly('v2', null, {v1: undefined, force: undefined, channel: undefined})).to.be.true;
                 expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
                 expect(log.called).to.be.false;
                 return;
@@ -421,13 +437,36 @@ describe('Unit: Commands > Install', function () {
 
             const testInstance = new InstallCommand({}, {getInstance: getInstanceStub, cliVersion: '1.0.0'});
 
-            testInstance.link({version: '1.5.0', installPath: '/some/dir/1.5.0'});
+            testInstance.link({version: '1.5.0', installPath: '/some/dir/1.5.0', argv: {}});
             expect(symlinkSyncStub.calledOnce).to.be.true;
             expect(symlinkSyncStub.calledWithExactly('/some/dir/1.5.0', path.join(process.cwd(), 'current')));
             expect(getInstanceStub.calledOnce).to.be.true;
             expect(config).to.deep.equal({
                 version: '1.5.0',
-                cliVersion: '1.0.0'
+                cliVersion: '1.0.0',
+                channel: 'stable'
+            });
+        });
+
+        it('creates current link and updates versions (using channel = next)', function () {
+            const symlinkSyncStub = sinon.stub();
+            const config = {};
+            const getInstanceStub = sinon.stub().returns(config);
+
+            const InstallCommand = proxyquire(modulePath, {
+                'symlink-or-copy': {sync: symlinkSyncStub}
+            });
+
+            const testInstance = new InstallCommand({}, {getInstance: getInstanceStub, cliVersion: '1.0.0'});
+
+            testInstance.link({version: '1.5.0', installPath: '/some/dir/1.5.0', argv: {channel: 'next'}});
+            expect(symlinkSyncStub.calledOnce).to.be.true;
+            expect(symlinkSyncStub.calledWithExactly('/some/dir/1.5.0', path.join(process.cwd(), 'current')));
+            expect(getInstanceStub.calledOnce).to.be.true;
+            expect(config).to.deep.equal({
+                version: '1.5.0',
+                cliVersion: '1.0.0',
+                channel: 'next'
             });
         });
     });

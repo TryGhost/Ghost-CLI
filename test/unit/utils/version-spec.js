@@ -46,7 +46,7 @@ describe('Unit: Utils: version', function () {
 
         it('returns correct all versions/latest versions, sorted desc', async function () {
             const loadVersions = stub(
-                ['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0', '3.1.0'],
+                ['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0', '3.1.0', '4.0.0-rc.1'],
                 ['1.0.4', '2.22.0', '3.1.0']
             );
             const result = await loadVersions();
@@ -59,6 +59,30 @@ describe('Unit: Utils: version', function () {
                     v3: '3.0.0'
                 },
                 all: ['3.1.0', '3.0.0', '2.22.0', '2.1.0', '2.0.0', '1.0.4', '1.0.3', '1.0.2', '1.0.1', '1.0.0'],
+                deprecations: {
+                    '1.0.4': 'test deprecation notice',
+                    '2.22.0': 'test deprecation notice',
+                    '3.1.0': 'test deprecation notice'
+                }
+            });
+        });
+
+        it('includes prereleases if requested', async function () {
+            const loadVersions = stub(
+                ['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0', '3.1.0', '4.0.0-rc.1'],
+                ['1.0.4', '2.22.0', '3.1.0']
+            );
+            const result = await loadVersions(true);
+
+            expect(result).to.deep.equal({
+                latest: '4.0.0-rc.1',
+                latestMajor: {
+                    v1: '1.0.3',
+                    v2: '2.1.0',
+                    v3: '3.0.0',
+                    v4: '4.0.0-rc.1'
+                },
+                all: ['4.0.0-rc.1', '3.1.0', '3.0.0', '2.22.0', '2.1.0', '2.0.0', '1.0.4', '1.0.3', '1.0.2', '1.0.1', '1.0.0'],
                 deprecations: {
                     '1.0.4': 'test deprecation notice',
                     '2.22.0': 'test deprecation notice',
