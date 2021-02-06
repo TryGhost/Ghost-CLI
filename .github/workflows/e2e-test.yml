@@ -16,8 +16,8 @@ jobs:
         password: [root]
         node: [12.x]
     steps:
-      - name: Installing nginx
-        run: sudo apt-get update && sudo apt-get install -y nginx
+      - name: Start nginx
+        run: sudo service nginx start
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
       - uses: actions/checkout@v2
