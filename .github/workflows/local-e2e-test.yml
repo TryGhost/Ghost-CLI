@@ -25,6 +25,9 @@ jobs:
         run: yarn --cwd cli install --frozen-lockfile
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
+      - name: Setting up v4 Ghost instance
+        if: matrix.os == 'ubuntu-latest'
+        run: node ./cli/bin/ghost install local --channel=next -d ghost-next
       - name: Verifying Installation
         run: curl http://localhost:2368 | grep ghost
 
