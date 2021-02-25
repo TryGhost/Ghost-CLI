@@ -159,7 +159,7 @@ describe('Unit: Commands > Run', function () {
         const errorStub = sinon.stub();
         const exitStub = sinon.stub(process, 'exit');
 
-        instance.useDirect({dir: '/var/www/ghost', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
+        instance.useDirect({dir: '/var/www/ghost', version: '3.0.0', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
 
         expect(spawnStub.calledOnce).to.be.true;
         expect(spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
@@ -200,6 +200,62 @@ describe('Unit: Commands > Run', function () {
                 done(e);
             }
         }, 2000);
+    });
+
+    it('useDirect spawns child process and handles events correctly (v4+)', async function () {
+        this.timeout(10000);
+
+        const childStub = new EventEmitter();
+        childStub.stderr = getReadableStream();
+
+        const spawnStub = sinon.stub().returns(childStub);
+        const RunCommand = proxyquire(modulePath, {
+            child_process: {spawn: spawnStub}
+        });
+        const instance = new RunCommand({}, {});
+        const successStub = sinon.stub();
+        const errorStub = sinon.stub();
+
+        instance.useDirect({dir: '/var/www/ghost', version: '4.0.0', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
+
+        expect(spawnStub.calledOnce).to.be.true;
+        expect(spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
+            cwd: '/var/www/ghost',
+            stdio: [0, 1, 'pipe', 'ipc']
+        })).to.be.true;
+        expect(instance.child).to.equal(childStub);
+
+        // Check error prior to started
+        expect(successStub.called).to.be.false;
+        expect(errorStub.called).to.be.false;
+        childStub.emit('message', {error: {message: 'test error'}});
+        await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+        });
+        expect(successStub.called).to.be.false;
+        expect(errorStub.calledOnceWithExactly({message: 'test error'}));
+
+        errorStub.reset();
+
+        // emit started message
+        childStub.emit('message', {started: true});
+        expect(successStub.called).to.be.false;
+        expect(errorStub.called).to.be.false;
+
+        // check error after started
+        childStub.emit('message', {error: {message: 'test error'}});
+        await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+        });
+        expect(successStub.called).to.be.false;
+        expect(errorStub.calledOnceWithExactly({message: 'Ghost was able to start, but errored during boot with: test error'}));
+
+        errorStub.reset();
+
+        // finally, check ready event
+        childStub.emit('message', {ready: true});
+        expect(successStub.calledOnce).to.be.true;
+        expect(errorStub.called).to.be.false;
     });
 
     describe('cleanup handler', function () {
