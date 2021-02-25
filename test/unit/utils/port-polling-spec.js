@@ -64,6 +64,49 @@ describe('Unit: Utils > portPolling', function () {
             });
         });
 
+        it('Ghost does start, v4', function () {
+            const netStub = sinon.stub();
+            const socketStub = sinon.stub();
+
+            socketStub.on = sinon.stub().callsFake((event, cb) => {
+                if (event === 'data') {
+                    cb(JSON.stringify({started: true}));
+                    cb(JSON.stringify({ready: true}));
+                }
+            });
+
+            socketStub.destroy = sinon.stub();
+
+            netStub.listen = sinon.stub();
+            netStub.close = sinon.stub().callsFake((cb) => {
+                cb();
+            });
+
+            sinon.stub(net, 'createServer').callsFake((fn) => {
+                setTimeout(() => {
+                    fn(socketStub);
+                }, 100);
+
+                return netStub;
+            });
+
+            return portPolling({
+                netServerTimeoutInMS: 1000,
+                useNetServer: true,
+                useV4Boot: true
+            }).then(() => {
+                expect(net.createServer.calledOnce).to.be.true;
+                expect(netStub.listen.callCount).to.eql(1);
+                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                expect(netStub.close.callCount).to.eql(1);
+
+                expect(socketStub.destroy.callCount).to.eql(1);
+                expect(socketStub.on.callCount).to.eql(1);
+            }).catch((err) => {
+                throw err;
+            });
+        });
+
         it('Ghost didn\'t start', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
@@ -96,6 +139,50 @@ describe('Unit: Utils > portPolling', function () {
                 expect('1').to.equal(1, 'Ghost should not start.');
             }).catch((err) => {
                 expect(err.message).to.eql('Syntax Error');
+                expect(net.createServer.calledOnce).to.be.true;
+                expect(netStub.listen.calledOnce).to.be.true;
+                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                expect(netStub.close.callCount).to.eql(1);
+
+                expect(socketStub.destroy.callCount).to.eql(1);
+                expect(socketStub.on.callCount).to.eql(1);
+            });
+        });
+
+        it('Ghost didn\'t start, v4', function () {
+            const netStub = sinon.stub();
+            const socketStub = sinon.stub();
+
+            socketStub.on = sinon.stub().callsFake((event, cb) => {
+                if (event === 'data') {
+                    cb(JSON.stringify({started: true}));
+                    cb(JSON.stringify({false: true, error: {message: 'Syntax Error'}}));
+                }
+            });
+
+            socketStub.destroy = sinon.stub();
+
+            netStub.listen = sinon.stub();
+            netStub.close = sinon.stub().callsFake((cb) => {
+                cb();
+            });
+
+            sinon.stub(net, 'createServer').callsFake((fn) => {
+                setTimeout(() => {
+                    fn(socketStub);
+                }, 100);
+
+                return netStub;
+            });
+
+            return portPolling({
+                netServerTimeoutInMS: 1000,
+                useNetServer: true,
+                useV4Boot: true
+            }).then(() => {
+                expect('1').to.equal(1, 'Ghost should not start.');
+            }).catch((err) => {
+                expect(err.message).to.eql('Ghost was able to start, but errored during boot with: Syntax Error');
                 expect(net.createServer.calledOnce).to.be.true;
                 expect(netStub.listen.calledOnce).to.be.true;
                 expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
