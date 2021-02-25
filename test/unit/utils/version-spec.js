@@ -189,10 +189,22 @@ describe('Unit: Utils: version', function () {
 
         it('throws if upgrading major versions from v1', function () {
             try {
-                checkActiveVersion('1.0.0', '3.0.0');
+                checkActiveVersion('1.0.0', '3.0.0', {v1: '1.5.0'});
             } catch (error) {
                 expect(error).to.be.an.instanceof(CliError);
-                expect(error.message).to.contain('not on the latest Ghost 1.0');
+                expect(error.message).to.contain('You must be on the latest v1.x');
+                return;
+            }
+
+            expect.fail('expected an error to be thrown');
+        });
+
+        it('throws if upgrading major versions from not latest v2', function () {
+            try {
+                checkActiveVersion('2.0.0', '3.0.0', {v2: '2.5.0'});
+            } catch (error) {
+                expect(error).to.be.an.instanceof(CliError);
+                expect(error.message).to.contain('You must be on the latest v2.x');
                 return;
             }
 
@@ -200,17 +212,22 @@ describe('Unit: Utils: version', function () {
         });
 
         it('allows upgrading from v1 if on latest v1', function () {
-            const result = checkActiveVersion('1.0.0', '2.0.0', '1.0.0');
+            const result = checkActiveVersion('1.0.0', '2.0.0', {v1: '1.0.0'});
             expect(result).to.equal('2.0.0');
         });
 
+        it('allows upgrading from v2 if on latest v2', function () {
+            const result = checkActiveVersion('2.0.0', '3.0.0', {v2: '2.0.0'});
+            expect(result).to.equal('3.0.0');
+        });
+
         it('returns version if active === latest and --force is supplied', function () {
-            const result = checkActiveVersion('3.0.0', '3.0.0', '1.0.0', {force: true});
+            const result = checkActiveVersion('3.0.0', '3.0.0', {v3: '1.0.0'}, {force: true});
             expect(result).to.equal('3.0.0');
         });
 
         it('returns latest if checks pass', function () {
-            const result = checkActiveVersion('2.0.0', '3.0.0');
+            const result = checkActiveVersion('2.0.0', '3.0.0', {v2: '2.0.0'});
             expect(result).to.equal('3.0.0');
         });
     });
