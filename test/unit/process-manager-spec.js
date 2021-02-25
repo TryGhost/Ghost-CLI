@@ -71,7 +71,8 @@ describe('Unit: Process Manager', function () {
                     stopOnError: true,
                     port: 2368,
                     host: '10.0.1.0',
-                    useNetServer: false
+                    useNetServer: false,
+                    useV4Boot: false
                 })).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
@@ -96,7 +97,8 @@ describe('Unit: Process Manager', function () {
                     stopOnError: false,
                     port: 2368,
                     host: 'localhost',
-                    useNetServer: false
+                    useNetServer: false,
+                    useV4Boot: false
                 })).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
@@ -122,7 +124,8 @@ describe('Unit: Process Manager', function () {
                     stopOnError: true,
                     port: 2368,
                     host: 'localhost',
-                    useNetServer: false
+                    useNetServer: false,
+                    useV4Boot: false
                 })).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
             });
@@ -148,7 +151,8 @@ describe('Unit: Process Manager', function () {
                     stopOnError: true,
                     port: 2368,
                     host: 'localhost',
-                    useNetServer: false
+                    useNetServer: false,
+                    useV4Boot: false
                 })).to.be.true;
                 expect(stopStub.calledOnce).to.be.true;
             });
