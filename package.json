@@ -94,7 +94,7 @@
     "coveralls": "3.1.0",
     "eslint": "7.20.0",
     "eslint-plugin-ghost": "2.0.0",
-    "has-ansi": "4.0.0",
+    "has-ansi": "4.0.1",
     "mocha": "8.3.0",
     "nock": "13.0.8",
     "nyc": "15.1.0",
