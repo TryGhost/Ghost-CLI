@@ -1,4 +1,3 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
@@ -6,15 +5,11 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../../lib/command';
 
 describe('Unit: Command', function () {
-    let oldEnv;
-
-    beforeEach(() => {
-        oldEnv = process.env.NODE_ENV;
-    });
+    const originalEnv = process.env.NODE_ENV;
 
     afterEach(() => {
         sinon.restore();
-        process.env.NODE_ENV = oldEnv;
+        process.env.NODE_ENV = originalEnv;
     });
 
     describe('configure', function () {
@@ -338,7 +333,7 @@ describe('Unit: Command', function () {
                 auto: false
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
@@ -385,7 +380,7 @@ describe('Unit: Command', function () {
                 auto: true
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledOnce).to.be.true;
@@ -435,7 +430,7 @@ describe('Unit: Command', function () {
                 auto: false
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
@@ -486,7 +481,7 @@ describe('Unit: Command', function () {
                 auto: false
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('production', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({error: errorStub, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;

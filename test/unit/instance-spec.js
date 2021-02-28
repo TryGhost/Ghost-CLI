@@ -480,7 +480,7 @@ describe('Unit: Instance', function () {
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/Found a development config/);
             expect(environmentStub.calledOnce).to.be.true;
-            expect(environmentStub.args[0]).to.deep.equal([true, true]);
+            expect(environmentStub.args[0]).to.deep.equal(['development', true]);
             expect(existsStub.calledTwice).to.be.true;
         });
     });
@@ -511,7 +511,7 @@ describe('Unit: Instance', function () {
             testInstance.loadRunningEnvironment(false);
             expect(getStub.calledOnce).to.be.true;
             expect(envStub.calledOnce).to.be.true;
-            expect(envStub.args[0]).to.deep.equal([true, false]);
+            expect(envStub.args[0]).to.deep.equal(['development', false]);
         });
     });
 
