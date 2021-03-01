@@ -100,7 +100,7 @@ describe('Unit: Utils > portPolling', function () {
                 expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
                 expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(1);
+                expect(socketStub.destroy.callCount).to.eql(2);
                 expect(socketStub.on.callCount).to.eql(1);
             }).catch((err) => {
                 throw err;
@@ -188,7 +188,7 @@ describe('Unit: Utils > portPolling', function () {
                 expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
                 expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(1);
+                expect(socketStub.destroy.callCount).to.eql(2);
                 expect(socketStub.on.callCount).to.eql(1);
             });
         });
