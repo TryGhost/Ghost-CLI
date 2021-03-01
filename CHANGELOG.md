@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.16.0"></a>
+# [1.16.0](https://github.com/TryGhost/Ghost-CLI/compare/1.15.3...1.16.0) (2021-03-01)
+
+
+### Bug Fixes
+
+* **install:** allow specifying release channel in prod ([ae12f71](https://github.com/TryGhost/Ghost-CLI/commit/ae12f71))
+* **polling:** ensure socket is closed after v4 started event ([ee8f9e1](https://github.com/TryGhost/Ghost-CLI/commit/ee8f9e1))
+* **version:** add premajor to update version diff check ([95266f2](https://github.com/TryGhost/Ghost-CLI/commit/95266f2))
+
+
+### Features
+
+* **boot:** handle v4 boot events in port-polling util ([49f7a37](https://github.com/TryGhost/Ghost-CLI/commit/49f7a37))
+* **channel:** add ability to specify release channel for local installs ([29848c0](https://github.com/TryGhost/Ghost-CLI/commit/29848c0))
+* **config:** remind user to restart ghost after making changes ([#1382](https://github.com/TryGhost/Ghost-CLI/issues/1382)) ([5a7465c](https://github.com/TryGhost/Ghost-CLI/commit/5a7465c))
+* **local:** handle v4 boot events in local process manager ([156c67a](https://github.com/TryGhost/Ghost-CLI/commit/156c67a))
+* **root:** allow --allow-root to disable root user check ([#1374](https://github.com/TryGhost/Ghost-CLI/issues/1374)) ([0ce7099](https://github.com/TryGhost/Ghost-CLI/commit/0ce7099))
+* **version:** expand v1 update policy to cover all versions ([aed312c](https://github.com/TryGhost/Ghost-CLI/commit/aed312c))
+
+
+
 <a name="1.15.3"></a>
 ## [1.15.3](https://github.com/TryGhost/Ghost-CLI/compare/1.15.2...1.15.3) (2020-12-10)
 
