@@ -379,37 +379,25 @@ describe('Unit: Instance', function () {
     });
 
     describe('checkEnvironment', function () {
-        it('doesn\'t do anything if environment is not production', function () {
+        it('does nothing if current environment config exists', function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
-            const testInstance = new Instance({log: logStub}, {
-                setEnvironment: environmentStub,
-                production: false,
-                environment: 'development'
-            }, '');
-
-            testInstance.checkEnvironment();
-            expect(logStub.called).to.be.false;
-            expect(environmentStub.called).to.be.false;
-        });
-
-        it('doesn\'t do anything if config.development.json doesn\'t exist', function () {
-            const logStub = sinon.stub();
-            const environmentStub = sinon.stub();
-            const existsStub = sinon.stub(Config, 'exists').withArgs('/path/config.development.json').returns(false);
             const testInstance = new Instance({log: logStub}, {
                 setEnvironment: environmentStub,
                 production: true,
-                environment: 'production'
+                environment: 'mysql'
             }, '/path');
 
+            const existsStub = sinon.stub(Config, 'exists');
+            existsStub.withArgs('/path/config.mysql.json').returns(true);
+
             testInstance.checkEnvironment();
+
             expect(logStub.called).to.be.false;
             expect(environmentStub.called).to.be.false;
-            expect(existsStub.calledOnce).to.be.true;
         });
 
-        it('logs and sets environment if not production, config.dev exists, and config.production doesn\'t exist', function () {
+        it('logs and sets environment if development (but not prod) config exists when in prod', function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
             const testInstance = new Instance({log: logStub}, {
@@ -429,6 +417,29 @@ describe('Unit: Instance', function () {
             expect(environmentStub.calledOnce).to.be.true;
             expect(environmentStub.args[0]).to.deep.equal(['development', true]);
             expect(existsStub.calledTwice).to.be.true;
+        });
+
+        it('fails if there is no valid config available', function () {
+            const logStub = sinon.stub();
+            const environmentStub = sinon.stub();
+            const testInstance = new Instance({log: logStub}, {
+                setEnvironment: environmentStub,
+                production: true,
+                environment: 'mysql'
+            }, '/path');
+
+            const existsStub = sinon.stub(Config, 'exists');
+            existsStub.withArgs('/path/config.development.json').returns(true);
+            existsStub.withArgs('/path/config.mysql.json').returns(false);
+
+            try {
+                testInstance.checkEnvironment();
+                throw new Error('Expected checkEnvironment to throw an error');
+            } catch (error) {
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.contain('does not exist').and.to.contain('mysql.json');
+                expect(error.message).to.equal('Missing environment configuration file');
+            }
         });
     });
 
