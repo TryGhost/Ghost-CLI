@@ -139,8 +139,6 @@ describe('Unit: System', function () {
             systemInstance.setEnvironment('development');
 
             expect(systemInstance.environment).to.equal('development');
-            expect(systemInstance.development).to.be.true;
-            expect(systemInstance.production).to.be.false;
             expect(process.env.NODE_ENV).to.equal('testing'); // node env is unchanged
 
             process.env.NODE_ENV = currentNodeEnv;
@@ -156,8 +154,6 @@ describe('Unit: System', function () {
             systemInstance.setEnvironment('production');
 
             expect(systemInstance.environment).to.equal('production');
-            expect(systemInstance.development).to.be.false;
-            expect(systemInstance.production).to.be.true;
             expect(process.env.NODE_ENV).to.equal('testing'); // node env is unchanged
 
             process.env.NODE_ENV = currentNodeEnv;
@@ -173,8 +169,6 @@ describe('Unit: System', function () {
             systemInstance.setEnvironment('development', true);
 
             expect(systemInstance.environment).to.equal('development');
-            expect(systemInstance.development).to.be.true;
-            expect(systemInstance.production).to.be.false;
             expect(process.env.NODE_ENV).to.equal('development');
 
             process.env.NODE_ENV = currentNodeEnv;
