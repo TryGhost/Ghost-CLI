@@ -211,6 +211,18 @@ describe('Unit: Utils: version', function () {
             expect.fail('expected an error to be thrown');
         });
 
+        it('throws if upgrading premajor versions from not latest v2', function () {
+            try {
+                checkActiveVersion('2.0.0', '4.0.0-alpha.3', {v2: '2.5.0'});
+            } catch (error) {
+                expect(error).to.be.an.instanceof(CliError);
+                expect(error.message).to.contain('You must be on the latest v2.x');
+                return;
+            }
+
+            expect.fail('expected an error to be thrown');
+        });
+
         it('allows upgrading from v1 if on latest v1', function () {
             const result = checkActiveVersion('1.0.0', '2.0.0', {v1: '1.0.0'});
             expect(result).to.equal('2.0.0');
