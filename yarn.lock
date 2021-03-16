@@ -4777,10 +4777,10 @@ symlink-or-copy@1.3.1:
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==
 
-systeminformation@5.6.2:
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.6.2.tgz#41980e6e523eaff09febc3f7e114c4fa0fa239dd"
-  integrity sha512-B+xKaftatny2HGt9RS9Pk7Rc2Ja5zvb9rRZEiG7mcnQF4KcP68RZz4Ff+V0iVwkqfSVJ/3CIvkG+an/PWwXvbg==
+systeminformation@5.6.7:
+  version "5.6.7"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.6.7.tgz#f56bbc89cac2de4bcb085b96a93b9d627bd6aba8"
+  integrity sha512-NTgaL6AsRoXKbfZs6t+BkCUwLZjqIiT4IwqGUV2f7PgvDz8359HzOF0xYgDlTHCBR2GeWhFQAfo2wmoYTpz/og==
 
 table@^5.2.3:
   version "5.4.6"
