@@ -48,7 +48,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         });
 
         await ui(ctx);
-        expect(ctx.ui.log.callCount).to.eql(4);
+        expect(ctx.ui.log.callCount).to.eql(5);
         expect(ctx.ui.confirm.calledOnce).to.be.true;
         expect(ctx.ui.confirm.args[0][1], 'confirm prompt default should be true').to.be.true;
     });
@@ -74,7 +74,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         });
 
         await ui(ctx);
-        expect(ctx.ui.log.callCount).to.eql(6);
+        expect(ctx.ui.log.callCount).to.eql(7);
         expect(ctx.ui.confirm.calledTwice).to.be.true;
         expect(ctx.ui.confirm.args[1][1], 'confirm prompt default should be false').to.be.false;
 
@@ -111,7 +111,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         });
 
         await ui(ctx);
-        expect(ctx.ui.log.callCount).to.eql(7);
+        expect(ctx.ui.log.callCount).to.eql(8);
         expect(ctx.ui.confirm.calledTwice).to.be.true;
         expect(ctx.ui.confirm.args[1][1], 'confirm prompt default should be false').to.be.false;
 
@@ -154,7 +154,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
             expect(err.message).to.match(/Update aborted/);
             expect(err.logMessageOnly).to.be.true;
 
-            expect(ctx.ui.log.callCount).to.eql(8);
+            expect(ctx.ui.log.callCount).to.eql(9);
             expect(ctx.ui.confirm.calledTwice).to.be.true;
 
             const output = stripAnsi(ctx.ui.log.args.join(' '));
@@ -203,7 +203,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
             expect(err.message).to.match(/Migration failed. Your theme has fatal errors/);
             expect(err.logMessageOnly).to.exist;
 
-            expect(ctx.ui.log.callCount).to.eql(9);
+            expect(ctx.ui.log.callCount).to.eql(10);
             expect(ctx.ui.confirm.calledOnce).to.be.true;
 
             const output = stripAnsi(ctx.ui.log.args.join(' '));
