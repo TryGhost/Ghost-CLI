@@ -6,9 +6,11 @@ const runTask = require('../../../lib/tasks/release-notes');
 
 const stubbedGithubResponseWithRelevantFields = () => [{
     tag_name: 'v4.0.1',
+    name: '4.0.1',
     body: '4.0.1 release notes'
 }, {
     tag_name: '3.42.2',
+    name: '3.42.2',
     body: '3.42.2 release notes'
 }];
 
@@ -27,7 +29,7 @@ describe('Unit: Tasks > Release Notes', function () {
 
         expect(stub.calledOnce).to.be.true;
         expect(task.title).to.equal('Fetched release notes');
-        expect(ui.log.args[0]).to.deep.equal(['\n3.42.2 release notes\n', 'green']);
+        expect(ui.log.args[0]).to.deep.equal(['\n# 3.42.2\n\n3.42.2 release notes\n', 'green']);
     });
 
     it('Discovers release for >= 4.x', async function () {
@@ -40,7 +42,7 @@ describe('Unit: Tasks > Release Notes', function () {
 
         expect(stub.calledOnce).to.be.true;
         expect(task.title).to.equal('Fetched release notes');
-        expect(ui.log.args[0]).to.deep.equal(['\n4.0.1 release notes\n', 'green']);
+        expect(ui.log.args[0]).to.deep.equal(['\n# 4.0.1\n\n4.0.1 release notes\n', 'green']);
     });
 
     it('Complains when there are no release notes', async function () {
