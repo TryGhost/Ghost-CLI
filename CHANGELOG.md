@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.16.2"></a>
+## [1.16.2](https://github.com/TryGhost/Ghost-CLI/compare/1.16.1...1.16.2) (2021-03-16)
+
+
+### Features
+
+* **ui:** add link to changes page in major-update task ([e5d5459](https://github.com/TryGhost/Ghost-CLI/commit/e5d5459))
+* **ui:** add release title to release notes output ([eac2bc4](https://github.com/TryGhost/Ghost-CLI/commit/eac2bc4))
+
+
+
 <a name="1.16.1"></a>
 ## [1.16.1](https://github.com/TryGhost/Ghost-CLI/compare/1.16.0...1.16.1) (2021-03-16)
 
