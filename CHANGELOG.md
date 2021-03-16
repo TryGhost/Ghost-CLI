@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.16.1"></a>
+## [1.16.1](https://github.com/TryGhost/Ghost-CLI/compare/1.16.0...1.16.1) (2021-03-16)
+
+
+### Bug Fixes
+
+* **release-notes:** add support for 4.x+ tag names ([881211b](https://github.com/TryGhost/Ghost-CLI/commit/881211b))
+
+
+### Performance Improvements
+
+* **release-notes:** prefer find() over filter()[0] ([ef47c8e](https://github.com/TryGhost/Ghost-CLI/commit/ef47c8e))
+
+
+
 <a name="1.16.0"></a>
 # [1.16.0](https://github.com/TryGhost/Ghost-CLI/compare/1.15.3...1.16.0) (2021-03-01)
 
