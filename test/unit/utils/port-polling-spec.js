@@ -26,6 +26,10 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost does start', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             socketStub.on = sinon.stub().callsFake((event, cb) => {
                 if (event === 'data') {
@@ -48,7 +52,7 @@ describe('Unit: Utils > portPolling', function () {
                 return netStub;
             });
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true
             }).then(() => {
@@ -67,6 +71,10 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost does start, v4', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             socketStub.on = sinon.stub().callsFake((event, cb) => {
                 if (event === 'data') {
@@ -90,7 +98,7 @@ describe('Unit: Utils > portPolling', function () {
                 return netStub;
             });
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true,
                 useV4Boot: true
@@ -110,6 +118,10 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost didn\'t start', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             socketStub.on = sinon.stub().callsFake((event, cb) => {
                 if (event === 'data') {
@@ -132,7 +144,7 @@ describe('Unit: Utils > portPolling', function () {
                 return netStub;
             });
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true
             }).then(() => {
@@ -152,6 +164,10 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost didn\'t start, v4', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             socketStub.on = sinon.stub().callsFake((event, cb) => {
                 if (event === 'data') {
@@ -175,7 +191,7 @@ describe('Unit: Utils > portPolling', function () {
                 return netStub;
             });
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true,
                 useV4Boot: true
@@ -196,6 +212,9 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost didn\'t start, invalid json', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub()
+            };
 
             socketStub.on = sinon.stub().callsFake((event, cb) => {
                 if (event === 'data') {
@@ -218,7 +237,7 @@ describe('Unit: Utils > portPolling', function () {
                 return netStub;
             });
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true
             }).then(() => {
@@ -238,6 +257,10 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost does not communicate, expect timeout', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             socketStub.on = sinon.stub();
             socketStub.destroy = sinon.stub();
@@ -249,7 +272,7 @@ describe('Unit: Utils > portPolling', function () {
 
             sinon.stub(net, 'createServer').callsFake(() => netStub);
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 500,
                 useNetServer: true
             }).then(() => {
@@ -269,6 +292,10 @@ describe('Unit: Utils > portPolling', function () {
         it('Ghost does not answer, expect timeout', function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             socketStub.on = sinon.stub();
             socketStub.destroy = sinon.stub();
@@ -286,7 +313,7 @@ describe('Unit: Utils > portPolling', function () {
                 return netStub;
             });
 
-            return portPolling({
+            return portPolling(ui, {
                 netServerTimeoutInMS: 500,
                 useNetServer: true
             }).then(() => {
@@ -307,6 +334,10 @@ describe('Unit: Utils > portPolling', function () {
     describe('useNetServer is disabled', function () {
         it('Ghost does never start', function () {
             const netStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             netStub.setTimeout = sinon.stub();
             netStub.destroy = sinon.stub();
@@ -318,7 +349,7 @@ describe('Unit: Utils > portPolling', function () {
 
             const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling({port: 1111, maxTries: 3, retryTimeoutInMS: 100})
+            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100})
                 .then(() => {
                     throw new Error('Expected error');
                 })
@@ -334,6 +365,10 @@ describe('Unit: Utils > portPolling', function () {
 
         it('Ghost does start, but falls over', function () {
             const netStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             netStub.setTimeout = sinon.stub();
             netStub.destroy = sinon.stub();
@@ -353,7 +388,7 @@ describe('Unit: Utils > portPolling', function () {
 
             const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling({port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '0.0.0.0'})
+            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '0.0.0.0'})
                 .then(() => {
                     throw new Error('Expected error');
                 })
@@ -369,6 +404,10 @@ describe('Unit: Utils > portPolling', function () {
 
         it('Ghost does start', function () {
             const netStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             netStub.setTimeout = sinon.stub();
             netStub.destroy = sinon.stub();
@@ -388,7 +427,7 @@ describe('Unit: Utils > portPolling', function () {
 
             const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling({port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '10.0.1.0'})
+            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '10.0.1.0'})
                 .then(() => {
                     expect(connectStub.calledTwice).to.be.true;
                     expect(connectStub.calledWithExactly(1111, '10.0.1.0'), 'uses custom host').to.be.true;
@@ -401,6 +440,10 @@ describe('Unit: Utils > portPolling', function () {
 
         it('Ghost does start, skip delay on connect', function () {
             const netStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             netStub.setTimeout = sinon.stub();
             netStub.destroy = sinon.stub();
@@ -415,7 +458,7 @@ describe('Unit: Utils > portPolling', function () {
 
             sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling({port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: false})
+            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: false})
                 .then(() => {
                     expect(netStub.destroy.callCount).to.eql(1);
                 })
@@ -426,6 +469,10 @@ describe('Unit: Utils > portPolling', function () {
 
         it('socket times out', function () {
             const netStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             netStub.setTimeout = sinon.stub();
             netStub.destroy = sinon.stub();
@@ -438,7 +485,7 @@ describe('Unit: Utils > portPolling', function () {
 
             sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling({port: 1111, maxTries: 3, retryTimeoutInMS: 100, socketTimeoutInMS: 300})
+            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, socketTimeoutInMS: 300})
                 .then(() => {
                     throw new Error('Expected error');
                 })
@@ -452,6 +499,10 @@ describe('Unit: Utils > portPolling', function () {
 
         it('Ghost connects, but socket times out kicks in', function () {
             const netStub = sinon.stub();
+            const ui = {
+                logVerbose: sinon.stub(),
+                log: sinon.stub()
+            };
 
             netStub.setTimeout = sinon.stub();
             netStub.destroy = sinon.stub();
@@ -471,7 +522,7 @@ describe('Unit: Utils > portPolling', function () {
 
             sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling({port: 1111, maxTries: 2, retryTimeoutInMS: 100, socketTimeoutInMS: 300})
+            return portPolling(ui, {port: 1111, maxTries: 2, retryTimeoutInMS: 100, socketTimeoutInMS: 300})
                 .then(() => {
                     throw new Error('Expected error');
                 })
