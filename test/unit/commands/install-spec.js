@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const Promise = require('bluebird');
 const path = require('path');
+const fs = require('fs-extra');
 
 const modulePath = '../../../lib/commands/install';
 const errors = require('../../../lib/errors');
@@ -32,6 +33,10 @@ describe('Unit: Commands > Install', function () {
     describe('run', function () {
         afterEach(() => {
             sinon.restore();
+        });
+
+        beforeEach(() => {
+            sinon.stub(fs, 'removeSync');
         });
 
         it('rejects if directory is not empty', function () {
