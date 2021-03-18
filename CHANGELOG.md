@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.16.3"></a>
+## [1.16.3](https://github.com/TryGhost/Ghost-CLI/compare/1.16.2...1.16.3) (2021-03-18)
+
+
+### Bug Fixes
+
+* **import:** ensure import/exports works with 4.x ([e9b95bc](https://github.com/TryGhost/Ghost-CLI/commit/e9b95bc))
+
+
+
 <a name="1.16.2"></a>
 ## [1.16.2](https://github.com/TryGhost/Ghost-CLI/compare/1.16.1...1.16.2) (2021-03-16)
 
