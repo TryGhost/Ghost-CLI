@@ -66,7 +66,7 @@ describe('Unit: Process Manager', function () {
             return instance.ensureStarted({logSuggestion: 'test'}).then(() => {
                 expect(portPollingStub.calledOnce).to.be.true;
                 expect(config.get.calledTwice).to.be.true;
-                expect(portPollingStub.calledWithExactly({
+                expect(portPollingStub.calledWithExactly({}, {
                     logSuggestion: 'test',
                     stopOnError: true,
                     port: 2368,
@@ -93,7 +93,7 @@ describe('Unit: Process Manager', function () {
             }).catch((err) => {
                 expect(err.message).to.equal('test error');
                 expect(portPollingStub.calledOnce).to.be.true;
-                expect(portPollingStub.calledWithExactly({
+                expect(portPollingStub.calledWithExactly({}, {
                     stopOnError: false,
                     port: 2368,
                     host: 'localhost',
@@ -120,7 +120,7 @@ describe('Unit: Process Manager', function () {
                 expect(err.message).to.equal('test error');
                 expect(config.get.calledTwice).to.be.true;
                 expect(portPollingStub.calledOnce).to.be.true;
-                expect(portPollingStub.calledWithExactly({
+                expect(portPollingStub.calledWithExactly({}, {
                     stopOnError: true,
                     port: 2368,
                     host: 'localhost',
@@ -147,7 +147,7 @@ describe('Unit: Process Manager', function () {
                 expect(err.message).to.equal('test error');
                 expect(config.get.calledTwice).to.be.true;
                 expect(portPollingStub.calledOnce).to.be.true;
-                expect(portPollingStub.calledWithExactly({
+                expect(portPollingStub.calledWithExactly({}, {
                     stopOnError: true,
                     port: 2368,
                     host: 'localhost',
