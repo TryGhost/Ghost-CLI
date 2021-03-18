@@ -26,6 +26,11 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(baseUrl).to.equal('https://example.com/ghost/api/v3/admin');
         });
 
+        it('4.x', function () {
+            const baseUrl = getBaseUrl('4.0.0', 'https://example.com/');
+            expect(baseUrl).to.equal('https://example.com/ghost/api/v4/admin');
+        });
+
         it('unsupported', function () {
             try {
                 getBaseUrl('0.11.14', 'https://example.com');
@@ -288,6 +293,36 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect.fail('runImport should have errored');
         });
+
+        it('4.x', async function () {
+            const sessionScope = nock(testUrl, {
+                reqheaders: {
+                    Origin: testUrl
+                }
+            }).post('/ghost/api/v4/admin/session/', {
+                username: 'test@example.com',
+                password: 'password'
+            }).reply(201, 'Success', {
+                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
+
+            const importScope = nock(testUrl, {
+                reqheaders: {
+                    cookie: [
+                        'ghost-admin-api-session=test-session-data'
+                    ],
+                    origin: testUrl
+                }
+            }).post('/ghost/api/v4/admin/db/').reply(201, {});
+
+            await runImport('4.0.0', 'http://localhost:2368', {
+                username: 'test@example.com',
+                password: 'password'
+            }, path.join(__dirname, 'fixtures/4.x.json'));
+
+            expect(sessionScope.isDone()).to.be.true;
+            expect(importScope.isDone()).to.be.true;
+        });
     });
 
     describe('downloadExport', function () {
@@ -429,6 +464,50 @@ describe('Unit > Tasks > Import > setup', function () {
             const outputFile = path.join(tmpDir.name, '3.x.json');
 
             await downloadExport('3.0.0', 'http://localhost:2368', {
+                username: 'test@example.com',
+                password: 'password'
+            }, outputFile);
+
+            expect(sessionScope.isDone()).to.be.true;
+            expect(exportScope.isDone()).to.be.true;
+            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+        });
+
+        it('4.x', async function () {
+            const sessionScope = nock(testUrl, {
+                reqheaders: {
+                    Origin: testUrl
+                }
+            }).post('/ghost/api/v4/admin/session/', {
+                username: 'test@example.com',
+                password: 'password'
+            }).reply(201, 'Success', {
+                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
+
+            const exportData = {
+                db: [{
+                    meta: {
+                        version: '4.0.0'
+                    },
+                    data: {
+                        users: []
+                    }
+                }]
+            };
+            const exportScope = nock(testUrl, {
+                reqheaders: {
+                    cookie: [
+                        'ghost-admin-api-session=test-session-data'
+                    ],
+                    origin: testUrl
+                }
+            }).get('/ghost/api/v4/admin/db/').reply(200, exportData);
+
+            const tmpDir = tmp.dirSync();
+            const outputFile = path.join(tmpDir.name, '4.x.json');
+
+            await downloadExport('4.0.0', 'http://localhost:2368', {
                 username: 'test@example.com',
                 password: 'password'
             }, outputFile);
