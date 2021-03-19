@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs-extra');
 const path = require('path');
 const template = require('lodash/template');
@@ -10,6 +8,11 @@ const {Extension, errors} = require('../../lib');
 const {ProcessError, SystemError} = errors;
 
 class SystemdExtension extends Extension {
+    doctor() {
+        const checks = require('./doctor');
+        return checks;
+    }
+
     setup() {
         return [{
             id: 'systemd',
