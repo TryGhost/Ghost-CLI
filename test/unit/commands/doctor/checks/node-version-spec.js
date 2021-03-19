@@ -1,4 +1,3 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const stripAnsi = require('strip-ansi');
@@ -37,7 +36,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             '../../../../package': cliPackage
         }).task;
 
-        return nodeVersion().then(() => {
+        return nodeVersion({}, {}).then(() => {
             expect(false, 'error should be thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.SystemError);
@@ -62,7 +61,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion({local: true}).then(() => {
+        return nodeVersion({local: true}, {}).then(() => {
             expect(checkDirectoryStub.called).to.be.false;
         });
     });
@@ -81,7 +80,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion({local: true}).then(() => {
+        return nodeVersion({local: true}, {}).then(() => {
             expect(checkDirectoryStub.called).to.be.false;
         });
     });
@@ -100,7 +99,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion({local: true}).then(() => {
+        return nodeVersion({local: true}, {}).then(() => {
             expect(checkDirectoryStub.called).to.be.false;
         });
     });
@@ -118,7 +117,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion({local: true}).then(() => {
+        return nodeVersion({local: true}, {}).then(() => {
             expect(checkDirectoryStub.called).to.be.false;
         });
     });
@@ -137,7 +136,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion(ctx).then(() => {
+        return nodeVersion(ctx, {}).then(() => {
             expect(checkDirectoryStub.called).to.be.false;
         });
     });
@@ -156,7 +155,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion(ctx).then(() => {
+        return nodeVersion(ctx, {}).then(() => {
             expect(checkDirectoryStub.called).to.be.false;
         });
     });
@@ -175,7 +174,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             './check-directory': checkDirectoryStub
         }).task;
 
-        return nodeVersion(ctx).then(() => {
+        return nodeVersion(ctx, {}).then(() => {
             expect(checkDirectoryStub.calledOnce).to.be.true;
             expect(checkDirectoryStub.calledWith(process.argv[0])).to.be.true;
         });
