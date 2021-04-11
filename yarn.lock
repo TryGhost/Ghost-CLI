@@ -4827,10 +4827,10 @@ table@^6.0.4:
     slice-ansi "^4.0.0"
     string-width "^4.2.0"
 
-tail@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/tail/-/tail-2.2.0.tgz#ef9a7f170c5a33bc0b3ca92a5d5fcd4748a77f46"
-  integrity sha512-QqUMtWlnzArTvGyjVnAE5fAiXEm2Psvk/BlE7vWx2/dIEWMsAhcNPz7iW6WTiSM8h1fjtCkRMsaWBS1j6rpGBg==
+tail@2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/tail/-/tail-2.2.2.tgz#826afd42551a3e070fcc66ba010d4caaed4728b3"
+  integrity sha512-IlfiFF8g5sPAqIZEL3qkIFcjODBM5DqdkVUhwXdKSDYqOgXGL4Gu0Hh1UQWXdCW5gBHi52cnk9WWMowsfjF4XA==
 
 tar-stream@^1.5.2:
   version "1.6.2"
