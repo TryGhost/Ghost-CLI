@@ -1,7 +1,6 @@
 # Ghost-CLI
 
-[![CI Status](https://github.com/TryGhost/Ghost-CLI/workflows/Test/badge.svg?branch=master)](https://github.com/TryGhost/Ghost-CLI/actions)
-[![Coverage Status](https://coveralls.io/repos/github/TryGhost/Ghost-CLI/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-CLI?branch=master)
+[![CI Status](https://github.com/TryGhost/Ghost-CLI/workflows/Test/badge.svg?branch=main)](https://github.com/TryGhost/Ghost-CLI/actions)
 [![npm version](https://img.shields.io/npm/v/ghost-cli.svg)](https://npmjs.com/package/ghost-cli/)
 
 ## Basic Setup
