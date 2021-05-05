@@ -312,10 +312,12 @@ describe('Unit: Command', function () {
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
+            const deprecationChecks = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
-                './system': systemStub
+                './system': systemStub,
+                './utils/deprecation-checks': deprecationChecks
             });
 
             class TestCommand extends Command {}
@@ -339,8 +341,9 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
-            expect(run.calledOnce).to.be.true;
+            expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
+            expect(deprecationChecks.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true, auto: false})).to.be.true;
         });
@@ -351,16 +354,19 @@ describe('Unit: Command', function () {
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
+            const deprecationChecks = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
-                './system': systemStub
+                './system': systemStub,
+                './utils/deprecation-checks': deprecationChecks
             });
 
             class TestCommand extends Command {
                 cleanup() {}
             }
             TestCommand.global = true;
+            TestCommand.skipDeprecationCheck = true;
 
             const runStub = sinon.stub(TestCommand.prototype, 'run');
             const onStub = sinon.stub(process, 'on').returnsThis();
@@ -384,6 +390,7 @@ describe('Unit: Command', function () {
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledOnce).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
+            expect(deprecationChecks.called).to.be.false;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
             expect(onStub.calledThrice).to.be.true;
@@ -398,12 +405,14 @@ describe('Unit: Command', function () {
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
+            const deprecationChecks = sinon.stub().resolves();
             const preChecksStub = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
                 './system': systemStub,
-                './utils/pre-checks': preChecksStub
+                './utils/pre-checks': preChecksStub,
+                './utils/deprecation-checks': deprecationChecks
             });
 
             class TestCommand extends Command {}
@@ -429,8 +438,9 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
-            expect(run.calledOnce).to.be.true;
+            expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
+            expect(deprecationChecks.calledOnce).to.be.true;
             expect(preChecksStub.calledOnce).to.be.true;
             expect(preChecksStub.calledWithExactly({ui: true, run}, {setEnvironment: setEnvironmentStub, loadOsInfo})).to.be.true;
             expect(runStub.calledOnce).to.be.true;
@@ -444,10 +454,12 @@ describe('Unit: Command', function () {
             const loadOsInfo = sinon.stub().resolves();
             const setEnvironmentStub = sinon.stub();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
+            const deprecationChecks = sinon.stub().resolves();
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
-                './system': systemStub
+                './system': systemStub,
+                './utils/deprecation-checks': deprecationChecks
             });
 
             class TestCommand extends Command {
@@ -477,8 +489,9 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({error: errorStub, run}, [{extensiona: true}])).to.be.true;
-            expect(run.calledOnce).to.be.true;
+            expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
+            expect(deprecationChecks.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
