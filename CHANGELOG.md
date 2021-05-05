@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.17.0"></a>
+# [1.17.0](https://github.com/TryGhost/Ghost-CLI/compare/1.16.3...1.17.0) (2021-05-05)
+
+
+### Features
+
+* **cmd:** add node/ghost deprecation checks ([b242d7e](https://github.com/TryGhost/Ghost-CLI/commit/b242d7e))
+* **install:** cleanup install directory on error ([53ba8a7](https://github.com/TryGhost/Ghost-CLI/commit/53ba8a7))
+* **node:** log discovered node version ([20b93cf](https://github.com/TryGhost/Ghost-CLI/commit/20b93cf))
+* **port-polling:** log messages coming from Ghost ([16c8291](https://github.com/TryGhost/Ghost-CLI/commit/16c8291))
+* **systemd:** add doctor checks for systemd node version ([8e19a6e](https://github.com/TryGhost/Ghost-CLI/commit/8e19a6e))
+* **ui:** add help text for the incompatible CLI version error ([0f4fb4c](https://github.com/TryGhost/Ghost-CLI/commit/0f4fb4c))
+
+
+
 <a name="1.16.3"></a>
 ## [1.16.3](https://github.com/TryGhost/Ghost-CLI/compare/1.16.2...1.16.3) (2021-03-18)
 
