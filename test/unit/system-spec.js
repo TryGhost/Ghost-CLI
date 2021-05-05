@@ -374,18 +374,6 @@ describe('Unit: System', function () {
     });
 
     describe('hook', function () {
-        it('errors if hook name not provided', function () {
-            const System = require(modulePath);
-            const systemInstance = new System({}, []);
-
-            return systemInstance.hook().then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(Error);
-                expect(error.message).to.equal('Hook name must be supplied.');
-            });
-        });
-
         it('calls extensions with promises and passes args correctly', function () {
             const getInstanceStub = sinon.spy((ui, system, ext) => ext);
             const System = proxyquire(modulePath, {
@@ -403,7 +391,7 @@ describe('Unit: System', function () {
             const systemInstance = new System({}, extensions);
 
             return systemInstance.hook('setup', {arg1: true}, {arg2: true}).then((results) => {
-                expect(results).to.deep.equal(['a', undefined, 'b']);
+                expect(results).to.deep.equal(['a', 'b']);
                 expect(getInstanceStub.calledThrice).to.be.true;
                 expect(hook1.calledOnce).to.be.true;
                 expect(hook1.calledWithExactly({arg1: true}, {arg2: true})).to.be.true;
