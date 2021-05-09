@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const createConfigStub = require('../utils/config-stub');
 const {setupTestFolder} = require('../utils/test-folder');
 
+const fs = require('fs-extra');
+
 const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
 const ProcessManager = require('../../lib/process-manager');
@@ -154,7 +156,71 @@ describe('Unit: Instance', function () {
         });
     });
 
-    it('version getter/setter works', testConfigAccessors('version', 'active-version'));
+    describe('version getter/setter', function () {
+        it('version setter stores version', function () {
+            const config = createConfigStub();
+            config.set.withArgs('active-version', '1.0.0').returnsThis();
+
+            const testInstance = new Instance({}, {}, '');
+            testInstance._cliConfig = config;
+
+            testInstance.version = '1.0.0';
+
+            expect(config.set.calledOnce).to.be.true;
+            expect(config.save.calledOnce).to.be.true;
+        });
+
+        it('version getter returns stored value if set', function () {
+            const config = createConfigStub();
+            config.get.withArgs('active-version', null).returns('1.0.0');
+
+            const testInstance = new Instance({}, {}, '/test/dir');
+            testInstance._cliConfig = config;
+
+            // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
+            const readJsonSync = sinon.stub(fs, 'readJsonSync').returns({version: '2.0.0'});
+
+            expect(testInstance.version).to.equal('1.0.0');
+            expect(config.get.calledOnce).to.be.true;
+            expect(readJsonSync.called).to.be.false;
+        });
+
+        it('version getter handles error from readJsonSync', function () {
+            const config = createConfigStub();
+            config.get.withArgs('active-version', null).returns(null);
+
+            const testInstance = new Instance({}, {}, '/test/dir');
+            testInstance._cliConfig = config;
+
+            // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
+            const readJsonSync = sinon.stub(fs, 'readJsonSync').throws(new Error('test error'));
+
+            expect(testInstance.version).to.equal(null);
+            expect(config.get.calledOnce).to.be.true;
+            expect(readJsonSync.calledOnceWithExactly('/test/dir/current/package.json')).to.be.true;
+            expect(config.set.called).to.be.false;
+            expect(config.save.called).to.be.false;
+        });
+
+        it('version getter stores active version if missing', function () {
+            const config = createConfigStub();
+            config.get.withArgs('active-version', null).returns(null);
+            config.set.withArgs('active-version', '2.0.0').returnsThis();
+
+            const testInstance = new Instance({}, {}, '/test/dir');
+            testInstance._cliConfig = config;
+
+            // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
+            const readJsonSync = sinon.stub(fs, 'readJsonSync').returns({version: '2.0.0'});
+
+            expect(testInstance.version).to.equal('2.0.0');
+            expect(config.get.calledOnce).to.be.true;
+            expect(readJsonSync.calledOnceWithExactly('/test/dir/current/package.json')).to.be.true;
+            expect(config.set.calledOnce).to.be.true;
+            expect(config.save.calledOnce).to.be.true;
+        });
+    });
+
     it('cliVersion getter/setter works', testConfigAccessors('cliVersion', 'cli-version'));
     it('previousVersion getter/setter works', testConfigAccessors('previousVersion', 'previous-version'));
     it('nodeVersion getter/setter works', testConfigAccessors('nodeVersion', 'node-version', process.versions.node));
