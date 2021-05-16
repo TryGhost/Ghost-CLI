@@ -77,8 +77,7 @@ describe('Unit: Commands > Start', function () {
 
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]);
-            expect(logStub.args[0][0]).to.include('HTTPS URL');
-            expect(logStub.args[0][0]).to.include('https://ghost.org');
+            expect(logStub.args[0][0]).to.include('Using https on all URLs is highly recommended');
 
             expect(checkEnvironment.calledOnce).to.be.true;
             expect(isRunning.calledOnce).to.be.true;
