@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../../lib/command';
 
-describe.only('Unit: Command', function () {
+describe('Unit: Command', function () {
     const originalEnv = process.env.NODE_ENV;
 
     afterEach(() => {
