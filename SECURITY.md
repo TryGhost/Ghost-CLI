@@ -7,3 +7,4 @@ The full, up-to-date details of our security policy and procedure can always be 
 https://ghost.org/docs/security/
 
 Please refer to this before emailing us. Thanks for helping make Ghost safe for everyone 🙏.
+K
