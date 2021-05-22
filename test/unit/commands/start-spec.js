@@ -130,7 +130,7 @@ describe('Unit: Commands > Start', function () {
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.calledTwice).to.be.true;
-            expect(instance.config.get.calledThrice).to.be.true;
+            expect(instance.config.get.calledTwice).to.be.true;
         });
 
         it('doesn\'t log if quiet is set to true', async function () {
@@ -157,7 +157,7 @@ describe('Unit: Commands > Start', function () {
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.called).to.be.false;
-            expect(instance.config.get.calledOnce).to.be.true;
+            expect(instance.config.get.called).to.be.false;
         });
     });
 
