@@ -28,7 +28,7 @@
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint . --ext js --cache",
-    "test": "nyc --reporter=html --reporter=text mocha -t 5000 --recursive test/unit extensions/**/test",
+    "test": "nyc --reporter=html --reporter=text mocha --color -t 5000 --recursive test/unit extensions/**/test",
     "posttest": "yarn lint",
     "ship": "f() { STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then standard-version $@ && git push --follow-tags;  fi; }; f"
   },
