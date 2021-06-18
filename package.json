@@ -59,7 +59,7 @@
     "fs-extra": "10.0.0",
     "generate-password": "1.6.0",
     "global-modules": "2.0.0",
-    "got": "9.6.0",
+    "got": "11.8.2",
     "https-proxy-agent": "5.0.0",
     "ini": "2.0.0",
     "inquirer": "8.1.1",
