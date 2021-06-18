@@ -1,4 +1,3 @@
-'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
@@ -6,15 +5,11 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../../lib/command';
 
 describe('Unit: Command', function () {
-    let oldEnv;
-
-    beforeEach(() => {
-        oldEnv = process.env.NODE_ENV;
-    });
+    const originalEnv = process.env.NODE_ENV;
 
     afterEach(() => {
         sinon.restore();
-        process.env.NODE_ENV = oldEnv;
+        process.env.NODE_ENV = originalEnv;
     });
 
     describe('configure', function () {
@@ -311,8 +306,12 @@ describe('Unit: Command', function () {
             const uiStub = sinon.stub().returns({ui: true, run});
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
             const deprecationChecks = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({
+                platform: {linux: true},
+                setEnvironment: setEnvironmentStub,
+                loadOsInfo
+            });
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -338,7 +337,7 @@ describe('Unit: Command', function () {
                 auto: false
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
@@ -353,8 +352,12 @@ describe('Unit: Command', function () {
             const uiStub = sinon.stub().returns({ui: true, run});
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
             const deprecationChecks = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({
+                platform: {linux: true},
+                setEnvironment: setEnvironmentStub,
+                loadOsInfo
+            });
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -385,7 +388,7 @@ describe('Unit: Command', function () {
                 auto: true
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledOnce).to.be.true;
@@ -404,9 +407,16 @@ describe('Unit: Command', function () {
             const uiStub = sinon.stub().returns({ui: true, run});
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
             const deprecationChecks = sinon.stub().resolves();
             const preChecksStub = sinon.stub().resolves();
+
+            const _system = {
+                platform: {linux: true},
+                setEnvironment: setEnvironmentStub,
+                loadOsInfo
+            };
+
+            const systemStub = sinon.stub().returns(_system);
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -435,14 +445,14 @@ describe('Unit: Command', function () {
                 auto: false
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.calledOnce).to.be.true;
             expect(preChecksStub.calledOnce).to.be.true;
-            expect(preChecksStub.calledWithExactly({ui: true, run}, {setEnvironment: setEnvironmentStub, loadOsInfo})).to.be.true;
+            expect(preChecksStub.calledWithExactly({ui: true, run}, _system)).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
         });
@@ -453,8 +463,12 @@ describe('Unit: Command', function () {
             const uiStub = sinon.stub().returns({error: errorStub, run});
             const loadOsInfo = sinon.stub().resolves();
             const setEnvironmentStub = sinon.stub();
-            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
             const deprecationChecks = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({
+                platform: {linux: true},
+                setEnvironment: setEnvironmentStub,
+                loadOsInfo
+            });
 
             const Command = proxyquire(modulePath, {
                 './ui': uiStub,
@@ -486,7 +500,7 @@ describe('Unit: Command', function () {
                 auto: false
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('production', true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
             expect(systemStub.calledWithExactly({error: errorStub, run}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
@@ -497,6 +511,59 @@ describe('Unit: Command', function () {
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
         });
+    });
+
+    it('detects environment based on user input or operating system', async function () {
+        const doTest = async ({context, env, argv = {}, linux = true}, clearEnv = false) => {
+            if (clearEnv) {
+                delete process.env.NODE_ENV;
+            }
+
+            sinon.restore();
+            const setEnvironmentStub = sinon.stub();
+            const systemStub = sinon.stub().returns({
+                platform: {linux},
+                setEnvironment: setEnvironmentStub,
+                loadOsInfo: sinon.stub().resolves()
+            });
+
+            /** @type {import('../../lib/command')} */
+            const Command = proxyquire(modulePath, {
+                './system': systemStub,
+                './ui': sinon.stub().returns({
+                    ui: true,
+                    run: sinon.stub().callsFake(fn => fn()),
+                    error: console.log
+                })
+            });
+
+            class TestCommand extends Command {
+                cleanup() {}
+                run() {}
+            }
+            TestCommand.global = true;
+            TestCommand.skipDeprecationCheck = true;
+            sinon.stub(process, 'on').returnsThis();
+
+            await TestCommand._run('test', argv, []);
+            expect(setEnvironmentStub.args[0], context).to.deep.equal([env, true]);
+        };
+
+        await doTest({env: 'production', linux: true, context: 'generic linux'}, true);
+        await doTest({env: 'development', linux: false, context: 'generic not linux'}, true);
+        await doTest({env: 'development', argv: {development: true}, context: '--development'}, true);
+        await doTest({env: 'production', argv: {development: false}, context: '--development false'}, true);
+        await doTest(
+            {env: 'development', argv: {development: false}, linux: false, context: '--development false (not linux)'},
+            true
+        );
+        await doTest({env: 'sql', argv: {environment: 'sql'}, context: '--environment sql'}, true);
+
+        process.env.NODE_ENV = 'mysql';
+        await doTest({env: 'mysql', context: 'NODE_ENV=mysql'});
+        await doTest({env: 'mysql', linux: false, context: 'NODE_ENV=mysql (not linux)'});
+        await doTest({env: 'sql', argv: {environment: 'sql'}, context: 'NODE_ENV=mysql, --environment sql'});
+        await doTest({env: 'development', argv: {development: true}, context: 'NODE_ENV=mysql, --development'});
     });
 
     it('base run method throws error', async function () {

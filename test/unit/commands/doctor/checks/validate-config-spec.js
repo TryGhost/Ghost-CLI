@@ -35,25 +35,6 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         });
     });
 
-    it('rejects if environment is passed and no config exists for that environment', function () {
-        const env = setupTestFolder();
-        const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
-        const runningStub = sinon.stub().resolves(false);
-
-        return validateConfig({
-            system: {environment: 'testing'},
-            instance: {isRunning: runningStub}
-        }).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ConfigError);
-            expect(error.message).to.match(/Config file is not valid JSON/);
-            expect(error.options.environment).to.equal('testing');
-            expect(cwdStub.calledOnce).to.be.true;
-            expect(runningStub.calledOnce).to.be.true;
-        });
-    });
-
     it('rejects if environment is passed and the config file is not valid json', function () {
         const env = setupTestFolder({files: [{path: 'config.testing.json', content: 'not json'}]});
         const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);

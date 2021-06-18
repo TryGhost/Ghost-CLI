@@ -260,107 +260,56 @@ describe('Unit: Instance', function () {
     });
 
     describe('isRunning', function () {
-        it('returns false if running property not set in config & neither config exists', async function () {
+        const fs = require('fs');
+
+        afterEach(() => sinon.reset());
+
+        it('returns false if running property not set in config & no config exists', async function () {
+            const fsStub = sinon.stub(fs, 'readdirSync').returns(['content', 'versions']);
             const hasStub = sinon.stub().withArgs('running').returns(false);
             const setEnvironmentStub = sinon.stub();
-            const testInstance = new Instance({}, {development: true, setEnvironment: setEnvironmentStub}, '');
+            const testInstance = new Instance(
+                {}, {environment: 'original', development: true, setEnvironment: setEnvironmentStub}, ''
+            );
             testInstance._cliConfig = {has: hasStub};
-            const existsStub = sinon.stub(Config, 'exists').returns(false);
 
             const running = await testInstance.isRunning();
             expect(running).to.be.false;
             expect(hasStub.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(setEnvironmentStub.calledOnce).to.be.true;
-            expect(setEnvironmentStub.calledWithExactly(true)).to.be.true;
+            expect(fsStub.calledOnce).to.be.true;
+            expect(setEnvironmentStub.args[0][0]).to.equal('original');
         });
 
-        it('queries process manager in production if running not set and prod config exists', async function () {
+        it('queries process manager (in order) and returns true if an environment is running', async function () {
+            const fsStub = sinon.stub(fs, 'readdirSync').returns([
+                'config.development.json', 'config.production.json', 'config.mysql.json'
+            ]);
+            const setEnvironmentStub = sinon.stub();
             const configStub = createConfigStub();
-            const isRunningStub = sinon.stub().returns(true);
+            const isRunningStub = sinon.stub().callsFake(() => setEnvironmentStub.lastCall.args[0] === 'development');
             class TestInstance extends Instance {
                 get process() {
                     return {isRunning: isRunningStub};
                 }
             }
 
-            const setEnvironmentStub = sinon.stub();
             const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
             testInstance._cliConfig = configStub;
 
-            const existsStub = sinon.stub(Config, 'exists').returns(true);
-
             const running = await testInstance.isRunning();
             expect(running).to.be.true;
+            expect(fsStub.calledOnce).to.be.true;
             expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledOnce).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(configStub.set.calledOnce).to.be.true;
-            expect(configStub.set.calledWithExactly('running', 'production')).to.be.true;
-            expect(configStub.save.calledOnce).to.be.true;
-        });
-
-        it('queries process manager in dev if prod config not exists and dev config does', async function () {
-            const configStub = createConfigStub();
-            const isRunningStub = sinon.stub().returns(true);
-            class TestInstance extends Instance {
-                get process() {
-                    return {isRunning: isRunningStub};
-                }
-            }
-
-            const setEnvironmentStub = sinon.stub();
-            const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
-            testInstance._cliConfig = configStub;
-
-            const existsStub = sinon.stub(Config, 'exists');
-
-            existsStub.onFirstCall().returns(false);
-            existsStub.onSecondCall().returns(true);
-
-            const running = await testInstance.isRunning();
-            expect(running).to.be.true;
-            expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
-            expect(isRunningStub.calledOnce).to.be.true;
-            expect(configStub.set.calledOnce).to.be.true;
-            expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
-            expect(configStub.save.calledOnce).to.be.true;
-        });
-
-        it('queries process manager in dev if not running in prod and dev config exists', async function () {
-            const configStub = createConfigStub();
-            const isRunningStub = sinon.stub();
-            isRunningStub.onFirstCall().returns(false);
-            isRunningStub.onSecondCall().returns(true);
-            class TestInstance extends Instance {
-                get process() {
-                    return {isRunning: isRunningStub};
-                }
-            }
-
-            const setEnvironmentStub = sinon.stub();
-            const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub}, '/var/www/ghost');
-            testInstance._cliConfig = configStub;
-
-            const existsStub = sinon.stub(Config, 'exists').returns(true);
-
-            const running = await testInstance.isRunning();
-            expect(running).to.be.true;
-            expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('development')).to.be.true;
+            expect(setEnvironmentStub.calledWithExactly('mysql')).to.be.false;
             expect(isRunningStub.calledTwice).to.be.true;
             expect(configStub.set.calledOnce).to.be.true;
             expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
             expect(configStub.save.calledOnce).to.be.true;
         });
 
-        it('returns false if ghost isn\'t running in either environment', async function () {
+        it('returns false if ghost isn\'t running in any environment', async function () {
+            const fsStub = sinon.stub(fs, 'readdirSync').returns(['config.development.json', 'config.production.json']);
             const configStub = createConfigStub();
             const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
@@ -370,22 +319,20 @@ describe('Unit: Instance', function () {
             }
 
             const setEnvironmentStub = sinon.stub();
-            const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub, development: false}, '/var/www/ghost');
+            const testInstance = new TestInstance(
+                {}, {environment: 'original', setEnvironment: setEnvironmentStub, development: false}, '/var/www/ghost'
+            );
             testInstance._cliConfig = configStub;
-
-            const existsStub = sinon.stub(Config, 'exists').returns(true);
 
             const running = await testInstance.isRunning();
             expect(running).to.be.false;
+            expect(fsStub.calledOnce).to.be.true;
             expect(configStub.has.calledOnce).to.be.true;
-            expect(existsStub.calledTwice).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.production.json')).to.be.true;
-            expect(existsStub.calledWithExactly('/var/www/ghost/config.development.json')).to.be.true;
             expect(isRunningStub.calledTwice).to.be.true;
             expect(configStub.set.called).to.be.false;
             expect(configStub.save.called).to.be.false;
             expect(setEnvironmentStub.calledThrice).to.be.true;
-            expect(setEnvironmentStub.args[2][0]).to.be.false;
+            expect(setEnvironmentStub.args[2][0]).to.equal('original');
         });
 
         it('loads running environment and checks if process manager returns false', async function () {
@@ -432,37 +379,25 @@ describe('Unit: Instance', function () {
     });
 
     describe('checkEnvironment', function () {
-        it('doesn\'t do anything if environment is not production', function () {
+        it('does nothing if current environment config exists', function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
-            const testInstance = new Instance({log: logStub}, {
-                setEnvironment: environmentStub,
-                production: false,
-                environment: 'development'
-            }, '');
-
-            testInstance.checkEnvironment();
-            expect(logStub.called).to.be.false;
-            expect(environmentStub.called).to.be.false;
-        });
-
-        it('doesn\'t do anything if config.development.json doesn\'t exist', function () {
-            const logStub = sinon.stub();
-            const environmentStub = sinon.stub();
-            const existsStub = sinon.stub(Config, 'exists').withArgs('/path/config.development.json').returns(false);
             const testInstance = new Instance({log: logStub}, {
                 setEnvironment: environmentStub,
                 production: true,
-                environment: 'production'
+                environment: 'mysql'
             }, '/path');
 
+            const existsStub = sinon.stub(Config, 'exists');
+            existsStub.withArgs('/path/config.mysql.json').returns(true);
+
             testInstance.checkEnvironment();
+
             expect(logStub.called).to.be.false;
             expect(environmentStub.called).to.be.false;
-            expect(existsStub.calledOnce).to.be.true;
         });
 
-        it('logs and sets environment if not production, config.dev exists, and config.production doesn\'t exist', function () {
+        it('logs and sets environment if development (but not prod) config exists when in prod', function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
             const testInstance = new Instance({log: logStub}, {
@@ -480,8 +415,31 @@ describe('Unit: Instance', function () {
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/Found a development config/);
             expect(environmentStub.calledOnce).to.be.true;
-            expect(environmentStub.args[0]).to.deep.equal([true, true]);
+            expect(environmentStub.args[0]).to.deep.equal(['development', true]);
             expect(existsStub.calledTwice).to.be.true;
+        });
+
+        it('fails if there is no valid config available', function () {
+            const logStub = sinon.stub();
+            const environmentStub = sinon.stub();
+            const testInstance = new Instance({log: logStub}, {
+                setEnvironment: environmentStub,
+                production: true,
+                environment: 'mysql'
+            }, '/path');
+
+            const existsStub = sinon.stub(Config, 'exists');
+            existsStub.withArgs('/path/config.development.json').returns(true);
+            existsStub.withArgs('/path/config.mysql.json').returns(false);
+
+            try {
+                testInstance.checkEnvironment();
+                throw new Error('Expected checkEnvironment to throw an error');
+            } catch (error) {
+                expect(logStub.calledOnce).to.be.true;
+                expect(logStub.args[0][0]).to.contain('does not exist').and.to.contain('mysql.json');
+                expect(error.message).to.equal('Missing environment configuration file');
+            }
         });
     });
 
@@ -511,7 +469,7 @@ describe('Unit: Instance', function () {
             testInstance.loadRunningEnvironment(false);
             expect(getStub.calledOnce).to.be.true;
             expect(envStub.calledOnce).to.be.true;
-            expect(envStub.args[0]).to.deep.equal([true, false]);
+            expect(envStub.args[0]).to.deep.equal(['development', false]);
         });
     });
 

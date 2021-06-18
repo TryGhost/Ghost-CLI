@@ -87,15 +87,19 @@ describe('Unit: Commands > Uninstall', function () {
                     const {command, ui, system} = createInstance();
                     const instance = {
                         loadRunningEnvironment: sinon.stub(),
-                        stop: sinon.stub().resolves()
+                        stop: sinon.stub().resolves(),
+                        system
                     };
                     system.getInstance.returns(instance);
+                    system.environment = 'development';
+                    const context = {};
 
                     const [step1] = await getSteps(command, ui);
-                    await step1.task();
+                    await step1.task(null, context);
 
                     expect(instance.loadRunningEnvironment.calledOnce).to.be.true;
                     expect(instance.stop.calledOnce).to.be.true;
+                    expect(context._environment).to.equal('development');
                 });
             });
 
@@ -121,18 +125,16 @@ describe('Unit: Commands > Uninstall', function () {
 
             it('step 3 (removing related configuration)', async function () {
                 const {command, ui, system} = createInstance();
-                const existsStub = sinon.stub(fs, 'existsSync').returns(true);
                 system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
                 system.hook.resolves();
 
                 const [,,task] = await getSteps(command, ui);
 
                 expect(task.title).to.equal('Removing related configuration');
-                await task.task();
+                await task.task(null, {_environment: 'production'});
 
-                expect(existsStub.calledOnce).to.be.true;
                 expect(system.setEnvironment.calledOnce).to.be.true;
-                expect(system.setEnvironment.calledWithExactly(false)).to.be.true;
+                expect(system.setEnvironment.calledWithExactly('production')).to.be.true;
                 expect(system.hook.calledOnce).to.be.true;
                 expect(system.hook.calledWithExactly(
                     'uninstall',

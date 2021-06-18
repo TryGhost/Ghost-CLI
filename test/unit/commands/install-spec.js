@@ -104,7 +104,7 @@ describe('Unit: Commands > Install', function () {
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             });
         });
 
@@ -132,7 +132,7 @@ describe('Unit: Commands > Install', function () {
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             });
         });
 
@@ -160,7 +160,7 @@ describe('Unit: Commands > Install', function () {
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             });
         });
 
@@ -188,7 +188,7 @@ describe('Unit: Commands > Install', function () {
                     cliVersion: '1.0.0'
                 });
                 expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
+                expect(setEnvironmentStub.calledWithExactly('development', true)).to.be.true;
             });
         });
 
