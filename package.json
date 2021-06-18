@@ -67,7 +67,7 @@
     "latest-version": "5.1.0",
     "listr": "0.14.3",
     "lodash": "4.17.21",
-    "log-symbols": "4.1.0",
+    "log-symbols": "5.0.0",
     "moment": "2.27.0",
     "mysql": "2.18.1",
     "ora": "3.4.0",
