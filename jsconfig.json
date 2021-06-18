@@ -1,0 +1,9 @@
+{
+  "include": ["lib/**/*.js", "extensions/**/*.js"],
+  "compilerOptions": {
+    "checkJs": true,
+    "module": "commonjs",
+    "target": "es2019",
+    "moduleResolution": "node"
+  }
+}
