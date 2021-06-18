@@ -1,5 +1,5 @@
 {
-  "include": ["lib/**/*.js", "extensions/**/*.js"],
+  "include": ["packages/**/*.js"],
   "compilerOptions": {
     "checkJs": true,
     "module": "commonjs",
