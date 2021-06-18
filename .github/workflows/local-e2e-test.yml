@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 1.x
 
 jobs:
   local-e2e:
@@ -25,7 +24,7 @@ jobs:
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
       - name: Setting up Ghost instance
-        run: node ./cli/bin/ghost install local -d ghost
+        run: node ./cli/packages/ghost-cli/bin/ghost install local -d ghost
       - name: Verifying Installation
         run: sleep 2s && curl -f http://localhost:2368 | grep ghost
 
