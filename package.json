@@ -70,7 +70,7 @@
     "log-symbols": "4.1.0",
     "moment": "2.27.0",
     "mysql": "2.18.1",
-    "ora": "3.4.0",
+    "ora": "5.4.1",
     "package-json": "6.5.0",
     "path-is-root": "0.1.0",
     "portfinder": "1.0.28",
