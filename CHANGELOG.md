@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.17.3"></a>
+## [1.17.3](https://github.com/TryGhost/Ghost-CLI/compare/1.17.2...1.17.3) (2021-05-22)
+
+
+### Bug Fixes
+
+* **start:** fix warning behavior ([#1475](https://github.com/TryGhost/Ghost-CLI/issues/1475)) ([c809873](https://github.com/TryGhost/Ghost-CLI/commit/c809873))
+
+
+
+<a name="1.17.2"></a>
+## [1.17.2](https://github.com/TryGhost/Ghost-CLI/compare/1.17.1...1.17.2) (2021-05-16)
+
+
+
+<a name="1.17.1"></a>
+## [1.17.1](https://github.com/TryGhost/Ghost-CLI/compare/1.17.0...1.17.1) (2021-05-09)
+
+
+### Bug Fixes
+
+* **deprecation:** fix error with missing instance version ([a98f794](https://github.com/TryGhost/Ghost-CLI/commit/a98f794))
+* **instance:** calculate active-version if missing ([b488da2](https://github.com/TryGhost/Ghost-CLI/commit/b488da2))
+
+
+
 <a name="1.17.0"></a>
 # [1.17.0](https://github.com/TryGhost/Ghost-CLI/compare/1.16.3...1.17.0) (2021-05-05)
 
