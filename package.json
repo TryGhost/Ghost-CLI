@@ -52,7 +52,7 @@
     "debug": "4.3.1",
     "decompress": "4.2.1",
     "download": "8.0.0",
-    "execa": "1.0.0",
+    "execa": "5.1.1",
     "find-plugins": "1.1.7",
     "fkill": "7.1.1",
     "form-data": "3.0.1",
