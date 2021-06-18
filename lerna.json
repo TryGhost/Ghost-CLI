@@ -1,0 +1,16 @@
+{
+  "version": "independent",
+  "npmClient": "yarn",
+  "packages": ["packages/*"],
+  "useWorkspaces": true,
+  "command": {
+    "publish": {
+      "allowBranch": "main"
+    }
+  },
+  "local": {
+    "public": true,
+    "repo": "https://github.com/TryGhost/Ghost-CLI",
+    "scope": "@tryghost"
+  }
+}
