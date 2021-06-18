@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 1.x
 
 jobs:
   e2e:
@@ -38,6 +37,7 @@ jobs:
         run: |
           cd cli
           yarn install --frozen-lockfile
+          cd packages/ghost-cli
           sudo yarn link --link-folder /usr/bin/
       - name: Setting up Ghost instance
         run: |
