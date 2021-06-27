@@ -9,7 +9,9 @@
     "presetup": "yarn",
     "setup": "lerna bootstrap",
     "test": "lerna run test",
-    "lint": "lerna run lint"
+    "lint": "lerna run lint",
+    "preship": "yarn test",
+    "ship": "lerna publish"
   },
   "devDependencies": {
     "eslint": "7.29.0",

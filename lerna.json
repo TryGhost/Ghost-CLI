@@ -5,7 +5,14 @@
   "useWorkspaces": true,
   "command": {
     "publish": {
-      "allowBranch": "main"
+      "allowBranch": "main",
+      "message": "chore(release): publish new versions",
+      "conventionalCommits": true,
+      "bump": "prerelease",
+      "preid": "next",
+      "preDistTag": "next",
+      "noChangelog": true,
+      "exact": true
     }
   },
   "local": {
