@@ -26,11 +26,9 @@
     "ghost": "./bin/ghost"
   },
   "scripts": {
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint . --ext js --cache",
     "test": "nyc --reporter=html --reporter=text mocha --color -t 5000 --recursive test/unit extensions/**/test",
-    "posttest": "yarn lint",
-    "ship": "f() { STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then standard-version $@ && git push --follow-tags;  fi; }; f"
+    "posttest": "yarn lint"
   },
   "nyc": {
     "exclude": [
@@ -94,7 +92,6 @@
   "devDependencies": {
     "chai": "4.3.4",
     "chai-as-promised": "7.1.1",
-    "coveralls": "3.1.0",
     "has-ansi": "4.0.1",
     "mocha": "9.0.1",
     "nock": "13.1.0",
