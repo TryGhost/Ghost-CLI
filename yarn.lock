@@ -2022,10 +2022,10 @@ find-up@^4.0.0, find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-fkill@7.1.1:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/fkill/-/fkill-7.1.1.tgz#d21e662b0677c25954840c6d551b5b6bb5cd55a8"
-  integrity sha512-jFPrW3qmbPQxjbKUMGPTXbpWoX5plS0BMotAB7q9jwInFd/YdrY40/5Szt4gFroF2BfXHIVuMdQC40X8IcgL3w==
+fkill@7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/fkill/-/fkill-7.2.1.tgz#7036200cd2edd28a6bc40f0defc1e159d9e24e64"
+  integrity sha512-eN9cmsIlRdq06wu3m01OOEgQf5Xh/M7REm0jfZ4eL3V3XisjXzfRq3iyqtKS+FhO6wB36FvWRiRGdeSx5KpLAQ==
   dependencies:
     aggregate-error "^3.1.0"
     arrify "^2.0.1"
