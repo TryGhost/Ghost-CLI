@@ -69,7 +69,7 @@
     "moment": "2.27.0",
     "mysql": "2.18.1",
     "ora": "3.4.0",
-    "package-json": "6.5.0",
+    "package-json": "7.0.0",
     "path-is-root": "0.1.0",
     "portfinder": "1.0.28",
     "prettyjson": "1.2.1",
