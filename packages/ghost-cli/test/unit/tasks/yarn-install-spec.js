@@ -166,7 +166,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.equal('Ghost v1.5.0 is not compatible with the current Node version.');
+                expect(error.message).to.equal(`Ghost v1.5.0 is not compatible with the current Node version. Your node version is ${process.versions.node}, but Ghost v1.5.0 requires ^0.10.0`);
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
             });
@@ -216,7 +216,7 @@ describe('Unit: Tasks > yarn-install', function () {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.equal('Ghost v1.5.0 is not compatible with this version of the CLI.');
+                expect(error.message).to.equal(`Ghost v1.5.0 is not compatible with this version of the CLI. Your CLI version is 1.0.0, but Ghost v1.5.0 requires ^0.0.1`);
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
             });
