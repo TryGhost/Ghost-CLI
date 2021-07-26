@@ -87,7 +87,7 @@
     "tough-cookie": "4.0.0",
     "validator": "7.2.0",
     "yargs": "17.0.1",
-    "yarn": "1.22.10"
+    "yarn": "1.22.11"
   },
   "devDependencies": {
     "chai": "4.3.4",
