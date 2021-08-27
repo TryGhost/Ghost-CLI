@@ -4871,10 +4871,10 @@ symlink-or-copy@1.3.1:
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==
 
-systeminformation@5.8.2:
-  version "5.8.2"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.8.2.tgz#c9cfada753dcb5eadb27e2350eecd509f3a34d42"
-  integrity sha512-XxK/gHdfGFtCAv7JLwGlPoU8bfkcTHgcGSU9LqgbdURwOgwyYlfX+jailzh2eX//9r+Wg53oOv+/DE30KNK2qA==
+systeminformation@5.8.6:
+  version "5.8.6"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.8.6.tgz#62a6f18a024a4a6308559f13edaf1c7803e8ca0b"
+  integrity sha512-R37NZR9f6OejKvERiatjh1vK49xkJ/MOgFpwpCw2h0NoD+1nKAgGzxkyjNX7bsf6ADaKzyAZ2SFK1mXddytIaA==
 
 table@^5.2.3:
   version "5.4.6"
