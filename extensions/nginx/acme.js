@@ -55,8 +55,22 @@ async function install(ui, task) {
 }
 
 async function generateCert(ui, domain, webroot, email, staging) {
-    const cmd = `/etc/letsencrypt/acme.sh --issue --home /etc/letsencrypt --domain ${domain} --webroot ${webroot} ` +
-    `--reloadcmd "${nginxProgramName} -s reload" --accountemail ${email}${staging ? ' --staging' : ''}`;
+    const parts = [
+        '/etc/letsencrypt/acme.sh',
+        '--issue',
+        '--home /etc/letsencrypt',
+        '--server letsencrypt',
+        `--domain ${domain}`,
+        `--webroot ${webroot}`,
+        `--reloadcmd "${nginxProgramName} -s reload"`,
+        `--accountemail ${email}`
+    ];
+
+    if (staging) {
+        parts.push('--staging');
+    }
+
+    const cmd = parts.join(' ');
 
     try {
         await ui.sudo(cmd);
