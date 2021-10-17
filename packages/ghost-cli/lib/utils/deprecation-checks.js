@@ -9,7 +9,7 @@ See ${chalk.cyan('https://ghost.org/docs/faq/node-versions/')}.
 `.trim()), {borderColor: 'yellow', align: 'center'});
 
 const ghostDeprecated = () => boxen(chalk.yellow(`
-Ghost 2.x has reached end-of-life status.
+Ghost 3.x has reached end-of-life status.
 Ghost-CLI will drop support for unmaintained Ghost versions in an upcoming release, please update your Ghost version.
 See ${chalk.cyan('https://ghost.org/docs/faq/major-versions-lts/')}.
 `.trim()), {borderColor: 'yellow', align: 'center'});
