@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.17.4"></a>
+## [1.17.4](https://github.com/TryGhost/Ghost-CLI/compare/1.17.2...1.17.4) (2021-10-18)
+
+
+### Bug Fixes
+
+* **nginx:** update acme to use letsencrypt by default ([5e52548](https://github.com/TryGhost/Ghost-CLI/commit/5e52548))
+* **start:** fix warning behavior ([#1475](https://github.com/TryGhost/Ghost-CLI/issues/1475)) ([c809873](https://github.com/TryGhost/Ghost-CLI/commit/c809873))
+
+
+
 <a name="1.17.3"></a>
 ## [1.17.3](https://github.com/TryGhost/Ghost-CLI/compare/1.17.2...1.17.3) (2021-05-22)
 
