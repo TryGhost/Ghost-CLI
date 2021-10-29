@@ -14,9 +14,10 @@ function isInstalled() {
     return fs.existsSync('/etc/letsencrypt/acme.sh');
 }
 
-async function install(ui, task) {
+async function install(ui) {
     if (isInstalled()) {
-        return task.skip('acme.sh is already installed');
+        await ui.sudo('/etc/letsencrypt/acme.sh --upgrade --home /etc/letsencrypt');
+        return;
     }
 
     const acmeTmpDir = path.join(os.tmpdir(), 'acme.sh');
