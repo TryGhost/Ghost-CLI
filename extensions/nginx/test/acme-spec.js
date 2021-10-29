@@ -22,17 +22,17 @@ describe('Unit: Extensions > Nginx > Acme', function () {
     });
 
     describe('install', function () {
-        it('skips if isInstalled returns true', function () {
-            const skipStub = sinon.stub().resolves();
+        it('upgrades if isInstalled returns true', function () {
+            const sudo = sinon.stub().resolves();
             const existsStub = sinon.stub().returns(true);
 
             const acme = proxyquire(modulePath, {
                 'fs-extra': {existsSync: existsStub}
             });
 
-            return acme.install({}, {skip: skipStub}).then(() => {
+            return acme.install({sudo}).then(() => {
                 expect(existsStub.calledOnce).to.be.true;
-                expect(skipStub.calledOnce).to.be.true;
+                expect(sudo.calledOnceWithExactly('/etc/letsencrypt/acme.sh --upgrade --home /etc/letsencrypt')).to.be.true;
             });
         });
 

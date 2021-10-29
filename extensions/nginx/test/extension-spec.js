@@ -393,11 +393,10 @@ describe('Unit: Extensions > Nginx', function () {
                     './acme': {install: installStub}
                 }));
                 const tasks = getTasks(ext, {});
-                const taskObject = {installTestTask: true};
 
-                return tasks[2].task(null, taskObject).then(() => {
+                return tasks[2].task(null).then(() => {
                     expect(installStub.calledOnce).to.be.true;
-                    expect(installStub.calledWithExactly(ext.ui, taskObject)).to.be.true;
+                    expect(installStub.calledWithExactly(ext.ui)).to.be.true;
                 });
             });
 
