@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.18.0"></a>
+# [1.18.0](https://github.com/TryGhost/Ghost-CLI/compare/1.17.4...1.18.0) (2021-10-29)
+
+
+### Features
+
+* update node version ranges ([bf45d99](https://github.com/TryGhost/Ghost-CLI/commit/bf45d99))
+* **nginx:** ensure acme.sh is kept up-to-date ([61f95b6](https://github.com/TryGhost/Ghost-CLI/commit/61f95b6))
+
+
+
 <a name="1.17.4"></a>
 ## [1.17.4](https://github.com/TryGhost/Ghost-CLI/compare/1.17.2...1.17.4) (2021-10-18)
 
