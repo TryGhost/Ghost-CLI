@@ -81,4 +81,54 @@ describe('Unit: Migrations', function () {
         expect(configs.production.set.called).to.be.false;
         expect(configs.production.save.called).to.be.false;
     });
+
+    it('ensureMediaFileAndPublicFolders', async () => {
+        it('if ghost user owns directory, runs `sudo mkdir` as ghost user', function () {
+            const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(true);
+            const sudoStub = sinon.stub().resolves();
+            const config = createConfig();
+            config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
+
+            const context = {
+                instance: {config: config},
+                ui: {sudo: sudoStub}
+            };
+
+            return migrations[0].task(context).then(() => {
+                expect(ghostUserStub.calledThrice).to.be.true;
+                expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
+                expect(sudoStub.calledThrice).to.be.true;
+                expect(sudoStub.firstCall.calledWithExactly(
+                    'mkdir -p /var/www/ghost/content/media',
+                    {sudoArgs: '-E -u ghost'}
+                )).to.be.true;
+                expect(sudoStub.secondCall.calledWithExactly(
+                    'mkdir -p /var/www/ghost/content/files',
+                    {sudoArgs: '-E -u ghost'}
+                )).to.be.true;
+                expect(sudoStub.thirdCall.calledWithExactly(
+                    'mkdir -p /var/www/ghost/content/public',
+                    {sudoArgs: '-E -u ghost'}
+                )).to.be.true;
+            });
+        });
+
+        it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
+            const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(false);
+            const fsStub = sinon.stub(fs, 'ensureDirSync');
+            const config = createConfig();
+            config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
+
+            const context = {instance: {config: config}};
+
+            return migrations[0].task(context).then(() => {
+                expect(ghostUserStub.calledThrice).to.be.true;
+                expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
+                expect(fsStub.calledThrice).to.be.true;
+                expect(fsStub.firstCall.calledWithExactly('/var/www/ghost/content/media')).to.be.true;
+                expect(fsStub.secondCall.calledWithExactly('/var/www/ghost/content/files')).to.be.true;
+                expect(fsStub.thirdCall.calledWithExactly('/var/www/ghost/content/public')).to.be.true;
+            });
+        });
+    })
 });
