@@ -1,6 +1,5 @@
 const path = require('path');
 
-
 async function ensureFolder(context, folderName) {
     const ghostUser = require('./utils/use-ghost-user');
 
@@ -15,7 +14,7 @@ async function ensureFolder(context, folderName) {
 }
 
 async function ensureSettingsFolder(context) {
-    await ensureFolder(context, 'settings')
+    await ensureFolder(context, 'settings');
 }
 
 async function makeSqliteAbsolute({instance}) {
