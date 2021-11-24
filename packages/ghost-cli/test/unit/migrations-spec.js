@@ -130,5 +130,5 @@ describe('Unit: Migrations', function () {
                 expect(fsStub.thirdCall.calledWithExactly('/var/www/ghost/content/public')).to.be.true;
             });
         });
-    })
+    });
 });

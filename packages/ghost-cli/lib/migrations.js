@@ -46,7 +46,7 @@ module.exports = [{
     title: 'Fix Sqlite DB path',
     task: makeSqliteAbsolute
 }, {
-    before: '1.17.4',
+    before: '1.18.1',
     title: 'Create content/media, content/files and content/public directories',
     task: ensureMediaFileAndPublicFolders
 }];
