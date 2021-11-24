@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.18.1"></a>
+## [1.18.1](https://github.com/TryGhost/Ghost-CLI/compare/1.18.0...1.18.1) (2021-11-24)
+
+
+### Features
+
+* add 3 new folders to content directory ([#1581](https://github.com/TryGhost/Ghost-CLI/issues/1581)) ([2777c23](https://github.com/TryGhost/Ghost-CLI/commit/2777c23))
+
+
+
 <a name="1.18.0"></a>
 # [1.18.0](https://github.com/TryGhost/Ghost-CLI/compare/1.17.4...1.18.0) (2021-10-29)
 
