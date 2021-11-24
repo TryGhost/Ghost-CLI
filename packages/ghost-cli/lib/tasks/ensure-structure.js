@@ -17,4 +17,7 @@ module.exports = function ensureStructure() {
     fs.ensureDirSync(path.resolve(cwd, 'content', 'images'));
     fs.ensureDirSync(path.resolve(cwd, 'content', 'logs'));
     fs.ensureDirSync(path.resolve(cwd, 'content', 'settings'));
+    fs.ensureDirSync(path.resolve(cwd, 'content', 'media'));
+    fs.ensureDirSync(path.resolve(cwd, 'content', 'files'));
+    fs.ensureDirSync(path.resolve(cwd, 'content', 'public'));
 };
