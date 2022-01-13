@@ -82,7 +82,7 @@ module.exports = function yarnInstall(ui, zipFile) {
     tasks.push({
         title: 'Installing dependencies',
         task: (ctx) => {
-            const args = ['install', '--no-emoji', '--no-progress'];
+            const args = ['install'];
             if (process.env.GHOST_NODE_VERSION_CHECK === 'false') {
                 args.push('--ignore-engines');
             }

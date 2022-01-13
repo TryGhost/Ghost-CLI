@@ -44,7 +44,7 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(distTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
-            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
+            expect(yarnStub.args[0][0]).to.deep.equal(['install']);
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
                 env: {NODE_ENV: 'production'},
@@ -80,7 +80,7 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(distTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
-            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress', '--ignore-engines']);
+            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--ignore-engines']);
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
                 env: {NODE_ENV: 'production'},
@@ -139,7 +139,7 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(distTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
-            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
+            expect(yarnStub.args[0][0]).to.deep.equal(['install']);
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: env.dir,
                 env: {NODE_ENV: 'production'},
