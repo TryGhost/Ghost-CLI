@@ -494,13 +494,21 @@ describe('Unit: Utils: version', function () {
             this.slow(2000);
 
             try {
-                await versionFromZip(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', {force: true});
+                await versionFromZip(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0');
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(CliError);
                 expect(error.message)
                     .to.equal('Version in zip file: 1.0.0, is less than the current active version: 1.5.0');
             }
+        });
+
+        it('resolves if update version passed, force is passed, and zip version < update version', async function () {
+            this.timeout(5000);
+            this.slow(2000);
+
+            const version = await versionFromZip(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', {force: true});
+            expect(version).to.equal('1.0.0');
         });
 
         it('resolves with version of ghost in zip file', async function () {
