@@ -23,6 +23,10 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
+      - name: Use latest global yarn version
+        run: |
+          cd ~
+          yarn set version berry
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
