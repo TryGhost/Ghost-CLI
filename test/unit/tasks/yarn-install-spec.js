@@ -47,7 +47,7 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
-                env: {NODE_ENV: 'production'},
+                env: {NODE_ENV: 'production', YARN_IGNORE_PATH: 'true'},
                 observe: true,
                 verbose: false
             });
@@ -83,7 +83,7 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress', '--ignore-engines']);
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
-                env: {NODE_ENV: 'production'},
+                env: {NODE_ENV: 'production', YARN_IGNORE_PATH: 'true'},
                 observe: true,
                 verbose: false
             });
@@ -142,7 +142,7 @@ describe('Unit: Tasks > yarn-install', function () {
             expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
             expect(yarnStub.args[0][1]).to.deep.equal({
                 cwd: env.dir,
-                env: {NODE_ENV: 'production'},
+                env: {NODE_ENV: 'production', YARN_IGNORE_PATH: 'true'},
                 observe: true,
                 verbose: true
             });
