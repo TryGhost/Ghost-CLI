@@ -121,7 +121,6 @@ describe('Unit: Commands > Doctor', function () {
 
         return instance.run({skipInstanceCheck: true, local: true, argv: true}).then(() => {
             expect(findValidStub.called).to.be.false;
-            expect(system.getInstance.called).to.be.false;
             expect(system.hook.calledOnce).to.be.true;
             expect(system.hook.calledWithExactly('doctor')).to.be.true;
             expect(instanceStub.checkEnvironment.called).to.be.false;
@@ -136,7 +135,6 @@ describe('Unit: Commands > Doctor', function () {
             const context = ui.listr.args[0][1];
             expect(context.argv).to.deep.equal({skipInstanceCheck: true, local: true, argv: true});
             expect(context.system).to.equal(system);
-            expect(context.instance).to.not.exist;
             expect(context.ui).to.equal(ui);
             expect(context.local).to.be.true;
             expect(context.isDoctorCommand).to.be.false;
@@ -169,7 +167,6 @@ describe('Unit: Commands > Doctor', function () {
             _: ['doctor']
         }).then(() => {
             expect(findValidStub.called).to.be.false;
-            expect(system.getInstance.called).to.be.false;
             expect(system.hook.calledOnce).to.be.true;
             expect(system.hook.calledWithExactly('doctor')).to.be.true;
             expect(instanceStub.checkEnvironment.called).to.be.false;
@@ -184,7 +181,6 @@ describe('Unit: Commands > Doctor', function () {
                 _: ['doctor']
             });
             expect(context.system).to.equal(system);
-            expect(context.instance).to.not.exist;
             expect(context.ui).to.equal(ui);
             expect(context.local).to.be.true;
             expect(context.isDoctorCommand).to.be.true;
@@ -210,7 +206,7 @@ describe('Unit: Commands > Doctor', function () {
             const DoctorCommand = proxyquire(modulePath, {
                 './checks': testChecks
             });
-            instance = new DoctorCommand({listr: listrStub}, {hook: hookStub});
+            instance = new DoctorCommand({listr: listrStub}, {hook: hookStub, getInstance: sinon.stub()});
         });
 
         afterEach(() => {

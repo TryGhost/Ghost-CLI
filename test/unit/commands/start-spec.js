@@ -9,7 +9,6 @@ const UI = require('../../../lib/ui');
 const DoctorCommand = require('../../../lib/commands/doctor');
 
 const modulePath = '../../../lib/commands/start';
-const StartCommand = require(modulePath);
 
 function getStubs(dir, environment = undefined) {
     const ui = new UI({});
@@ -22,23 +21,30 @@ function getStubs(dir, environment = undefined) {
     instance._config.environment = environment;
     system.environment = environment;
 
-    const getInstance = sinon.stub(system, 'getInstance').returns(instance);
-
     return {
-        ui, system, instance, getInstance
+        ui, system, instance
     };
 }
 
 describe('Unit: Commands > Start', function () {
     describe('run', function () {
         const oldArgv = process.argv;
+        let StartCommand;
+        let returnedInstance;
+
+        beforeEach(function () {
+            StartCommand = proxyquire(modulePath, {
+                '../utils/get-instance': sinon.stub().callsFake(() => returnedInstance),
+            });
+        })
 
         afterEach(() => {
             process.argv = oldArgv;
         });
 
         it('notifies and exits for already running instance', async function () {
-            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const {ui, system, instance} = getStubs('/var/www/ghost');
+            returnedInstance = instance;
             const isRunning = sinon.stub(instance, 'isRunning').resolves(true);
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
             const log = sinon.stub(ui, 'log');
@@ -49,7 +55,6 @@ describe('Unit: Commands > Start', function () {
             const runCommand = sinon.stub(cmd, 'runCommand').resolves();
 
             await cmd.run({});
-            expect(getInstance.calledOnce).to.be.true;
             expect(isRunning.calledOnce).to.be.true;
             expect(log.calledOnce).to.be.true;
 
@@ -61,6 +66,7 @@ describe('Unit: Commands > Start', function () {
 
         it('warns of http use in production', async function () {
             const {ui, system, instance} = getStubs('/var/www/ghost', 'production');
+            returnedInstance = instance;
             const logStub = sinon.stub(ui, 'log');
             const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
@@ -85,6 +91,7 @@ describe('Unit: Commands > Start', function () {
 
         it('no warning with ssl in production', async function () {
             const {ui, system, instance} = getStubs('/var/www/ghost', 'production');
+            returnedInstance = instance;
             const logStub = sinon.stub(ui, 'log');
             const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
@@ -105,7 +112,8 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('runs startup checks and starts correctly', async function () {
-            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const {ui, system, instance} = getStubs('/var/www/ghost');
+            returnedInstance = instance;
             const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
             const log = sinon.stub(ui, 'log');
@@ -118,16 +126,15 @@ describe('Unit: Commands > Start', function () {
             instance.config.get.returns('http://localhost:2368');
 
             await cmd.run({checkMem: false});
-            expect(getInstance.calledOnce).to.be.true;
             expect(isRunning.calledOnce).to.be.true;
             expect(checkEnvironment.calledOnce).to.be.true;
             expect(runCommand.calledOnce).to.be.true;
-            expect(runCommand.calledWithExactly(DoctorCommand, {
+            expect(runCommand.args[0][1]).to.deep.equal({
                 categories: ['start'],
                 quiet: true,
                 checkMem: false,
                 skipInstanceCheck: true
-            })).to.be.true;
+            });
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.calledTwice).to.be.true;
@@ -135,7 +142,8 @@ describe('Unit: Commands > Start', function () {
         });
 
         it('doesn\'t log if quiet is set to true', async function () {
-            const {ui, system, instance, getInstance} = getStubs('/var/www/ghost');
+            const {ui, system, instance} = getStubs('/var/www/ghost');
+            returnedInstance = instance;
             const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
             const log = sinon.stub(ui, 'log');
@@ -146,16 +154,15 @@ describe('Unit: Commands > Start', function () {
             const runCommand = sinon.stub(cmd, 'runCommand').resolves();
 
             await cmd.run({checkMem: false, quiet: true});
-            expect(getInstance.calledOnce).to.be.true;
             expect(isRunning.calledOnce).to.be.true;
             expect(checkEnvironment.calledOnce).to.be.true;
             expect(runCommand.calledOnce).to.be.true;
-            expect(runCommand.calledWithExactly(DoctorCommand, {
+            expect(runCommand.args[0][1]).to.deep.equal({
                 categories: ['start'],
                 quiet: true,
                 checkMem: false,
                 skipInstanceCheck: true
-            })).to.be.true;
+            });
             expect(run.calledOnce).to.be.true;
             expect(start.calledOnce).to.be.true;
             expect(log.called).to.be.false;

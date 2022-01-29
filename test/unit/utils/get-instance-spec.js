@@ -8,14 +8,14 @@ describe('Unit: Utils > getInstance', function () {
     let getInstance, stubs, system;
     beforeEach(function () {
         stubs = {
-            checkValidInstall: sinon.stub().callsFake(a => a),
+            findValidInstallation: sinon.stub().callsFake(a => a),
             chdir: sinon.stub(process, 'chdir'),
             getInstance: sinon.stub().returns('It\'s-a Me, Mario!')
         };
 
         system = {getInstance: stubs.getInstance};
         getInstance = proxyquire(modulePath, {
-            './check-valid-install': stubs.checkValidInstall
+            './find-valid-install': stubs.findValidInstallation
         });
     });
 
@@ -24,20 +24,20 @@ describe('Unit: Utils > getInstance', function () {
     });
 
     it('Doesn\'t change directory by default', function () {
-        const result = getInstance(undefined, system, 'test');
+        const result = getInstance({name: undefined, system, command: 'test', recurse: false});
 
         expect(result).to.equal('It\'s-a Me, Mario!');
         expect(stubs.getInstance.calledOnce).to.be.true;
         expect(stubs.chdir.called).to.be.false;
-        expect(stubs.checkValidInstall.calledOnce).to.be.true;
-        expect(stubs.checkValidInstall.calledWithExactly('test')).to.be.true;
+        expect(stubs.findValidInstallation.calledOnce).to.be.true;
+        expect(stubs.findValidInstallation.calledWithExactly('test', false)).to.be.true;
     });
 
     it('Fails if the instance cannot be found', function () {
         stubs.getInstance.returns(null);
 
         try {
-            getInstance('ghosted', system, 'test');
+            getInstance({name: 'ghosted', system, command: 'test', recurse: false});
             expect(false, 'Promise should have rejected').to.be.true;
         } catch (error) {
             expect(error).to.be.instanceof(SystemError);
@@ -49,7 +49,7 @@ describe('Unit: Utils > getInstance', function () {
         const dir = '/path/to/ghost';
         stubs.getInstance.returns({dir});
 
-        const result = getInstance('i', system, 'test');
+        const result = getInstance({name: 'i', system, command: 'test', recurse: false});
 
         expect(result.dir).to.equal(dir);
         expect(stubs.chdir.calledOnce).to.to.true;

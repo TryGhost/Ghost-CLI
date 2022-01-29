@@ -59,7 +59,7 @@ describe('Unit: Commands > Stop', function () {
             await stop.run({name: 'testing'});
 
             expect(getInstance.calledOnce).to.be.true;
-            expect(getInstance.args[0][0]).to.equal('testing');
+            expect(getInstance.args[0][0]?.name).to.equal('testing');
             expect(isRunning.calledOnce).to.be.true;
             expect(log.calledOnce).to.be.true;
         });
@@ -78,7 +78,7 @@ describe('Unit: Commands > Stop', function () {
             await cmd.run({name: 'testing'});
 
             expect(getInstance.calledOnce).to.be.true;
-            expect(getInstance.args[0][0]).to.equal('testing');
+            expect(getInstance.args[0][0]?.name).to.equal('testing');
             expect(isRunning.calledOnce).to.be.true;
             expect(run.calledOnce).to.be.true;
             expect(stop.calledOnce).to.be.true;
