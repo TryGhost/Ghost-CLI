@@ -47,7 +47,7 @@
     "boxen": "5.1.2",
     "chalk": "4.1.2",
     "cli-table3": "0.5.0",
-    "debug": "4.3.2",
+    "debug": "4.3.3",
     "decompress": "4.2.1",
     "download": "8.0.0",
     "execa": "1.0.0",
@@ -87,7 +87,7 @@
     "tough-cookie": "4.0.0",
     "validator": "7.2.0",
     "yargs": "17.1.1",
-    "yarn": "1.22.11"
+    "yarn": "1.22.17"
   },
   "devDependencies": {
     "chai": "4.3.4",
