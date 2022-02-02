@@ -72,7 +72,7 @@
     "package-json": "6.5.0",
     "path-is-root": "0.1.0",
     "portfinder": "1.0.28",
-    "prettyjson": "1.2.1",
+    "prettyjson": "1.2.5",
     "proxy-from-env": "1.1.0",
     "read-last-lines": "1.8.0",
     "replace-in-file": "6.3.2",
