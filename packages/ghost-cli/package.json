@@ -76,7 +76,7 @@
     "proxy-from-env": "1.1.0",
     "read-last-lines": "1.8.0",
     "replace-in-file": "6.3.2",
-    "rxjs": "7.5.2",
+    "rxjs": "7.5.4",
     "semver": "7.3.5",
     "shasum": "1.0.2",
     "stat-mode": "1.0.0",
