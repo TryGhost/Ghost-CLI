@@ -4914,10 +4914,10 @@ symlink-or-copy@1.3.1:
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==
 
-systeminformation@5.11.4:
-  version "5.11.4"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.11.4.tgz#3ed99533c67d0b4bd357871687e014f1c2a37194"
-  integrity sha512-rh7bjpjP5whUaTknim5CiGdAiKZcgWhmbmxjzBRXDWqUc/k67bz2OP+03DdcX6/SN/CDSAi/NeUwM5o2gjHJoA==
+systeminformation@5.11.6:
+  version "5.11.6"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.11.6.tgz#8624cbb2e95e6fa98a4ebb0d10759427c0e88144"
+  integrity sha512-7KBXgdnIDxABQ93w+GrPSrK/pup73+fM09VGka4A/+FhgzdlRY0JNGGDFmV8BHnFuzP9zwlI3n64yDbp7emasQ==
 
 table@^5.2.3:
   version "5.4.6"
