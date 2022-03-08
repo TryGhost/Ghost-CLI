@@ -308,7 +308,8 @@ describe('Unit: Command', function () {
 
         it('loads system and ui dependencies, calls run method', async function () {
             const run = sinon.stub().callsFake(fn => fn());
-            const uiStub = sinon.stub().returns({ui: true, run});
+            const log = sinon.stub();
+            const uiStub = sinon.stub().returns({ui: true, run, log});
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
@@ -340,7 +341,7 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true, run, log}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.calledOnce).to.be.true;
@@ -350,7 +351,8 @@ describe('Unit: Command', function () {
 
         it('binds cleanup handler if cleanup method is defined', async function () {
             const run = sinon.stub().callsFake(fn => fn());
-            const uiStub = sinon.stub().returns({ui: true, run});
+            const log = sinon.stub();
+            const uiStub = sinon.stub().returns({ui: true, run, log});
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
@@ -387,7 +389,7 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true, run, log}, [{extensiona: true}])).to.be.true;
             expect(run.calledOnce).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.called).to.be.false;
@@ -401,7 +403,8 @@ describe('Unit: Command', function () {
 
         it('runs updateCheck if checkVersion property is true on command class', async function () {
             const run = sinon.stub().callsFake(fn => fn());
-            const uiStub = sinon.stub().returns({ui: true, run});
+            const log = sinon.stub();
+            const uiStub = sinon.stub().returns({ui: true, run, log});
             const setEnvironmentStub = sinon.stub();
             const loadOsInfo = sinon.stub().resolves();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
@@ -437,20 +440,21 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({ui: true, run}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({ui: true, run, log}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.calledOnce).to.be.true;
             expect(preChecksStub.calledOnce).to.be.true;
-            expect(preChecksStub.calledWithExactly({ui: true, run}, {setEnvironment: setEnvironmentStub, loadOsInfo})).to.be.true;
+            expect(preChecksStub.calledWithExactly({ui: true, run, log}, {setEnvironment: setEnvironmentStub, loadOsInfo})).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
         });
 
         it('catches errors, passes them to ui error method, then exits', async function () {
             const run = sinon.stub().callsFake(fn => fn());
+            const log = sinon.stub();
             const errorStub = sinon.stub();
-            const uiStub = sinon.stub().returns({error: errorStub, run});
+            const uiStub = sinon.stub().returns({error: errorStub, run, log});
             const loadOsInfo = sinon.stub().resolves();
             const setEnvironmentStub = sinon.stub();
             const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
@@ -488,7 +492,7 @@ describe('Unit: Command', function () {
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
-            expect(systemStub.calledWithExactly({error: errorStub, run}, [{extensiona: true}])).to.be.true;
+            expect(systemStub.calledWithExactly({error: errorStub, run, log}, [{extensiona: true}])).to.be.true;
             expect(run.calledTwice).to.be.true;
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.calledOnce).to.be.true;
