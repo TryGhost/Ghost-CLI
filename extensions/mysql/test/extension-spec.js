@@ -102,7 +102,7 @@ describe('Unit: Mysql extension', function () {
             const connectStub = sinon.stub().callsArg(0);
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
-                mysql: {createConnection: createConnectionStub}
+                mysql2: {createConnection: createConnectionStub}
             });
             const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
             const getServerVersion = sinon.stub(instance, 'getServerVersion').resolves(null);
@@ -121,7 +121,7 @@ describe('Unit: Mysql extension', function () {
             const connectStub = sinon.stub().callsArg(0);
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
-                mysql: {createConnection: createConnectionStub}
+                mysql2: {createConnection: createConnectionStub}
             });
             const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
 
@@ -143,7 +143,7 @@ describe('Unit: Mysql extension', function () {
             const connectStub = sinon.stub().callsArg(0);
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
-                mysql: {createConnection: createConnectionStub}
+                mysql2: {createConnection: createConnectionStub}
             });
             const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
 
@@ -172,7 +172,7 @@ describe('Unit: Mysql extension', function () {
             });
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
-                mysql: {createConnection: createConnectionStub}
+                mysql2: {createConnection: createConnectionStub}
             });
             const instance = new MysqlExtension({}, {}, {}, '/some/dir');
 
@@ -194,7 +194,7 @@ describe('Unit: Mysql extension', function () {
             });
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
-                mysql: {createConnection: createConnectionStub}
+                mysql2: {createConnection: createConnectionStub}
             });
             const instance = new MysqlExtension({}, {}, {}, '/some/dir');
 
@@ -214,7 +214,7 @@ describe('Unit: Mysql extension', function () {
             });
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
-                mysql: {createConnection: createConnectionStub}
+                mysql2: {createConnection: createConnectionStub}
             });
             const instance = new MysqlExtension({}, {}, {}, '/some/dir');
 
