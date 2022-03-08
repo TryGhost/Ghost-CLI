@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const omit = require('lodash/omit');
 const generator = require('generate-password');
 const semver = require('semver');
