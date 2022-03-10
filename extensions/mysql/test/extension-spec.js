@@ -231,6 +231,54 @@ describe('Unit: Mysql extension', function () {
         });
     });
 
+    describe.only('isDeprecated', function () {
+        it('returns that 5.7 is deprecated', async function () {
+            const connectStub = sinon.stub().callsArg(0);
+            const endStub = sinon.stub();
+            const createConnectionStub = sinon.stub().returns({connect: connectStub, end: endStub});
+
+            const MysqlExtension = proxyquire(modulePath, {
+                mysql2: {createConnection: createConnectionStub}
+            });
+            const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
+
+            const version = semver.parse('5.7.30');
+            const getServerVersion = sinon.stub(instance, 'getServerVersion').resolves(version);
+
+            const isDeprecated = await instance.isDeprecated({user: 'someuser', password: 'somepass', database: 'testing'});
+
+            expect(createConnectionStub.calledOnce).to.be.true;
+            expect(createConnectionStub.calledWithExactly({user: 'someuser', password: 'somepass'})).to.be.true;
+            expect(connectStub.calledOnce).to.be.true;
+            expect(endStub.calledOnce).to.be.true;
+            expect(getServerVersion.calledOnce).to.be.true;
+            expect(isDeprecated).to.be.true;
+        });
+
+        it('returns that 8.0 is not deprecated', async function () {
+            const connectStub = sinon.stub().callsArg(0);
+            const endStub = sinon.stub();
+            const createConnectionStub = sinon.stub().returns({connect: connectStub, end: endStub});
+
+            const MysqlExtension = proxyquire(modulePath, {
+                mysql2: {createConnection: createConnectionStub}
+            });
+            const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
+
+            const version = semver.parse('8.0.0');
+            const getServerVersion = sinon.stub(instance, 'getServerVersion').resolves(version);
+
+            const isDeprecated = await instance.isDeprecated({user: 'someuser', password: 'somepass', database: 'testing'});
+
+            expect(createConnectionStub.calledOnce).to.be.true;
+            expect(createConnectionStub.calledWithExactly({user: 'someuser', password: 'somepass'})).to.be.true;
+            expect(connectStub.calledOnce).to.be.true;
+            expect(endStub.calledOnce).to.be.true;
+            expect(getServerVersion.calledOnce).to.be.true;
+            expect(isDeprecated).to.be.false;
+        });
+    });
+
     describe('createUser', function () {
         const MysqlExtension = require(modulePath);
 
