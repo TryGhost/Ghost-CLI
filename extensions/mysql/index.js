@@ -58,6 +58,15 @@ class MySQLExtension extends Extension {
         }], false);
     }
 
+    async isDeprecated(dbconfig) {
+        const ctx = {};
+        await this.canConnect(ctx, dbconfig);
+        this.connection.end();
+
+        // Anything that isn't MySQL 8 is deprecated
+        return ctx.mysql && !isMySQL8(ctx.mysql.version);
+    }
+
     async getServerVersion() {
         try {
             const result = await this._query('SELECT @@version AS version');
