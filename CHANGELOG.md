@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.18.2"></a>
+## [1.18.2](https://github.com/TryGhost/Ghost-CLI/compare/1.18.1...1.18.2) (2022-03-11)
+
+
+### Bug Fixes
+
+* **setup:** disallow running internal stages from command line flags ([758c84f](https://github.com/TryGhost/Ghost-CLI/commit/758c84f))
+* **version:** handled force flag when specifying versions ([eb3e5de](https://github.com/TryGhost/Ghost-CLI/commit/eb3e5de))
+* **yarn:** use bundled yarn version ([#1595](https://github.com/TryGhost/Ghost-CLI/issues/1595)) ([55812d9](https://github.com/TryGhost/Ghost-CLI/commit/55812d9))
+
+
+### Features
+
+* **cmd:** added notice about joining the Ghost team ([8e354fc](https://github.com/TryGhost/Ghost-CLI/commit/8e354fc))
+
+
+
 <a name="1.18.1"></a>
 ## [1.18.1](https://github.com/TryGhost/Ghost-CLI/compare/1.18.0...1.18.1) (2021-11-24)
 
