@@ -76,7 +76,7 @@ describe('Unit: Tasks > Major Update > UI', function () {
         await ui(ctx);
         expect(ctx.ui.log.callCount).to.eql(7);
         expect(ctx.ui.confirm.calledTwice).to.be.true;
-        expect(ctx.ui.confirm.args[1][1], 'confirm prompt default should be false').to.be.false;
+        expect(ctx.ui.confirm.args[1][1], 'confirm prompt default should be false').to.be.true;
 
         const output = stripAnsi(ctx.ui.log.args.join(' '));
 
