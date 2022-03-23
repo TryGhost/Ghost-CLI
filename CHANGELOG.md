@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.19.2"></a>
+## [1.19.2](https://github.com/TryGhost/Ghost-CLI/compare/1.19.1...1.19.2) (2022-03-23)
+
+
+### Bug Fixes
+
+* **deprecation:** fixed check hanging CLI due to multiple sites ([20fb349](https://github.com/TryGhost/Ghost-CLI/commit/20fb349))
+
+
+
 <a name="1.19.1"></a>
 ## [1.19.1](https://github.com/TryGhost/Ghost-CLI/compare/1.19.0...1.19.1) (2022-03-23)
 
