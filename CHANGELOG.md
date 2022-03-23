@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.19.0"></a>
+# [1.19.0](https://github.com/TryGhost/Ghost-CLI/compare/1.18.2...1.19.0) (2022-03-23)
+
+
+### Bug Fixes
+
+* **major:** allowed auto major upgrades when theme has warnings ([7ad1f93](https://github.com/TryGhost/Ghost-CLI/commit/7ad1f93))
+
+
+### Features
+
+* **deprecation:** added notice when using a deprecated database ([fbe7a2d](https://github.com/TryGhost/Ghost-CLI/commit/fbe7a2d))
+
+
+
 <a name="1.18.2"></a>
 ## [1.18.2](https://github.com/TryGhost/Ghost-CLI/compare/1.18.1...1.18.2) (2022-03-11)
 
