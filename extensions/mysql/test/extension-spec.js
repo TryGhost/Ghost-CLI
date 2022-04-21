@@ -231,7 +231,7 @@ describe('Unit: Mysql extension', function () {
         });
     });
 
-    describe.only('isDeprecated', function () {
+    describe('isDeprecated', function () {
         it('returns that 5.7 is deprecated', async function () {
             const connectStub = sinon.stub().callsArg(0);
             const endStub = sinon.stub();
