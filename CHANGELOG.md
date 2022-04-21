@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.19.3"></a>
+## [1.19.3](https://github.com/TryGhost/Ghost-CLI/compare/1.19.2...1.19.3) (2022-04-21)
+
+
+### Bug Fixes
+
+* **import:** ensure import/exports works with 5.x ([ae8177b](https://github.com/TryGhost/Ghost-CLI/commit/ae8177b))
+* **major:** use `mysql2` library if present ([098ca92](https://github.com/TryGhost/Ghost-CLI/commit/098ca92))
+* **tests:** fixed accidental `.only` in tests ([6e31c54](https://github.com/TryGhost/Ghost-CLI/commit/6e31c54))
+
+
+
 <a name="1.19.2"></a>
 ## [1.19.2](https://github.com/TryGhost/Ghost-CLI/compare/1.19.1...1.19.2) (2022-03-23)
 
