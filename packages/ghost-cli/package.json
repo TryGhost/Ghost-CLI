@@ -58,7 +58,7 @@
     "generate-password": "1.7.0",
     "global-modules": "2.0.0",
     "got": "9.6.0",
-    "https-proxy-agent": "5.0.0",
+    "https-proxy-agent": "5.0.1",
     "ini": "2.0.0",
     "inquirer": "8.2.3",
     "is-running": "2.1.0",
