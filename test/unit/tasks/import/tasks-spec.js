@@ -122,20 +122,20 @@ describe('Unit: Tasks > Import > Tasks', function () {
 
         it('exports content', async function () {
             const isSetup = sinon.stub().resolves(true);
-            const downloadExport = sinon.stub().resolves();
+            const downloadContentExport = sinon.stub().resolves();
             const config = createConfigStub();
             const prompt = sinon.stub().resolves({username: 'username', password: 'password'});
 
             config.get.withArgs('url').returns('http://localhost:2368');
 
             const {exportTask} = proxyquire(modulePath, {
-                './api': {isSetup, downloadExport}
+                './api': {isSetup, downloadContentExport}
             });
 
             await exportTask({prompt}, {config, version: '1.0.0'}, 'test-export.json');
             expect(isSetup.calledOnceWithExactly('1.0.0', 'http://localhost:2368')).to.be.true;
             expect(prompt.calledOnce).to.be.true;
-            expect(downloadExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
+            expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
                 username: 'username', password: 'password'
             }, 'test-export.json'));
         });
