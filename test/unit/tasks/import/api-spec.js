@@ -5,7 +5,7 @@ const tmp = require('tmp');
 const fs = require('fs-extra');
 
 const {SystemError} = require('../../../../lib/errors');
-const {getBaseUrl, isSetup, setup, runImport, downloadExport} = require('../../../../lib/tasks/import/api');
+const {getBaseUrl, isSetup, setup, runImport, downloadContentExport} = require('../../../../lib/tasks/import/api');
 
 const testUrl = 'http://localhost:2368';
 
@@ -360,7 +360,7 @@ describe('Unit > Tasks > Import > setup', function () {
         });
     });
 
-    describe('downloadExport', function () {
+    describe('downloadContentExport', function () {
         it('1.x', async function () {
             const clientId = 'client-id';
             const clientSecret = 'client-secret';
@@ -409,7 +409,7 @@ describe('Unit > Tasks > Import > setup', function () {
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '1.x.json');
 
-            await downloadExport('1.0.0', testUrl, {
+            await downloadContentExport('1.0.0', testUrl, {
                 username: 'test@example.com',
                 password: 'password'
             }, outputFile);
@@ -454,7 +454,7 @@ describe('Unit > Tasks > Import > setup', function () {
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '2.x.json');
 
-            await downloadExport('2.0.0', 'http://localhost:2368', {
+            await downloadContentExport('2.0.0', 'http://localhost:2368', {
                 username: 'test@example.com',
                 password: 'password'
             }, outputFile);
@@ -498,7 +498,7 @@ describe('Unit > Tasks > Import > setup', function () {
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '3.x.json');
 
-            await downloadExport('3.0.0', 'http://localhost:2368', {
+            await downloadContentExport('3.0.0', 'http://localhost:2368', {
                 username: 'test@example.com',
                 password: 'password'
             }, outputFile);
@@ -542,7 +542,7 @@ describe('Unit > Tasks > Import > setup', function () {
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '4.x.json');
 
-            await downloadExport('4.0.0', 'http://localhost:2368', {
+            await downloadContentExport('4.0.0', 'http://localhost:2368', {
                 username: 'test@example.com',
                 password: 'password'
             }, outputFile);
@@ -587,7 +587,7 @@ describe('Unit > Tasks > Import > setup', function () {
         const tmpDir = tmp.dirSync();
         const outputFile = path.join(tmpDir.name, '5.x.json');
 
-        await downloadExport('5.0.0', 'http://localhost:2368', {
+        await downloadContentExport('5.0.0', 'http://localhost:2368', {
             username: 'test@example.com',
             password: 'password'
         }, outputFile);
