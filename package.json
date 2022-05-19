@@ -43,6 +43,7 @@
   },
   "preferGlobal": true,
   "dependencies": {
+    "@tryghost/zip": "^1.1.25",
     "abbrev": "1.1.1",
     "adm-zip": "0.5.9",
     "bluebird": "3.7.2",
