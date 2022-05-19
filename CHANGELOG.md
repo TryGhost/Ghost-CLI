@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.20.0"></a>
+# [1.20.0](https://github.com/TryGhost/Ghost-CLI/compare/1.19.3...1.20.0) (2022-05-19)
+
+
+### Bug Fixes
+
+* **backup:** Don't show warnng on current major ([fbc7fdd](https://github.com/TryGhost/Ghost-CLI/commit/fbc7fdd))
+* **backup:** Ensure the backup is up-to-date ([747d66e](https://github.com/TryGhost/Ghost-CLI/commit/747d66e))
+* **backup:** Fixed weirdness with streams ([0665bc1](https://github.com/TryGhost/Ghost-CLI/commit/0665bc1))
+
+
+### Features
+
+* **backup:** Added members export to backup ([fa46ccf](https://github.com/TryGhost/Ghost-CLI/commit/fa46ccf))
+
+
+
 <a name="1.19.3"></a>
 ## [1.19.3](https://github.com/TryGhost/Ghost-CLI/compare/1.19.2...1.19.3) (2022-04-21)
 
