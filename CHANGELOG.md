@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.21.0"></a>
+# [1.21.0](https://github.com/TryGhost/Ghost-CLI/compare/1.20.0...1.21.0) (2022-05-20)
+
+
+### Bug Fixes
+
+* **backup:** added `premajor` check when checking if current is behind ([f078b4a](https://github.com/TryGhost/Ghost-CLI/commit/f078b4a)), closes [/github.com/TryGhost/Ghost-CLI/blob/118c0df12e180e5696bed4dc8196f8a0f158d94f/lib/utils/version.js#L120](https://github.com//github.com/TryGhost/Ghost-CLI/blob/118c0df12e180e5696bed4dc8196f8a0f158d94f/lib/utils/version.js/issues/L120)
+* **backup:** added guard against unpublished versions ([0729b75](https://github.com/TryGhost/Ghost-CLI/commit/0729b75))
+* **backup:** clear error if zip is not installed ([a0f1d36](https://github.com/TryGhost/Ghost-CLI/commit/a0f1d36))
+* **backup:** do not backup casper symlink ([118c0df](https://github.com/TryGhost/Ghost-CLI/commit/118c0df))
+* **backup:** handle local + server permissions ([0cbb492](https://github.com/TryGhost/Ghost-CLI/commit/0cbb492))
+* **backup:** Handled directory permission dance ([05e5559](https://github.com/TryGhost/Ghost-CLI/commit/05e5559))
+* **backup:** swap to using [@tryghost](https://github.com/tryghost)/zip ([3eca000](https://github.com/TryGhost/Ghost-CLI/commit/3eca000))
+* **check-update:** fixed output for current major ([b72c25b](https://github.com/TryGhost/Ghost-CLI/commit/b72c25b))
+* **deprecation:** Update deprecation notice for v3 ([c87e02e](https://github.com/TryGhost/Ghost-CLI/commit/c87e02e))
+* **export:** file is not optional ([8fdc4e3](https://github.com/TryGhost/Ghost-CLI/commit/8fdc4e3))
+* **output:** move hiring notice to first thing ([a5aa2c0](https://github.com/TryGhost/Ghost-CLI/commit/a5aa2c0))
+
+
+### Features
+
+* **backup:** add backup warning to major upgrade prompt ([5b83003](https://github.com/TryGhost/Ghost-CLI/commit/5b83003))
+* **backup:** drop force flag in favour of a warning ([1c689bb](https://github.com/TryGhost/Ghost-CLI/commit/1c689bb))
+* **latest:** aliased check-update & improved output ([310ca50](https://github.com/TryGhost/Ghost-CLI/commit/310ca50))
+* **latest:** also alias check-updates ([1b6f1ca](https://github.com/TryGhost/Ghost-CLI/commit/1b6f1ca))
+
+
+
 <a name="1.20.0"></a>
 # [1.20.0](https://github.com/TryGhost/Ghost-CLI/compare/1.19.3...1.20.0) (2022-05-19)
 
