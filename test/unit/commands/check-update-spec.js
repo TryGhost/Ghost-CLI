@@ -36,7 +36,7 @@ describe('Unit: Commands > check-update', function () {
     });
 
     it('logs out available new version', async function () {
-        const loadVersions = sinon.stub().resolves({latest: '2.1.0', latestMajor: {v1: '1.0.0'}});
+        const loadVersions = sinon.stub().resolves({latest: '2.1.0', latestMajor: {v1: '1.0.0', v2: '2.1.0'}});
         const CheckUpdateCommand = proxyquire(modulePath, {
             '../utils/version': {loadVersions}
         });
@@ -72,7 +72,7 @@ describe('Unit: Commands > check-update', function () {
     });
 
     it('logs out available new major version when on latest minor', async function () {
-        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0'}});
+        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0', v4: '4.1.0'}});
         const CheckUpdateCommand = proxyquire(modulePath, {
             '../utils/version': {loadVersions}
         });
