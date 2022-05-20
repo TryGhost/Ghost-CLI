@@ -12,13 +12,13 @@ describe('Unit: Commands > check-update', function () {
 
         const cmd = new CheckUpdateCommand({log}, {getInstance});
 
-        await cmd.run({v1: false});
+        await cmd.run();
 
         expect(getInstance.calledOnce).to.be.true;
         expect(log.called).to.be.false;
     });
 
-    it('doesn\'t output anything if no new versions are available', async function () {
+    it('outputs clear message if no new versions are available', async function () {
         const loadVersions = sinon.stub().resolves({latest: '2.0.0', latestMajor: {v1: '1.0.0', v2: '2.0.0'}});
         const CheckUpdateCommand = proxyquire(modulePath, {
             '../utils/version': {loadVersions}
@@ -28,11 +28,11 @@ describe('Unit: Commands > check-update', function () {
         const getInstance = sinon.stub().returns({version: '2.0.0'});
 
         const cmd = new CheckUpdateCommand({log}, {getInstance});
-        await cmd.run({v1: false});
+        await cmd.run();
 
         expect(getInstance.calledOnce).to.be.true;
         expect(loadVersions.calledOnce).to.be.true;
-        expect(log.called).to.be.false;
+        expect(log.calledThrice).to.be.true;
     });
 
     it('logs out available new version', async function () {
@@ -45,27 +45,47 @@ describe('Unit: Commands > check-update', function () {
         const getInstance = sinon.stub().returns({version: '2.0.0'});
 
         const cmd = new CheckUpdateCommand({log}, {getInstance});
-        await cmd.run({v1: false});
+        await cmd.run();
 
         expect(getInstance.calledOnce).to.be.true;
         expect(loadVersions.calledOnce).to.be.true;
-        expect(log.calledOnce).to.be.true;
+        expect(log.calledThrice).to.be.true;
+        expect(log.thirdCall.firstArg).to.match(/^Minor/);
     });
 
-    it('logs out available new version (v1 flag)', async function () {
-        const loadVersions = sinon.stub().resolves({latest: '2.0.0', latestMajor: {v1: '1.1.0'}});
+    it('logs out available new minor and major version if available', async function () {
+        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0'}});
         const CheckUpdateCommand = proxyquire(modulePath, {
             '../utils/version': {loadVersions}
         });
 
         const log = sinon.stub();
-        const getInstance = sinon.stub().returns({version: '1.0.0'});
+        const getInstance = sinon.stub().returns({version: '3.1.0'});
 
         const cmd = new CheckUpdateCommand({log}, {getInstance});
-        await cmd.run({v1: true});
+        await cmd.run();
 
         expect(getInstance.calledOnce).to.be.true;
         expect(loadVersions.calledOnce).to.be.true;
-        expect(log.calledOnce).to.be.true;
+        expect(log.callCount).to.eql(4);
+        expect(log.getCall(3).firstArg).to.match(/^Major/);
+    });
+
+    it('logs out available new major version when on latest minor', async function () {
+        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0'}});
+        const CheckUpdateCommand = proxyquire(modulePath, {
+            '../utils/version': {loadVersions}
+        });
+
+        const log = sinon.stub();
+        const getInstance = sinon.stub().returns({version: '3.42.0'});
+
+        const cmd = new CheckUpdateCommand({log}, {getInstance});
+        await cmd.run();
+
+        expect(getInstance.calledOnce).to.be.true;
+        expect(loadVersions.calledOnce).to.be.true;
+        expect(log.calledThrice).to.be.true;
+        expect(log.thirdCall.firstArg).to.match(/^Major/);
     });
 });
