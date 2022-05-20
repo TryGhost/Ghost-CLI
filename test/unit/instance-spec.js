@@ -478,7 +478,7 @@ describe('Unit: Instance', function () {
             testInstance.checkEnvironment();
 
             expect(logStub.calledOnce).to.be.true;
-            expect(logStub.args[0][0]).to.match(/Found a development config/);
+            expect(logStub.args[0][0]).to.match(/Running in development mode/);
             expect(environmentStub.calledOnce).to.be.true;
             expect(environmentStub.args[0]).to.deep.equal([true, true]);
             expect(existsStub.calledTwice).to.be.true;
