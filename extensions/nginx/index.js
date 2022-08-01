@@ -269,7 +269,7 @@ class NginxExtension extends Extension {
     async isSupported() {
         try {
             const services = await sysinfo.services('*');
-            return services.some(s => s.name.trim() === nginxProgramName);
+            return services.some(s => s.name === nginxProgramName);
         } catch (error) {
             return false;
         }
