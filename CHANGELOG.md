@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.21.1"></a>
+## [1.21.1](https://github.com/TryGhost/Ghost-CLI/compare/1.21.0...1.21.1) (2022-08-01)
+
+
+### Bug Fixes
+
+* **services:** fixed services detected as missing ([fb74211](https://github.com/TryGhost/Ghost-CLI/commit/fb74211))
+
+
+
 <a name="1.21.0"></a>
 # [1.21.0](https://github.com/TryGhost/Ghost-CLI/compare/1.20.0...1.21.0) (2022-05-20)
 
