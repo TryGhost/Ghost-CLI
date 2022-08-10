@@ -305,11 +305,11 @@ describe('Unit: Commands > Install', function () {
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
         });
 
-        it('calls versionFromZip if zip file is passed in context', async function () {
+        it('calls versionFromArchive if zip file is passed in context', async function () {
             const resolveVersion = sinon.stub().resolves('1.5.0');
-            const versionFromZip = sinon.stub().resolves('1.5.2');
+            const versionFromArchive = sinon.stub().resolves('1.5.2');
             const InstallCommand = proxyquire(modulePath, {
-                '../utils/version': {resolveVersion, versionFromZip}
+                '../utils/version': {resolveVersion, versionFromArchive}
             });
             const log = sinon.stub();
 
@@ -318,8 +318,8 @@ describe('Unit: Commands > Install', function () {
 
             await testInstance.version(context);
             expect(resolveVersion.called).to.be.false;
-            expect(versionFromZip.calledOnce).to.be.true;
-            expect(versionFromZip.calledWith('/some/zip/file.zip')).to.be.true;
+            expect(versionFromArchive.calledOnce).to.be.true;
+            expect(versionFromArchive.calledWith('/some/zip/file.zip')).to.be.true;
             expect(context.version).to.equal('1.5.2');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.2'));
             expect(log.called).to.be.false;
@@ -327,9 +327,9 @@ describe('Unit: Commands > Install', function () {
 
         it('logs if both version and zip are passed', async function () {
             const resolveVersion = sinon.stub().resolves('1.5.0');
-            const versionFromZip = sinon.stub().resolves('1.5.2');
+            const versionFromArchive = sinon.stub().resolves('1.5.2');
             const InstallCommand = proxyquire(modulePath, {
-                '../utils/version': {resolveVersion, versionFromZip}
+                '../utils/version': {resolveVersion, versionFromArchive}
             });
             const log = sinon.stub();
 
@@ -338,8 +338,8 @@ describe('Unit: Commands > Install', function () {
 
             await testInstance.version(context);
             expect(resolveVersion.called).to.be.false;
-            expect(versionFromZip.calledOnce).to.be.true;
-            expect(versionFromZip.calledWith('/some/zip/file.zip')).to.be.true;
+            expect(versionFromArchive.calledOnce).to.be.true;
+            expect(versionFromArchive.calledWith('/some/zip/file.zip')).to.be.true;
             expect(context.version).to.equal('1.5.2');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.2'));
             expect(log.calledOnce).to.be.true;

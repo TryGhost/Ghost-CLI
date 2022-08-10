@@ -107,7 +107,7 @@ describe('Unit: Tasks > yarn-install', function () {
             tasks[0].task(ctx);
 
             expect(decompressStub.called).to.be.true;
-            expect(decompressStub.calledWithExactly('test.zip','/var/www/ghost')).to.be.true;
+            expect(decompressStub.calledWith('test.zip','/var/www/ghost')).to.be.true;
         });
     });
 

@@ -889,11 +889,11 @@ describe('Unit: Commands > Update', function () {
             expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
         });
 
-        it('calls versionFromZip resolver with zip path if zip is passed', async function () {
+        it('calls versionFromArchive resolver with zip path if zip is passed', async function () {
             const resolveVersion = sinon.stub().resolves('1.0.1');
-            const versionFromZip = sinon.stub().resolves('1.1.0');
+            const versionFromArchive = sinon.stub().resolves('1.1.0');
             const UpdateCommand = proxyquire(modulePath, {
-                '../utils/version': {resolveVersion, versionFromZip}
+                '../utils/version': {resolveVersion, versionFromArchive}
             });
             const instance = new UpdateCommand({}, {});
             const context = {
@@ -909,8 +909,8 @@ describe('Unit: Commands > Update', function () {
             const result = await instance.version(context);
             expect(result).to.be.true;
             expect(resolveVersion.called).to.be.false;
-            expect(versionFromZip.calledOnce).to.be.true;
-            expect(versionFromZip.calledWithExactly('/some/zip/file.zip', '1.0.0', {force: false})).to.be.true;
+            expect(versionFromArchive.calledOnce).to.be.true;
+            expect(versionFromArchive.calledWithExactly('/some/zip/file.zip', '1.0.0', {force: false})).to.be.true;
             expect(context.version).to.equal('1.1.0');
             expect(context.installPath).to.equal('/var/www/ghost/versions/1.1.0');
         });
