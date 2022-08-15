@@ -73,7 +73,7 @@
     "ora": "3.4.0",
     "package-json": "7.0.0",
     "path-is-root": "0.1.0",
-    "portfinder": "1.0.29",
+    "portfinder": "1.0.32",
     "prettyjson": "1.2.1",
     "proxy-from-env": "1.1.0",
     "read-last-lines": "1.8.0",
