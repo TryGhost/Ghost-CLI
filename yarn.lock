@@ -5252,10 +5252,10 @@ symlink-or-copy@1.3.1:
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==
 
-systeminformation@5.12.5:
-  version "5.12.5"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.12.5.tgz#ba223aca6d99453136986fb6a4c96518d13d27b5"
-  integrity sha512-lWhWMZTQzwHaB2aacQ9wbhSncgXo8bYv7M9K5Qrz9tJuvqPepiCvb5Uauq2xwH+JhbjPO9YJD2qLXQEXFAjwwA==
+systeminformation@5.12.6:
+  version "5.12.6"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.12.6.tgz#b75d7aaf9f5da32439fc633d2be9eb741691d200"
+  integrity sha512-FkCvT5BOuH1OE3+8lFM25oXIYJ0CM8kq4Wgvz2jyBTrsOIgha/6gdJXgbF4rv+g0j/5wJqQLDKan7kc/p7uIvw==
 
 table@^5.2.3:
   version "5.4.6"
