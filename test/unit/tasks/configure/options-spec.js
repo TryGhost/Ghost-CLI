@@ -58,6 +58,7 @@ describe('Unit: Tasks: Configure > options', function () {
     it('db', function () {
         expect(options.db).to.exist;
         expect(options.db.validate('mysql')).to.be.true;
+        expect(options.db.validate('mysql2')).to.be.true;
         expect(options.db.validate('sqlite3')).to.be.true;
         expect(options.db.validate('pg')).to.match(/Invalid database type/);
     });
@@ -65,6 +66,7 @@ describe('Unit: Tasks: Configure > options', function () {
     it('dbpath', function () {
         expect(options.dbpath).to.exist;
         expect(options.dbpath.defaultValue({get: () => 'mysql'})).to.be.null;
+        expect(options.dbpath.defaultValue({get: () => 'mysql2'})).to.be.null;
         expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'development')).to.equal(path.resolve('./content/data/ghost-dev.db'));
         expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'production')).to.equal(path.resolve('./content/data/ghost.db'));
     });
