@@ -88,7 +88,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, or 20\'');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, or 22\'');
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -114,7 +114,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, or 20\'');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, or 22\'');
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
