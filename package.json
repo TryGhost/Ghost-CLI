@@ -88,7 +88,7 @@
     "tail": "2.2.4",
     "tough-cookie": "4.1.2",
     "validator": "7.2.0",
-    "yargs": "17.5.1",
+    "yargs": "17.6.0",
     "yarn": "1.22.19"
   },
   "devDependencies": {
