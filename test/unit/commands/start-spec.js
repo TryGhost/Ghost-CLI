@@ -6,7 +6,6 @@ const createConfigStub = require('../../utils/config-stub');
 const Instance = require('../../../lib/instance');
 const System = require('../../../lib/system');
 const UI = require('../../../lib/ui');
-const DoctorCommand = require('../../../lib/commands/doctor');
 
 const modulePath = '../../../lib/commands/start';
 
@@ -34,9 +33,9 @@ describe('Unit: Commands > Start', function () {
 
         beforeEach(function () {
             StartCommand = proxyquire(modulePath, {
-                '../utils/get-instance': sinon.stub().callsFake(() => returnedInstance),
+                '../utils/get-instance': sinon.stub().callsFake(() => returnedInstance)
             });
-        })
+        });
 
         afterEach(() => {
             process.argv = oldArgv;
