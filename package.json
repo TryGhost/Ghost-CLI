@@ -55,7 +55,7 @@
     "execa": "1.0.0",
     "find-plugins": "1.1.7",
     "fkill": "7.2.1",
-    "form-data": "3.0.1",
+    "form-data": "4.0.0",
     "fs-extra": "11.1.0",
     "generate-password": "1.7.0",
     "global-modules": "2.0.0",
