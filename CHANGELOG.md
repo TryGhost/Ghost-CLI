@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.24.0"></a>
+# [1.24.0](https://github.com/TryGhost/Ghost-CLI/compare/1.23.1...1.24.0) (2022-12-02)
+
+
+### Bug Fixes
+
+* **errors:** Show full Ghost Error message output ([#1722](https://github.com/TryGhost/Ghost-CLI/issues/1722)) ([6c50845](https://github.com/TryGhost/Ghost-CLI/commit/6c50845))
+
+
+### Features
+
+* added support for named start ([#768](https://github.com/TryGhost/Ghost-CLI/issues/768)) ([701b125](https://github.com/TryGhost/Ghost-CLI/commit/701b125))
+
+
+
 <a name="1.23.1"></a>
 ## [1.23.1](https://github.com/TryGhost/Ghost-CLI/compare/1.23.0...1.23.1) (2022-10-03)
 
