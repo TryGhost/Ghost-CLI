@@ -5,7 +5,7 @@ const proxyquire = require('proxyquire');
 const {CliError} = require('../../../../lib/errors');
 
 describe('Unit: Tasks > Major Update > Data', function () {
-    let knexMock, gscanMock, data, connection;
+    let knexMock; let gscanMock; let data; let connection;
 
     beforeEach(function () {
         connection = sinon.stub();

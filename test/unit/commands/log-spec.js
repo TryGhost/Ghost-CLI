@@ -39,7 +39,7 @@ const defaultSystem = {
 };
 
 describe('Unit: Commands > Log', function () {
-    let ext, stubs;
+    let ext; let stubs;
 
     beforeEach(function () {
         stubs = {

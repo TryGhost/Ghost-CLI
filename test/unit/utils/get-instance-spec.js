@@ -5,7 +5,7 @@ const {SystemError} = require('../../../lib/errors');
 const modulePath = '../../../lib/utils/get-instance';
 
 describe('Unit: Utils > getInstance', function () {
-    let getInstance, stubs, system;
+    let getInstance; let stubs; let system;
     beforeEach(function () {
         stubs = {
             findValidInstallation: sinon.stub().callsFake(a => a),

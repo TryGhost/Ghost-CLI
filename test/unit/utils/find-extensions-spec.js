@@ -13,7 +13,7 @@ const localExtensions = [
 ];
 
 describe('Unit: Utils > find-extensions', function () {
-    let findExtensions, findStub, existsStub;
+    let findExtensions; let findStub; let existsStub;
 
     beforeEach(() => {
         findStub = sinon.stub().returns([

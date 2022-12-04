@@ -28,7 +28,7 @@ describe('Unit: Systemd > Process Manager', function () {
     });
 
     describe('Start Hook', function () {
-        let ext, ui;
+        let ext; let ui;
 
         beforeEach(function () {
             instance.config = configStub();
@@ -77,7 +77,7 @@ describe('Unit: Systemd > Process Manager', function () {
     });
 
     describe('Stop Hook', function () {
-        let ext, ui;
+        let ext; let ui;
 
         beforeEach(function () {
             ui = {sudo: sinon.stub().resolves()},
@@ -114,7 +114,7 @@ describe('Unit: Systemd > Process Manager', function () {
     });
 
     describe('Restart Hook', function () {
-        let ext, ui;
+        let ext; let ui;
 
         beforeEach(function () {
             ui = {sudo: sinon.stub().resolves()},
