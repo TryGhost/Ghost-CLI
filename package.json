@@ -104,10 +104,5 @@
     "sinon": "15.0.0",
     "standard-version": "4.3.0",
     "tmp": "0.2.1"
-  },
-  "standard-version": {
-    "skip": {
-      "tag": true
-    }
   }
 }
