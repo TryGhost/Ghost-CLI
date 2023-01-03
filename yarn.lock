@@ -5272,10 +5272,10 @@ table@^6.0.9:
     string-width "^4.2.3"
     strip-ansi "^6.0.1"
 
-tail@2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/tail/-/tail-2.2.4.tgz#90dd4c5a174a3fa39dcb65a1df1950a4a0093a41"
-  integrity sha512-PX8klSxW1u3SdgDrDeewh5GNE+hkJ4h02JvHfV6YrHqWOVJ88nUdSQqtsUf/gWhgZlPAws3fiZ+F1f8euspcuQ==
+tail@2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/tail/-/tail-2.2.5.tgz#8df4c1c73a37d73b9994bcdedbf3ea238c72c986"
+  integrity sha512-vsP7EaAEOr9H8qRfXMEiHvd+57XnAu9qxZw+4OsSGzHG5WYOA8wrOAaUCR3E0iE6Vxng1h34hgCyluyXc8ltng==
 
 tar-stream@^1.5.2:
   version "1.6.2"
