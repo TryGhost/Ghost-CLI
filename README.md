@@ -72,6 +72,13 @@ To run the CLI for testing:
 yarn test
 ```
 
+#### Publishing a new version
+
+1. `yarn ship -- -r patch/minor/major`
+2. `npm publish`
+3. Go to https://github.com/TryGhost/Ghost-CLI/releases/new and create a new release
+4. Use `Generate release notes` and publish
+
 # Copyright & License
 
 Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
