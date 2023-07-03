@@ -64,7 +64,8 @@ async function generateCert(ui, domain, webroot, email, staging) {
         `--domain ${domain}`,
         `--webroot ${webroot}`,
         `--reloadcmd "${nginxProgramName} -s reload"`,
-        `--accountemail ${email}`
+        `--accountemail ${email}`,
+        '--keylength 2048'
     ];
 
     if (staging) {
