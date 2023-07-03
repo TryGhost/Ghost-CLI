@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.24.1"></a>
+## [1.24.1](https://github.com/TryGhost/Ghost-CLI/compare/1.24.0...1.24.1) (2023-07-03)
+
+
+### Bug Fixes
+
+* **acme:** fixed deployment not taking `_ecc` into account ([467d41b](https://github.com/TryGhost/Ghost-CLI/commit/467d41b))
+
+
+
 <a name="1.24.0"></a>
 # [1.24.0](https://github.com/TryGhost/Ghost-CLI/compare/1.23.1...1.24.0) (2022-12-02)
 
