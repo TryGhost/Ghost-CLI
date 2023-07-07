@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.24.2"></a>
+## [1.24.2](https://github.com/TryGhost/Ghost-CLI/compare/v1.24.1...v1.24.2) (2023-07-07)
+
+
+### Bug Fixes
+
+* **backup:** fixed exporting all members ([daf4798](https://github.com/TryGhost/Ghost-CLI/commit/daf4798))
+
+
+
 <a name="1.24.1"></a>
 ## [1.24.1](https://github.com/TryGhost/Ghost-CLI/compare/1.24.0...1.24.1) (2023-07-03)
 
