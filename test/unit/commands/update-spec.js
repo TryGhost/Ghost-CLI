@@ -1069,4 +1069,56 @@ describe('Unit: Commands > Update', function () {
             expect(instance.nodeVersion).to.equal(process.versions.node);
         });
     });
+
+    describe('linkDefaultThemes', function () {
+        const UpdateCommand = require(modulePath);
+
+        it('links all default themes bundled with Ghost', function () {
+            const command = new UpdateCommand({}, {});
+            const envCfg = {
+                dirs: ['versions/5.62.0', 'versions/5.67.0', 'versions/5.67.0/content/themes/source', 'versions/5.67.0/content/themes/casper', 'content/themes'],
+                links: [['versions/5.62.0', 'current']]
+            };
+            const env = setupTestFolder(envCfg);
+            sinon.stub(process, 'cwd').returns(env.dir);
+            const instance = {
+                version: '5.62.0'
+            };
+            const context = {
+                installPath: path.join(env.dir, 'versions/5.67.0'),
+                version: '5.67.0',
+                rollback: false,
+                instance
+            };
+
+            command.link(context);
+            command.linkDefaultThemes(context);
+            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'source'))).to.equal(path.join(env.dir, 'current', 'content', 'themes', 'source'));
+            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'casper'))).to.equal(path.join(env.dir, 'current', 'content', 'themes', 'casper'));
+        });
+
+        it('removes invalid symlinks when rolling back', function () {
+            const command = new UpdateCommand({}, {});
+            const envCfg = {
+                dirs: ['versions/5.62.0', 'versions/5.67.0', 'versions/5.62.0/content/themes/casper', 'versions/5.67.0/content/themes/source', 'versions/5.67.0/content/themes/casper', 'content/themes'],
+                links: [['versions/5.67.0', 'current']]
+            };
+            const env = setupTestFolder(envCfg);
+            sinon.stub(process, 'cwd').returns(env.dir);
+            const instance = {
+                version: '5.67.0'
+            };
+            const context = {
+                installPath: path.join(env.dir, 'versions/5.62.0'),
+                version: '5.62.0',
+                rollback: true,
+                instance
+            };
+
+            command.link(context);
+            command.linkDefaultThemes(context);
+            expect(fs.existsSync(path.join(env.dir, 'content', 'themes', 'source'))).to.equal(false);
+            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'casper'))).to.equal(path.join(env.dir, 'current', 'content', 'themes', 'casper'));
+        });
+    });
 });

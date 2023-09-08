@@ -207,7 +207,7 @@ describe('Unit: Commands > Install', function () {
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
             const versionStub = sinon.stub(testInstance, 'version').resolves();
             const linkStub = sinon.stub(testInstance, 'link').resolves();
-            const casperStub = sinon.stub(testInstance, 'casper').resolves();
+            const defaultThemesStub = sinon.stub(testInstance, 'defaultThemes').resolves();
 
             return testInstance.run({version: '1.0.0', setup: false, 'check-empty': true}).then(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
@@ -216,7 +216,7 @@ describe('Unit: Commands > Install', function () {
                 expect(ensureStructureStub.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;
-                expect(casperStub.calledOnce).to.be.true;
+                expect(defaultThemesStub.calledOnce).to.be.true;
                 expect(runCommandStub.calledOnce).to.be.true;
             });
         });
@@ -412,20 +412,31 @@ describe('Unit: Commands > Install', function () {
         });
     });
 
-    describe('tasks > casper', function () {
-        it('links casper version correctly', function () {
+    describe('tasks > defaultThemes', function () {
+        it('creates a symlink to all themes shipped with Ghost', function () {
             const symlinkSyncStub = sinon.stub();
+            const readdirSyncStub = sinon.stub().returns(['casper', 'source']);
+            const existsSyncStub = sinon.stub();
+            existsSyncStub.onCall(0).returns(true);
+            existsSyncStub.onCall(1).returns(false);
+            existsSyncStub.onCall(2).returns(false);
             const InstallCommand = proxyquire(modulePath, {
-                'symlink-or-copy': {sync: symlinkSyncStub}
+                'symlink-or-copy': {sync: symlinkSyncStub},
+                'fs-extra': {readdirSync: readdirSyncStub, existsSync: existsSyncStub}
             });
 
             const testInstance = new InstallCommand({}, {});
 
-            testInstance.casper();
-            expect(symlinkSyncStub.calledOnce).to.be.true;
+            const context = {version: '5.67.0'};
+            testInstance.defaultThemes(context);
+            expect(symlinkSyncStub.callCount).to.equal(2);
             expect(symlinkSyncStub.calledWithExactly(
-                path.join(process.cwd(), 'current/content/themes/casper'),
-                path.join(process.cwd(), 'content/themes/casper')
+                path.join(process.cwd(), 'current', 'content', 'themes', 'casper'),
+                path.join(process.cwd(), 'content', 'themes', 'casper')
+            ));
+            expect(symlinkSyncStub.calledWithExactly(
+                path.join(process.cwd(), 'current', 'content', 'themes', 'source'),
+                path.join(process.cwd(), 'content', 'themes', 'source')
             ));
         });
     });
