@@ -417,9 +417,7 @@ describe('Unit: Commands > Install', function () {
             const symlinkSyncStub = sinon.stub();
             const readdirSyncStub = sinon.stub().returns(['casper', 'source']);
             const existsSyncStub = sinon.stub();
-            existsSyncStub.onCall(0).returns(true);
-            existsSyncStub.onCall(1).returns(false);
-            existsSyncStub.onCall(2).returns(false);
+            existsSyncStub.returns(false);
             const InstallCommand = proxyquire(modulePath, {
                 'symlink-or-copy': {sync: symlinkSyncStub},
                 'fs-extra': {readdirSync: readdirSyncStub, existsSync: existsSyncStub}
