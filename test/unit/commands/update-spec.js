@@ -229,6 +229,7 @@ describe('Unit: Commands > Update', function () {
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate').resolves();
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions').resolves();
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
+            const linkDefaultThemesStub = sinon.stub(cmdInstance, 'linkDefaultThemes').resolves();
 
             await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: false});
             expect(runCommandStub.calledTwice).to.be.true;
@@ -246,6 +247,7 @@ describe('Unit: Commands > Update', function () {
             expect(ui.listr.calledOnce).to.be.true;
             expect(removeOldVersionsStub.calledOnce).to.be.true;
             expect(linkStub.calledOnce).to.be.true;
+            expect(linkDefaultThemesStub.calledOnce).to.be.true;
             expect(downloadStub.calledOnce).to.be.true;
             expect(fakeInstance.isRunning.calledOnce).to.be.true;
             expect(fakeInstance.stop.calledOnce).to.be.true;
@@ -277,6 +279,7 @@ describe('Unit: Commands > Update', function () {
             ghostConfig.get.withArgs('database').returns({
                 client: 'sqlite3'
             });
+            ghostConfig.get.withArgs('paths.contentPath').returns('/content/themes');
 
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
@@ -468,6 +471,7 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
             const linkStub = sinon.stub(cmdInstance, 'link').resolves();
+            sinon.stub(cmdInstance, 'linkDefaultThemes').resolves();
             sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
@@ -533,6 +537,7 @@ describe('Unit: Commands > Update', function () {
             const downloadStub = sinon.stub(cmdInstance, 'downloadAndUpdate');
             const removeOldVersionsStub = sinon.stub(cmdInstance, 'removeOldVersions');
             const runCommandStub = sinon.stub(cmdInstance, 'runCommand').resolves();
+            sinon.stub(cmdInstance, 'linkDefaultThemes').resolves();
 
             await cmdInstance.run({rollback: true, force: false, zip: '', restart: true, v1: true});
             const expectedCtx = {
@@ -593,7 +598,9 @@ describe('Unit: Commands > Update', function () {
             fakeInstance.start.resolves();
             const cmdInstance = new UpdateCommand(ui, system);
             const versionStub = sinon.stub(cmdInstance, 'version').resolves(true);
+
             sinon.stub(cmdInstance, 'link').resolves();
+            sinon.stub(cmdInstance, 'linkDefaultThemes').resolves();
             sinon.stub(process, 'cwd').returns(fakeInstance.dir);
             sinon.stub(cmdInstance, 'downloadAndUpdate');
             sinon.stub(cmdInstance, 'removeOldVersions');
@@ -1082,7 +1089,10 @@ describe('Unit: Commands > Update', function () {
             const env = setupTestFolder(envCfg);
             sinon.stub(process, 'cwd').returns(env.dir);
             const instance = {
-                version: '5.62.0'
+                version: '5.62.0',
+                config: {
+                    get: sinon.stub().withArgs('paths.contentPath').returns(path.join(env.dir, 'content'))
+                }
             };
             const context = {
                 installPath: path.join(env.dir, 'versions/5.67.0'),
@@ -1106,7 +1116,10 @@ describe('Unit: Commands > Update', function () {
             const env = setupTestFolder(envCfg);
             sinon.stub(process, 'cwd').returns(env.dir);
             const instance = {
-                version: '5.67.0'
+                version: '5.67.0',
+                config: {
+                    get: sinon.stub().withArgs('paths.contentPath').returns(path.join(env.dir, 'content'))
+                }
             };
             const context = {
                 installPath: path.join(env.dir, 'versions/5.62.0'),
