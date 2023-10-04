@@ -75,9 +75,10 @@ yarn test
 #### Publishing a new version
 
 1. `yarn ship -- -r patch/minor/major`
-2. `npm publish`
-3. Go to https://github.com/TryGhost/Ghost-CLI/releases/new and create a new release
-4. Use `Generate release notes` and publish
+2. `git push`
+3. `npm publish`
+4. Go to https://github.com/TryGhost/Ghost-CLI/releases/new and create a new release
+5. Use `Generate release notes` and publish
 
 # Copyright & License
 
