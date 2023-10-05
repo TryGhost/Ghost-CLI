@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.25.2"></a>
+## [1.25.2](https://github.com/TryGhost/Ghost-CLI/compare/v1.25.1...v1.25.2) (2023-10-05)
+
+
+### Bug Fixes
+
+* **update:** fixed permission issues when linking themes ([eb3f430](https://github.com/TryGhost/Ghost-CLI/commit/eb3f430))
+
+
+
 <a name="1.24.2"></a>
 ## [1.24.2](https://github.com/TryGhost/Ghost-CLI/compare/v1.24.1...v1.24.2) (2023-07-07)
 
