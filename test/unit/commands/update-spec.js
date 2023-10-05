@@ -240,6 +240,7 @@ describe('Unit: Commands > Update', function () {
                 force: false,
                 instance: fakeInstance,
                 activeVersion: '2.0.0',
+                ui,
                 zip: '',
                 v1: false
             });
@@ -314,6 +315,7 @@ describe('Unit: Commands > Update', function () {
                 version: '2.0.0',
                 force: false,
                 instance: fakeInstance,
+                ui,
                 activeVersion: '1.25.0',
                 zip: '',
                 v1: false
@@ -357,6 +359,7 @@ describe('Unit: Commands > Update', function () {
                 force: false,
                 instance: fakeInstance,
                 activeVersion: '1.0.0',
+                ui: ui,
                 zip: '',
                 v1: false
             });
@@ -424,6 +427,7 @@ describe('Unit: Commands > Update', function () {
                 instance: fakeInstance,
                 activeVersion: '1.1.0',
                 installPath: '/var/www/ghost/versions/1.0.0',
+                ui: ui,
                 rollback: true,
                 zip: '',
                 v1: false
@@ -546,6 +550,7 @@ describe('Unit: Commands > Update', function () {
                 instance: fakeInstance,
                 activeVersion: '1.1.0',
                 installPath: '/var/www/ghost/versions/1.0.0',
+                ui,
                 rollback: true,
                 zip: '',
                 v1: true
@@ -613,6 +618,7 @@ describe('Unit: Commands > Update', function () {
                 instance: fakeInstance,
                 activeVersion: '1.1.0',
                 installPath: '/var/www/ghost/versions/1.0.0',
+                ui,
                 rollback: true,
                 zip: '',
                 v1: false
