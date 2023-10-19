@@ -20,7 +20,7 @@ jobs:
         run: sudo service nginx start
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: 'cli'
       - uses: actions/setup-node@v3
