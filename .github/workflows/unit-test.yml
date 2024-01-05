@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 14.x, 16.x, 18.x ]
+        node: [ 18.x ]
     env:
       FORCE_COLOR: 1
     name: Node ${{ matrix.node }}
