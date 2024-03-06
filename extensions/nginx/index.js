@@ -109,6 +109,7 @@ class NginxExtension extends Extension {
             port: instance.config.get('server.port')
         });
 
+        await this.ui.sudo(`mkdir -p ${nginxConfigPath}/sites-available ${nginxConfigPath}/sites-enabled`);
         await this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`);
         await this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`);
         await this.restartNginx();
@@ -172,7 +173,10 @@ class NginxExtension extends Extension {
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: () => fs.existsSync(dhparamFile),
-            task: errorWrapper(() => this.ui.sudo(`openssl dhparam -dsaparam -out ${dhparamFile} 2048`))
+            task: errorWrapper(async () => {
+                await this.ui.sudo(`mkdir -p ${nginxConfigPath}/snippets`);
+                await this.ui.sudo(`openssl dhparam -dsaparam -out ${dhparamFile} 2048`);
+            })
         }, {
             title: 'Generating SSL security headers',
             skip: () => fs.existsSync(sslParamsFile),

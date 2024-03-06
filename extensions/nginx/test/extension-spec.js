@@ -212,6 +212,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         it('Generates the proper config', async function () {
             const name = 'ghost.dev.conf';
+            const mkdirExp = new RegExp(`(?=^mkdir -p)(?=.*available)(?=.*enabled$)`);
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
             const expectedConfig = {
                 url: 'ghost.dev',
@@ -236,8 +237,9 @@ describe('Unit: Extensions > Nginx', function () {
             expect(templateStub.calledOnce).to.be.true;
             expect(loadStub.calledOnce).to.be.true;
             expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
-            expect(sudo.calledOnce).to.be.true;
-            expect(sudo.args[0][0]).to.match(lnExp);
+            expect(sudo.calledTwice).to.be.true;
+            expect(sudo.args[0][0]).to.match(mkdirExp);
+            expect(sudo.args[1][0]).to.match(lnExp);
             expect(ext.restartNginx.calledOnce).to.be.true;
 
             // Testing handling of subdirectory installations
@@ -253,6 +255,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         it('passes the error if it\'s already a CliError', async function () {
             const name = 'ghost.dev.conf';
+            const mkdirExp = new RegExp(`(?=^mkdir -p)(?=.*available)(?=.*enabled$)`);
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
@@ -276,8 +279,9 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(error.message).to.be.equal('Did not restart');
                 expect(templateStub.calledOnce).to.be.true;
                 expect(loadStub.calledOnce).to.be.true;
-                expect(sudo.calledOnce).to.be.true;
-                expect(sudo.args[0][0]).to.match(lnExp);
+                expect(sudo.calledTwice).to.be.true;
+                expect(sudo.args[0][0]).to.match(mkdirExp);
+                expect(sudo.args[1][0]).to.match(lnExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
                 return;
             }
@@ -427,6 +431,7 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Uses OpenSSL (and skips if already exists)', function () {
+                const mkdirExp = new RegExp(`(?=^mkdir -p)(?=.*snippets$)`);
                 proxy['fs-extra'].existsSync = () => true;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
@@ -434,8 +439,9 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(tasks[4].skip()).to.be.true;
 
                 return tasks[4].task().then(() => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.args[0][0]).to.match(/openssl dhparam/);
+                    expect(ext.ui.sudo.calledTwice).to.be.true;
+                    expect(ext.ui.sudo.args[0][0]).to.match(mkdirExp);
+                    expect(ext.ui.sudo.args[1][0]).to.match(/openssl dhparam/);
                 });
             });
 
