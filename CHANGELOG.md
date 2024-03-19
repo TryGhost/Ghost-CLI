@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.26.0"></a>
+# [1.26.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.25.3...v1.26.0) (2024-03-19)
+
+
+### Bug Fixes
+
+* change default mysql hostname on new sites from localhost to 127.0.0.1 to use ipv4 ([526d080](https://github.com/TryGhost/Ghost-CLI/commit/526d080))
+
+
+
 <a name="1.25.3"></a>
 ## [1.25.3](https://github.com/TryGhost/Ghost-CLI/compare/v1.25.2...v1.25.3) (2023-10-11)
 

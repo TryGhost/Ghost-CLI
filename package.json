@@ -1,6 +1,6 @@
 {
   "name": "ghost-cli",
-  "version": "1.25.3",
+  "version": "1.26.0",
   "description": "CLI Tool for installing & updating Ghost",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
