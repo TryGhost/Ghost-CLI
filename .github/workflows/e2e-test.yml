@@ -45,7 +45,7 @@ jobs:
             --no-prompt \
             --url http://cli-testing.ghost.org \
             --db mysql \
-            --dbhost localhost \
+            --dbhost 127.0.0.1 \
             --dbuser root \
             --dbpass ${{ matrix.password }} \
             --dbname ghost-mysql
