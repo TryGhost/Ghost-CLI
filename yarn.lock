@@ -6226,10 +6226,10 @@ symlink-or-copy@1.3.1:
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==
 
-systeminformation@5.22.5:
-  version "5.22.5"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.22.5.tgz#643a18671af0044ec026664bee55c19b5938aa3c"
-  integrity sha512-wH8lJMlQAkBGu78EjtYO6eFMPsFrAMWcWDsQQb1+cwS9cuFJaGcZ6gah9ZXWpHpIST1slyyuk0KuqdcAjbmM3A==
+systeminformation@5.22.6:
+  version "5.22.6"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.22.6.tgz#af892bc3ff6df8175f2c16cfc3bd06d1130da5dd"
+  integrity sha512-hUTQX+bRgIFbv1T/z251NtwGwNIeSyWURnT2BGnsYu6dQNbkiBl4oAwk50acVfITFq1Zvb8KDNgibQK9uGlUGg==
 
 table@^5.2.3:
   version "5.4.6"
