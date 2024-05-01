@@ -1306,20 +1306,20 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/errors@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.3.1.tgz#32a00c5e5293c46e54d03a66da871ac34b2ab35c"
-  integrity sha512-iZqT0vZ3NVZNq9o1HYxW00k1mcUAC+t5OLiI8O29/uQwAfy7NemY+Cabl9mWoIwgvBmw7l0Z8pHTcXMo1c+xMw==
+"@tryghost/errors@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.3.2.tgz#3612f6f59ca07e37d1095f9eb31ff6a069a3b7f2"
+  integrity sha512-Aqi2vz7HHwN6p2juIYUu8vpMtaKavjULBKNnL0l1req9qXjPs90i/HV8zhvK0ceeWuPdEXaCkfHSRr/yxG3/uw==
   dependencies:
     "@stdlib/utils-copy" "^0.0.7"
     uuid "^9.0.0"
 
 "@tryghost/zip@^1.1.25":
-  version "1.1.41"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.41.tgz#bcf9f15047e6d2486d062b7911e4006d00e4fe6a"
-  integrity sha512-SYCVdQu3gh/kx3CMMdj4EvMNWu8UURINQdwrZN9/xMpu4hOkFZIwWSA/MG29ZxLDqnqopRf0ZwetSbcsVsS8QQ==
+  version "1.1.42"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.42.tgz#33f8ebaed17339db89a8b165563709385ed7f041"
+  integrity sha512-liEO01q0vztvcBmCT4m8fDEsDjXHzPOqJlXboMHOw/gTrjUkLVfBTZzooIgERvBRPuw60ICcPTtI2/OhiAoNrw==
   dependencies:
-    "@tryghost/errors" "^1.3.1"
+    "@tryghost/errors" "^1.3.2"
     archiver "^5.0.0"
     extract-zip "^2.0.1"
 
@@ -1346,9 +1346,9 @@
     "@types/node" "*"
 
 "@types/node@*":
-  version "20.11.29"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.29.tgz#431253cede34f392d6aaf7acad427b9c23aa60f6"
-  integrity sha512-P99thMkD/1YkCvAtOd6/zGedKNA0p2fj4ZpjCzcNiSCBWgm3cNRTBfa/qjFnsKkkojxu4vVLtWpesnZ9+ap+gA==
+  version "20.12.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.7.tgz#04080362fa3dd6c5822061aa3124f5c152cff384"
+  integrity sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==
   dependencies:
     undici-types "~5.26.4"
 
