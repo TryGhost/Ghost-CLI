@@ -265,6 +265,54 @@ describe('Unit: Command', function () {
             }
         });
 
+        it('Errors when a boolean directory is provided', async function () {
+            sinon.stub(process, 'exit').throws(new Error('exit_stub'));
+            const outStub = sinon.stub(process.stderr, 'write');
+            const Command = require(modulePath);
+            class TestCommand extends Command {}
+
+            let errorCount = 0;
+
+            const fail = () => {
+                throw new Error('Should have errored');
+            };
+
+            const assertError = (error, expectHelp, assertionContext) => {
+                errorCount += 1;
+                expect(error).to.be.ok;
+                expect(error.message, assertionContext).to.equal('exit_stub');
+                expect(outStub.callCount, assertionContext).to.equal(errorCount);
+
+                let assertion = expect(outStub.args[errorCount - 1][0], assertionContext).to;
+
+                if (!expectHelp) {
+                    assertion = assertion.not;
+                }
+
+                assertion.contain('Did you mean -D');
+            };
+
+            const originalProcessArgv = process.argv;
+
+            try {
+                // Don't expect a help message when the long-form flag is used
+                await TestCommand._run('test', {dir: true})
+                    .then(fail)
+                    .catch(e => assertError(e, false, 'ghost test --dir'));
+
+                process.argv.push('-d');
+                await TestCommand._run('test', {dir: true, development: true})
+                    .then(fail)
+                    .catch(e => assertError(e, false, 'ghost test -d --development'));
+
+                await TestCommand._run('test', {dir: true})
+                    .then(fail)
+                    .catch(e => assertError(e, true, 'ghost test -d'));
+            } finally {
+                process.argv = originalProcessArgv;
+            }
+        });
+
         it('Changes directory if needed', async function () {
             sinon.stub(process, 'exit').throws(new Error('exit_stub'));
             const outStub = sinon.stub(process.stderr, 'write');
