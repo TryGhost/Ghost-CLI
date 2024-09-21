@@ -60,7 +60,7 @@
     "generate-password": "1.7.1",
     "global-modules": "2.0.0",
     "got": "9.6.0",
-    "https-proxy-agent": "5.0.1",
+    "https-proxy-agent": "7.0.5",
     "ini": "2.0.0",
     "inquirer": "7.3.3",
     "is-running": "2.1.0",
