@@ -44,7 +44,7 @@
   "preferGlobal": true,
   "dependencies": {
     "@tryghost/zip": "^1.1.25",
-    "abbrev": "2.0.0",
+    "abbrev": "3.0.0",
     "bluebird": "3.7.2",
     "boxen": "5.1.2",
     "chalk": "4.1.2",
