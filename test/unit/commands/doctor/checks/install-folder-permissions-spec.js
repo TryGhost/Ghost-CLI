@@ -1,9 +1,9 @@
 'use strict';
+const fs = require('node:fs/promises');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 
-const fs = require('fs-extra');
 const errors = require('../../../../../lib/errors');
 
 const modulePath = '../../../../../lib/commands/doctor/checks/install-folder-permissions';
