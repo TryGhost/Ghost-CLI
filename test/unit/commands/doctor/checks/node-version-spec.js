@@ -160,6 +160,25 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
         });
     });
 
+    it('doesn\'t call checkDirectoryAndAbove for local process managers', function () {
+        const cliPackage = {
+            engines: {
+                node: process.versions.node // this future-proofs the test
+            }
+        };
+        const ctx = {local: false, instance: {process: {name: 'local'}}};
+
+        const checkDirectoryStub = sinon.stub().resolves();
+        const nodeVersion = proxyquire(modulePath, {
+            '../../../../package': cliPackage,
+            './check-directory': checkDirectoryStub
+        }).task;
+
+        return nodeVersion(ctx, {}).then(() => {
+            expect(checkDirectoryStub.called).to.be.false;
+        });
+    });
+
     it('calls checkDirectoryAndAbove if none of the three conditions are true', function () {
         const cliPackage = {
             engines: {
