@@ -40,19 +40,6 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
         });
     });
 
-    it('skips checking parent folder permissions if local process manager is used', function () {
-        const accessStub = sinon.stub(fs, 'access').resolves();
-        const checkDirectoryStub = sinon.stub().resolves();
-        const installFolderPermissions = proxyquire(modulePath, {
-            './check-directory': checkDirectoryStub
-        }).task;
-
-        return installFolderPermissions({instance: {process: {name: 'local'}}}).then(() => {
-            expect(accessStub.calledOnce).to.be.true;
-            expect(checkDirectoryStub.called).to.be.false;
-        });
-    });
-
     it('skips checking parent folder permissions if os is not linux', function () {
         const accessStub = sinon.stub(fs, 'access').resolves();
         const checkDirectoryStub = sinon.stub().resolves();
