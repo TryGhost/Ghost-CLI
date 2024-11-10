@@ -133,6 +133,7 @@ describe('Unit: Instance', function () {
             const proc = testInstance.process;
             expect(proc).to.deep.equal(testProcess);
             expect(getStub.calledOnce).to.be.true;
+            expect(testInstance.isLocal).to.be.true;
         });
 
         it('loads new instance if cached one is available but the name is different', function () {
@@ -153,6 +154,7 @@ describe('Unit: Instance', function () {
             expect(testInstance._process).to.deep.equal(proc);
             expect(getStub.calledOnce).to.be.true;
             expect(procManagerStub.calledOnce).to.be.true;
+            expect(testInstance.isLocal).to.be.true;
         });
     });
 
@@ -280,7 +282,7 @@ describe('Unit: Instance', function () {
             const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
                 get process() {
-                    return {isRunning: isRunningStub};
+                    return {isRunning: isRunningStub, name: 'systemd'};
                 }
             }
 
@@ -299,6 +301,7 @@ describe('Unit: Instance', function () {
             expect(configStub.set.calledOnce).to.be.true;
             expect(configStub.set.calledWithExactly('running', 'production')).to.be.true;
             expect(configStub.save.calledOnce).to.be.true;
+            expect(testInstance.isLocal).to.be.false;
         });
 
         it('queries process manager in dev if prod config not exists and dev config does', async function () {
@@ -306,7 +309,7 @@ describe('Unit: Instance', function () {
             const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
                 get process() {
-                    return {isRunning: isRunningStub};
+                    return {isRunning: isRunningStub, name: 'local'};
                 }
             }
 
@@ -329,6 +332,7 @@ describe('Unit: Instance', function () {
             expect(configStub.set.calledOnce).to.be.true;
             expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
             expect(configStub.save.calledOnce).to.be.true;
+            expect(testInstance.isLocal).to.be.true;
         });
 
         it('queries process manager in dev if not running in prod and dev config exists', async function () {
@@ -338,7 +342,7 @@ describe('Unit: Instance', function () {
             isRunningStub.onSecondCall().returns(true);
             class TestInstance extends Instance {
                 get process() {
-                    return {isRunning: isRunningStub};
+                    return {isRunning: isRunningStub, name: 'local'};
                 }
             }
 
@@ -358,6 +362,7 @@ describe('Unit: Instance', function () {
             expect(configStub.set.calledOnce).to.be.true;
             expect(configStub.set.calledWithExactly('running', 'development')).to.be.true;
             expect(configStub.save.calledOnce).to.be.true;
+            expect(testInstance.isLocal).to.be.true;
         });
 
         it('returns false if ghost isn\'t running in either environment', async function () {
@@ -365,7 +370,7 @@ describe('Unit: Instance', function () {
             const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
                 get process() {
-                    return {isRunning: isRunningStub};
+                    return {isRunning: isRunningStub, name: 'local'};
                 }
             }
 
@@ -386,6 +391,7 @@ describe('Unit: Instance', function () {
             expect(configStub.save.called).to.be.false;
             expect(setEnvironmentStub.calledThrice).to.be.true;
             expect(setEnvironmentStub.args[2][0]).to.be.false;
+            expect(testInstance.isLocal).to.be.true;
         });
 
         it('loads running environment and checks if process manager returns false', async function () {
@@ -393,7 +399,7 @@ describe('Unit: Instance', function () {
             const isRunningStub = sinon.stub().returns(true);
             class TestInstance extends Instance {
                 get process() {
-                    return {isRunning: isRunningStub};
+                    return {isRunning: isRunningStub, name: 'local'};
                 }
             }
             const testInstance = new TestInstance({}, {}, '');
@@ -405,6 +411,7 @@ describe('Unit: Instance', function () {
             expect(hasStub.calledOnce).to.be.true;
             expect(isRunningStub.calledOnce).to.be.true;
             expect(loadRunEnvStub.calledOnce).to.be.true;
+            expect(testInstance.isLocal).to.be.true;
         });
 
         it('sets running to null in cliConfig if process manager\'s isRunning method returns false', async function () {

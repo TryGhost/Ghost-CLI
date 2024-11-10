@@ -9,7 +9,7 @@ const UI = require('../../../lib/ui');
 
 const modulePath = '../../../lib/commands/start';
 
-function getStubs(dir, environment = undefined) {
+function getStubs(dir, environment = undefined, isLocal = false) {
     const ui = new UI({});
     const system = new System(ui, []);
     const instance = new Instance(ui, system, dir);
@@ -18,6 +18,11 @@ function getStubs(dir, environment = undefined) {
     instance._cliConfig = createConfigStub();
     instance._cliConfig.get.withArgs('name').returns('testing');
     instance._config.environment = environment;
+    Object.defineProperty(instance, 'isLocal', {
+        get() {
+            return isLocal;
+        }
+    });
     system.environment = environment;
 
     return {
@@ -130,6 +135,7 @@ describe('Unit: Commands > Start', function () {
             expect(runCommand.calledOnce).to.be.true;
             expect(runCommand.args[0][1]).to.deep.equal({
                 categories: ['start'],
+                local: false,
                 quiet: true,
                 checkMem: false,
                 skipInstanceCheck: true
@@ -158,6 +164,7 @@ describe('Unit: Commands > Start', function () {
             expect(runCommand.calledOnce).to.be.true;
             expect(runCommand.args[0][1]).to.deep.equal({
                 categories: ['start'],
+                local: false,
                 quiet: true,
                 checkMem: false,
                 skipInstanceCheck: true
@@ -166,6 +173,40 @@ describe('Unit: Commands > Start', function () {
             expect(start.calledOnce).to.be.true;
             expect(log.called).to.be.false;
             expect(instance.config.get.called).to.be.false;
+        });
+
+        it('sets argv.local based on the process manager (local)', async function () {
+            const {ui, system, instance} = getStubs('/var/www/ghost', undefined, true);
+            returnedInstance = instance;
+            const stopError = new Error('stopError');
+            sinon.stub(instance, 'isRunning').throws(stopError);
+            const cmd = new StartCommand(ui, system);
+            const argv = {};
+
+            try {
+                await cmd.run(argv);
+            } catch (error) {
+                expect(error).to.equal(stopError);
+                expect(argv.local).to.be.true;
+            }
+        });
+
+        it('sets argv.local based on the process manager (not local)', async function () {
+            const {ui, system, instance} = getStubs('/var/www/ghost', undefined, false);
+            returnedInstance = instance;
+            const stopError = new Error('stopError');
+            sinon.stub(instance, 'isRunning').throws(stopError);
+            const cmd = new StartCommand(ui, system);
+
+            // Example: `ghost update --local` in production
+            const argv = {local: true};
+
+            try {
+                await cmd.run(argv);
+            } catch (error) {
+                expect(error).to.equal(stopError);
+                expect(argv.local).to.be.false;
+            }
         });
     });
 

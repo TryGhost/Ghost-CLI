@@ -12,7 +12,7 @@ const modulePath = '../../../lib/commands/update';
 const errors = require('../../../lib/errors');
 const Instance = require('../../../lib/instance');
 
-function createTestInstance(version, cliVersion, previousVersion = null, config = {}) {
+function createTestInstance(version, cliVersion, previousVersion = null, config = {}, isLocal = false) {
     return class extends Instance {
         get version() {
             return version;
@@ -25,6 +25,9 @@ function createTestInstance(version, cliVersion, previousVersion = null, config 
         }
         get config() {
             return config;
+        }
+        get isLocal() {
+            return isLocal;
         }
     };
 }
@@ -736,6 +739,53 @@ describe('Unit: Commands > Update', function () {
             }
 
             expect.fail('run should have thrown an error');
+        });
+
+        it('sets argv.local based on the process manager (local)', async function () {
+            const UpdateCommand = require(modulePath);
+            const ui = {
+                log: sinon.stub(),
+                listr: sinon.stub().rejects(new Error('do_nothing')),
+                run: sinon.stub().callsFake(fn => fn())
+            };
+            const system = {getInstance: sinon.stub()};
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0', {}, true);
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            const expectedError = new Error('do_nothing');
+            fakeInstance.isRunning.throws(expectedError);
+
+            const argv = {};
+            try {
+                await new UpdateCommand(ui, system).run(argv);
+            } catch (error) {
+                expect(error).to.equal(error);
+                expect(argv.local).to.equal(true);
+            }
+        });
+
+        it('sets argv.local based on the process manager (not local)', async function () {
+            const UpdateCommand = require(modulePath);
+            const ui = {
+                log: sinon.stub(),
+                listr: sinon.stub().rejects(new Error('do_nothing')),
+                run: sinon.stub().callsFake(fn => fn())
+            };
+            const system = {getInstance: sinon.stub()};
+            const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0', {}, false);
+            const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
+            system.getInstance.returns(fakeInstance);
+            const expectedError = new Error('do_nothing');
+            fakeInstance.isRunning.throws(expectedError);
+
+            // Example: `ghost update --local` in production
+            const argv = {local: true};
+            try {
+                await new UpdateCommand(ui, system).run(argv);
+            } catch (error) {
+                expect(error).to.equal(error);
+                expect(argv.local).to.equal(false);
+            }
         });
     });
 

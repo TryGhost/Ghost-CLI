@@ -84,6 +84,42 @@ describe('Unit: Commands > Stop', function () {
             expect(stop.calledOnce).to.be.true;
             expect(log.called).to.be.false;
         });
+
+        it('sets argv.local based on the process manager (local)', async function () {
+            const error = new Error('stopError');
+            const isRunning = sinon.stub().throws(error);
+
+            const getInstance = sinon.stub().returns({isRunning, isLocal: true});
+            const Command = proxyquire(modulePath, {'../utils/get-instance': getInstance});
+
+            const cmd = new Command();
+            const argv = {};
+
+            try {
+                await cmd.run(argv);
+            } catch (error) {
+                expect(error).to.equal(error);
+                expect(argv.local).to.be.true;
+            }
+        });
+
+        it('sets argv.local based on the process manager (not local)', async function () {
+            const error = new Error('stopError');
+            const isRunning = sinon.stub().throws(error);
+
+            const getInstance = sinon.stub().returns({isRunning, isLocal: false});
+            const Command = proxyquire(modulePath, {'../utils/get-instance': getInstance});
+
+            const cmd = new Command();
+            const argv = {};
+
+            try {
+                await cmd.run(argv);
+            } catch (error) {
+                expect(error).to.equal(error);
+                expect(argv.local).to.be.false;
+            }
+        });
     });
 
     it('stopAll stops all instances', async function () {
