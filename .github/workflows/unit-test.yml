@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          # temporary, remove this once the cached node 22.x version is updated with lts
+          check-latest: true
           cache: yarn
         env:
           FORCE_COLOR: 0
