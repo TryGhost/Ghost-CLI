@@ -13,11 +13,11 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: ['18.x']
+        node: [20.x]
     steps:
       - uses: actions/checkout@v4
         with:
-          path: 'cli'
+          path: "cli"
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
@@ -31,4 +31,3 @@ jobs:
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
         run: sleep 2 && curl -f http://localhost:2368 | grep ghost
-
