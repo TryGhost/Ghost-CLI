@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 18.x, 20.x ]
+        node: [18.x, 20.x, 22.x]
     env:
       FORCE_COLOR: 1
     name: Node ${{ matrix.node }}
@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+          # temporary, remove this once the cached node 22.x version is updated with lts
+          check-latest: true
           cache: yarn
         env:
           FORCE_COLOR: 0

@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         password: [root]
-        node: [18.x]
+        node: [20.x]
     steps:
       - name: Start nginx
         run: sudo service nginx start
@@ -22,7 +22,7 @@ jobs:
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
       - uses: actions/checkout@v4
         with:
-          path: 'cli'
+          path: "cli"
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
