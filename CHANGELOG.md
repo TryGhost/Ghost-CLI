@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.27.0"></a>
+# [1.27.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.26.1...v1.27.0) (2025-02-13)
+
+
+### Bug Fixes
+
+* disabled local Windows E2E test due to random failure ([d0af753](https://github.com/TryGhost/Ghost-CLI/commit/d0af753))
+* **install:** pass agent correctly to packageJson function ([#1901](https://github.com/TryGhost/Ghost-CLI/issues/1901)) ([7bf44ee](https://github.com/TryGhost/Ghost-CLI/commit/7bf44ee)), closes [#1899](https://github.com/TryGhost/Ghost-CLI/issues/1899)
+
+
+
 <a name="1.26.1"></a>
 ## [1.26.1](https://github.com/TryGhost/Ghost-CLI/compare/v1.26.0...v1.26.1) (2024-08-01)
 
