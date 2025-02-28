@@ -93,7 +93,7 @@
   },
   "devDependencies": {
     "chai": "4.5.0",
-    "chai-as-promised": "7.1.2",
+    "chai-as-promised": "8.0.1",
     "eslint": "7.30.0",
     "eslint-plugin-ghost": "2.5.0",
     "has-ansi": "4.0.1",
