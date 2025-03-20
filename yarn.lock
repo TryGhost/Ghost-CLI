@@ -305,7 +305,7 @@
   dependencies:
     type-detect "4.0.8"
 
-"@sinonjs/fake-timers@^13.0.1", "@sinonjs/fake-timers@^13.0.2":
+"@sinonjs/fake-timers@^13.0.1", "@sinonjs/fake-timers@^13.0.5":
   version "13.0.5"
   resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-13.0.5.tgz#36b9dbc21ad5546486ea9173d6bea063eb1717d5"
   integrity sha512-36/hTbH2uaWuGVERyC6da9YwGWnzUZXuPro/F2LfsdOsLnCojz/iSH8MxUt/FD2S5XBSVPhmArFUXcpCQ2Hkiw==
@@ -5903,13 +5903,13 @@ signal-exit@^4.0.1:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-4.1.0.tgz#952188c1cbd546070e2dd20d0f41c0ae0530cb04"
   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
 
-sinon@19.0.2:
-  version "19.0.2"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-19.0.2.tgz#944cf771d22236aa84fc1ab70ce5bffc3a215dad"
-  integrity sha512-euuToqM+PjO4UgXeLETsfQiuoyPXlqFezr6YZDFwHR3t4qaX0fZUe1MfPMznTL5f8BWrVS89KduLdMUsxFCO6g==
+sinon@19.0.4:
+  version "19.0.4"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-19.0.4.tgz#6cab2dc7165a2bb53fd0a1b4131a60ca68262825"
+  integrity sha512-myidFob7fjmYHJb+CHNLtAYScxn3sngGq4t75L2rCGGpE/k4OQVkN3KE5FsN+XkO2+fcDZ65PGvq3KHrlLAm7g==
   dependencies:
     "@sinonjs/commons" "^3.0.1"
-    "@sinonjs/fake-timers" "^13.0.2"
+    "@sinonjs/fake-timers" "^13.0.5"
     "@sinonjs/samsam" "^8.0.1"
     diff "^7.0.0"
     nise "^6.1.1"
