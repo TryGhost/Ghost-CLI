@@ -96,7 +96,7 @@
     "chai-as-promised": "7.1.2",
     "eslint": "7.30.0",
     "eslint-plugin-ghost": "2.5.0",
-    "has-ansi": "4.0.1",
+    "has-ansi": "6.0.0",
     "mocha": "11.1.0",
     "nock": "13.2.9",
     "nyc": "17.1.0",
