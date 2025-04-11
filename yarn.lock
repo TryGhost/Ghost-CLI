@@ -3556,12 +3556,12 @@ handlebars@^4.0.2:
   optionalDependencies:
     uglify-js "^3.1.4"
 
-has-ansi@4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/has-ansi/-/has-ansi-4.0.1.tgz#f216a8c8d7b129e490dc15f4a62cc1cdb9603ce8"
-  integrity sha512-Qr4RtTm30xvEdqUXbSBVWDu+PrTokJOwe/FU+VdfJPk+MXAPoeOzKpRyrDTnZIJwAkQ4oBLTU53nu0HrkF/Z2A==
+has-ansi@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/has-ansi/-/has-ansi-6.0.0.tgz#8118b2fb548c062f9356c7d5013b192a238ce3b3"
+  integrity sha512-1AYj+gqAskFf9Skb7xuEYMfJqkW3TJ8lukw4Fczw+Y6jRkgxvcE4JiFWuTO4DsoleMvvHudryolA9ObJHJKHWQ==
   dependencies:
-    ansi-regex "^4.1.0"
+    ansi-regex "^6.0.1"
 
 has-ansi@^2.0.0:
   version "2.0.0"
