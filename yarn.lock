@@ -5284,10 +5284,10 @@ pluralize@^8.0.0:
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-8.0.0.tgz#1a6fa16a38d12a1901e0320fa017051c539ce3b1"
   integrity sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==
 
-portfinder@1.0.35:
-  version "1.0.35"
-  resolved "https://registry.yarnpkg.com/portfinder/-/portfinder-1.0.35.tgz#6ebaf945da4d14c55d996e907b217f73e1dc06c9"
-  integrity sha512-73JaFg4NwYNAufDtS5FsFu/PdM49ahJrO1i44aCRsDWju1z5wuGDaqyFUQWR6aJoK2JPDWlaYYAGFNIGTSUHSw==
+portfinder@1.0.36:
+  version "1.0.36"
+  resolved "https://registry.yarnpkg.com/portfinder/-/portfinder-1.0.36.tgz#4eef523c15e972417a9ee496c3e9c95b8f649d52"
+  integrity sha512-gMKUzCoP+feA7t45moaSx7UniU7PgGN3hA8acAB+3Qn7/js0/lJ07fYZlxt9riE9S3myyxDCyAFzSrLlta0c9g==
   dependencies:
     async "^3.2.6"
     debug "^4.3.6"
