@@ -130,7 +130,7 @@ describe('Unit: UI', function () {
                 expect(oraStub.calledOnce).to.be.true;
                 expect(oraStub.calledWithExactly({
                     text: 'do a thing',
-                    spinner: 'hamburger',
+                    spinner: 'dots',
                     stream: {stdout: true}
                 })).to.be.true;
                 expect(startStub.calledOnce).to.be.true;
@@ -191,7 +191,7 @@ describe('Unit: UI', function () {
                 expect(oraStub.calledOnce).to.be.true;
                 expect(oraStub.calledWithExactly({
                     text: 'test',
-                    spinner: 'hamburger',
+                    spinner: 'dots',
                     stream: {stdout: true}
                 })).to.be.true;
                 expect(startStub.calledOnce).to.be.true;
