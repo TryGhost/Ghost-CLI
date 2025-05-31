@@ -596,4 +596,5 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
     });
+
 });
