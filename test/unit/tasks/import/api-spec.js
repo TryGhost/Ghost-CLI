@@ -420,6 +420,18 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
 
+        it('1.x with token auth', async function () {
+            try {
+                await downloadContentExport('1.0.0', testUrl, {
+                    token: 'secret:token'
+                }, '/dev/null');
+
+                expect.fail('Expected error');
+            } catch (error) {
+                expect(error.message).to.equal('Ghost 1.0 does not support token-based authentication');
+            }
+        });
+
         it('2.x', async function () {
             const sessionScope = nock(testUrl, {
                 reqheaders: {
@@ -567,7 +579,7 @@ describe('Unit > Tasks > Import > setup', function () {
             const exportData = {
                 db: [{
                     meta: {
-                        version: '5.0.0'
+                        version: '5.120.1'
                     },
                     data: {
                         users: []
@@ -586,7 +598,7 @@ describe('Unit > Tasks > Import > setup', function () {
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '5.x.json');
 
-            await downloadContentExport('5.0.0', 'http://localhost:2368', {
+            await downloadContentExport('5.120.1', 'http://localhost:2368', {
                 username: 'test@example.com',
                 password: 'password'
             }, outputFile);
@@ -595,6 +607,17 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(exportScope.isDone()).to.be.true;
             expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
-    });
 
+        it('Older 5.x with token auth', async function () {
+            try {
+                await downloadContentExport('5.120.4', testUrl, {
+                    token: 'secret:token'
+                }, '/dev/null');
+
+                expect.fail('Expected error');
+            } catch (error) {
+                expect(error.message).to.equal('Token auth is only supported for Ghost v5.121.0 and above');
+            }
+        });
+    });
 });
