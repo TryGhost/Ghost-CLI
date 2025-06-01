@@ -5,6 +5,7 @@ const Promise = require('bluebird');
 const createConfigStub = require('../../../utils/config-stub');
 
 const {SystemError} = require('../../../../lib/errors');
+const {TOKEN_AUTH_MIN_VERSION} = require('../../../../lib/tasks/import/api');
 
 const modulePath = '../../../../lib/tasks/import/tasks';
 
@@ -129,14 +130,36 @@ describe('Unit: Tasks > Import > Tasks', function () {
             config.get.withArgs('url').returns('http://localhost:2368');
 
             const {exportTask} = proxyquire(modulePath, {
-                './api': {isSetup, downloadContentExport}
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, downloadContentExport}
             });
 
             await exportTask({prompt}, {config, version: '1.0.0'}, 'test-export.json');
             expect(isSetup.calledOnceWithExactly('1.0.0', 'http://localhost:2368')).to.be.true;
             expect(prompt.calledOnce).to.be.true;
+            expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['username', 'password']);
             expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
                 username: 'username', password: 'password'
+            }, 'test-export.json'));
+        });
+
+        it(`prompts for a staff auth token on >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
+            const isSetup = sinon.stub().resolves(true);
+            const downloadContentExport = sinon.stub().resolves();
+            const config = createConfigStub();
+            const prompt = sinon.stub().resolves({token: 'abcd'});
+
+            config.get.withArgs('url').returns('http://localhost:2368');
+
+            const {exportTask} = proxyquire(modulePath, {
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, downloadContentExport}
+            });
+
+            await exportTask({prompt}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json');
+            expect(isSetup.calledOnceWithExactly(TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368')).to.be.true;
+            expect(prompt.calledOnce).to.be.true;
+            expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['token']);
+            expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
+                token: 'abcd'
             }, 'test-export.json'));
         });
     });
