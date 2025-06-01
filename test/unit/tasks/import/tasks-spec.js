@@ -142,6 +142,59 @@ describe('Unit: Tasks > Import > Tasks', function () {
             }, 'test-export.json'));
         });
 
+        it(`errors from >=v5.118.0 to <${TOKEN_AUTH_MIN_VERSION} when device verification is enabled`, async function () {
+            for (const configVariant of [undefined, true]) {
+                for (const version of ['5.118.0', '5.120.4']) {
+                    const isSetup = sinon.stub().resolves(true);
+                    const downloadContentExport = sinon.stub().resolves();
+                    const config = createConfigStub();
+                    const prompt = sinon.stub().rejects(new Error('Should not have been called'));
+
+                    config.get.withArgs('url').returns('http://localhost:2368');
+                    config.get.withArgs('security.staffDeviceVerification').returns(configVariant);
+
+                    const {exportTask} = proxyquire(modulePath, {
+                        './api': {TOKEN_AUTH_MIN_VERSION, isSetup, downloadContentExport}
+                    });
+
+                    try {
+                        await exportTask({prompt}, {config, version}, 'test-export.json');
+                        expect.fail('exportTask should have errored');
+                    } catch (error) {
+                        expect(error.message).to.contain(
+                            'Staff Device Verification is enabled, so backups might fail with password auth.'
+                        );
+                    }
+                }
+            }
+        });
+
+        it(`allows >=v5.118.0 to <${TOKEN_AUTH_MIN_VERSION} when device verification is disabled`, async function () {
+            for (const configVariant of [false, 'false']) {
+                for (const version of ['5.118.0', '5.120.4']) {
+                    const isSetup = sinon.stub().resolves(true);
+                    const downloadContentExport = sinon.stub().resolves();
+                    const config = createConfigStub();
+                    const prompt = sinon.stub().resolves({username: 'username', password: 'password'});
+
+                    config.get.withArgs('url').returns('http://localhost:2368');
+                    config.get.withArgs('security.staffDeviceVerification').returns(configVariant);
+
+                    const {exportTask} = proxyquire(modulePath, {
+                        './api': {TOKEN_AUTH_MIN_VERSION, isSetup, downloadContentExport}
+                    });
+
+                    await exportTask({prompt}, {config, version}, 'test-export.json');
+                    expect(isSetup.calledOnceWithExactly(version, 'http://localhost:2368')).to.be.true;
+                    expect(prompt.calledOnce).to.be.true;
+                    expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['username', 'password']);
+                    expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
+                        username: 'username', password: 'password'
+                    }, 'test-export.json'));
+                }
+            }
+        });
+
         it(`prompts for a staff auth token on >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
             const isSetup = sinon.stub().resolves(true);
             const downloadContentExport = sinon.stub().resolves();
