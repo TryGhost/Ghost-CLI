@@ -616,7 +616,7 @@ describe('Unit > Tasks > Import > setup', function () {
 
                 expect.fail('Expected error');
             } catch (error) {
-                expect(error.message).to.equal('Token auth is only supported for Ghost v5.121.0 and above');
+                expect(error.message).to.equal('Token auth is only supported for Ghost v5.129.0 and above');
             }
         });
     });
