@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
         password: [root]
         node: [20.x]
     steps:
@@ -34,13 +34,19 @@ jobs:
         run: sudo systemctl start mysql.service
       - name: Prepare CLI
         run: |
-          cd cli
+          cp -r ./cli /opt/cli
+          chmod 755 /opt/cli
+          cd /opt/cli
           yarn install --frozen-lockfile
-          sudo yarn link --link-folder /usr/bin/
+          sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
+      - name: Setting up install directory
+        run: |
+          mkdir /opt/ghost-e2e-test
+          chmod 775 /opt/ghost-e2e-test
       - name: Setting up Ghost instance
         run: |
           ghost install \
-            -d ghost \
+            -d /opt/ghost-e2e-test \
             --auto \
             --no-prompt \
             --url http://cli-testing.ghost.org \
@@ -49,5 +55,8 @@ jobs:
             --dbuser root \
             --dbpass ${{ matrix.password }} \
             --dbname ghost-mysql
+      - name: Debugging Failure
+        if: failure()
+        run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
