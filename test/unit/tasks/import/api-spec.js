@@ -420,6 +420,18 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
 
+        it('1.x with token auth', async function () {
+            try {
+                await downloadContentExport('1.0.0', testUrl, {
+                    token: 'secret:token'
+                }, '/dev/null');
+
+                expect.fail('Expected error');
+            } catch (error) {
+                expect(error.message).to.equal('Ghost 1.0 does not support token-based authentication');
+            }
+        });
+
         it('2.x', async function () {
             const sessionScope = nock(testUrl, {
                 reqheaders: {
@@ -551,49 +563,61 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(exportScope.isDone()).to.be.true;
             expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
-    });
 
-    it('5.x', async function () {
-        const sessionScope = nock(testUrl, {
-            reqheaders: {
-                Origin: testUrl
-            }
-        }).post('/ghost/api/admin/session/', {
-            username: 'test@example.com',
-            password: 'password'
-        }).reply(201, 'Success', {
-            'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+        it('5.x', async function () {
+            const sessionScope = nock(testUrl, {
+                reqheaders: {
+                    Origin: testUrl
+                }
+            }).post('/ghost/api/admin/session/', {
+                username: 'test@example.com',
+                password: 'password'
+            }).reply(201, 'Success', {
+                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
+
+            const exportData = {
+                db: [{
+                    meta: {
+                        version: '5.120.1'
+                    },
+                    data: {
+                        users: []
+                    }
+                }]
+            };
+            const exportScope = nock(testUrl, {
+                reqheaders: {
+                    cookie: [
+                        'ghost-admin-api-session=test-session-data'
+                    ],
+                    origin: testUrl
+                }
+            }).get('/ghost/api/admin/db/').reply(200, exportData);
+
+            const tmpDir = tmp.dirSync();
+            const outputFile = path.join(tmpDir.name, '5.x.json');
+
+            await downloadContentExport('5.120.1', 'http://localhost:2368', {
+                username: 'test@example.com',
+                password: 'password'
+            }, outputFile);
+
+            expect(sessionScope.isDone()).to.be.true;
+            expect(exportScope.isDone()).to.be.true;
+            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
 
-        const exportData = {
-            db: [{
-                meta: {
-                    version: '5.0.0'
-                },
-                data: {
-                    users: []
-                }
-            }]
-        };
-        const exportScope = nock(testUrl, {
-            reqheaders: {
-                cookie: [
-                    'ghost-admin-api-session=test-session-data'
-                ],
-                origin: testUrl
+        it('Older 5.x with token auth', async function () {
+            try {
+                await downloadContentExport('5.120.4', testUrl, {
+                    token: 'secret:token'
+                }, '/dev/null');
+
+                expect.fail('Expected error');
+            } catch (error) {
+                expect(error.message).to.equal('Token auth is only supported for Ghost v5.121.0 and above');
             }
-        }).get('/ghost/api/admin/db/').reply(200, exportData);
-
-        const tmpDir = tmp.dirSync();
-        const outputFile = path.join(tmpDir.name, '5.x.json');
-
-        await downloadContentExport('5.0.0', 'http://localhost:2368', {
-            username: 'test@example.com',
-            password: 'password'
-        }, outputFile);
-
-        expect(sessionScope.isDone()).to.be.true;
-        expect(exportScope.isDone()).to.be.true;
-        expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+        });
     });
 });
