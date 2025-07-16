@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.27.1"></a>
+## [1.27.1](https://github.com/TryGhost/Ghost-CLI/compare/v1.27.0...v1.27.1) (2025-07-16)
+
+
+### Bug Fixes
+
+* **version:** update semver, update coerce usage for custom version ([fd89145](https://github.com/TryGhost/Ghost-CLI/commit/fd89145))
+
+
+
 <a name="1.27.0"></a>
 # [1.27.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.26.1...v1.27.0) (2025-02-13)
 
