@@ -551,49 +551,49 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(exportScope.isDone()).to.be.true;
             expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
         });
-    });
 
-    it('5.x', async function () {
-        const sessionScope = nock(testUrl, {
-            reqheaders: {
-                Origin: testUrl
-            }
-        }).post('/ghost/api/admin/session/', {
-            username: 'test@example.com',
-            password: 'password'
-        }).reply(201, 'Success', {
-            'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-        });
-
-        const exportData = {
-            db: [{
-                meta: {
-                    version: '5.0.0'
-                },
-                data: {
-                    users: []
+        it('5.x', async function () {
+            const sessionScope = nock(testUrl, {
+                reqheaders: {
+                    Origin: testUrl
                 }
-            }]
-        };
-        const exportScope = nock(testUrl, {
-            reqheaders: {
-                cookie: [
-                    'ghost-admin-api-session=test-session-data'
-                ],
-                origin: testUrl
-            }
-        }).get('/ghost/api/admin/db/').reply(200, exportData);
+            }).post('/ghost/api/admin/session/', {
+                username: 'test@example.com',
+                password: 'password'
+            }).reply(201, 'Success', {
+                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
 
-        const tmpDir = tmp.dirSync();
-        const outputFile = path.join(tmpDir.name, '5.x.json');
+            const exportData = {
+                db: [{
+                    meta: {
+                        version: '5.0.0'
+                    },
+                    data: {
+                        users: []
+                    }
+                }]
+            };
+            const exportScope = nock(testUrl, {
+                reqheaders: {
+                    cookie: [
+                        'ghost-admin-api-session=test-session-data'
+                    ],
+                    origin: testUrl
+                }
+            }).get('/ghost/api/admin/db/').reply(200, exportData);
 
-        await downloadContentExport('5.0.0', 'http://localhost:2368', {
-            username: 'test@example.com',
-            password: 'password'
-        }, outputFile);
+            const tmpDir = tmp.dirSync();
+            const outputFile = path.join(tmpDir.name, '5.x.json');
 
-        expect(sessionScope.isDone()).to.be.true;
-        expect(exportScope.isDone()).to.be.true;
-        expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+            await downloadContentExport('5.0.0', 'http://localhost:2368', {
+                username: 'test@example.com',
+                password: 'password'
+            }, outputFile);
+
+            expect(sessionScope.isDone()).to.be.true;
+            expect(exportScope.isDone()).to.be.true;
+            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+        });
     });
 });

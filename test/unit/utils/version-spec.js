@@ -167,6 +167,11 @@ describe('Unit: Utils: version', function () {
             const result = checkCustomVersion('2.1', ['1.0.0', '2.0.0', '2.1.0']);
             expect(result).to.equal('2.1.0');
         });
+
+        it('maintains prerelease selection in version if version exists', function () {
+            const result = checkCustomVersion('6.0.0-alpha.1', ['5.0.0', '6.0.0-alpha.1']);
+            expect(result).to.equal('6.0.0-alpha.1');
+        });
     });
 
     describe('checkActiveVersion', function () {
