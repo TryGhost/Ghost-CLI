@@ -88,7 +88,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, or 22\'');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, or 24\'');
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -100,7 +100,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
         expect(false, 'error should have been thrown').to.be.true;
     });
 
-    it('rejects if os release is not Ubuntu 16, 18, or 20', async function () {
+    it('rejects if os release is not Ubuntu 16, 18, 20, 22, or 24', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '14.04.1 LTS'});
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -114,7 +114,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, or 22\'');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, or 24\'');
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
