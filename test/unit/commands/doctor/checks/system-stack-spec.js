@@ -126,8 +126,31 @@ describe('Unit: Doctor Checks > systemStack', function () {
         expect(false, 'error should have been thrown').to.be.true;
     });
 
+    it('warns, but succeeds when an EoL Ubuntu version is found', async function () {
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '16.04.7 LTS'});
+        const services = sinon.stub(sysinfo, 'services');
+
+        services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
+        services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);
+
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
+
+        const ctx = {
+            ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
+            system: {platform: {linux: true}}
+        };
+
+        await systemStack.task(ctx);
+        expect(osInfo.calledOnce).to.be.true;
+        expect(services.calledTwice).to.be.true;
+        expect(logStub.calledTwice).to.be.true;
+        expect(logStub.args[0][0]).to.contain('end-of-life');
+        expect(logStub.args[1][0]).to.contain('Consider upgrading to Ubuntu 22.04 or 24.04');
+    });
+
     it('returns without error when both systemd/nginx are found', async function () {
-        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
         const services = sinon.stub(sysinfo, 'services');
 
         services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
@@ -148,7 +171,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('throws when systemd not found', async function () {
-        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
         const services = sinon.stub(sysinfo, 'services');
 
         services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
@@ -180,7 +203,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('throws when systemd check errors', async function () {
-        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
         const services = sinon.stub(sysinfo, 'services');
 
         services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
@@ -212,7 +235,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('throws when nginx not found', async function () {
-        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
         const services = sinon.stub(sysinfo, 'services');
 
         services.withArgs('nginx').resolves([]);
@@ -244,7 +267,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
     });
 
     it('throws when nginx check errors', async function () {
-        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '20.04.1 LTS'});
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
         const services = sinon.stub(sysinfo, 'services').rejects(new Error('test error'));
 
         services.withArgs('nginx').rejects();
