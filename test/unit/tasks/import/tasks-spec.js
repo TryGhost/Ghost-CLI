@@ -10,6 +10,10 @@ const {TOKEN_AUTH_MIN_VERSION} = require('../../../../lib/tasks/import/api');
 const modulePath = '../../../../lib/tasks/import/tasks';
 
 describe('Unit: Tasks > Import > Tasks', function () {
+    afterEach(function () {
+        delete process.env.GHOST_CLI_STAFF_AUTH_TOKEN;
+    });
+
     describe('importTask', function () {
         it('works with already set up blog', async function () {
             const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
@@ -214,6 +218,50 @@ describe('Unit: Tasks > Import > Tasks', function () {
             expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
                 token: 'abcd'
             }, 'test-export.json'));
+        });
+
+        it(`uses defined GHOST_CLI_STAFF_AUTH_TOKEN env var >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
+            const isSetup = sinon.stub().resolves(true);
+            const downloadContentExport = sinon.stub().resolves();
+            const config = createConfigStub();
+            const prompt = sinon.stub().resolves({token: 'abcd'});
+
+            config.get.withArgs('url').returns('http://localhost:2368');
+
+            const {exportTask} = proxyquire(modulePath, {
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, downloadContentExport}
+            });
+
+            const token = ''.padStart(24, '0') + ':' + ''.padStart(64, '0');
+            process.env.GHOST_CLI_STAFF_AUTH_TOKEN = token;
+
+            await exportTask({prompt}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json');
+            expect(isSetup.calledOnceWithExactly(TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368')).to.be.true;
+            expect(prompt.called).to.be.false;
+            expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
+                token
+            }, 'test-export.json'));
+        });
+
+        it(`throws error on invalid GHOST_CLI_STAFF_AUTH_TOKEN env var >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
+            const isSetup = sinon.stub().resolves(true);
+            const downloadContentExport = sinon.stub().resolves();
+            const config = createConfigStub();
+            const prompt = sinon.stub().resolves({token: 'abcd'});
+
+            config.get.withArgs('url').returns('http://localhost:2368');
+
+            const {exportTask} = proxyquire(modulePath, {
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, downloadContentExport}
+            });
+
+            process.env.GHOST_CLI_STAFF_AUTH_TOKEN = 'invalid-token';
+            await expect(
+                exportTask({prompt}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json')
+            ).to.be.rejectedWith('GHOST_CLI_STAFF_AUTH_TOKEN is not a valid token');
+            expect(isSetup.calledOnceWithExactly(TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368')).to.be.true;
+            expect(prompt.called).to.be.false;
+            expect(downloadContentExport.called).to.be.false;
         });
     });
 });
