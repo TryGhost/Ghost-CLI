@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.28.0"></a>
+# [1.28.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.27.1...v1.28.0) (2025-07-25)
+
+
+### Features
+
+* **backup:** support specifying backup staff token via env var ([#1967](https://github.com/TryGhost/Ghost-CLI/issues/1967)) ([9675ea9](https://github.com/TryGhost/Ghost-CLI/commit/9675ea9)), closes [#1952](https://github.com/TryGhost/Ghost-CLI/issues/1952)
+
+
+
 <a name="1.27.1"></a>
 ## [1.27.1](https://github.com/TryGhost/Ghost-CLI/compare/v1.27.0...v1.27.1) (2025-07-16)
 
