@@ -72,6 +72,7 @@ describe('Unit: Tasks: Configure > options', function () {
     it('mail', function () {
         expect(options.mail).to.exist;
         expect(options.mail.validate('Sendmail')).to.be.true;
+        expect(options.mail.validate('Mailgun')).to.be.true;
         expect(options.mail.validate('SMS')).to.match(/Invalid mail transport/);
     });
 
