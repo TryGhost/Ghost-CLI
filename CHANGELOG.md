@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.28.1"></a>
+## [1.28.1](https://github.com/TryGhost/Ghost-CLI/compare/v1.28.0...v1.28.1) (2025-07-28)
+
+
+### Bug Fixes
+
+* **config:** allow mailgun as valid transport ([#1969](https://github.com/TryGhost/Ghost-CLI/issues/1969)) ([6cfd952](https://github.com/TryGhost/Ghost-CLI/commit/6cfd952)), closes [#1968](https://github.com/TryGhost/Ghost-CLI/issues/1968)
+
+
+
 <a name="1.28.0"></a>
 # [1.28.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.27.1...v1.28.0) (2025-07-25)
 
