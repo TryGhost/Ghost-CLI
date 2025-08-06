@@ -21,6 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
       - name: Use latest global yarn version
