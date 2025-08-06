@@ -21,11 +21,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Install Setuptools
-        run: |
-          pip3 install --upgrade setuptools
-          python3 --version
-          python3 -c 'import setuptools'
+      - name: Install Setuptools (MacOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: brew install python-setuptools
+      - name: Install Setuptools (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: pip3 install --upgrade setuptools
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
       - name: Use latest global yarn version
