@@ -36,6 +36,11 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(baseUrl).to.equal('https://example.com/ghost/api/admin');
         });
 
+        it('6.x', function () {
+            const baseUrl = getBaseUrl('6.0.0', 'https://example.com/');
+            expect(baseUrl).to.equal('https://example.com/ghost/api/admin');
+        });
+
         it('unsupported', function () {
             try {
                 getBaseUrl('0.11.14', 'https://example.com');

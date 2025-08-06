@@ -13,7 +13,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: [20.x]
+        node: [22.x]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +21,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - name: Install Setuptools (MacOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: brew install python-setuptools
+      - name: Install Setuptools (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: pip3 install --upgrade setuptools
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
       - name: Use latest global yarn version
