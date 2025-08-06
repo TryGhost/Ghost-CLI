@@ -22,7 +22,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install Setuptools
-        run: pip install --upgrade setuptools
+        run: |
+          pip3 install --upgrade setuptools
+          python3 --version
+          python3 -c 'import setuptools'
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
       - name: Use latest global yarn version
