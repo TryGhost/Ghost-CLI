@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.28.3"></a>
+## [1.28.3](https://github.com/TryGhost/Ghost-CLI/compare/v1.28.2...v1.28.3) (2025-08-06)
+
+
+### Bug Fixes
+
+* **backup:** fix backup command with ghost v6 ([#1974](https://github.com/TryGhost/Ghost-CLI/issues/1974)) ([e3e70c0](https://github.com/TryGhost/Ghost-CLI/commit/e3e70c0)), closes [#1973](https://github.com/TryGhost/Ghost-CLI/issues/1973)
+
+
+
 <a name="1.28.2"></a>
 ## [1.28.2](https://github.com/TryGhost/Ghost-CLI/compare/v1.28.1...v1.28.2) (2025-07-31)
 
