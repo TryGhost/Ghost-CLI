@@ -104,6 +104,6 @@
     "proxyquire": "2.1.3",
     "sinon": "21.0.0",
     "standard-version": "4.3.0",
-    "tmp": "0.2.1"
+    "tmp": "0.2.4"
   }
 }
