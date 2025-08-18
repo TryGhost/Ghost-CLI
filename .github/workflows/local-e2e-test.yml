@@ -15,7 +15,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         node: [22.x]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: "cli"
       - uses: actions/setup-node@v4
