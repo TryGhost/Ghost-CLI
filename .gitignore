@@ -51,3 +51,4 @@ Session.vim
 
 # Temp folder - useful for manual testing!
 tmp
+.DS_Store
