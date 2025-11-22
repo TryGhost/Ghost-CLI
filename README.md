@@ -14,6 +14,26 @@
 
 #### NOTE: This CLI is not designed to work with any Ghost versions < 1.0.0
 
+## Node.js Requirements
+
+Ghost-CLI requires Node.js to be installed on your system. The following Node.js versions are supported:
+
+- **Node.js 12.x**: `^12.22.1` or higher
+- **Node.js 14.x**: `^14.17.0` or higher  
+- **Node.js 16.x**: `^16.13.0` or higher
+- **Node.js 18.x**: `^18.0.0` or higher
+- **Node.js 20.x**: `^20.11.1` or higher
+- **Node.js 22.x**: `^22.13.1` or higher
+
+> **Important**: For Ghost 6.0+, Node.js 22.13.1 or higher is required. Earlier versions of Node.js 22.x (like 22.11.0) are not compatible.
+
+You can check your Node.js version by running:
+```bash
+node --version
+```
+
+If you need to install or update Node.js, visit [nodejs.org](https://nodejs.org/) or use a version manager like [nvm](https://github.com/nvm-sh/nvm).
+
 ## Documentation
 
 - [Complete Setup Guide](https://ghost.org/docs/install/ubuntu/)
