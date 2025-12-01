@@ -37,7 +37,7 @@ jobs:
           cp -r ./cli /opt/cli
           chmod 755 /opt/cli
           cd /opt/cli
-          yarn install --frozen-lockfile
+          yarn install --ignore-scripts --frozen-lockfile
           sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
       - name: Setting up install directory
         run: |
