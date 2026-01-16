@@ -4810,10 +4810,10 @@ mute-stream@0.0.8:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-mysql2@3.16.0:
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.16.0.tgz#f296336b3ddba00fe061c7ca7ada2ddf8689c17e"
-  integrity sha512-AEGW7QLLSuSnjCS4pk3EIqOmogegmze9h8EyrndavUQnIUcfkVal/sK7QznE+a3bc6rzPbAiui9Jcb+96tPwYA==
+mysql2@3.16.1:
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.16.1.tgz#cbe294573792fe4f059000f23d38e16011c83c61"
+  integrity sha512-b75qsDB3ieYEzMsT1uRGsztM/sy6vWPY40uPZlVVl8eefAotFCoS7jaDB5DxDNtlW5kdVGd9jptSpkvujNxI2A==
   dependencies:
     aws-ssl-profiles "^1.1.1"
     denque "^2.1.0"
@@ -4821,7 +4821,7 @@ mysql2@3.16.0:
     iconv-lite "^0.7.0"
     long "^5.2.1"
     lru.min "^1.0.0"
-    named-placeholders "^1.1.3"
+    named-placeholders "^1.1.6"
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
@@ -4834,7 +4834,7 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-named-placeholders@^1.1.3:
+named-placeholders@^1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/named-placeholders/-/named-placeholders-1.1.6.tgz#c50c6920b43f258f59c16add1e56654f5cc02bb5"
   integrity sha512-Tz09sEL2EEuv5fFowm419c1+a/jSMiBjI9gHxVLrVdbUkkNUUfjsVYs9pVZu5oCon/kmRh9TfLEObFtkVxmY0w==
