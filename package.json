@@ -67,7 +67,7 @@
     "jsonwebtoken": "^9.0.2",
     "latest-version": "5.1.0",
     "listr": "0.14.3",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "log-symbols": "4.1.0",
     "moment": "2.27.0",
     "mysql2": "3.16.1",
