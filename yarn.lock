@@ -6341,10 +6341,10 @@ symlink-or-copy@1.3.1:
   resolved "https://registry.yarnpkg.com/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz#9506dd64d8e98fa21dcbf4018d1eab23e77f71fe"
   integrity sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==
 
-systeminformation@5.30.6:
-  version "5.30.6"
-  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.30.6.tgz#c100cb632bbb955fc44ba033f624da22c3a6a5be"
-  integrity sha512-LEIyK1aEv5P3BhAPW3swdlIyCihxwEq/Gki+kcONieU4PIeRCSLDuGkk0Va/56PSBgjVgEksOM88dmY6YqOyfQ==
+systeminformation@5.30.7:
+  version "5.30.7"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-5.30.7.tgz#7708ac4680a90c183dfb7342d1577045a1d6cc08"
+  integrity sha512-33B/cftpaWdpvH+Ho9U1b08ss8GQuLxrWHelbJT1yw4M48Taj8W3ezcPuaLoIHZz5V6tVHuQPr5BprEfnBLBMw==
 
 table@^5.2.3:
   version "5.4.6"
