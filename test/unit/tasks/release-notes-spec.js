@@ -59,7 +59,7 @@ describe('Unit: Tasks > Release Notes', function () {
     });
 
     it('Handles network errors', async function () {
-        const stub = sinon.stub(got, 'get').rejects(new errors.CliError('What is this "GitHub" you speak of?'));
+        const stub = sinon.stub(got, 'get').rejects(new errors.SystemError('What is this "GitHub" you speak of?'));
         const task = {title: 'original'};
         const ui = {log: sinon.stub()};
         const context = {ui, version: '3.14.15'};

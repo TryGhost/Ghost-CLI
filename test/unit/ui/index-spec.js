@@ -115,7 +115,7 @@ describe('Unit: UI', function () {
             ui.run(testFunc, null, {quiet: true}).then(() => {
                 done(new errors.CliError('then should not be called'));
             }).catch((error) => {
-                expect(error, 'run catch error').to.be.an.instanceOf(Error);
+                expect(error, 'run catch error').to.be.an.instanceOf(errors.CliError);
                 expect(error.message, 'run catch error message').to.equal('something went wrong!');
                 expect(testFunc.calledOnce).to.be.true;
                 expect(oraStub.called).to.be.false;
@@ -186,7 +186,7 @@ describe('Unit: UI', function () {
             ui.run(testFunc, 'test').then(() => {
                 done(new errors.CliError('then should not be called'));
             }).catch((error) => {
-                expect(error, 'run catch error').to.be.an.instanceOf(Error);
+                expect(error, 'run catch error').to.be.an.instanceOf(errors.CliError);
                 expect(error.message, 'run catch error message').to.equal('something went wrong!');
                 expect(testFunc.calledOnce).to.be.true;
                 expect(oraStub.calledOnce).to.be.true;

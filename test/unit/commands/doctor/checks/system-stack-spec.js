@@ -269,9 +269,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('throws when nginx check errors', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
-        const services = sinon.stub(sysinfo, 'services').rejects(new errors.CliError('test error'));
+        const services = sinon.stub(sysinfo, 'services');
 
-        services.withArgs('nginx').rejects();
+        services.withArgs('nginx').rejects(new errors.CliError('test error'));
         services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);
 
         const logStub = sinon.stub();
