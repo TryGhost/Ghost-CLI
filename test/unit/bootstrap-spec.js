@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const {setupTestFolder, cleanupTestFolders} = require('../utils/test-folder');
 const path = require('path');
 const proxyquire = require('proxyquire');
+const errors = require('../../lib/errors');
 
 const yargs = require('yargs');
 
@@ -129,11 +130,11 @@ describe('Unit: Bootstrap', function () {
 
         it('throws reason and logs to console if it exists', function () {
             const handler = process.listeners('unhandledRejection')[0];
-            const testError = new Error('some problem');
+            const testError = new errors.CliError('some problem');
 
             try {
                 handler(testError);
-                throw new Error('Proper error wasn\'t thrown');
+                throw new errors.CliError('Proper error wasn\'t thrown');
             } catch (e) {
                 expect(e, 'thrown error').to.equal(testError);
                 expect(consoleStub.args[0][0]).to.match(/^A promise was rejected/);
@@ -146,7 +147,7 @@ describe('Unit: Bootstrap', function () {
 
             try {
                 handler('some problem');
-                throw new Error('Proper error wasn\'t thrown');
+                throw new errors.CliError('Proper error wasn\'t thrown');
             } catch (e) {
                 expect(e).to.equal('some problem');
                 expect(consoleStub.args[0][0]).to.match(/^A promise was rejected/);
@@ -160,7 +161,7 @@ describe('Unit: Bootstrap', function () {
 
             try {
                 handler(null, p);
-                throw new Error('something went wrong');
+                throw new errors.CliError('something went wrong');
             } catch (e) {
                 expect(e).to.be.null;
                 expect(consoleStub.args[0][0]).to.match(/^A promise was rejected/);
@@ -191,17 +192,17 @@ describe('Unit: Bootstrap', function () {
             const TestValidCommand = require(commandPath);
             const configureStub = sinon.stub(TestValidCommand, 'configure');
 
-            const yargs = {yargs: true};
+            const yargsStub = {yargs: true};
             const aliases = ['foo', 'bar'];
             const extensions = [{dir: './test-extension', pkg: {name: 'test'}}];
 
-            bootstrap.loadCommand('valid', commandPath, yargs, aliases, extensions);
+            bootstrap.loadCommand('valid', commandPath, yargsStub, aliases, extensions);
             expect(errorStub.called).to.be.false;
             expect(configureStub.calledOnce).to.be.true;
             expect(configureStub.calledWithExactly(
                 'valid',
                 aliases,
-                yargs,
+                yargsStub,
                 extensions
             )).to.be.true;
         });
@@ -244,7 +245,7 @@ describe('Unit: Bootstrap', function () {
 
             try {
                 bootstrap.run(['notls']);
-                throw new Error('Exit wasn\'t called');
+                throw new errors.CliError('Exit wasn\'t called');
             } catch (e) {
                 expect(e.message).to.not.equal('Exit wasn\'t called');
                 expect(error.args[0][0]).to.match(/^Unrecognized command/);

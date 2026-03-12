@@ -2,7 +2,8 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 
-const {SystemError} = require('../../../lib/errors');
+const errors = require('../../../lib/errors');
+const {SystemError} = errors;
 
 const modulePath = '../../../lib/commands/stop';
 const StopCommand = require(modulePath);
@@ -18,7 +19,7 @@ describe('Unit: Commands > Stop', function () {
         });
 
         it('checks for valid install if name not specified', async function () {
-            const getInstance = sinon.stub().throws(new Error('getInstance'));
+            const getInstance = sinon.stub().throws(new errors.CliError('getInstance'));
             const Command = proxyquire(modulePath, {
                 '../utils/get-instance': getInstance
             });
@@ -86,7 +87,7 @@ describe('Unit: Commands > Stop', function () {
         });
 
         it('sets argv.local based on the process manager (local)', async function () {
-            const error = new Error('stopError');
+            const error = new errors.CliError('stopError');
             const isRunning = sinon.stub().throws(error);
 
             const getInstance = sinon.stub().returns({isRunning, isLocal: true});
@@ -97,14 +98,14 @@ describe('Unit: Commands > Stop', function () {
 
             try {
                 await cmd.run(argv);
-            } catch (error) {
-                expect(error).to.equal(error);
+            } catch (caughtError) {
+                expect(caughtError).to.equal(caughtError);
                 expect(argv.local).to.be.true;
             }
         });
 
         it('sets argv.local based on the process manager (not local)', async function () {
-            const error = new Error('stopError');
+            const error = new errors.CliError('stopError');
             const isRunning = sinon.stub().throws(error);
 
             const getInstance = sinon.stub().returns({isRunning, isLocal: false});
@@ -115,8 +116,8 @@ describe('Unit: Commands > Stop', function () {
 
             try {
                 await cmd.run(argv);
-            } catch (error) {
-                expect(error).to.equal(error);
+            } catch (caughtError) {
+                expect(caughtError).to.equal(caughtError);
                 expect(argv.local).to.be.false;
             }
         });

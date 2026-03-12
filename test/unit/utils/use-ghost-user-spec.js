@@ -6,6 +6,7 @@ const ghostUser = require('../../../lib/utils/use-ghost-user');
 const os = require('os');
 const execa = require('execa');
 const fs = require('fs');
+const errors = require('../../../lib/errors');
 
 describe('Unit: Utils > ghostUser', function () {
     afterEach(() => {
@@ -24,7 +25,7 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns false if no ghost user found', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').throws(new Error('no such user'));
+            const execaStub = sinon.stub(execa, 'shellSync').throws(new errors.CliError('no such user'));
 
             const result = ghostUser.shouldUseGhostUser();
 
@@ -107,7 +108,7 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns false if "no such user" error is thrown', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').throws(new Error('no such user'));
+            const execaStub = sinon.stub(execa, 'shellSync').throws(new errors.CliError('no such user'));
 
             const result = ghostUser.getGhostUid();
             expect(result).to.be.false;

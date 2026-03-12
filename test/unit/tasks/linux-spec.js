@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const Promise = require('bluebird');
+const errors = require('../../../lib/errors');
 
 const modulePath = '../../../lib/tasks/linux';
 
@@ -37,7 +38,7 @@ describe('Unit: Tasks > linux', function () {
     });
 
     it('creates user if user doesn\'t exist', function () {
-        const shellStub = sinon.stub().throws(new Error('No such user'));
+        const shellStub = sinon.stub().throws(new errors.CliError('No such user'));
         const linux = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
         });

@@ -3,7 +3,8 @@ const sinon = require('sinon');
 const fs = require('fs-extra');
 const path = require('path');
 
-const {SystemError} = require('../../../../lib/errors');
+const errors = require('../../../../lib/errors');
+const {SystemError} = errors;
 
 const parseExport = require('../../../../lib/tasks/import/parse-export');
 
@@ -13,7 +14,7 @@ describe('Unit > Tasks > Import > parse-export', function () {
     });
 
     it('forwards error from readJsonSync', function () {
-        const stub = sinon.stub(fs, 'readJsonSync').throws(new Error('file not found'));
+        const stub = sinon.stub(fs, 'readJsonSync').throws(new errors.CliError('file not found'));
 
         try {
             parseExport('notfoundfile.json');

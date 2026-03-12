@@ -16,7 +16,7 @@ describe('Unit: Systemd > doctor checks', function () {
 
     describe('checkUnitFile', function () {
         it('errors when readFile errors', async function () {
-            const readFile = sinon.stub(fs, 'readFile').rejects(new Error('test'));
+            const readFile = sinon.stub(fs, 'readFile').rejects(new errors.CliError('test'));
             const ctx = {
                 instance: {name: 'test'}
             };
@@ -76,7 +76,7 @@ Test=Value
         });
 
         it('rejects if node --version rejects', async function () {
-            const stdout = sinon.stub(execa, 'stdout').rejects(new Error('test error'));
+            const stdout = sinon.stub(execa, 'stdout').rejects(new errors.CliError('test error'));
 
             const ctx = {
                 systemd: {
@@ -115,7 +115,7 @@ Test=Value
 
         it('returns if unable to parse ghost pkg json', async function () {
             const stdout = sinon.stub(execa, 'stdout').resolves('12.0.0');
-            const readJson = sinon.stub(fs, 'readJson').rejects(new Error('test'));
+            const readJson = sinon.stub(fs, 'readJson').rejects(new errors.CliError('test'));
             const log = sinon.stub();
 
             const ctx = {

@@ -67,7 +67,7 @@ describe('Unit: Doctor Checks > Checking file permissions', function () {
     });
 
     it('rejects with error if execa command fails', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
+        const execaStub = sinon.stub(execa, 'shell').rejects(new errors.CliError('oops, cmd could not be executed'));
 
         return filePermissions.task({}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;

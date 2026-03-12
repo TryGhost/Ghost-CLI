@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const os = require('os');
 const fs = require('fs');
 const checkRootUser = require('../../../lib/utils/check-root-user');
+const errors = require('../../../lib/errors');
 
 describe('Unit: Utils > checkRootUser', function () {
     afterEach(() => {
@@ -56,7 +57,7 @@ describe('Unit: Utils > checkRootUser', function () {
 
         try {
             checkRootUser('ls');
-            throw new Error('should not be thrown');
+            throw new errors.CliError('should not be thrown');
         } catch (e) {
             expect(e.message).to.not.equal('should not be thrown');
             expect(cwdStub.calledOnce).to.be.true;
@@ -85,7 +86,7 @@ describe('Unit: Utils > checkRootUser', function () {
 
         try {
             checkRootUser('update');
-            throw new Error('should not be thrown');
+            throw new errors.CliError('should not be thrown');
         } catch (e) {
             expect(e.message).to.not.equal('should not be thrown');
             expect(cwdStub.calledOnce).to.be.true;
@@ -138,7 +139,7 @@ describe('Unit: Utils > checkRootUser', function () {
 
         try {
             checkRootUser('ls');
-            throw new Error('should not be thrown');
+            throw new errors.CliError('should not be thrown');
         } catch (e) {
             expect(e.message).to.not.equal('should not be thrown');
             expect(cwdStub.calledOnce).to.be.true;
@@ -191,7 +192,7 @@ describe('Unit: Utils > checkRootUser', function () {
 
         try {
             checkRootUser('update');
-            throw new Error('should not be thrown');
+            throw new errors.CliError('should not be thrown');
         } catch (e) {
             expect(e.message).to.not.equal('should not be thrown');
             expect(cwdStub.calledOnce).to.be.true;
@@ -218,7 +219,7 @@ describe('Unit: Utils > checkRootUser', function () {
 
         try {
             checkRootUser('update');
-            throw new Error('should not be thrown');
+            throw new errors.CliError('should not be thrown');
         } catch (e) {
             expect(e.message).to.not.equal('should not be thrown');
             expect(cwdStub.calledOnce).to.be.true;

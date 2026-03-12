@@ -400,12 +400,12 @@ describe('Unit: Utils: version', function () {
 
         it('rejects if archive file doesn\'t exist', async function () {
             const existsStub = sinon.stub().returns(false);
-            const {versionFromArchive} = proxyquire(modulePath, {
+            const {versionFromArchive: proxiedVersionFromArchive} = proxyquire(modulePath, {
                 fs: {existsSync: existsStub}
             });
 
             try {
-                await versionFromArchive('/some/zip/file.zip');
+                await proxiedVersionFromArchive('/some/zip/file.zip');
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
@@ -417,12 +417,12 @@ describe('Unit: Utils: version', function () {
 
         it('rejects if archive file doesn\'t have a supported extension', async function () {
             const existsStub = sinon.stub().returns(true);
-            const {versionFromArchive} = proxyquire(modulePath, {
+            const {versionFromArchive: proxiedVersionFromArchive} = proxyquire(modulePath, {
                 fs: {existsSync: existsStub}
             });
 
             try {
-                await versionFromArchive('./some/non/zip/file.txt');
+                await proxiedVersionFromArchive('./some/non/zip/file.txt');
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);

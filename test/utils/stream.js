@@ -3,9 +3,9 @@
 const stream = require('stream');
 const isString = require('lodash/isString');
 
-function noopRead(stream) {
+function noopRead(readable) {
     return function () {
-        stream.push(null);
+        readable.push(null);
     };
 }
 

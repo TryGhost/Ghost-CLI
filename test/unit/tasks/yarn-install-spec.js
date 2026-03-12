@@ -112,7 +112,7 @@ describe('Unit: Tasks > yarn-install', function () {
     });
 
     it('catches errors from yarn and cleans up install folder', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.error(new Error('an error occurred'))));
+        const yarnStub = sinon.stub().returns(new Observable(o => o.error(new errors.CliError('an error occurred'))));
         const yarnInstall = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
@@ -331,7 +331,7 @@ describe('Unit: Tasks > yarn-install', function () {
             const env = setupTestFolder();
             const downloadStub = sinon.stub().resolves({downloadedData: true});
             const shasumStub = sinon.stub().returns('asdf1234');
-            const decompressStub = sinon.stub().rejects(new Error('an error occurred'));
+            const decompressStub = sinon.stub().rejects(new errors.CliError('an error occurred'));
             const downloadTask = proxyquire(modulePath, {
                 download: downloadStub,
                 shasum: shasumStub,

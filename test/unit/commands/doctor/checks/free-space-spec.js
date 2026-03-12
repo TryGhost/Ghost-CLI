@@ -2,7 +2,8 @@ const {expect} = require('chai');
 const sinon = require('sinon');
 
 const sysinfo = require('systeminformation');
-const {SystemError} = require('../../../../../lib/errors');
+const errors = require('../../../../../lib/errors');
+const {SystemError} = errors;
 
 const check = require('../../../../../lib/commands/doctor/checks/free-space');
 
@@ -18,7 +19,7 @@ describe('Unit: Doctor Checks > Free Space', function () {
     });
 
     it('handles error from systeminformation', function () {
-        const stub = sinon.stub(sysinfo, 'fsSize').rejects(new Error('test-error'));
+        const stub = sinon.stub(sysinfo, 'fsSize').rejects(new errors.CliError('test-error'));
         const cwdStub = sinon.stub(process, 'cwd').returns('/test/directory');
 
         return check.task({}).catch((error) => {
@@ -30,7 +31,7 @@ describe('Unit: Doctor Checks > Free Space', function () {
     });
 
     it('handles error from systeminformation', function () {
-        const stub = sinon.stub(sysinfo, 'fsSize').rejects(new Error('test-error'));
+        const stub = sinon.stub(sysinfo, 'fsSize').rejects(new errors.CliError('test-error'));
         const cwdStub = sinon.stub(process, 'cwd').returns('/test/directory');
 
         return check.task({}).catch((error) => {

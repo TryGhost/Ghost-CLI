@@ -32,7 +32,7 @@ describe('Unit: Doctor Checks > Memory', function () {
     });
 
     it('uses systeminformation to determine memory availability', function () {
-        const memStub = sinon.stub(sysinfo, 'mem').rejects(new Error('systeminformation'));
+        const memStub = sinon.stub(sysinfo, 'mem').rejects(new errors.CliError('systeminformation'));
         const memCheck = require(modulePath);
 
         return memCheck.task().catch((error) => {

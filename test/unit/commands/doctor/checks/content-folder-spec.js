@@ -75,7 +75,7 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if execa command fails', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
+        const execaStub = sinon.stub(execa, 'shell').rejects(new errors.CliError('oops, cmd could not be executed'));
 
         shouldUseGhostUserStub.returns(true);
 

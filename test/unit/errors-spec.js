@@ -63,7 +63,7 @@ describe('Unit: Errors', function () {
         });
 
         it('logs original error message and stack trace if verbose is set', function () {
-            const originalError = new Error('something aweful happened here');
+            const originalError = new errors.CliError('something aweful happened here');
             originalError.response = 'very long response';
 
             const verboseError = new errors.CliError({

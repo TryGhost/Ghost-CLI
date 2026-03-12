@@ -2,12 +2,13 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
+const errors = require('../../../lib/errors');
 
 const modulePath = '../get-uid';
 
 describe('Unit: Systemd > get-uid util', function () {
     it('catches error but returns null', function () {
-        const shellStub = sinon.stub().throws(new Error('some error'));
+        const shellStub = sinon.stub().throws(new errors.CliError('some error'));
         const getUid = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
         });
@@ -18,7 +19,7 @@ describe('Unit: Systemd > get-uid util', function () {
     });
 
     it('returns null if ghost user doesn\'t exist', function () {
-        const shellStub = sinon.stub().throws(new Error('No such user'));
+        const shellStub = sinon.stub().throws(new errors.CliError('No such user'));
         const getUid = proxyquire(modulePath, {
             execa: {shellSync: shellStub}
         });

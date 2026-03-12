@@ -60,9 +60,9 @@ describe('Unit: UI > PrettyStream', function () {
                 const ghostPrettyStream = new PrettyStream({verbose: verbose});
                 const writeStream = new streams.Writable();
 
-                writeStream._write = function (data) {
-                    data = data.toString();
-                    expect(data).to.equal(expected);
+                writeStream._write = function (chunk) {
+                    const output = chunk.toString();
+                    expect(output).to.equal(expected);
                     resolve();
                 };
 

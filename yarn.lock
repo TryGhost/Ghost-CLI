@@ -1588,6 +1588,11 @@
     "@stdlib/utils-copy" "^0.2.0"
     uuid "^9.0.0"
 
+"@tryghost/errors@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-3.0.2.tgz#9160ecc0f95fef1f240f10e28085fe580cc6ab16"
+  integrity sha512-8qcqNMDAsjyi9Er+qcOGcQPEV0bJLwr8BKE1fctgTu6PU7fPRKfPuhcYQG+54spOq5TVVdlW18C9jnzKPwkVMQ==
+
 "@tryghost/zip@^1.1.25":
   version "1.1.54"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.54.tgz#6d71f7e4456575754bbeec53673f59bdd45c28cd"

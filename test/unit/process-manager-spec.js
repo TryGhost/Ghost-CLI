@@ -3,6 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const getConfigStub = require('../utils/config-stub');
+const errors = require('../../lib/errors');
 
 const modulePath = '../../lib/process-manager';
 
@@ -83,7 +84,7 @@ describe('Unit: Process Manager', function () {
 
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('localhost');
-            portPollingStub.rejects(new Error('test error'));
+            portPollingStub.rejects(new errors.CliError('test error'));
 
             const instance = new ProcessManager({}, {}, {config, version: '1.25.0'});
             const stopStub = sinon.stub(instance, 'stop').resolves();
@@ -109,7 +110,7 @@ describe('Unit: Process Manager', function () {
 
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('localhost');
-            portPollingStub.rejects(new Error('test error'));
+            portPollingStub.rejects(new errors.CliError('test error'));
 
             const instance = new ProcessManager({}, {}, {config, version: '1.25.0'});
             const stopStub = sinon.stub(instance, 'stop').resolves();
@@ -136,10 +137,10 @@ describe('Unit: Process Manager', function () {
 
             config.get.withArgs('server.port').returns(2368);
             config.get.withArgs('server.host').returns('localhost');
-            portPollingStub.rejects(new Error('test error'));
+            portPollingStub.rejects(new errors.CliError('test error'));
 
             const instance = new ProcessManager({}, {}, {config, version: '1.25.0'});
-            const stopStub = sinon.stub(instance, 'stop').rejects(new Error('test error 2'));
+            const stopStub = sinon.stub(instance, 'stop').rejects(new errors.CliError('test error 2'));
 
             return instance.ensureStarted().then(() => {
                 expect(false, 'Error should have been thrown').to.be.true;

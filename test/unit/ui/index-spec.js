@@ -8,10 +8,11 @@ const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
 const EventEmitter = require('events');
+const errors = require('../../../lib/errors');
 
 const execa = require('execa');
 
-const modulePath = '../../../lib/ui';
+const modulePath = '../../../lib/ui/ui';
 
 describe('Unit: UI', function () {
     before(() => {
@@ -109,10 +110,10 @@ describe('Unit: UI', function () {
 
         it('with quiet enabled, passes through rejection', function (done) {
             const ui = new UI();
-            const testFunc = sinon.stub().rejects(new Error('something went wrong!'));
+            const testFunc = sinon.stub().rejects(new errors.CliError('something went wrong!'));
 
             ui.run(testFunc, null, {quiet: true}).then(() => {
-                done(new Error('then should not be called'));
+                done(new errors.CliError('then should not be called'));
             }).catch((error) => {
                 expect(error, 'run catch error').to.be.an.instanceOf(Error);
                 expect(error.message, 'run catch error message').to.equal('something went wrong!');
@@ -180,10 +181,10 @@ describe('Unit: UI', function () {
 
         it('starts spinner with options, handles rejection', function (done) {
             const ui = new UI({stdout: {stdout: true}});
-            const testFunc = sinon.stub().rejects(new Error('something went wrong!'));
+            const testFunc = sinon.stub().rejects(new errors.CliError('something went wrong!'));
 
             ui.run(testFunc, 'test').then(() => {
-                done(new Error('then should not be called'));
+                done(new errors.CliError('then should not be called'));
             }).catch((error) => {
                 expect(error, 'run catch error').to.be.an.instanceOf(Error);
                 expect(error.message, 'run catch error message').to.equal('something went wrong!');
@@ -242,7 +243,7 @@ describe('Unit: UI', function () {
                     type: 'input',
                     message: 'Enter anything'
                 });
-                done(new Error('error should have been thrown'));
+                done(new errors.CliError('error should have been thrown'));
             } catch (error) {
                 expect(error.message).to.match(/Prompts have been disabled/);
                 expect(noSpinStub.called).to.be.false;
@@ -576,7 +577,6 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
-            const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('test');
         });
@@ -642,7 +642,6 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
-            const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('my message', 'testing', 'green', 'link');
         });
@@ -657,7 +656,6 @@ describe('Unit: UI', function () {
             });
             stdout.on('error', done);
 
-            const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('my message', 'testing', 'white', 'cmd', true);
         });
@@ -714,7 +712,6 @@ describe('Unit: UI', function () {
 
     describe('error', function () {
         const UI = require(modulePath);
-        const errors = require('../../../lib/errors');
 
         describe('handles cliError', function () {
             it('logMessageOnly', function () {
@@ -856,7 +853,7 @@ describe('Unit: UI', function () {
                 const log = sinon.stub(ui, 'log');
                 const formatDebug = sinon.stub(ui, '_formatDebug');
                 const system = {writeErrorLog: sinon.stub()};
-                const errs = [new Error('Error 1'), new Error('Error 2'), new Error('Error 3'), new Error('Error 4')];
+                const errs = [new TypeError('Error 1'), new TypeError('Error 2'), new TypeError('Error 3'), new TypeError('Error 4')];
                 errs[0].code = 404;
                 errs[1].path = '/var/www/ghost/index.js';
                 errs[2].stack = null;
@@ -887,7 +884,7 @@ describe('Unit: UI', function () {
                 const log = sinon.stub(ui, 'log');
                 const formatDebug = sinon.stub(ui, '_formatDebug');
                 const system = {writeErrorLog: sinon.stub()};
-                const err = new Error('!!!error!!!');
+                const err = new TypeError('!!!error!!!');
                 const expectedError = `An error occurred.\nMessage: '${err.message}'\n\n`.split('\n');
 
                 ui.error(err, system);

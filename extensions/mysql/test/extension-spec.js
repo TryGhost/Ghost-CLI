@@ -5,7 +5,7 @@ const proxyquire = require('proxyquire');
 const configStub = require('../../../test/utils/config-stub');
 const semver = require('semver');
 
-const modulePath = '../index';
+const modulePath = '../mysql-extension';
 const errors = require('../../../lib/errors');
 
 describe('Unit: Mysql extension', function () {
@@ -161,12 +161,12 @@ describe('Unit: Mysql extension', function () {
                 return;
             }
 
-            throw new Error('canConnect should have thrown');
+            throw new errors.CliError('canConnect should have thrown');
         });
 
         it('throws configerror if error is ECONNREFUSED', function () {
             const connectStub = sinon.stub().callsFake((cb) => {
-                const error = new Error('db connection failed');
+                const error = new errors.CliError('db connection failed');
                 error.code = 'ECONNREFUSED';
                 cb(error);
             });
@@ -188,7 +188,7 @@ describe('Unit: Mysql extension', function () {
 
         it('throws configerror if error is ER_ACCESS_DENIED_ERROR', function () {
             const connectStub = sinon.stub().callsFake((cb) => {
-                const error = new Error('invalid username/password');
+                const error = new errors.CliError('invalid username/password');
                 error.code = 'ER_ACCESS_DENIED_ERROR';
                 cb(error);
             });
@@ -210,7 +210,7 @@ describe('Unit: Mysql extension', function () {
 
         it('throws error if error code does not match expected ones', function () {
             const connectStub = sinon.stub().callsFake((cb) => {
-                cb(new Error('ack'));
+                cb(new errors.CliError('ack'));
             });
             const createConnectionStub = sinon.stub().returns({connect: connectStub});
             const MysqlExtension = proxyquire(modulePath, {
@@ -330,7 +330,7 @@ describe('Unit: Mysql extension', function () {
             const queryStub = sinon.stub(instance, '_query').resolves();
             queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
             queryStub.onCall(4).resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
-            const err = new Error();
+            const err = new errors.CliError();
             err.errno = 1396;
             queryStub.onThirdCall().rejects(new errors.CliError({message: 'User exists already', err: err}));
             const ctx = {};
@@ -360,7 +360,7 @@ describe('Unit: Mysql extension', function () {
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
             const queryStub = sinon.stub(instance, '_query').resolves();
             queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
-            const err = new Error('User exists already');
+            const err = new errors.CliError('User exists already');
             err.errno = 9999;
             queryStub.onThirdCall().rejects(new errors.CliError({message: 'User exists already', err: err, context: 'SELECT PASSWORD'}));
             const endStub = sinon.stub();
@@ -393,7 +393,7 @@ describe('Unit: Mysql extension', function () {
             const endStub = sinon.stub();
             instance.connection = {end: endStub};
             queryStub.onSecondCall().resolves([{password: '*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19'}]);
-            queryStub.onThirdCall().rejects(new errors.CliError({message: 'something failed', err: new Error('something failed'), context: 'SET old_passwords = 0;'}));
+            queryStub.onThirdCall().rejects(new errors.CliError({message: 'something failed', err: new errors.CliError('something failed'), context: 'SET old_passwords = 0;'}));
 
             return instance.createUser({}, {host: 'localhost'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -413,7 +413,7 @@ describe('Unit: Mysql extension', function () {
         it('rejects with CliError and ends connection if any query fails', function () {
             const logStub = sinon.stub();
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
-            const queryStub = sinon.stub(instance, '_query').rejects(new errors.CliError({message: 'Oopsi', err: new Error('something failed'), context: 'SET old_passwords = 0;'}));
+            const queryStub = sinon.stub(instance, '_query').rejects(new errors.CliError({message: 'Oopsi', err: new errors.CliError('something failed'), context: 'SET old_passwords = 0;'}));
             const endStub = sinon.stub();
             instance.connection = {end: endStub};
 
@@ -457,7 +457,7 @@ describe('Unit: Mysql extension', function () {
             const endStub = sinon.stub();
             instance.connection = {end: endStub};
             queryStub.onFirstCall().resolves();
-            queryStub.onSecondCall().rejects(new errors.CliError({message: 'something failed', err: new Error('something failed'), context: 'FLUSH PRIVILEGES;'}));
+            queryStub.onSecondCall().rejects(new errors.CliError({message: 'something failed', err: new errors.CliError('something failed'), context: 'FLUSH PRIVILEGES;'}));
 
             return instance.grantPermissions({mysql: {username: 'test'}}, {host: 'localhost', database: 'ghost'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -494,7 +494,7 @@ describe('Unit: Mysql extension', function () {
 
         it('rejects with correct CliError', function () {
             const MysqlExtension = require(modulePath);
-            const queryStub = sinon.stub().callsFake((_, cb) => cb(new Error('failed executing')));
+            const queryStub = sinon.stub().callsFake((_, cb) => cb(new TypeError('failed executing')));
             const logStub = sinon.stub();
 
             const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
@@ -519,7 +519,7 @@ describe('Unit: Mysql extension', function () {
             const MysqlExtension = require(modulePath);
             const err = new errors.CliError('failed executing');
             err.options.context = 'SELECT * FROM table';
-            err.options.err = new Error('failed executing');
+            err.options.err = new errors.CliError('failed executing');
             const queryStub = sinon.stub().throws(err);
             const logStub = sinon.stub();
 

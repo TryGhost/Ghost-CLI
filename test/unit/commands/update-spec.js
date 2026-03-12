@@ -654,7 +654,7 @@ describe('Unit: Commands > Update', function () {
             fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
-            const rollback = cmdInstance.rollbackFromFail = sinon.stub().rejects(new Error('rollback_successful'));
+            const rollback = cmdInstance.rollbackFromFail = sinon.stub().rejects(new errors.CliError('rollback_successful'));
             cmdInstance.runCommand = sinon.stub().resolves(true);
             cmdInstance.version = sinon.stub().callsFake((context) => {
                 context.version = '1.1.1';
@@ -675,7 +675,7 @@ describe('Unit: Commands > Update', function () {
 
         it('does not attempts to auto-rollback on cli error', async function () {
             const UpdateCommand = require(modulePath);
-            const errObj = new Error('do_nothing');
+            const errObj = new errors.CliError('do_nothing');
 
             const ui = {
                 log: sinon.stub(),
@@ -745,14 +745,14 @@ describe('Unit: Commands > Update', function () {
             const UpdateCommand = require(modulePath);
             const ui = {
                 log: sinon.stub(),
-                listr: sinon.stub().rejects(new Error('do_nothing')),
+                listr: sinon.stub().rejects(new errors.CliError('do_nothing')),
                 run: sinon.stub().callsFake(fn => fn())
             };
             const system = {getInstance: sinon.stub()};
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0', {}, true);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            const expectedError = new Error('do_nothing');
+            const expectedError = new errors.CliError('do_nothing');
             fakeInstance.isRunning.throws(expectedError);
 
             const argv = {};
@@ -768,14 +768,14 @@ describe('Unit: Commands > Update', function () {
             const UpdateCommand = require(modulePath);
             const ui = {
                 log: sinon.stub(),
-                listr: sinon.stub().rejects(new Error('do_nothing')),
+                listr: sinon.stub().rejects(new errors.CliError('do_nothing')),
                 run: sinon.stub().callsFake(fn => fn())
             };
             const system = {getInstance: sinon.stub()};
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0', {}, false);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
             system.getInstance.returns(fakeInstance);
-            const expectedError = new Error('do_nothing');
+            const expectedError = new errors.CliError('do_nothing');
             fakeInstance.isRunning.throws(expectedError);
 
             // Example: `ghost update --local` in production
@@ -1057,7 +1057,7 @@ describe('Unit: Commands > Update', function () {
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
             update.run = sinon.stub().resolves();
 
-            await update.rollbackFromFail(new Error('test'), '1.1.1', true);
+            await update.rollbackFromFail(new errors.CliError('test'), '1.1.1', true);
             expect(ui.log.calledOnce).to.be.true;
             expect(ui.error.calledOnce).to.be.true;
 

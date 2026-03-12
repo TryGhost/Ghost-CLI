@@ -3,7 +3,7 @@ const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 
-const modulePath = '../../../../lib/commands/doctor/index';
+const modulePath = '../../../../lib/commands/doctor/doctor-command';
 
 describe('Unit: Commands > Doctor', function () {
     it('doesn\'t do anything if there are no checks to run (with log)', function () {

@@ -7,6 +7,7 @@ const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../acme';
 
 const cli = require('../../../lib');
+const errors = require('../../../lib/errors');
 
 describe('Unit: Extensions > Nginx > Acme', function () {
     it('isInstalled checks if /etc/letsencrypt/acme.sh exists', function () {
@@ -71,7 +72,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('Errors when github is down', function () {
-            const err = new Error('Not Found');
+            const err = new errors.CliError('Not Found');
             err.statusCode = '404';
             // got resolves only, when statusCode = 2xx
             // see https://github.com/sindresorhus/got#gothttperror
@@ -187,7 +188,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('Knows when a certificate already exists', function () {
-            const acmeError = new Error('Cert exists');
+            const acmeError = new errors.CliError('Cert exists');
             acmeError.code = 2;
             const sudoStub = sinon.stub().rejects(acmeError);
 
@@ -210,7 +211,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         });
 
         it('Gracefully rejects unknown errors', function () {
-            const acmeError = new Error('Minions overworked');
+            const acmeError = new errors.CliError('Minions overworked');
             acmeError.stderr = 'Minions overworked';
             const sudoStub = sinon.stub().rejects(acmeError);
 
@@ -258,7 +259,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
         it('handles errors', function () {
             const homedirStub = sinon.stub().returns('/home/ghost');
-            const sudoStub = sinon.stub().rejects(new Error('oops i did it again'));
+            const sudoStub = sinon.stub().rejects(new errors.CliError('oops i did it again'));
 
             const acme = proxyquire(modulePath, {
                 os: {homedir: homedirStub}

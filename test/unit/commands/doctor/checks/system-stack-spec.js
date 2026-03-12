@@ -2,7 +2,8 @@ const {expect} = require('chai');
 const sinon = require('sinon');
 
 const sysinfo = require('systeminformation');
-const {SystemError} = require('../../../../../lib/errors');
+const errors = require('../../../../../lib/errors');
+const {SystemError} = errors;
 
 const systemStack = require('../../../../../lib/commands/doctor/checks/system-stack');
 
@@ -268,7 +269,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('throws when nginx check errors', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '22.04.5 LTS'});
-        const services = sinon.stub(sysinfo, 'services').rejects(new Error('test error'));
+        const services = sinon.stub(sysinfo, 'services').rejects(new errors.CliError('test error'));
 
         services.withArgs('nginx').rejects();
         services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);

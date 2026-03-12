@@ -2,6 +2,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
+const errors = require('../../lib/errors');
 
 const modulePath = '../../lib/command';
 
@@ -25,7 +26,7 @@ describe('Unit: Command', function () {
 
             try {
                 TestCommand.configure('test', [], {});
-                throw new Error('Configure should have thrown');
+                throw new errors.CliError('Configure should have thrown');
             } catch (e) {
                 expect(e.message).to.match(/^Command test must have a description/);
             }
@@ -189,7 +190,7 @@ describe('Unit: Command', function () {
 
             try {
                 await TestCommand._run('test', {});
-                throw new Error('findValidInstall not called');
+                throw new errors.CliError('findValidInstall not called');
             } catch (e) {
                 expect(e.message).to.not.equal('findValidInstall not called');
                 expect(findValidInstall.calledOnce).to.be.true;
@@ -220,7 +221,7 @@ describe('Unit: Command', function () {
             const checkRootUserStub = sinon.stub().throws('let them be freeee');
             class ShortCircuit {
                 constructor() {
-                    throw new Error('you shall not pass');
+                    throw new errors.CliError('you shall not pass');
                 }
             }
             const Command = proxyquire(modulePath, {
@@ -245,7 +246,7 @@ describe('Unit: Command', function () {
             const checkRootUserStub = sinon.stub().throws('let them be freeee');
             class ShortCircuit {
                 constructor() {
-                    throw new Error('you shall not pass');
+                    throw new errors.CliError('you shall not pass');
                 }
             }
             const Command = proxyquire(modulePath, {
@@ -266,7 +267,7 @@ describe('Unit: Command', function () {
         });
 
         it('Errors when a boolean directory is provided', async function () {
-            sinon.stub(process, 'exit').throws(new Error('exit_stub'));
+            sinon.stub(process, 'exit').throws(new errors.CliError('exit_stub'));
             const outStub = sinon.stub(process.stderr, 'write');
             const Command = require(modulePath);
             class TestCommand extends Command {}
@@ -274,7 +275,7 @@ describe('Unit: Command', function () {
             let errorCount = 0;
 
             const fail = () => {
-                throw new Error('Should have errored');
+                throw new errors.CliError('Should have errored');
             };
 
             const assertError = (error, expectHelp, assertionContext) => {
@@ -314,15 +315,15 @@ describe('Unit: Command', function () {
         });
 
         it('Changes directory if needed', async function () {
-            sinon.stub(process, 'exit').throws(new Error('exit_stub'));
+            sinon.stub(process, 'exit').throws(new errors.CliError('exit_stub'));
             const outStub = sinon.stub(process.stderr, 'write');
-            const chdirStub = sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
+            const chdirStub = sinon.stub(process, 'chdir').throws(new errors.CliError('chdir_stub'));
             const Command = require(modulePath);
             class TestCommand extends Command {}
 
             try {
                 await TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
-                throw new Error('Should have errored');
+                throw new errors.CliError('Should have errored');
             } catch (error) {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('exit_stub');
@@ -335,8 +336,8 @@ describe('Unit: Command', function () {
 
         it('Creates & changes into directory if needed', async function () {
             sinon.stub(process.stderr, 'write');
-            sinon.stub(process, 'exit').throws(new Error('exit_stub'));
-            sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
+            sinon.stub(process, 'exit').throws(new errors.CliError('exit_stub'));
+            sinon.stub(process, 'chdir').throws(new errors.CliError('chdir_stub'));
             const fs = require('fs-extra');
             const fsStub = sinon.stub(fs, 'ensureDirSync');
             const Command = require(modulePath);
@@ -345,7 +346,7 @@ describe('Unit: Command', function () {
 
             try {
                 await TestCommand._run('test', {dir: '/path/to/ghost', verbose: true});
-                throw new Error('Should have errored');
+                throw new errors.CliError('Should have errored');
             } catch (error) {
                 expect(error).to.be.ok;
                 expect(error.message).to.equal('exit_stub');
@@ -516,7 +517,7 @@ describe('Unit: Command', function () {
 
             class TestCommand extends Command {
                 run() {
-                    throw new Error('an error occurred');
+                    throw new errors.CliError('an error occurred');
                 }
             }
             TestCommand.global = true;
@@ -558,7 +559,7 @@ describe('Unit: Command', function () {
 
         try {
             await commandInstance.run();
-            throw new Error('should not be thrown');
+            throw new errors.CliError('should not be thrown');
         } catch (e) {
             expect(e.message).to.equal('Command must implement run function');
         }

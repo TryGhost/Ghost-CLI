@@ -107,7 +107,7 @@ describe('Unit: Utils > local-process', function () {
             const checkStub = sinon.stub(instance, '_checkContentFolder').returns(false);
 
             instance.start('/var/www/ghost', 'development').then(() => {
-                done(new Error('start should have rejected'));
+                done(new errors.CliError('start should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.match(/content folder is not owned by the current user/);
@@ -135,7 +135,7 @@ describe('Unit: Utils > local-process', function () {
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
 
             startPromise.then(() => {
-                done(new Error('Start should have rejected'));
+                done(new errors.CliError('Start should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An error occurred while starting Ghost.');
@@ -167,7 +167,7 @@ describe('Unit: Utils > local-process', function () {
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
 
             startPromise.then(() => {
-                done(new Error('Start should have rejected'));
+                done(new errors.CliError('Start should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.message).to.equal('Ghost process exited with code: 1');
@@ -200,7 +200,7 @@ describe('Unit: Utils > local-process', function () {
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
 
             startPromise.then(() => {
-                done(new Error('Start should have rejected'));
+                done(new errors.CliError('Start should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.GhostError);
                 expect(error.message).to.equal('Test Error Message');
@@ -265,7 +265,7 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('rejects if any unexpected error occurs during reading of pidfile', function (done) {
-            const readFileStub = sinon.stub(fs, 'readFileSync').throws(new Error('test error'));
+            const readFileStub = sinon.stub(fs, 'readFileSync').throws(new errors.CliError('test error'));
             const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
@@ -274,7 +274,7 @@ describe('Unit: Utils > local-process', function () {
             const instance = new LocalProcess({}, {}, {});
 
             instance.stop('/var/www/ghost').then(() => {
-                done(new Error('stop should have rejected'));
+                done(new errors.CliError('stop should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An unexpected error occurred when reading the pidfile.');
@@ -306,7 +306,7 @@ describe('Unit: Utils > local-process', function () {
         it('resolves if process didn\'t exist', function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
             const removeStub = sinon.stub(fs, 'removeSync');
-            const fkillStub = sinon.stub().rejects(new Error('No such process: 42'));
+            const fkillStub = sinon.stub().rejects(new errors.CliError('No such process: 42'));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -325,7 +325,7 @@ describe('Unit: Utils > local-process', function () {
         it('rejects with an unknown error from fkill', function (done) {
             const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
             const removeStub = sinon.stub(fs, 'removeSync');
-            const fkillStub = sinon.stub().callsFake(() => Promise.reject(new Error('no idea')));
+            const fkillStub = sinon.stub().callsFake(() => Promise.reject(new errors.CliError('no idea')));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: fkillStub
@@ -335,7 +335,7 @@ describe('Unit: Utils > local-process', function () {
             }, {});
 
             instance.stop('/var/www/ghost').then(() => {
-                done(new Error('stop should have rejected'));
+                done(new errors.CliError('stop should have rejected'));
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An unexpected error occurred while stopping Ghost.');

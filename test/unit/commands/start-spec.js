@@ -2,6 +2,7 @@ const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const createConfigStub = require('../../utils/config-stub');
+const errors = require('../../../lib/errors');
 
 const Instance = require('../../../lib/instance');
 const System = require('../../../lib/system');
@@ -76,7 +77,7 @@ describe('Unit: Commands > Start', function () {
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
             instance.config.get.returns('http://localhost:2368');
             const start = new StartCommand(ui, system);
-            sinon.stub(start, 'runCommand').rejects(new Error('runCommand'));
+            sinon.stub(start, 'runCommand').rejects(new errors.CliError('runCommand'));
 
             try {
                 await start.run({argv: true});
@@ -101,7 +102,7 @@ describe('Unit: Commands > Start', function () {
             const checkEnvironment = sinon.stub(instance, 'checkEnvironment');
             instance.config.get.returns('https://demo.ghost.io');
             const start = new StartCommand(ui, system);
-            sinon.stub(start, 'runCommand').rejects(new Error('runCommand'));
+            sinon.stub(start, 'runCommand').rejects(new errors.CliError('runCommand'));
 
             try {
                 await start.run({argv: true});
@@ -178,7 +179,7 @@ describe('Unit: Commands > Start', function () {
         it('sets argv.local based on the process manager (local)', async function () {
             const {ui, system, instance} = getStubs('/var/www/ghost', undefined, true);
             returnedInstance = instance;
-            const stopError = new Error('stopError');
+            const stopError = new errors.CliError('stopError');
             sinon.stub(instance, 'isRunning').throws(stopError);
             const cmd = new StartCommand(ui, system);
             const argv = {};
@@ -194,7 +195,7 @@ describe('Unit: Commands > Start', function () {
         it('sets argv.local based on the process manager (not local)', async function () {
             const {ui, system, instance} = getStubs('/var/www/ghost', undefined, false);
             returnedInstance = instance;
-            const stopError = new Error('stopError');
+            const stopError = new errors.CliError('stopError');
             sinon.stub(instance, 'isRunning').throws(stopError);
             const cmd = new StartCommand(ui, system);
 

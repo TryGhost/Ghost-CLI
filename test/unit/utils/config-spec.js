@@ -1,6 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const fs = require('fs-extra');
+const errors = require('../../../lib/errors');
 
 const Config = require('../../../lib/utils/config');
 
@@ -10,7 +11,7 @@ describe('Unit: Config', function () {
     it('errors when no filename is specified on creation', function () {
         try {
             test = new Config();
-            throw new Error('Error should have been thrown');
+            throw new errors.CliError('Error should have been thrown');
         } catch (e) {
             expect(e.message).to.equal('Config file not specified.');
         }

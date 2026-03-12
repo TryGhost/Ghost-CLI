@@ -2,7 +2,8 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const {CliError} = require('../../../../lib/errors');
+const errors = require('../../../../lib/errors');
+const {CliError} = errors;
 
 describe('Unit: Tasks > Major Update > Data', function () {
     let knexMock; let gscanMock; let data; let connection;
@@ -119,7 +120,7 @@ describe('Unit: Tasks > Major Update > Data', function () {
         connection.raw.withArgs('SELECT value FROM settings WHERE `key` = "active_theme";').resolves([[{value: 'casper'}]]);
         connection.raw.withArgs('SELECT uuid FROM posts WHERE `slug` = "v2-demo-post";').resolves([[{uuid: 'uuid'}]]);
 
-        gscanMock.check.rejects(new Error('oops'));
+        gscanMock.check.rejects(new errors.CliError('oops'));
 
         try {
             await data({

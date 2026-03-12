@@ -15,7 +15,7 @@ describe('Unit: Commands > Run', function () {
 
     describe('run', function () {
         it('logs if stdin is tty', function () {
-            const logStub = sinon.stub().throws(new Error('throw me'));
+            const logStub = sinon.stub().throws(new errors.CliError('throw me'));
             const RunCommand = require(modulePath);
             const instance = new RunCommand({log: logStub}, {});
             const oldIsTTY = process.stdin.isTTY;
@@ -270,7 +270,7 @@ describe('Unit: Commands > Run', function () {
 
         it('attempts to kill child process, and doesn\'t throw if error is EPERM and sudo is true', function () {
             const instance = new RunCommand({}, {});
-            const err = new Error();
+            const err = new errors.CliError();
             err.code = 'EPERM';
             const killStub = sinon.stub().throws(err);
             instance.child = {kill: killStub};
@@ -282,7 +282,7 @@ describe('Unit: Commands > Run', function () {
 
         it('attempts to kill child process and throws if kill fails and not sudo', function () {
             const instance = new RunCommand({}, {});
-            const err = new Error();
+            const err = new errors.CliError();
             err.code = 'EPERM';
             const killStub = sinon.stub().throws(err);
             instance.child = {kill: killStub};
@@ -300,7 +300,7 @@ describe('Unit: Commands > Run', function () {
 
         it('attempts to kill child process and throws if kill fails and error code is not EPERM', function () {
             const instance = new RunCommand({}, {});
-            const err = new Error('yikes');
+            const err = new errors.CliError('yikes');
             err.code = 'ENOTFOUND';
             const killStub = sinon.stub().throws(err);
             instance.child = {kill: killStub};

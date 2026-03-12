@@ -4,6 +4,7 @@ const createConfigStub = require('../utils/config-stub');
 const {setupTestFolder} = require('../utils/test-folder');
 
 const fs = require('fs-extra');
+const errors = require('../../lib/errors');
 
 const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
@@ -195,7 +196,7 @@ describe('Unit: Instance', function () {
             testInstance._cliConfig = config;
 
             // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
-            const readJsonSync = sinon.stub(fs, 'readJsonSync').throws(new Error('test error'));
+            const readJsonSync = sinon.stub(fs, 'readJsonSync').throws(new errors.CliError('test error'));
 
             expect(testInstance.version).to.equal(null);
             expect(config.get.calledOnce).to.be.true;

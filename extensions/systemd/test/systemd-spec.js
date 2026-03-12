@@ -175,7 +175,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Passes bad errors through', function () {
-            const ui = {sudo: sinon.stub().rejects(new Error('unknown'))};
+            const ui = {sudo: sinon.stub().rejects(new errors.CliError('unknown'))};
             const ext = makeSystemd(null, ui);
             const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
 
@@ -189,7 +189,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Doesn\'t pass stopped errors through', function () {
-            const ui = {sudo: sinon.stub().rejects(new Error('disabled'))};
+            const ui = {sudo: sinon.stub().rejects(new errors.CliError('disabled'))};
             const ext = makeSystemd(null, ui);
             const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
 
@@ -213,7 +213,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Passes errors through', function () {
-            const ui = {sudo: sinon.stub().rejects(new Error('red'))};
+            const ui = {sudo: sinon.stub().rejects(new errors.CliError('red'))};
             const ext = makeSystemd(null, ui);
             ext.enable().then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
@@ -237,7 +237,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Passes errors through', function () {
-            const ui = {sudo: sinon.stub().rejects(new Error('green'))};
+            const ui = {sudo: sinon.stub().rejects(new errors.CliError('green'))};
             const ext = makeSystemd(null, ui);
             ext.disable().then(() => {
                 expect(false, 'Promise should have rejected').to.be.true;
@@ -263,7 +263,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Throws ProcessError for bad errors', function () {
-            const sudo = sinon.stub().rejects(new Error('unknown'));
+            const sudo = sinon.stub().rejects(new errors.CliError('unknown'));
             const ext = makeSystemd(null, {sudo});
             const expectedCmd = 'systemctl is-active ghost_ghost_org';
 
@@ -278,7 +278,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Doesn\'t pass stopped errors through', function () {
-            const sudo = sinon.stub().rejects(Object.assign(new Error(), {stdout: 'inactive'}));
+            const sudo = sinon.stub().rejects(Object.assign(new errors.CliError(), {stdout: 'inactive'}));
             const ext = makeSystemd(null, {sudo});
             const expectedCmd = 'systemctl is-active ghost_ghost_org';
 
@@ -291,7 +291,7 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('calls reset-failed if service is failed and returns false', function () {
             const sudo = sinon.stub();
-            sudo.onFirstCall().rejects(Object.assign(new Error(), {stdout: 'failed'}));
+            sudo.onFirstCall().rejects(Object.assign(new errors.CliError(), {stdout: 'failed'}));
             sudo.onSecondCall().resolves();
 
             const ext = makeSystemd(null, {sudo});
@@ -308,8 +308,8 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('calls reset-failed if services is failed and passes errors through', function () {
             const sudo = sinon.stub();
-            sudo.onFirstCall().rejects(Object.assign(new Error(), {stdout: 'failed'}));
-            sudo.onSecondCall().rejects(new Error('uh oh'));
+            sudo.onFirstCall().rejects(Object.assign(new errors.CliError(), {stdout: 'failed'}));
+            sudo.onSecondCall().rejects(new errors.CliError('uh oh'));
 
             const ext = makeSystemd(null, {sudo});
             const expectedCmd = 'systemctl is-active ghost_ghost_org';
@@ -387,20 +387,20 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Calls execa', function () {
             const expectedCmd = 'which systemctl';
-            const Systemd = proxyquire(modulePath,
+            const ProxiedSystemd = proxyquire(modulePath,
                 {execa: {shellSync: execaStub}});
 
-            expect(Systemd.willRun()).to.be.true;
+            expect(ProxiedSystemd.willRun()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
             expect(execaStub.args[0][0]).to.equal(expectedCmd);
         });
 
         it('Always fails', function () {
-            execaStub = sinon.stub().throws(new Error());
-            const Systemd = proxyquire(modulePath,
+            execaStub = sinon.stub().throws(new errors.CliError());
+            const ProxiedSystemd = proxyquire(modulePath,
                 {execa: {shellSync: execaStub}});
 
-            expect(Systemd.willRun()).to.be.false;
+            expect(ProxiedSystemd.willRun()).to.be.false;
             expect(execaStub.calledOnce).to.be.true;
         });
     });

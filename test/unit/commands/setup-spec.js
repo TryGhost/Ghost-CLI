@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const path = require('path');
 const configStub = require('../../utils/config-stub');
+const errors = require('../../../lib/errors');
 
 const UI = require('../../../lib/ui/index');
 const System = require('../../../lib/system');
@@ -333,7 +334,7 @@ describe('Unit: Commands > Setup', function () {
     describe('run', function () {
         it('Handles local setup properly', async function () {
             const setup = new SetupCommand({}, {setEnvironment: () => {
-                throw new Error('Take a break');
+                throw new errors.CliError('Take a break');
             }});
 
             const localArgs = sinon.stub(setup, 'localArgs');

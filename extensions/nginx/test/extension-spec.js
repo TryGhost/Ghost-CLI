@@ -3,7 +3,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const modulePath = '../index';
+const modulePath = '../nginx-extension';
 const Promise = require('bluebird');
 const {errors, Extension} = require('../../../lib');
 const configStub = require('../../../test/utils/config-stub');
@@ -31,8 +31,8 @@ function addStubs(instance) {
 }
 
 function proxyNginx(proxyOptions) {
-    const Nginx = proxyquire(modulePath, proxyOptions);
-    const created = new Nginx();
+    const NginxClass = proxyquire(modulePath, proxyOptions);
+    const created = new NginxClass();
     return addStubs(created);
 }
 
@@ -323,7 +323,7 @@ describe('Unit: Extensions > Nginx', function () {
             let DNS;
 
             beforeEach(function () {
-                DNS = new Error('DNS_ERROR');
+                DNS = new errors.CliError('DNS_ERROR');
                 proxy.dns = {lookup: () => {
                     throw DNS;
                 }};
@@ -331,7 +331,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             it('Breaks if DNS fails (Not found & unknown)', function () {
                 DNS.code = 'ENOTFOUND';
-                let ctx = {};
+                const taskCtx = {};
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 const log = ext.ui.log;
@@ -345,7 +345,7 @@ describe('Unit: Extensions > Nginx', function () {
 
                     DNS.code = 'PEACHESARETASTY';
                     firstSet = true;
-                    return tasks[0].task(ctx);
+                    return tasks[0].task(taskCtx);
                 }).then(() => {
                     expect(false, 'Promise should have rejected').to.be.true;
                 }).catch((err) => {
@@ -354,7 +354,7 @@ describe('Unit: Extensions > Nginx', function () {
                     expect(err.options.message).to.match(/Error trying to lookup DNS for 'ghost.dev'/);
                     expect(err.options.err.code).to.equal(DNS.code);
                     expect(log.called).to.be.false;
-                    expect(ctx.dnsfail).to.not.exist;
+                    expect(taskCtx.dnsfail).to.not.exist;
                 });
             });
         });
@@ -422,7 +422,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         describe('dhparam', function () {
             beforeEach(function () {
-                stubs.exec = sinon.stub().throws(new Error('Uh-oh'));
+                stubs.exec = sinon.stub().throws(new errors.CliError('Uh-oh'));
                 proxy.execa = {shell: stubs.exec};
             });
 
@@ -442,7 +442,7 @@ describe('Unit: Extensions > Nginx', function () {
             it('Rejects when command fails', function () {
                 proxy['fs-extra'].existsSync = () => false;
                 const ext = proxyNginx(proxy);
-                ext.ui.sudo.rejects(new Error('Go ask George'));
+                ext.ui.sudo.rejects(new errors.CliError('Go ask George'));
                 const tasks = getTasks(ext);
 
                 expect(tasks[4].skip()).to.be.false;
@@ -477,7 +477,7 @@ describe('Unit: Extensions > Nginx', function () {
             it('Throws an error when moving fails', function () {
                 proxy['fs-extra'].existsSync = () => false;
                 const ext = proxyNginx(proxy);
-                ext.ui.sudo.rejects(new Error('Potato'));
+                ext.ui.sudo.rejects(new errors.CliError('Potato'));
                 const tasks = getTasks(ext);
 
                 expect(tasks[5].skip()).to.be.false;
@@ -662,7 +662,7 @@ describe('Unit: Extensions > Nginx', function () {
         });
 
         it('throws an error when nginx does', function () {
-            const err = new Error('ssl error');
+            const err = new errors.CliError('ssl error');
             sudo.rejects(err);
 
             return inst.restartNginx().then(() => {
@@ -684,7 +684,7 @@ describe('Unit: Extensions > Nginx', function () {
         expect(services.calledOnce).to.be.true;
 
         services.reset();
-        services.rejects(new Error('test error'));
+        services.rejects(new errors.CliError('test error'));
         expect(await inst.isSupported()).to.be.false;
         expect(services.calledOnce).to.be.true;
     });

@@ -4,7 +4,8 @@ const proxyquire = require('proxyquire');
 const sinon = require('sinon');
 const {isObservable} = require('rxjs');
 const {getReadableStream} = require('../../utils/stream');
-const {ProcessError} = require('../../../lib/errors');
+const errors = require('../../../lib/errors');
+const {ProcessError} = errors;
 
 const modulePath = '../../../lib/utils/yarn';
 
@@ -86,7 +87,7 @@ describe('Unit: yarn', function () {
     });
 
     it('fails gracefully when yarn fails', function () {
-        const execa = sinon.stub().rejects(new Error('YARN_TO_FAST'));
+        const execa = sinon.stub().rejects(new errors.CliError('YARN_TO_FAST'));
         const yarn = setup({execa});
 
         return yarn().then(() => {
@@ -128,7 +129,7 @@ describe('Unit: yarn', function () {
 
         it('ends properly (error)', function () {
             const execa = sinon.stub().callsFake(() => {
-                const promise = Promise.reject(new Error('test error'));
+                const promise = Promise.reject(new errors.CliError('test error'));
                 promise.stdout = getReadableStream();
                 return promise;
             });

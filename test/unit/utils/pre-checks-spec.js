@@ -3,6 +3,7 @@ const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 const os = require('os');
 const fs = require('fs-extra');
+const errors = require('../../../lib/errors');
 
 use(require('chai-as-promised'));
 
@@ -43,7 +44,7 @@ describe('Unit: Utils > pre-checks', function () {
     describe('update check', function () {
         it('rejects error if latestVersion has an error', async function () {
             const pkg = {name: 'ghost', version: '1.0.0'};
-            const testError = new Error('update check');
+            const testError = new errors.CliError('update check');
             const latestVersion = sinon.stub().rejects(testError);
             const ui = {
                 log: sinon.stub()
@@ -106,7 +107,7 @@ describe('Unit: Utils > pre-checks', function () {
         });
 
         it('rejects error if fs.lstat errors', async function () {
-            const testErr = new Error('test error');
+            const testErr = new errors.CliError('test error');
 
             const homedir = sinon.stub(os, 'homedir').returns('/home/ghost');
             const lstat = sinon.stub(fs, 'lstat').rejects(testErr);

@@ -45,7 +45,7 @@ describe('Unit: Commands > Log', function () {
         stubs = {
             es: sinon.stub(),
             // thrown to stop execution
-            cvi: sinon.stub().throws(new Error())
+            cvi: sinon.stub().throws(new Errors.CliError())
         };
     });
 
@@ -62,7 +62,7 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('Fails if instance doesn\'t exist', function () {
-            const ext = proxyLog();
+            ext = proxyLog();
             stubs.gi = sinon.stub().returns(false);
             ext.system = {getInstance: stubs.gi};
 
@@ -77,8 +77,8 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('checks if instance is running', function () {
-            stubs.running = sinon.stub().rejects(new Error('running'));
-            const ext = proxyLog();
+            stubs.running = sinon.stub().rejects(new Errors.CliError('running'));
+            ext = proxyLog();
             const instance = {
                 isRunning: stubs.running
             };
@@ -96,9 +96,9 @@ describe('Unit: Commands > Log', function () {
 
         it('Loads the proper environment (not running)', function () {
             // These errors are thrown to stop execution
-            stubs.ce = sinon.stub().throws(new Error('ce'));
+            stubs.ce = sinon.stub().throws(new Errors.CliError('ce'));
             stubs.running = sinon.stub().resolves(false);
-            const ext = proxyLog();
+            ext = proxyLog();
             const instance = {
                 isRunning: stubs.running,
                 checkEnvironment: stubs.ce
@@ -117,7 +117,7 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('Rejects when logging to file is disabled', function () {
-            const ext = proxyLog();
+            ext = proxyLog();
             const instance = {
                 isRunning: () => Promise.resolve(true),
                 config: {get: () => ['a', 'b', 'c']}
@@ -133,7 +133,7 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('Rejects without crashing when logging to file is disabled', function () {
-            const ext = proxyLog();
+            ext = proxyLog();
             const instance = {
                 isRunning: () => Promise.resolve(true),
                 config: {get: (key, fallback) => fallback}
@@ -149,8 +149,8 @@ describe('Unit: Commands > Log', function () {
         });
 
         it('Reads error log when requested', function () {
-            stubs.es.throws(new Error('SHORT_CIRCUIT'));
-            const ext = proxyLog({fs: {existsSync: stubs.es}});
+            stubs.es.throws(new Errors.CliError('SHORT_CIRCUIT'));
+            ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
 
             ext.run({name: 'ghost_org', error: true}).then(() => {
@@ -168,7 +168,7 @@ describe('Unit: Commands > Log', function () {
 
         it('Resolves when log file doesn\'t exist', function () {
             stubs.es.returns(false);
-            const ext = proxyLog({fs: {existsSync: stubs.es}});
+            ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
 
             return ext.run({name: 'ghost_org'}).then(() => {
@@ -179,7 +179,7 @@ describe('Unit: Commands > Log', function () {
         it('Warns when following nonexistant file', function () {
             stubs.es.returns(false);
             stubs.log = sinon.stub();
-            const ext = proxyLog({fs: {existsSync: stubs.es}});
+            ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
             ext.ui = {log: stubs.log};
 
@@ -194,9 +194,9 @@ describe('Unit: Commands > Log', function () {
             class PrettyStream {}
             PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) => {
                 expect(event).to.equal('error');
-                callback(new Error('test error'));
+                callback(new Errors.CliError('test error'));
             });
-            const ext = proxyLog({
+            ext = proxyLog({
                 fs: {existsSync: () => true},
                 [psModule]: PrettyStream
             });
@@ -215,9 +215,9 @@ describe('Unit: Commands > Log', function () {
             PrettyStream.prototype.on = sinon.stub().callsFake((event, callback) => {
                 expect(event).to.equal('error');
                 callback(new SyntaxError('bad error'));
-                throw new Error('break the code');
+                throw new Errors.CliError('break the code');
             });
-            const ext = proxyLog({
+            ext = proxyLog({
                 fs: {existsSync: () => true},
                 [psModule]: PrettyStream
             });
@@ -239,7 +239,7 @@ describe('Unit: Commands > Log', function () {
             stubs.write = sinon.stub();
             stubs.ll = sinon.stub().resolves('    a  cat\n in the hat ate\n bananas  ');
             PrettyStream.prototype.write = stubs.write;
-            const ext = proxyLog({
+            ext = proxyLog({
                 fs: {existsSync: () => true},
                 [psModule]: PrettyStream,
                 'read-last-lines': {read: stubs.ll}
@@ -274,7 +274,7 @@ describe('Unit: Commands > Log', function () {
             });
             PrettyStream.prototype.write = stubs.write;
             Tail.prototype.on = stubs.tail;
-            const ext = proxyLog({
+            ext = proxyLog({
                 fs: {existsSync: () => true},
                 [psModule]: PrettyStream,
                 'read-last-lines': {read: () => Promise.resolve('')},

@@ -2,6 +2,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const net = require('net');
+const errors = require('../../../lib/errors');
 
 const portPolling = require('../../../lib/utils/port-polling');
 
@@ -15,7 +16,7 @@ describe('Unit: Utils > portPolling', function () {
     it('port is missing', function () {
         return portPolling()
             .then(() => {
-                throw new Error('Expected error');
+                throw new errors.CliError('Expected error');
             })
             .catch((err) => {
                 expect(err.message).to.eql('Port is required.');
@@ -343,7 +344,7 @@ describe('Unit: Utils > portPolling', function () {
             netStub.destroy = sinon.stub();
             netStub.on = function (event, cb) {
                 if (event === 'error') {
-                    cb(new Error('whoops'));
+                    cb(new errors.CliError('whoops'));
                 }
             };
 
@@ -351,7 +352,7 @@ describe('Unit: Utils > portPolling', function () {
 
             return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100})
                 .then(() => {
-                    throw new Error('Expected error');
+                    throw new errors.CliError('Expected error');
                 })
                 .catch((err) => {
                     expect(err.options.suggestion).to.exist;
@@ -380,7 +381,7 @@ describe('Unit: Utils > portPolling', function () {
                 if (event === 'close') {
                     cb();
                 } else if (event === 'error' && i === 3) {
-                    cb(new Error());
+                    cb(new errors.CliError());
                 } else if (event === 'connect' && i === 5) {
                     cb();
                 }
@@ -390,7 +391,7 @@ describe('Unit: Utils > portPolling', function () {
 
             return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '0.0.0.0'})
                 .then(() => {
-                    throw new Error('Expected error');
+                    throw new errors.CliError('Expected error');
                 })
                 .catch((err) => {
                     expect(err.options.suggestion).to.exist;
@@ -421,7 +422,7 @@ describe('Unit: Utils > portPolling', function () {
                 } else if (i === 5 && event === 'connect') {
                     cb();
                 } else if (i === 3 && event === 'error') {
-                    cb(new Error());
+                    cb(new errors.CliError());
                 }
             };
 
@@ -487,7 +488,7 @@ describe('Unit: Utils > portPolling', function () {
 
             return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, socketTimeoutInMS: 300})
                 .then(() => {
-                    throw new Error('Expected error');
+                    throw new errors.CliError('Expected error');
                 })
                 .catch((err) => {
                     expect(err.options.suggestion).to.exist;
@@ -524,7 +525,7 @@ describe('Unit: Utils > portPolling', function () {
 
             return portPolling(ui, {port: 1111, maxTries: 2, retryTimeoutInMS: 100, socketTimeoutInMS: 300})
                 .then(() => {
-                    throw new Error('Expected error');
+                    throw new errors.CliError('Expected error');
                 })
                 .catch((err) => {
                     expect(err.options.suggestion).to.exist;

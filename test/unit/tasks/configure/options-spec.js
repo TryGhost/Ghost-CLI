@@ -32,18 +32,18 @@ describe('Unit: Tasks: Configure > options', function () {
 
     it('port', function () {
         const getPortPromise = sinon.stub().resolves('2367');
-        const options = proxyquire('../../../../lib/tasks/configure/options', {portfinder: {getPortPromise}});
+        const proxiedOptions = proxyquire('../../../../lib/tasks/configure/options', {portfinder: {getPortPromise}});
 
-        expect(options.port).to.exist;
+        expect(proxiedOptions.port).to.exist;
 
         // Check validate
-        expect(options.port.validate('not an int')).to.match(/must be an integer/);
+        expect(proxiedOptions.port.validate('not an int')).to.match(/must be an integer/);
 
         return Promise.props({
-            validateExpectsTrue: options.port.validate('2367'),
-            validateExpectsMessage: options.port.validate('2366'),
-            defaultCalledWithUrlPort: options.port.defaultValue({get: () => 'http://localhost:2369'}),
-            defaultCalledWithNoUrlPort: options.port.defaultValue({get: () => 'http://example.com'})
+            validateExpectsTrue: proxiedOptions.port.validate('2367'),
+            validateExpectsMessage: proxiedOptions.port.validate('2366'),
+            defaultCalledWithUrlPort: proxiedOptions.port.defaultValue({get: () => 'http://localhost:2369'}),
+            defaultCalledWithNoUrlPort: proxiedOptions.port.defaultValue({get: () => 'http://example.com'})
         }).then((results) => {
             expect(results.validateExpectsTrue).to.be.true;
             expect(results.validateExpectsMessage).to.match(/'2366' is in use/);

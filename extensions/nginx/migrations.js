@@ -46,7 +46,7 @@ function migrateSSL(ctx, migrateTask) {
     return this.ui.listr([{
         // 2. install acme.sh in /etc/letsencrypt if that hasn't been done already
         title: 'Installing acme.sh in new location',
-        task: (ctx, task) => acme.install(this.ui, task)
+        task: (_ctx, task) => acme.install(this.ui, task)
     }, {
         // 3. run install cert for new acme.sh instance
         title: 'Regenerating SSL certificate in new location',

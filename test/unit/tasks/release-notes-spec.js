@@ -1,6 +1,7 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
 const got = require('got');
+const errors = require('../../../lib/errors');
 
 const runTask = require('../../../lib/tasks/release-notes');
 
@@ -58,7 +59,7 @@ describe('Unit: Tasks > Release Notes', function () {
     });
 
     it('Handles network errors', async function () {
-        const stub = sinon.stub(got, 'get').rejects(new Error('What is this "GitHub" you speak of?'));
+        const stub = sinon.stub(got, 'get').rejects(new errors.CliError('What is this "GitHub" you speak of?'));
         const task = {title: 'original'};
         const ui = {log: sinon.stub()};
         const context = {ui, version: '3.14.15'};

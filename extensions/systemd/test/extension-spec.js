@@ -9,7 +9,7 @@ const uiStub = () => ({log: sinon.stub()});
 
 const fs = require('fs-extra');
 
-const modulePath = '../index';
+const modulePath = '../systemd-extension';
 const errors = require('../../../lib/errors');
 const SystemdExtension = require('../index');
 
@@ -71,12 +71,12 @@ describe('Unit: Systemd > Extension', function () {
         it('skips stage if ghost user hasn\'t been set up', function () {
             const uidStub = sinon.stub().returns(false);
 
-            const SystemdExtension = proxyquire(modulePath, {
+            const ProxiedExtension = proxyquire(modulePath, {
                 './get-uid': uidStub
             });
 
             const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new ProxiedExtension({}, {}, {}, path.join(__dirname, '..'));
 
             testInstance._setup({instance: {dir: '/some/dir'}}, {skip: skipStub});
             expect(uidStub.calledOnce).to.be.true;
@@ -89,7 +89,7 @@ describe('Unit: Systemd > Extension', function () {
             const uidStub = sinon.stub().returns(true);
             const readFileSyncStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
 
-            const SystemdExtension = proxyquire(modulePath, {
+            const ProxiedExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
                 'fs-extra': {readFileSync: readFileSyncStub}
             });
@@ -97,7 +97,7 @@ describe('Unit: Systemd > Extension', function () {
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
             const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new ProxiedExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
             const instance = {dir: '/some/dir', name: 'test', config: configStub()};
             const templateStub = sinon.stub(testInstance, 'template').resolves();
 
@@ -121,7 +121,7 @@ describe('Unit: Systemd > Extension', function () {
             const uidStub = sinon.stub().returns(true);
             const readFileSyncStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
 
-            const SystemdExtension = proxyquire(modulePath, {
+            const ProxiedExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
                 'fs-extra': {readFileSync: readFileSyncStub}
             });
@@ -129,7 +129,7 @@ describe('Unit: Systemd > Extension', function () {
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().rejects({stderr: 'something went wrong'});
             const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new ProxiedExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
             const templateStub = sinon.stub(testInstance, 'template').resolves();
             const instance = {dir: '/some/dir', name: 'test', config: configStub()};
 
@@ -154,11 +154,11 @@ describe('Unit: Systemd > Extension', function () {
 
     describe('uninstall hook', function () {
         let existsStub;
-        let SystemdExtension;
+        let ProxiedExtension;
 
         beforeEach(() => {
             existsStub = sinon.stub();
-            SystemdExtension = proxyquire(modulePath, {
+            ProxiedExtension = proxyquire(modulePath, {
                 'fs-extra': {existsSync: existsStub}
             });
         });
@@ -166,7 +166,7 @@ describe('Unit: Systemd > Extension', function () {
         it('tries to remove file from /lib/systemd if it exists', function () {
             existsStub.returns(true);
             const sudoStub = sinon.stub().resolves();
-            const testInstance = new SystemdExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new ProxiedExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
 
             return testInstance.uninstall({name: 'test'}).then(() => {
                 expect(existsStub.calledOnce).to.be.true;
@@ -179,7 +179,7 @@ describe('Unit: Systemd > Extension', function () {
         it('throws systemerror if removing /lib/systemd file doesn\'t work', function () {
             existsStub.returns(true);
             const sudoStub = sinon.stub().rejects();
-            const testInstance = new SystemdExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new ProxiedExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
 
             return testInstance.uninstall({name: 'test'}).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -196,7 +196,7 @@ describe('Unit: Systemd > Extension', function () {
         it('doesn\'t do anything if file does not exist', function () {
             existsStub.returns(false);
             const sudoStub = sinon.stub().resolves();
-            const testInstance = new SystemdExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new ProxiedExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
 
             return testInstance.uninstall({name: 'test'}).then(() => {
                 expect(existsStub.calledOnce).to.be.true;
