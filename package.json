@@ -43,7 +43,7 @@
   },
   "preferGlobal": true,
   "dependencies": {
-    "@tryghost/zip": "^3.0.0",
+    "@tryghost/zip": "3.0.2",
     "abbrev": "3.0.1",
     "bluebird": "3.7.2",
     "boxen": "5.1.2",
