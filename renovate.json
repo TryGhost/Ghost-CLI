@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@tryghost:quietJS",
+    "github>tryghost/renovate-config",
     ":semanticCommitTypeAll(chore)"
   ],
   "ignoreDeps": [
@@ -10,20 +10,20 @@
   ],
   "packageRules": [
     {
-      "depTypeList": ["devDependencies"],
+      "matchDepTypes": ["devDependencies"],
       "automerge": true,
       "automergeType": "branch"
     },
     {
       "groupName": "CLI Tools",
-      "packageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora"],
-      "updateTypes": ["minor", "patch"],
+      "matchPackageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora"],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },
     {
       "groupName": "Well Known",
-      "packageNames": ["debug", "fs-extra", "got", "lodash", "moment", "semver", "yarn"],
-      "updateTypes": ["minor", "patch"],
+      "matchPackageNames": ["debug", "fs-extra", "got", "lodash", "moment", "semver", "yarn"],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
   ]
