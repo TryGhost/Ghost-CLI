@@ -4,29 +4,53 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: local-e2e-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  local-e2e:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        node: [22.x]
+  local-e2e-linux:
+    runs-on: ubuntu-latest
+    name: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           path: "cli"
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node }}
-      - name: Install Setuptools (MacOS)
-        if: ${{ runner.os == 'macOS' }}
-        run: brew install python-setuptools
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: cli/yarn.lock
       - name: Install Setuptools (Linux)
-        if: ${{ runner.os == 'Linux' }}
         run: pip3 install --upgrade setuptools
+      - name: Prepare CLI
+        run: yarn --cwd cli install --frozen-lockfile
+      - name: Use latest global yarn version
+        run: |
+          cd ~
+          yarn set version berry
+      - name: Setting up Ghost instance
+        run: node ./cli/bin/ghost install local -d ghost
+      - name: Verifying Installation
+        run: sleep 2 && curl -f http://localhost:2368 | grep ghost
+
+  local-e2e-macos:
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: macos-latest
+    name: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: "cli"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: cli/yarn.lock
+      - name: Install Setuptools (MacOS)
+        run: brew install python-setuptools
       - name: Prepare CLI
         run: yarn --cwd cli install --frozen-lockfile
       - name: Use latest global yarn version
