@@ -12,9 +12,9 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-latest]
         password: [root]
-        node: [22.x]
+        node: [24.x]
     steps:
       - name: Start nginx
         run: sudo service nginx start
