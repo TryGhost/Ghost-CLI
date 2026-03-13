@@ -1,6 +1,6 @@
 'use strict';
 const expect = require('chai').expect;
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 
 const errors = require('../../lib/errors');
 
