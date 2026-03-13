@@ -1,10 +1,8 @@
-const {expect, use} = require('chai');
+const {expect} = require('chai');
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 const os = require('os');
 const fs = require('fs-extra');
-
-use(require('chai-as-promised'));
 
 function load(stubs = {}) {
     return proxyquire('../../../lib/utils/pre-checks', stubs);

@@ -1,4 +1,4 @@
-const {expect, use} = require('chai');
+const {expect} = require('chai');
 const sinon = require('sinon');
 
 const fs = require('fs-extra');
@@ -6,8 +6,6 @@ const execa = require('execa');
 const {errors} = require('../../../lib');
 
 const {checkUnitFile, checkNodeVersion} = require('../doctor');
-
-use(require('chai-as-promised'));
 
 describe('Unit: Systemd > doctor checks', function () {
     afterEach(function () {
