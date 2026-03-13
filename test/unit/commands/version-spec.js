@@ -2,7 +2,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 
 const modulePath = '../../../lib/commands/version';
 
