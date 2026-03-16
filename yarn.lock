@@ -363,17 +363,17 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tryghost/errors@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-3.0.2.tgz#9160ecc0f95fef1f240f10e28085fe580cc6ab16"
-  integrity sha512-8qcqNMDAsjyi9Er+qcOGcQPEV0bJLwr8BKE1fctgTu6PU7fPRKfPuhcYQG+54spOq5TVVdlW18C9jnzKPwkVMQ==
+"@tryghost/errors@^3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-3.0.3.tgz#73444013e7d516bf3177e2ddeb1b0ead468ab132"
+  integrity sha512-0hRFMQvsNPbojPS7xDuJEe4eNzWSQ6v2rLFXlTCeY7K7Lh4GXRmsI846SxPXwH8moaWIsrLP4xTnmIp8Tgs/Lw==
 
-"@tryghost/zip@3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-3.0.2.tgz#fd2f6be9ad895d288b9adaecaf6394f6ca1a254b"
-  integrity sha512-KkU5/NnY/YULAQSQj6muUQyI+BqkJlY8oAVIqFctZkIsZ20sIBnR0A2u9TvbsuuQsqI6E27hgWLLpGJwLR/WsA==
+"@tryghost/zip@3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-3.0.3.tgz#e49bb20854c15bfff1726c629ad1e56e708a99b0"
+  integrity sha512-gp8z5JYH5h1MGeS+MQSTsrf33XxSTOgFHJCLstcxIV5hg2pxSzo7N4Gg3+CrqrqIqLNO0aEkOkikAFtArpPwdQ==
   dependencies:
-    "@tryghost/errors" "^3.0.2"
+    "@tryghost/errors" "^3.0.3"
     archiver "7.0.1"
     extract-zip "2.0.1"
 
