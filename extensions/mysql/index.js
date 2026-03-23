@@ -174,7 +174,7 @@ class MySQLExtension extends Extension {
         const username = this.randomUsername();
 
         const result = await this._query(
-            `CREATE USER '${username}'@'${host}' IDENTIFIED WITH mysql_native_password BY RANDOM PASSWORD`
+            `CREATE USER '${username}'@'${host}' IDENTIFIED BY RANDOM PASSWORD`
         );
 
         if (!result || !result[0] || !result[0]['generated password']) {
