@@ -65,3 +65,63 @@ jobs:
         run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
+
+  e2e-mysql84:
+    runs-on: ubuntu-latest
+    name: ubuntu-latest (MySQL 8.4)
+    steps:
+      - name: Start nginx
+        run: sudo service nginx start
+      - name: Stop system MySQL
+        run: sudo systemctl stop mysql.service || true
+      - name: Start MySQL 8.4
+        run: |
+          docker run -d --name mysql84 \
+            --network host \
+            -e MYSQL_ROOT_PASSWORD=root \
+            mysql:8.4
+      - name: Wait for MySQL 8.4
+        run: |
+          until docker exec mysql84 mysqladmin ping -h 127.0.0.1 -uroot -proot --silent 2>/dev/null; do
+            sleep 2
+          done
+      - name: Updating hosts file
+        run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+      - uses: actions/checkout@v6
+        with:
+          path: "cli"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: cli/yarn.lock
+        env:
+          FORCE_COLOR: 0
+      - name: Prepare CLI
+        run: |
+          cp -r ./cli /opt/cli
+          chmod 755 /opt/cli
+          cd /opt/cli
+          yarn install --ignore-scripts --frozen-lockfile
+          sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
+      - name: Setting up install directory
+        run: |
+          mkdir /opt/ghost-e2e-test
+          chmod 775 /opt/ghost-e2e-test
+      - name: Setting up Ghost instance
+        run: |
+          ghost install \
+            -d /opt/ghost-e2e-test \
+            --auto \
+            --no-prompt \
+            --url http://cli-testing.ghost.org \
+            --db mysql \
+            --dbhost 127.0.0.1 \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost-mysql
+      - name: Debugging Failure
+        if: failure()
+        run: journalctl -u ghost_cli-testing-ghost-org -n 100
+      - name: Verifying Installation
+        run: curl http://cli-testing.ghost.org | grep ghost
