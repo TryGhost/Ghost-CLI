@@ -25,10 +25,10 @@ jobs:
         run: sudo service nginx start
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ matrix.node }}
           cache: yarn
@@ -87,10 +87,10 @@ jobs:
           done
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22.x
           cache: yarn
