@@ -11,9 +11,25 @@ const {Observable, isObservable} = require('rxjs');
 const modulePath = '../../../lib/tasks/install-dependencies';
 const errors = require('../../../lib/errors');
 
+// Save the fs-extra cache entry so noPreserveCache doesn't corrupt it for other test files
+const fsExtraResolved = require.resolve('fs-extra');
+const fsExtraCacheEntry = require.cache[fsExtraResolved];
+
 describe('Unit: Tasks > install-dependencies', function () {
+    let originalEnv;
+
     beforeEach(() => {
+        originalEnv = process.env;
         process.env = {};
+    });
+
+    afterEach(() => {
+        process.env = originalEnv;
+        sinon.restore();
+        // Restore fs-extra cache entry that noPreserveCache may have evicted
+        if (fsExtraCacheEntry) {
+            require.cache[fsExtraResolved] = fsExtraCacheEntry;
+        }
     });
 
     after(() => {
@@ -120,7 +136,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub()}
+            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -160,7 +176,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub()}
+            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -195,7 +211,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub()}
+            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -225,7 +241,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': sinon.stub(),
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: removeSyncStub, ensureDirSync: sinon.stub()}
+            'fs-extra': {existsSync: existsSyncStub, removeSync: removeSyncStub, ensureDirSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
