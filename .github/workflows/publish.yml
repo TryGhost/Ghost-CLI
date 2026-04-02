@@ -5,6 +5,22 @@ on:
       - main
     paths:
       - 'package.json'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: How this run should exercise npm publishing
+        required: true
+        type: choice
+        options:
+          - oidc-check
+          - dry-run
+          - publish
+        default: oidc-check
+      npm_tag:
+        description: Dist-tag to use for manual runs
+        required: true
+        type: string
+        default: next
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -15,29 +31,79 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           registry-url: https://registry.npmjs.org
           cache: yarn
         env:
           FORCE_COLOR: 0
+      - name: Resolve publish mode
+        id: publish_mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> "$GITHUB_OUTPUT"
+            echo "tag=${{ inputs.npm_tag }}" >> "$GITHUB_OUTPUT"
+            echo "manual=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=publish" >> "$GITHUB_OUTPUT"
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "manual=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Check if version is already published
         id: check
         run: |
           LOCAL_VERSION=$(node -p "require('./package.json').version")
           NPM_VERSION=$(npm view ghost-cli version 2>/dev/null || echo "0.0.0")
-          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+          if [ "${{ steps.publish_mode.outputs.manual }}" = "true" ] || [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_publish=false" >> "$GITHUB_OUTPUT"
           fi
           echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Upgrade npm for trusted publishing support
+        run: npm install -g npm@latest
+      - name: Print runtime versions
+        run: |
+          node --version
+          npm --version
+      - name: Check npm OIDC exchange
+        if: steps.check.outputs.should_publish == 'true'
+        run: |
+          set -euo pipefail
+
+          OIDC_RESPONSE=$(curl --silent --show-error --fail \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org")
+          OIDC_TOKEN=$(node -p "JSON.parse(process.argv[1]).value" "$OIDC_RESPONSE")
+
+          HTTP_STATUS=$(curl --silent --show-error --output oidc-exchange.json --write-out "%{http_code}" \
+            --request POST \
+            --header "Authorization: Bearer ${OIDC_TOKEN}" \
+            "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/ghost-cli")
+
+          if [ "$HTTP_STATUS" != "201" ]; then
+            echo "npm OIDC exchange failed with HTTP ${HTTP_STATUS}"
+            cat oidc-exchange.json
+            exit 1
+          fi
+
+          node -p "const response = require('./oidc-exchange.json'); 'npm OIDC exchange succeeded; token expires at ' + response.expires"
+          rm oidc-exchange.json
       - name: Install dependencies
-        if: steps.check.outputs.should_publish == 'true'
+        if: steps.check.outputs.should_publish == 'true' && steps.publish_mode.outputs.mode != 'oidc-check'
         run: yarn --frozen-lockfile
+      - name: Preview publish tarball
+        if: steps.check.outputs.should_publish == 'true' && steps.publish_mode.outputs.mode != 'oidc-check'
+        run: npm pack --dry-run
       - name: Publish to npm
-        if: steps.check.outputs.should_publish == 'true'
-        run: npm publish --provenance --access public
+        if: steps.check.outputs.should_publish == 'true' && steps.publish_mode.outputs.mode != 'oidc-check'
+        run: |
+          PUBLISH_ARGS=(--access public --tag "${{ steps.publish_mode.outputs.tag }}" --provenance)
+          if [ "${{ steps.publish_mode.outputs.mode }}" = "dry-run" ]; then
+            PUBLISH_ARGS=(--dry-run "${PUBLISH_ARGS[@]}")
+          fi
+          npm publish "${PUBLISH_ARGS[@]}"
       - name: Create git tag
+        if: github.event_name == 'push' && steps.check.outputs.should_publish == 'true'
         run: |
           TAG="v${{ steps.check.outputs.version }}"
           if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
