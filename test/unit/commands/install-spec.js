@@ -194,12 +194,12 @@ describe('Unit: Commands > Install', function () {
 
         it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
             const dirEmptyStub = sinon.stub().returns(true);
-            const yarnInstallStub = sinon.stub().resolves();
+            const installDependenciesStub = sinon.stub().resolves();
             const ensureStructureStub = sinon.stub().resolves();
             const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
 
             const InstallCommand = proxyquire(modulePath, {
-                '../tasks/yarn-install': yarnInstallStub,
+                '../tasks/install-dependencies': installDependenciesStub,
                 '../tasks/ensure-structure': ensureStructureStub,
                 '../utils/dir-is-empty': dirEmptyStub
             });
@@ -212,7 +212,7 @@ describe('Unit: Commands > Install', function () {
             return testInstance.run({version: '1.0.0', setup: false, 'check-empty': true}).then(() => {
                 expect(dirEmptyStub.calledOnce).to.be.true;
                 expect(listrStub.calledTwice).to.be.true;
-                expect(yarnInstallStub.calledOnce).to.be.true;
+                expect(installDependenciesStub.calledOnce).to.be.true;
                 expect(ensureStructureStub.calledOnce).to.be.true;
                 expect(versionStub.calledOnce).to.be.true;
                 expect(linkStub.calledOnce).to.be.true;

@@ -8,12 +8,28 @@ const path = require('path');
 const fs = require('fs');
 const {Observable, isObservable} = require('rxjs');
 
-const modulePath = '../../../lib/tasks/yarn-install';
+const modulePath = '../../../lib/tasks/install-dependencies';
 const errors = require('../../../lib/errors');
 
-describe('Unit: Tasks > yarn-install', function () {
+// Save the fs-extra cache entry so noPreserveCache doesn't corrupt it for other test files
+const fsExtraResolved = require.resolve('fs-extra');
+const fsExtraCacheEntry = require.cache[fsExtraResolved];
+
+describe('Unit: Tasks > install-dependencies', function () {
+    let originalEnv;
+
     beforeEach(() => {
+        originalEnv = process.env;
         process.env = {};
+    });
+
+    afterEach(() => {
+        process.env = originalEnv;
+        sinon.restore();
+        // Restore fs-extra cache entry that noPreserveCache may have evicted
+        if (fsExtraCacheEntry) {
+            require.cache[fsExtraResolved] = fsExtraCacheEntry;
+        }
     });
 
     after(() => {
@@ -22,10 +38,10 @@ describe('Unit: Tasks > yarn-install', function () {
 
     it('base function calls subtasks and yarn util', function () {
         const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
-        const yarnInstall = proxyquire(modulePath, {
+        const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
-        const subTasks = yarnInstall.subTasks;
+        const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
@@ -39,7 +55,7 @@ describe('Unit: Tasks > yarn-install', function () {
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
-        return yarnInstall({listr: listrStub}).then(() => {
+        return installDependencies({listr: listrStub}).then(() => {
             expect(listrStub.calledOnce).to.be.true;
             expect(distTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
@@ -56,10 +72,10 @@ describe('Unit: Tasks > yarn-install', function () {
 
     it('base function calls subtasks and yarn util correctly with GHOST_NODE_VERISON_CHECK set', function () {
         const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
-        const yarnInstall = proxyquire(modulePath, {
+        const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
-        const subTasks = yarnInstall.subTasks;
+        const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
@@ -75,7 +91,7 @@ describe('Unit: Tasks > yarn-install', function () {
 
         process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
-        return yarnInstall({listr: listrStub}).then(() => {
+        return installDependencies({listr: listrStub}).then(() => {
             expect(listrStub.calledOnce).to.be.true;
             expect(distTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
@@ -93,11 +109,11 @@ describe('Unit: Tasks > yarn-install', function () {
     it('base function can take zip file', function () {
         const decompressStub = sinon.stub().resolves();
         const listrStub = sinon.stub().resolves();
-        const yarnInstall = proxyquire(modulePath, {
+        const installDependencies = proxyquire(modulePath, {
             decompress: decompressStub
         });
 
-        return yarnInstall({listr: listrStub}, 'test.zip').then(() => {
+        return installDependencies({listr: listrStub}, 'test.zip').then(() => {
             const ctx = {installPath: '/var/www/ghost'};
             expect(listrStub.calledOnce).to.be.true;
 
@@ -111,12 +127,151 @@ describe('Unit: Tasks > yarn-install', function () {
         });
     });
 
+    it('uses pnpm when pnpm-lock.yaml exists in installPath', function () {
+        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const pnpmStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const existsSyncStub = sinon.stub();
+        existsSyncStub.withArgs(path.join('/var/www/ghost/versions/1.5.0', 'pnpm-lock.yaml')).returns(true);
+        existsSyncStub.returns(true);
+        const installDependencies = proxyquire(modulePath, {
+            '../utils/yarn': yarnStub,
+            '../utils/pnpm': pnpmStub,
+            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
+        });
+        const subTasks = installDependencies.subTasks;
+        const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
+        const listrStub = sinon.stub().callsFake((tasks) => {
+            expect(tasks).to.have.length(3);
+
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
+        });
+
+        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const downloadTaskStub = sinon.stub(subTasks, 'download');
+
+        return installDependencies({listr: listrStub}).then(() => {
+            expect(listrStub.calledOnce).to.be.true;
+            expect(distTaskStub.calledOnce).to.be.true;
+            expect(downloadTaskStub.calledOnce).to.be.true;
+            expect(pnpmStub.calledOnce).to.be.true;
+            expect(yarnStub.called).to.be.false;
+            expect(pnpmStub.args[0][0]).to.deep.equal(['install']);
+            expect(pnpmStub.args[0][1]).to.deep.equal({
+                cwd: '/var/www/ghost/versions/1.5.0',
+                env: {NODE_ENV: 'production'},
+                observe: true
+            });
+        });
+    });
+
+    it('uses yarn when pnpm-lock.yaml does not exist in installPath', function () {
+        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const pnpmStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const existsSyncStub = sinon.stub();
+        existsSyncStub.withArgs(path.join('/var/www/ghost/versions/1.5.0', 'pnpm-lock.yaml')).returns(false);
+        existsSyncStub.returns(true);
+        const installDependencies = proxyquire(modulePath, {
+            '../utils/yarn': yarnStub,
+            '../utils/pnpm': pnpmStub,
+            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
+        });
+        const subTasks = installDependencies.subTasks;
+        const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
+        const listrStub = sinon.stub().callsFake((tasks) => {
+            expect(tasks).to.have.length(3);
+
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
+        });
+
+        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const downloadTaskStub = sinon.stub(subTasks, 'download');
+
+        return installDependencies({listr: listrStub}).then(() => {
+            expect(listrStub.calledOnce).to.be.true;
+            expect(distTaskStub.calledOnce).to.be.true;
+            expect(downloadTaskStub.calledOnce).to.be.true;
+            expect(yarnStub.calledOnce).to.be.true;
+            expect(pnpmStub.called).to.be.false;
+            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
+        });
+    });
+
+    it('passes correct env for pnpm (no YARN_IGNORE_PATH)', function () {
+        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const pnpmStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const existsSyncStub = sinon.stub();
+        existsSyncStub.withArgs(path.join('/var/www/ghost/versions/1.5.0', 'pnpm-lock.yaml')).returns(true);
+        existsSyncStub.returns(true);
+        const installDependencies = proxyquire(modulePath, {
+            '../utils/yarn': yarnStub,
+            '../utils/pnpm': pnpmStub,
+            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
+        });
+        const subTasks = installDependencies.subTasks;
+        const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
+        const listrStub = sinon.stub().callsFake((tasks) => {
+            expect(tasks).to.have.length(3);
+
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
+        });
+
+        sinon.stub(subTasks, 'dist').resolves();
+        sinon.stub(subTasks, 'download');
+
+        return installDependencies({listr: listrStub}).then(() => {
+            const pnpmOpts = pnpmStub.args[0][1];
+            expect(pnpmOpts.env).to.deep.equal({NODE_ENV: 'production'});
+            expect(pnpmOpts.env).to.not.have.property('YARN_IGNORE_PATH');
+        });
+    });
+
+    it('cleans up installPath on pnpm error', function () {
+        const pnpmStub = sinon.stub().returns(new Observable(o => o.error(new Error('pnpm failed'))));
+        const existsSyncStub = sinon.stub().returns(true);
+        const removeSyncStub = sinon.stub();
+        const installDependencies = proxyquire(modulePath, {
+            '../utils/yarn': sinon.stub(),
+            '../utils/pnpm': pnpmStub,
+            'fs-extra': {existsSync: existsSyncStub, removeSync: removeSyncStub, ensureDirSync: sinon.stub(), '@noCallThru': true}
+        });
+        const subTasks = installDependencies.subTasks;
+        const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
+        const listrStub = sinon.stub().callsFake((tasks) => {
+            expect(tasks).to.have.length(3);
+
+            return Promise.each(tasks, (task) => {
+                const result = task.task(ctx);
+                return isObservable(result) ? result.toPromise() : result;
+            });
+        });
+
+        sinon.stub(subTasks, 'dist').resolves();
+        sinon.stub(subTasks, 'download');
+
+        return installDependencies({listr: listrStub}).then(() => {
+            expect(false, 'error should have been thrown').to.be.true;
+        }).catch((error) => {
+            expect(error.message).to.equal('pnpm failed');
+            expect(pnpmStub.calledOnce).to.be.true;
+            expect(removeSyncStub.calledWith('/var/www/ghost/versions/1.5.0')).to.be.true;
+        });
+    });
+
     it('catches errors from yarn and cleans up install folder', function () {
         const yarnStub = sinon.stub().returns(new Observable(o => o.error(new Error('an error occurred'))));
-        const yarnInstall = proxyquire(modulePath, {
+        const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
-        const subTasks = yarnInstall.subTasks;
+        const subTasks = installDependencies.subTasks;
         const env = setupTestFolder();
         const ctx = {installPath: env.dir};
         const listrStub = sinon.stub().callsFake((tasks) => {
@@ -131,7 +286,7 @@ describe('Unit: Tasks > yarn-install', function () {
         const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
-        return yarnInstall({listr: listrStub, verbose: true}).then(() => {
+        return installDependencies({listr: listrStub, verbose: true}).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error.message).to.equal('an error occurred');
