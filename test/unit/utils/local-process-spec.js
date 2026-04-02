@@ -6,6 +6,7 @@ const errors = require('../../../lib/errors');
 const EventEmitter = require('events').EventEmitter;
 
 const fs = require('fs-extra');
+const os = require('node:os');
 const childProcess = require('child_process');
 
 const modulePath = '../../../lib/utils/local-process';
@@ -254,7 +255,7 @@ describe('Unit: Utils > local-process', function () {
             const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
-                fkill: fkillStub
+                fkill: {default: fkillStub}
             });
             const instance = new LocalProcess({}, {}, {});
 
@@ -269,7 +270,7 @@ describe('Unit: Utils > local-process', function () {
             const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
-                fkill: fkillStub
+                fkill: {default: fkillStub}
             });
             const instance = new LocalProcess({}, {}, {});
 
@@ -284,23 +285,29 @@ describe('Unit: Utils > local-process', function () {
             });
         });
 
-        it('calls fkill and removes pidfile', function () {
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sinon.stub(fs, 'removeSync');
-            const fkillStub = sinon.stub().resolves();
-
-            const LocalProcess = proxyquire(modulePath, {
-                fkill: fkillStub
+        it('kills the process and removes the pidfile', async function () {
+            let isChildRunning = true;
+            const program = os.platform() === 'win32' ? 'timeout' : 'sleep';
+            const child = childProcess.spawn(program, ['10000']);
+            child.once('close', () => {
+                isChildRunning = false;
             });
+
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns(child.pid.toString());
+            const removeStub = sinon.stub(fs, 'removeSync');
+
+            const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {
                 platform: {windows: true}
             }, {});
 
-            return instance.stop('/var/www/ghost').then(() => {
-                expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(fkillStub.calledWithExactly(42, {force: true})).to.be.true;
-                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-            });
+            expect(isChildRunning).to.be.true;
+
+            await instance.stop('/var/www/ghost');
+
+            expect(isChildRunning).to.be.false;
+            expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
         });
 
         it('resolves if process didn\'t exist', function () {
@@ -309,7 +316,7 @@ describe('Unit: Utils > local-process', function () {
             const fkillStub = sinon.stub().rejects(new Error('No such process: 42'));
 
             const LocalProcess = proxyquire(modulePath, {
-                fkill: fkillStub
+                fkill: {default: fkillStub}
             });
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
@@ -317,7 +324,7 @@ describe('Unit: Utils > local-process', function () {
 
             return instance.stop('/var/www/ghost').then(() => {
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(fkillStub.calledWithExactly(42, {force: false})).to.be.true;
+                expect(fkillStub.calledWithExactly(42, sinon.match({force: false}))).to.be.true;
                 expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             });
         });
@@ -328,7 +335,7 @@ describe('Unit: Utils > local-process', function () {
             const fkillStub = sinon.stub().callsFake(() => Promise.reject(new Error('no idea')));
 
             const LocalProcess = proxyquire(modulePath, {
-                fkill: fkillStub
+                fkill: {default: fkillStub}
             });
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
@@ -340,7 +347,7 @@ describe('Unit: Utils > local-process', function () {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('An unexpected error occurred while stopping Ghost.');
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(fkillStub.calledWithExactly(42, {force: false})).to.be.true;
+                expect(fkillStub.calledWithExactly(42, sinon.match({force: false}))).to.be.true;
                 expect(removeStub.calledOnce).to.be.false;
                 done();
             });
