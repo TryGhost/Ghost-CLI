@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 <a name="1.29.1"></a>
 ## [1.29.1](https://github.com/TryGhost/Ghost-CLI/compare/v1.29.0...v1.29.1) (2026-04-02)
-
+* Patched bug with `fkill` preventing stop/update.
 
 
 <a name="1.29.0"></a>
 # [1.29.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.28.6...v1.29.0) (2026-04-02)
-
+* Added support for `pnpm` as well as `yarn`.
 
 
 <a name="1.28.6"></a>
