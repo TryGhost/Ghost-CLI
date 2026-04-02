@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.29.0"></a>
+# [1.29.0](https://github.com/TryGhost/Ghost-CLI/compare/v1.28.6...v1.29.0) (2026-04-02)
+
+
+
 <a name="1.28.6"></a>
 ## [1.28.6](https://github.com/TryGhost/Ghost-CLI/compare/v1.28.4...v1.28.6) (2026-03-23)
 
