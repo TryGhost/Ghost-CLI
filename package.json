@@ -30,7 +30,7 @@
     "lint": "eslint bin/* lib test extensions",
     "test": "nyc --reporter=html --reporter=text mocha -t 5000 --recursive test/unit extensions/**/test",
     "posttest": "yarn lint",
-    "ship": "f() { STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then standard-version $@ && git push --follow-tags;  fi; }; f"
+    "ship": "f() { STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then standard-version --skip.tag $@ && git push;  fi; }; f"
   },
   "nyc": {
     "exclude": [
