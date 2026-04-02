@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/Ghost-CLI/"
+    "url": "git+https://github.com/TryGhost/Ghost-CLI.git"
   },
   "bugs": "https://github.com/TryGhost/Ghost-CLI/issues",
   "contributors": "https://github.com/TryGhost/Ghost-CLI/graphs/contributors",
