@@ -27,10 +27,10 @@ jobs:
           NPM_VERSION=$(npm view ghost-cli version 2>/dev/null || echo "0.0.0")
           if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
-            echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "should_publish=false" >> "$GITHUB_OUTPUT"
           fi
+          echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         if: steps.check.outputs.should_publish == 'true'
         run: yarn --frozen-lockfile
@@ -38,9 +38,13 @@ jobs:
         if: steps.check.outputs.should_publish == 'true'
         run: npm publish --provenance --access public
       - name: Create git tag
-        if: steps.check.outputs.should_publish == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ steps.check.outputs.version }}" -m "v${{ steps.check.outputs.version }}"
-          git push origin "v${{ steps.check.outputs.version }}"
+          TAG="v${{ steps.check.outputs.version }}"
+          if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
+            echo "Tag $TAG already exists on remote, skipping"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "$TAG"
+            git push origin "$TAG"
+          fi
