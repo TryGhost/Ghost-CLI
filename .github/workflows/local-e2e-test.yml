@@ -35,6 +35,21 @@ jobs:
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
         run: sleep 2 && curl -f http://localhost:2368 | grep ghost
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          if [ -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile still exists after ghost stop"
+            exit 1
+          fi
+          if curl -fsS http://localhost:2368 > /dev/null; then
+            echo "Ghost site is still reachable after ghost stop"
+            exit 1
+          fi
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
+        run: sleep 2 && curl -f http://localhost:2368 | grep ghost
 
   local-e2e-macos:
     if: ${{ github.event_name != 'pull_request' }}
@@ -60,4 +75,19 @@ jobs:
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
+        run: sleep 2 && curl -f http://localhost:2368 | grep ghost
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          if [ -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile still exists after ghost stop"
+            exit 1
+          fi
+          if curl -fsS http://localhost:2368 > /dev/null; then
+            echo "Ghost site is still reachable after ghost stop"
+            exit 1
+          fi
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
         run: sleep 2 && curl -f http://localhost:2368 | grep ghost

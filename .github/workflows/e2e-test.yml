@@ -65,6 +65,24 @@ jobs:
         run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
+      - name: Stopping Ghost instance
+        run: |
+          cd /opt/ghost-e2e-test
+          ghost stop
+          if sudo systemctl is-active --quiet ghost_cli-testing-ghost-org; then
+            echo "Ghost service is still active after ghost stop"
+            exit 1
+          fi
+          if curl -fsS http://cli-testing.ghost.org > /dev/null; then
+            echo "Ghost site is still reachable after ghost stop"
+            exit 1
+          fi
+      - name: Starting Ghost instance
+        run: |
+          cd /opt/ghost-e2e-test
+          ghost start
+      - name: Verifying Restart
+        run: curl http://cli-testing.ghost.org | grep ghost
 
   e2e-mysql84:
     runs-on: ubuntu-latest
@@ -125,3 +143,118 @@ jobs:
         run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
+
+  e2e-update:
+    runs-on: ubuntu-latest
+    name: ubuntu-latest (Update)
+    steps:
+      - name: Start nginx
+        run: sudo service nginx start
+      - name: Updating hosts file
+        run: 'echo -e "127.0.0.1 cli-update-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: "cli"
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: cli/yarn.lock
+        env:
+          FORCE_COLOR: 0
+      - name: Start MySQL service
+        run: sudo systemctl start mysql.service
+      - name: Prepare CLI
+        run: |
+          cp -r ./cli /opt/cli
+          chmod 755 /opt/cli
+          cd /opt/cli
+          yarn install --ignore-scripts --frozen-lockfile
+          sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
+      - name: Resolve Ghost update versions
+        run: |
+          node <<'NODE' >> "$GITHUB_ENV"
+          const {execSync} = require('child_process');
+          const semver = require('/opt/cli/node_modules/semver');
+
+          const versions = JSON.parse(execSync('npm view ghost versions --json', {encoding: 'utf8'}));
+          const stableVersions = versions
+              .filter(version => semver.valid(version) && !semver.prerelease(version))
+              .sort(semver.rcompare);
+
+          const targetVersion = stableVersions[0];
+          let sourceVersion = stableVersions.find(version =>
+              semver.major(version) === semver.major(targetVersion) &&
+              semver.minor(version) === semver.minor(targetVersion) &&
+              semver.lt(version, targetVersion)
+          );
+
+          if (!sourceVersion) {
+              sourceVersion = stableVersions.find(version =>
+                  semver.major(version) === semver.major(targetVersion) &&
+                  semver.lt(version, targetVersion)
+              );
+          }
+
+          if (!sourceVersion) {
+              throw new Error(`Could not determine a source version for ${targetVersion}`);
+          }
+
+          console.log(`FROM_VERSION=${sourceVersion}`);
+          console.log(`TO_VERSION=${targetVersion}`);
+          console.log(`FROM_ARCHIVE=/tmp/ghost-archives/ghost-${sourceVersion}.tgz`);
+          console.log(`TO_ARCHIVE=/tmp/ghost-archives/ghost-${targetVersion}.tgz`);
+          NODE
+      - name: Download Ghost archives
+        run: |
+          mkdir -p /tmp/ghost-archives
+          npm pack ghost@"$FROM_VERSION" --pack-destination /tmp/ghost-archives
+          npm pack ghost@"$TO_VERSION" --pack-destination /tmp/ghost-archives
+      - name: Setting up install directory
+        run: |
+          mkdir /opt/ghost-e2e-update
+          chmod 775 /opt/ghost-e2e-update
+      - name: Setting up Ghost instance from archive
+        run: |
+          ghost install \
+            -d /opt/ghost-e2e-update \
+            --archive "$FROM_ARCHIVE" \
+            --auto \
+            --no-prompt \
+            --url http://cli-update-testing.ghost.org \
+            --db mysql \
+            --dbhost 127.0.0.1 \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost-update-mysql
+      - name: Verifying Installation
+        run: curl http://cli-update-testing.ghost.org | grep ghost
+      - name: Updating Ghost instance from archive
+        run: |
+          cd /opt/ghost-e2e-update
+          ghost update --archive "$TO_ARCHIVE"
+      - name: Verifying Update
+        run: |
+          cd /opt/ghost-e2e-update
+          ghost version | grep "Ghost version: $TO_VERSION"
+          if [ "$(readlink -f current)" != "/opt/ghost-e2e-update/versions/$TO_VERSION" ]; then
+            echo "Current symlink does not point to the updated version"
+            exit 1
+          fi
+          node <<'NODE'
+          const fs = require('fs');
+
+          const config = JSON.parse(fs.readFileSync('/opt/ghost-e2e-update/.ghost-cli', 'utf8'));
+
+          if (config['active-version'] !== process.env.TO_VERSION) {
+              throw new Error(`Expected active-version ${process.env.TO_VERSION}, received ${config['active-version']}`);
+          }
+
+          if (config['previous-version'] !== process.env.FROM_VERSION) {
+              throw new Error(`Expected previous-version ${process.env.FROM_VERSION}, received ${config['previous-version']}`);
+          }
+          NODE
+          curl http://cli-update-testing.ghost.org | grep ghost
+      - name: Debugging Failure
+        if: failure()
+        run: journalctl -u ghost_cli-update-testing-ghost-org -n 100
