@@ -87,7 +87,21 @@ jobs:
           cd /opt/ghost-e2e-test
           ghost start
       - name: Verifying Restart
-        run: curl http://cli-testing.ghost.org | grep ghost
+        run: |
+          for attempt in {1..10}; do
+            if curl -fsS http://cli-testing.ghost.org | grep -Eq 'Ghost|ghost'; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost site did not become reachable after restart"
+          exit 1
+      - name: Debugging Restart Failure
+        if: failure()
+        run: |
+          journalctl -u ghost_cli-testing-ghost-org -n 100
+          curl -i http://cli-testing.ghost.org || true
 
   e2e-mysql84:
     runs-on: ubuntu-latest
