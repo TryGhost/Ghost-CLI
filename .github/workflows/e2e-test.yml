@@ -65,6 +65,11 @@ jobs:
         run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
+      - name: Normalizing install permissions
+        run: |
+          cd /opt/ghost-e2e-test
+          sudo find ./ -type d -exec chmod 00775 {} \;
+          sudo find ./ ! -path "./versions/*" -type f -exec chmod 664 {} \;
       - name: Stopping Ghost instance
         run: |
           cd /opt/ghost-e2e-test
@@ -229,6 +234,11 @@ jobs:
             --dbname ghost-update-mysql
       - name: Verifying Installation
         run: curl http://cli-update-testing.ghost.org | grep ghost
+      - name: Normalizing install permissions
+        run: |
+          cd /opt/ghost-e2e-update
+          sudo find ./ -type d -exec chmod 00775 {} \;
+          sudo find ./ ! -path "./versions/*" -type f -exec chmod 664 {} \;
       - name: Updating Ghost instance from archive
         run: |
           cd /opt/ghost-e2e-update
