@@ -29,6 +29,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 24.x
@@ -48,17 +50,56 @@ jobs:
             echo "tag=latest" >> "$GITHUB_OUTPUT"
             echo "manual=false" >> "$GITHUB_OUTPUT"
           fi
+      - name: Resolve release commit
+        id: release_commit
+        env:
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "is_release_commit=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git rev-parse HEAD^ >/dev/null 2>&1; then
+            echo "Unable to inspect the previous commit for release detection"
+            exit 1
+          fi
+
+          if ! git diff --unified=0 HEAD^ HEAD -- package.json | grep -qE '^[+-][[:space:]]+"version":'; then
+            echo "is_release_commit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! "$HEAD_COMMIT_MESSAGE" =~ ^chore\(release\):[[:space:]]+(.+)$ ]]; then
+            echo "package.json version changed, but HEAD is not a release commit"
+            exit 1
+          fi
+
+          echo "is_release_commit=true" >> "$GITHUB_OUTPUT"
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
       - name: Check if version is already published
         id: check
         run: |
           LOCAL_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ steps.publish_mode.outputs.manual }}" != "true" ] && [ "${{ steps.release_commit.outputs.is_release_commit }}" != "true" ]; then
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RELEASE_VERSION="${{ steps.release_commit.outputs.version }}"
+          if [ -n "$RELEASE_VERSION" ] && [ "$LOCAL_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Release commit version $RELEASE_VERSION does not match package.json version $LOCAL_VERSION"
+            exit 1
+          fi
+
           NPM_VERSION=$(npm view ghost-cli version 2>/dev/null || echo "0.0.0")
           if [ "${{ steps.publish_mode.outputs.manual }}" = "true" ] || [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_publish=false" >> "$GITHUB_OUTPUT"
           fi
-          echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
       - name: Upgrade npm for trusted publishing support
         run: npm install -g npm@latest
       - name: Print runtime versions
@@ -103,7 +144,7 @@ jobs:
           fi
           npm publish "${PUBLISH_ARGS[@]}"
       - name: Create git tag
-        if: github.event_name == 'push' && steps.check.outputs.should_publish == 'true'
+        if: github.event_name == 'push' && steps.release_commit.outputs.is_release_commit == 'true' && steps.check.outputs.should_publish == 'true'
         run: |
           TAG="v${{ steps.check.outputs.version }}"
           if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
