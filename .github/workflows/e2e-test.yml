@@ -65,6 +65,71 @@ jobs:
         run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
+      - name: Normalizing install permissions
+        run: |
+          cd /opt/ghost-e2e-test
+          sudo find ./ -type d -exec chmod 00775 {} \;
+          sudo find ./ ! -path "./versions/*" -type f -exec chmod 664 {} \;
+      - name: Recording running service pid
+        run: |
+          BEFORE_PID="$(sudo systemctl show -p MainPID --value ghost_cli-testing-ghost-org)"
+          if [ -z "$BEFORE_PID" ] || [ "$BEFORE_PID" = "0" ]; then
+            echo "Ghost service did not expose a running MainPID before stop"
+            exit 1
+          fi
+          echo "STOP_START_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Stopping Ghost instance
+        run: |
+          cd /opt/ghost-e2e-test
+          ghost stop
+          for attempt in {1..15}; do
+            service_stopped=true
+            site_stopped=true
+
+            if sudo systemctl is-active --quiet ghost_cli-testing-ghost-org; then
+              service_stopped=false
+            fi
+
+            if curl -fsS http://cli-testing.ghost.org > /dev/null; then
+              site_stopped=false
+            fi
+
+            if [ "$service_stopped" = true ] && [ "$site_stopped" = true ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost service did not fully stop within the retry window"
+          exit 1
+      - name: Starting Ghost instance
+        run: |
+          cd /opt/ghost-e2e-test
+          ghost start
+      - name: Verifying Restart
+        run: |
+          for attempt in {1..15}; do
+            AFTER_PID="$(sudo systemctl show -p MainPID --value ghost_cli-testing-ghost-org)"
+
+            if sudo systemctl is-active --quiet ghost_cli-testing-ghost-org && \
+              [ -n "$AFTER_PID" ] && \
+              [ "$AFTER_PID" != "0" ] && \
+              [ "$AFTER_PID" != "$STOP_START_BEFORE_PID" ] && \
+              curl -fsS http://cli-testing.ghost.org | grep -qi ghost; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost service did not come back with a new pid after restart"
+          exit 1
+      - name: Debugging Restart Failure
+        if: failure()
+        run: |
+          journalctl -u ghost_cli-testing-ghost-org -n 100
+          curl -i http://cli-testing.ghost.org || true
 
   e2e-mysql84:
     runs-on: ubuntu-latest
@@ -125,3 +190,151 @@ jobs:
         run: journalctl -u ghost_cli-testing-ghost-org -n 100
       - name: Verifying Installation
         run: curl http://cli-testing.ghost.org | grep ghost
+
+  e2e-update:
+    runs-on: ubuntu-latest
+    name: ubuntu-latest (Update)
+    env:
+      UPDATE_ARCHIVE_DIR: /tmp/ghost-archives
+      UPDATE_DIR: /opt/ghost-e2e-update
+      UPDATE_MAJOR: 6
+      UPDATE_SERVICE: ghost_cli-update-testing-ghost-org
+      UPDATE_URL: http://cli-update-testing.ghost.org
+    steps:
+      - name: Start nginx
+        run: sudo service nginx start
+      - name: Updating hosts file
+        run: 'echo -e "127.0.0.1 cli-update-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: "cli"
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 22.x
+          cache: yarn
+          cache-dependency-path: cli/yarn.lock
+        env:
+          FORCE_COLOR: 0
+      - name: Start MySQL service
+        run: sudo systemctl start mysql.service
+      - name: Prepare CLI
+        run: |
+          cp -r ./cli /opt/cli
+          chmod 755 /opt/cli
+          cd /opt/cli
+          yarn install --ignore-scripts --frozen-lockfile
+          sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
+      - name: Resolve Ghost update versions within supported major
+        run: |
+          node <<'NODE' >> "$GITHUB_ENV"
+          const {execSync} = require('child_process');
+          const semver = require('/opt/cli/node_modules/semver');
+
+          const updateMajor = Number(process.env.UPDATE_MAJOR);
+          const versions = JSON.parse(execSync('npm view ghost versions --json', {encoding: 'utf8'}));
+          const stableVersions = versions
+              .filter(version => semver.valid(version) && !semver.prerelease(version))
+              .filter(version => semver.major(version) === updateMajor)
+              .sort(semver.rcompare);
+
+          if (stableVersions.length < 2) {
+              throw new Error(`Expected at least two stable Ghost ${updateMajor}.x releases, found ${stableVersions.length}`);
+          }
+
+          const targetVersion = stableVersions[0];
+          const sourceVersion = stableVersions.find(version => semver.lt(version, targetVersion));
+
+          if (!sourceVersion) {
+              throw new Error(`Could not determine a source version for Ghost ${updateMajor}.x`);
+          }
+
+          console.log(`UPDATE_FROM_VERSION=${sourceVersion}`);
+          console.log(`UPDATE_TO_VERSION=${targetVersion}`);
+          NODE
+      - name: Download pinned Ghost archives
+        run: |
+          mkdir -p "$UPDATE_ARCHIVE_DIR"
+          npm pack ghost@"$UPDATE_FROM_VERSION" --pack-destination "$UPDATE_ARCHIVE_DIR"
+          npm pack ghost@"$UPDATE_TO_VERSION" --pack-destination "$UPDATE_ARCHIVE_DIR"
+      - name: Setting up install directory
+        run: |
+          mkdir "$UPDATE_DIR"
+          chmod 775 "$UPDATE_DIR"
+      - name: Setting up Ghost instance from archive
+        run: |
+          ghost install \
+            -d "$UPDATE_DIR" \
+            --archive "$UPDATE_ARCHIVE_DIR/ghost-$UPDATE_FROM_VERSION.tgz" \
+            --auto \
+            --no-prompt \
+            --url "$UPDATE_URL" \
+            --db mysql \
+            --dbhost 127.0.0.1 \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost-update-mysql
+      - name: Verifying Installation
+        run: curl "$UPDATE_URL" | grep ghost
+      - name: Normalizing install permissions
+        run: |
+          cd "$UPDATE_DIR"
+          sudo find ./ -type d -exec chmod 00775 {} \;
+          sudo find ./ ! -path "./versions/*" -type f -exec chmod 664 {} \;
+      - name: Recording running service pid before update
+        run: |
+          BEFORE_PID="$(sudo systemctl show -p MainPID --value "$UPDATE_SERVICE")"
+          if [ -z "$BEFORE_PID" ] || [ "$BEFORE_PID" = "0" ]; then
+            echo "Ghost service did not expose a running MainPID before update"
+            exit 1
+          fi
+          echo "UPDATE_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Updating Ghost instance from archive
+        run: |
+          cd "$UPDATE_DIR"
+          ghost update --archive "$UPDATE_ARCHIVE_DIR/ghost-$UPDATE_TO_VERSION.tgz"
+      - name: Verifying Update
+        run: |
+          cd "$UPDATE_DIR"
+          ghost version | grep "Ghost version: $UPDATE_TO_VERSION"
+          if [ "$(readlink -f current)" != "$UPDATE_DIR/versions/$UPDATE_TO_VERSION" ]; then
+            echo "Current symlink does not point to the updated version"
+            exit 1
+          fi
+          node <<'NODE'
+          const fs = require('fs');
+          const config = JSON.parse(fs.readFileSync(`${process.env.UPDATE_DIR}/.ghost-cli`, 'utf8'));
+          const currentPackage = JSON.parse(fs.readFileSync(`${process.env.UPDATE_DIR}/current/package.json`, 'utf8'));
+
+          if (currentPackage.version !== process.env.UPDATE_TO_VERSION) {
+              throw new Error(`Expected current package version ${process.env.UPDATE_TO_VERSION}, received ${currentPackage.version}`);
+          }
+
+          if (config['active-version'] !== process.env.UPDATE_TO_VERSION) {
+              throw new Error(`Expected active-version ${process.env.UPDATE_TO_VERSION}, received ${config['active-version']}`);
+          }
+
+          if (config['previous-version'] !== process.env.UPDATE_FROM_VERSION) {
+              throw new Error(`Expected previous-version ${process.env.UPDATE_FROM_VERSION}, received ${config['previous-version']}`);
+          }
+          NODE
+          for attempt in {1..15}; do
+            AFTER_PID="$(sudo systemctl show -p MainPID --value "$UPDATE_SERVICE")"
+
+            if sudo systemctl is-active --quiet "$UPDATE_SERVICE" && \
+              [ -n "$AFTER_PID" ] && \
+              [ "$AFTER_PID" != "0" ] && \
+              [ "$AFTER_PID" != "$UPDATE_BEFORE_PID" ] && \
+              curl -fsS "$UPDATE_URL" | grep -qi ghost; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost did not come back with the updated release and a new pid"
+          exit 1
+      - name: Debugging Failure
+        if: failure()
+        run: |
+          journalctl -u "$UPDATE_SERVICE" -n 100
+          curl -i "$UPDATE_URL" || true

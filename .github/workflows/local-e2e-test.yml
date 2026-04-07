@@ -34,7 +34,67 @@ jobs:
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
-        run: sleep 2 && curl -f http://localhost:2368 | grep ghost
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost site did not become reachable after install"
+          exit 1
+      - name: Recording running process pid
+        run: |
+          if [ ! -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile was missing before stop"
+            exit 1
+          fi
+          BEFORE_PID="$(cat ghost/.ghostpid)"
+          if [ -z "$BEFORE_PID" ]; then
+            echo "Ghost pidfile was empty before stop"
+            exit 1
+          fi
+          echo "LOCAL_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          for attempt in {1..15}; do
+            pidfile_removed=true
+            site_stopped=true
+
+            if [ -f ghost/.ghostpid ]; then
+              pidfile_removed=false
+            fi
+
+            if curl -fsS http://localhost:2368 > /dev/null; then
+              site_stopped=false
+            fi
+
+            if [ "$pidfile_removed" = true ] && [ "$site_stopped" = true ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost local process did not fully stop within the retry window"
+          exit 1
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
+        run: |
+          for attempt in {1..15}; do
+            if [ -f ghost/.ghostpid ] && \
+              [ "$(cat ghost/.ghostpid)" != "$LOCAL_BEFORE_PID" ] && \
+              curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost local process did not restart with a new pid"
+          exit 1
 
   local-e2e-macos:
     if: ${{ github.event_name != 'pull_request' }}
@@ -60,4 +120,64 @@ jobs:
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
-        run: sleep 2 && curl -f http://localhost:2368 | grep ghost
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost site did not become reachable after install"
+          exit 1
+      - name: Recording running process pid
+        run: |
+          if [ ! -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile was missing before stop"
+            exit 1
+          fi
+          BEFORE_PID="$(cat ghost/.ghostpid)"
+          if [ -z "$BEFORE_PID" ]; then
+            echo "Ghost pidfile was empty before stop"
+            exit 1
+          fi
+          echo "LOCAL_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          for attempt in {1..15}; do
+            pidfile_removed=true
+            site_stopped=true
+
+            if [ -f ghost/.ghostpid ]; then
+              pidfile_removed=false
+            fi
+
+            if curl -fsS http://localhost:2368 > /dev/null; then
+              site_stopped=false
+            fi
+
+            if [ "$pidfile_removed" = true ] && [ "$site_stopped" = true ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost local process did not fully stop within the retry window"
+          exit 1
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
+        run: |
+          for attempt in {1..15}; do
+            if [ -f ghost/.ghostpid ] && \
+              [ "$(cat ghost/.ghostpid)" != "$LOCAL_BEFORE_PID" ] && \
+              curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost local process did not restart with a new pid"
+          exit 1
