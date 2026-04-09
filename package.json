@@ -62,7 +62,7 @@
     "got": "9.6.0",
     "https-proxy-agent": "9.0.0",
     "ini": "6.0.0",
-    "inquirer": "13.3.2",
+    "inquirer": "13.4.0",
     "is-running": "2.1.0",
     "jsonwebtoken": "9.0.3",
     "latest-version": "5.1.0",
