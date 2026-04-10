@@ -18,19 +18,19 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
+      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6
+        with:
+          package_json_file: cli/package.json
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22.x
-          cache: yarn
-          cache-dependency-path: cli/yarn.lock
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
       - name: Install Setuptools (Linux)
         run: pip3 install --upgrade setuptools
       - name: Prepare CLI
-        run: yarn --cwd cli install --frozen-lockfile
-      - name: Use latest global yarn version
-        run: |
-          cd ~
-          yarn set version berry
+        working-directory: ./cli
+        run: pnpm install --frozen-lockfile
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation
@@ -97,26 +97,27 @@ jobs:
           exit 1
 
   local-e2e-macos:
-    if: ${{ github.event_name != 'pull_request' }}
+    # TODO: re-enable once pnpm migration's done
+    # if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
     name: macos-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
+      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6
+        with:
+          package_json_file: cli/package.json
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22.x
-          cache: yarn
-          cache-dependency-path: cli/yarn.lock
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
       - name: Install Setuptools (MacOS)
         run: brew install python-setuptools
       - name: Prepare CLI
-        run: yarn --cwd cli install --frozen-lockfile
-      - name: Use latest global yarn version
-        run: |
-          cd ~
-          yarn set version berry
+        working-directory: ./cli
+        run: pnpm install --frozen-lockfile
       - name: Setting up Ghost instance
         run: node ./cli/bin/ghost install local -d ghost
       - name: Verifying Installation

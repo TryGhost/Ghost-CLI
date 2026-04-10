@@ -31,11 +31,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 2
+      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 24.x
           registry-url: https://registry.npmjs.org
-          cache: yarn
+          cache: pnpm
         env:
           FORCE_COLOR: 0
       - name: Resolve publish mode
@@ -131,7 +132,7 @@ jobs:
           rm oidc-exchange.json
       - name: Install dependencies
         if: steps.check.outputs.should_publish == 'true' && steps.publish_mode.outputs.mode != 'oidc-check'
-        run: yarn --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Preview publish tarball
         if: steps.check.outputs.should_publish == 'true' && steps.publish_mode.outputs.mode != 'oidc-check'
         run: npm pack --dry-run

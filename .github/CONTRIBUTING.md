@@ -8,7 +8,7 @@ Read through the list of [open issues](https://github.com/TryGhost/Ghost-CLI/iss
 
 Once you've implemented the feature or fixed the issue, please make sure:
 
-- it passes tests (`yarn test`)
+- it passes tests (`pnpm test`)
 - all commits are squashed into one or two commits
 - the commit message follows [this format](https://github.com/conventional-changelog/standard-version#commit-message-convention-at-a-glance)
 
