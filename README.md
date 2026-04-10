@@ -61,22 +61,22 @@ The documentation for Ghost-CLI can be found at https://ghost.org/docs/ghost-cli
 1. Fork this repo
 2. `git clone https://github.com/<your-username>/Ghost-CLI path/to/your/workspace`
 3. `cd path/to/your/workspace`
-4. `yarn install`
+4. `pnpm install`
 
 To run the CLI for testing:
 
-- `yarn link`
+- `pnpm link`
 - `ghost <command>` (can run anywhere on the system)
 
 #### Running tests
 
 ```sh
-yarn test
+pnpm test
 ```
 
 #### Publishing a new version
 
-1. `yarn ship -- -r patch/minor/major` — creates a `chore(release): x.y.z` commit, updates the changelog, and pushes to `main`
+1. `pnpm ship -- -r patch/minor/major` — creates a `chore(release): x.y.z` commit, updates the changelog, and pushes to `main`
 2. CI automatically publishes that version to npm and creates the git tag from the release commit
 3. Go to https://github.com/TryGhost/Ghost-CLI/releases/new, choose the new tag, click `Generate release notes`, review/edit the notes, and publish
 4. The GitHub Release entry is manual; npm publishing and git tagging are automatic

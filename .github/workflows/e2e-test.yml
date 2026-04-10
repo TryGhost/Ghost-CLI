@@ -28,11 +28,14 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
+      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6
+        with:
+          package_json_file: cli/package.json
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
-          cache-dependency-path: cli/yarn.lock
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
         env:
           FORCE_COLOR: 0
       - name: Start MySQL service
@@ -42,7 +45,7 @@ jobs:
           cp -r ./cli /opt/cli
           chmod 755 /opt/cli
           cd /opt/cli
-          yarn install --ignore-scripts --frozen-lockfile
+          pnpm install --frozen-lockfile
           sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
       - name: Setting up install directory
         run: |
@@ -155,11 +158,14 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
+      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6
+        with:
+          package_json_file: cli/package.json
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22.x
-          cache: yarn
-          cache-dependency-path: cli/yarn.lock
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
         env:
           FORCE_COLOR: 0
       - name: Prepare CLI
@@ -167,7 +173,7 @@ jobs:
           cp -r ./cli /opt/cli
           chmod 755 /opt/cli
           cd /opt/cli
-          yarn install --ignore-scripts --frozen-lockfile
+          pnpm install --ignore-scripts --frozen-lockfile
           sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
       - name: Setting up install directory
         run: |
@@ -208,11 +214,14 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: "cli"
+      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6
+        with:
+          package_json_file: cli/package.json
       - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
           node-version: 22.x
-          cache: yarn
-          cache-dependency-path: cli/yarn.lock
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
         env:
           FORCE_COLOR: 0
       - name: Start MySQL service
@@ -222,7 +231,7 @@ jobs:
           cp -r ./cli /opt/cli
           chmod 755 /opt/cli
           cd /opt/cli
-          yarn install --ignore-scripts --frozen-lockfile
+          pnpm install --ignore-scripts --frozen-lockfile
           sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
       - name: Resolve Ghost update versions within supported major
         run: |

@@ -14,11 +14,11 @@ These instructions apply to the entire repository.
 ## Runtime And Tooling
 
 - Use Node.js `^20.11.1 || ^22.11.0 || ^24.0.0`.
-- Use `yarn`; this repo is configured around `yarn.lock` and `package.json` scripts.
+- Use `pnpm`; this repo is configured around `pnpm-lock.yaml` and `package.json` scripts.
 - Common validation commands:
-  - `yarn test`
-  - `yarn lint`
-  - `yarn link` followed by `ghost <command>` for manual CLI checks
+  - `pnpm test`
+  - `pnpm lint`
+  - `pnpm link` followed by `ghost <command>` for manual CLI checks
 
 ## Code Conventions
 
@@ -35,7 +35,7 @@ These instructions apply to the entire repository.
 
 ## Contribution Expectations
 
-- Ensure `yarn test` passes before finishing substantial code changes. Note that `yarn test` also triggers linting via `posttest`.
+- Ensure `pnpm test` passes before finishing substantial code changes. Note that `pnpm test` also triggers linting via `posttest`.
 - Prefer small, reviewable changes with clear commit scope.
 - Keep commit messages compatible with the repository's conventional commit expectations when preparing commits.
 
