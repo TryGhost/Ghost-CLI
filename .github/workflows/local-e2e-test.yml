@@ -97,8 +97,7 @@ jobs:
           exit 1
 
   local-e2e-macos:
-    # TODO: re-enable once pnpm migration's done
-    # if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
     name: macos-latest
     steps:
