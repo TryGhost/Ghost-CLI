@@ -90,8 +90,8 @@ importers:
         specifier: 2.30.1
         version: 2.30.1
       mysql2:
-        specifier: 3.20.0
-        version: 3.20.0(@types/node@25.5.2)
+        specifier: 3.21.0
+        version: 3.21.0(@types/node@25.5.2)
       ora:
         specifier: 3.4.0
         version: 3.4.0
@@ -2529,8 +2529,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  mysql2@3.20.0:
-    resolution: {integrity: sha512-eCLUs7BNbgA6nf/MZXsaBO1SfGs0LtLVrJD3WeWq+jPLDWkSufTD+aGMwykfUVPdZnblaUK1a8G/P63cl9FkKg==}
+  mysql2@3.21.0:
+    resolution: {integrity: sha512-CYNKIuhnalXHTa4gonZ+KhzLESKllvo1qQIDYUVuatpN4NgMk+lsA3WwHYno5AS4PACUiD2qEmiVD9pr3bXWOw==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -6395,7 +6395,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  mysql2@3.20.0(@types/node@25.5.2):
+  mysql2@3.21.0(@types/node@25.5.2):
     dependencies:
       '@types/node': 25.5.2
       aws-ssl-profiles: 1.1.2
