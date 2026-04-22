@@ -158,7 +158,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(pnpmStub.calledOnce).to.be.true;
             expect(yarnStub.called).to.be.false;
-            expect(pnpmStub.args[0][0]).to.deep.equal(['install']);
+            expect(pnpmStub.args[0][0]).to.deep.equal(['install', '--prod', '--reporter=append-only']);
             expect(pnpmStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
                 env: {NODE_ENV: 'production'},
