@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire');
 const sinon = require('sinon');
 const {isObservable} = require('rxjs');
 const {getReadableStream} = require('../../utils/stream');
-const {ProcessError} = require('../../../lib/errors');
+const {ProcessError, SystemError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/pnpm';
 
@@ -24,6 +24,35 @@ describe('Unit: pnpm', function () {
         });
     });
 
+    it('uses corepack pnpm when pnpm not available', function () {
+        const execa = sinon.stub().resolves();
+        const which = {
+            sync: sinon.fake(cmd => (cmd !== 'corepack' ? null : '/usr/bin/corepack'))
+        };
+        const pnpm = setup({execa, which});
+
+        return pnpm().then(function () {
+            expect(execa.calledOnce).to.be.true;
+            expect(execa.args[0][0]).to.equal('corepack');
+            expect(execa.args[0][1]).to.deep.equal(['pnpm']);
+        });
+    });
+
+    it('throws SystemError when neither pnpm nor corepack are available', function () {
+        const which = {
+            sync: sinon.stub().returns(null)
+        };
+        const pnpm = setup({which});
+
+        return pnpm().then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(which.sync.calledWith('pnpm', {nothrow: true})).to.be.true;
+            expect(which.sync.calledWith('corepack', {nothrow: true})).to.be.true;
+            expect(error).to.be.an.instanceOf(SystemError);
+        });
+    });
+
     it('spawns pnpm process with correct arguments', function () {
         const execa = sinon.stub().resolves();
         const pnpm = setup({execa});
@@ -31,20 +60,6 @@ describe('Unit: pnpm', function () {
         return pnpm(['install']).then(function () {
             expect(execa.calledOnce).to.be.true;
             expect(execa.args[0][1]).to.deep.equal(['install']);
-        });
-    });
-
-    it('uses preferLocal and localDir like yarn', function () {
-        const execa = sinon.stub().resolves();
-        const pnpm = setup({execa});
-
-        return pnpm([], {cwd: 'test'}).then(function () {
-            expect(execa.calledOnce).to.be.true;
-            const opts = execa.args[0][2];
-            expect(opts).to.be.an('object');
-            expect(opts.cwd).to.equal('test');
-            expect(opts.preferLocal).to.be.true;
-            expect(opts.localDir).to.be.a('string');
         });
     });
 

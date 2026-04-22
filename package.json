@@ -88,6 +88,7 @@
     "tail": "2.2.6",
     "tough-cookie": "6.0.1",
     "validator": "7.2.0",
+    "which": "^6.0.1",
     "yargs": "17.7.2",
     "yarn": "1.22.22"
   },

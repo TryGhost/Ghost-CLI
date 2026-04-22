@@ -594,7 +594,7 @@ describe('Unit: Command', function () {
 
             await testInstance.runCommand(Test2Command, {argv: true});
             expect(runSpy.calledOnce).to.be.true;
-            expect(runSpy.calledWithExactly({argv: true})).to.be.true;
+            expect(runSpy.calledWithExactly({argv: true}, undefined)).to.be.true;
         });
 
         it('defaults to empty object if argv is not passed', async function () {
@@ -610,7 +610,7 @@ describe('Unit: Command', function () {
 
             await testInstance.runCommand(Test2Command);
             expect(runSpy.calledOnce).to.be.true;
-            expect(runSpy.calledWithExactly({})).to.be.true;
+            expect(runSpy.calledWithExactly({}, undefined)).to.be.true;
         });
     });
 });
