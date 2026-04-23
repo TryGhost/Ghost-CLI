@@ -102,7 +102,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
     });
 
     describe('task', function () {
-        let ctx, task, pythonSetuptools;
+        let ctx; let task; let pythonSetuptools;
 
         beforeEach(function () {
             ctx = {};

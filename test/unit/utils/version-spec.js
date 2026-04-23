@@ -400,12 +400,12 @@ describe('Unit: Utils: version', function () {
 
         it('rejects if archive file doesn\'t exist', async function () {
             const existsStub = sinon.stub().returns(false);
-            const {versionFromArchive} = proxyquire(modulePath, {
+            const proxied = proxyquire(modulePath, {
                 fs: {existsSync: existsStub}
             });
 
             try {
-                await versionFromArchive('/some/zip/file.zip');
+                await proxied.versionFromArchive('/some/zip/file.zip');
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
@@ -417,12 +417,12 @@ describe('Unit: Utils: version', function () {
 
         it('rejects if archive file doesn\'t have a supported extension', async function () {
             const existsStub = sinon.stub().returns(true);
-            const {versionFromArchive} = proxyquire(modulePath, {
+            const proxied = proxyquire(modulePath, {
                 fs: {existsSync: existsStub}
             });
 
             try {
-                await versionFromArchive('./some/non/zip/file.txt');
+                await proxied.versionFromArchive('./some/non/zip/file.txt');
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
@@ -473,12 +473,19 @@ describe('Unit: Utils: version', function () {
         });
 
         it('resolves if node version isn\'t compatible with ghost node version range and GHOST_NODE_VERSION_CHECK is set', async function () {
-            this.timeout(5000);
-            this.slow(2000);
+            const packageJson = sinon.stub().resolves({
+                name: 'ghost',
+                versions: {
+                    '1.0.0': {}
+                }
+            });
+            const proxied = proxyquire(modulePath, {
+                'package-json': packageJson
+            });
 
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
-            const version = await versionFromArchive(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip'));
+            const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip'));
             expect(version).to.equal('1.0.0');
         });
 
@@ -495,11 +502,18 @@ describe('Unit: Utils: version', function () {
         });
 
         it('rejects if update version passed and archive version < update version', async function () {
-            this.timeout(5000);
-            this.slow(2000);
+            const packageJson = sinon.stub().resolves({
+                name: 'ghost',
+                versions: {
+                    '1.0.0': {}
+                }
+            });
+            const proxied = proxyquire(modulePath, {
+                'package-json': packageJson
+            });
 
             try {
-                await versionFromArchive(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0');
+                await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0');
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(CliError);
@@ -509,18 +523,32 @@ describe('Unit: Utils: version', function () {
         });
 
         it('resolves if update version passed, force is passed, and zip version < update version', async function () {
-            this.timeout(5000);
-            this.slow(2000);
+            const packageJson = sinon.stub().resolves({
+                name: 'ghost',
+                versions: {
+                    '1.0.0': {}
+                }
+            });
+            const proxied = proxyquire(modulePath, {
+                'package-json': packageJson
+            });
 
-            const version = await versionFromArchive(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', {force: true});
+            const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', {force: true});
             expect(version).to.equal('1.0.0');
         });
 
         it('resolves with version of ghost in zip file', async function () {
-            this.timeout(5000);
-            this.slow(2000);
+            const packageJson = sinon.stub().resolves({
+                name: 'ghost',
+                versions: {
+                    '1.5.0': {}
+                }
+            });
+            const proxied = proxyquire(modulePath, {
+                'package-json': packageJson
+            });
 
-            const version = await versionFromArchive(path.join(__dirname, '../../fixtures/ghostrelease.zip'));
+            const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghostrelease.zip'));
             expect(version).to.equal('1.5.0');
         });
     });
