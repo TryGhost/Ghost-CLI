@@ -70,7 +70,7 @@
     "lodash": "4.18.1",
     "log-symbols": "7.0.1",
     "moment": "2.30.1",
-    "mysql2": "3.22.1",
+    "mysql2": "3.22.2",
     "ora": "3.4.0",
     "package-json": "7.0.0",
     "path-is-root": "0.1.0",
