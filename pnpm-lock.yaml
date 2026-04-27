@@ -57,8 +57,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       got:
-        specifier: 9.6.0
-        version: 9.6.0
+        specifier: 11.8.5
+        version: 11.8.5
       https-proxy-agent:
         specifier: 9.0.0
         version: 9.0.0
@@ -1797,8 +1797,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  got@11.8.6:
-    resolution: {integrity: sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==}
+  got@11.8.5:
+    resolution: {integrity: sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==}
     engines: {node: '>=10.19.0'}
 
   got@8.3.2:
@@ -5647,7 +5647,7 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  got@11.8.6:
+  got@11.8.5:
     dependencies:
       '@sindresorhus/is': 4.6.0
       '@szmarczak/http-timer': 4.0.6
@@ -6647,7 +6647,7 @@ snapshots:
 
   package-json@7.0.0:
     dependencies:
-      got: 11.8.6
+      got: 11.8.5
       registry-auth-token: 4.2.2
       registry-url: 5.1.0
       semver: 7.7.4
