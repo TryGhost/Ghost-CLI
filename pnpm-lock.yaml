@@ -147,8 +147,8 @@ importers:
         specifier: 6.0.1
         version: 6.0.1
       yargs:
-        specifier: 17.7.2
-        version: 17.7.2
+        specifier: 18.0.0
+        version: 18.0.0
       yarn:
         specifier: 1.22.22
         version: 1.22.22
