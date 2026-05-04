@@ -47,7 +47,7 @@
     "abbrev": "4.0.0",
     "bluebird": "3.7.2",
     "boxen": "8.0.1",
-    "chalk": "4.1.2",
+    "chalk": "5.6.2",
     "cli-table3": "0.5.0",
     "debug": "4.4.3",
     "decompress": "4.2.1",
