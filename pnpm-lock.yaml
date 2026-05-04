@@ -166,8 +166,8 @@ importers:
         specifier: 2.5.0
         version: 2.5.0(eslint@7.32.0)
       has-ansi:
-        specifier: 4.0.1
-        version: 4.0.1
+        specifier: 6.0.2
+        version: 6.0.2
       mocha:
         specifier: 11.7.5
         version: 11.7.5
@@ -1821,9 +1821,9 @@ packages:
     resolution: {integrity: sha512-C8vBJ8DwUCx19vhm7urhTuUsr4/IyP6l4VzNQDv+ryHQObW3TTTp9yB68WpYgRe2bbaGuZ/se74IqFeVnMnLZg==}
     engines: {node: '>=0.10.0'}
 
-  has-ansi@4.0.1:
-    resolution: {integrity: sha512-Qr4RtTm30xvEdqUXbSBVWDu+PrTokJOwe/FU+VdfJPk+MXAPoeOzKpRyrDTnZIJwAkQ4oBLTU53nu0HrkF/Z2A==}
-    engines: {node: '>=8'}
+  has-ansi@6.0.2:
+    resolution: {integrity: sha512-vAyM+6+jAYwSwz0/M0jYKfU9AvAMCz0kH791RsUhvMKGUHXled/3FjcQB3YiQ4Astj5srHdb6B2FHGIfZkOQNg==}
+    engines: {node: '>=18'}
 
   has-flag@3.0.0:
     resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
@@ -5715,9 +5715,9 @@ snapshots:
     dependencies:
       ansi-regex: 2.1.1
 
-  has-ansi@4.0.1:
+  has-ansi@6.0.2:
     dependencies:
-      ansi-regex: 4.1.1
+      ansi-regex: 6.2.2
 
   has-flag@3.0.0: {}
 
