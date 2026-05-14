@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@tryghost/zip':
-        specifier: 3.2.0
-        version: 3.2.0
+        specifier: 3.3.1
+        version: 3.3.1
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -519,11 +519,11 @@ packages:
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
     engines: {node: '>=10'}
 
-  '@tryghost/errors@3.2.0':
-    resolution: {integrity: sha512-FASXloLrHpfJwpT4NDtYiyP3Im41cjsmz95J08dDGRyqGnsIdK7AfJ7SICEPGsMRrUu2qUWkhh9YLRaFNrZjRw==}
+  '@tryghost/errors@3.2.1':
+    resolution: {integrity: sha512-KM7Xe9qaR4a0RTjgcggS10NDMZbkYlLz0ePYIQ/0FbkEZtTqWwRrOn4BeQe587FpZ5DoXbiXxNE5vBMfZBPl+Q==}
 
-  '@tryghost/zip@3.2.0':
-    resolution: {integrity: sha512-za6DHBBWI9HnDYzlsv2bej8h9LR2Ri/ycymcYgmXzT2sHJ5JtForAM3czCcMXGiDjrwmk3rFIcTlq5CfrFu/mA==}
+  '@tryghost/zip@3.3.1':
+    resolution: {integrity: sha512-D8ChQHmqbSsdhCLuRwgy4wKViICiLoB9f/NzolD+koGWtpsUTq9IwDeaAPHenIzeHbds8RmeZGIJlShNutEblg==}
 
   '@types/cacheable-request@6.0.3':
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
@@ -4153,11 +4153,11 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
-  '@tryghost/errors@3.2.0': {}
+  '@tryghost/errors@3.2.1': {}
 
-  '@tryghost/zip@3.2.0':
+  '@tryghost/zip@3.3.1':
     dependencies:
-      '@tryghost/errors': 3.2.0
+      '@tryghost/errors': 3.2.1
       archiver: 7.0.1
       extract-zip: 2.0.1
     transitivePeerDependencies:
