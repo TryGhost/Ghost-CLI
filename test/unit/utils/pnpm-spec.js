@@ -96,6 +96,22 @@ describe('Unit: pnpm', function () {
         });
     });
 
+    it('returns a helpful system error when corepack cannot verify pnpm signatures', function () {
+        const execa = sinon.stub().rejects({
+            message: 'Command failed: pnpm install',
+            stderr: '/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:21535\nError: Cannot find matching keyid'
+        });
+        const pnpm = setup({execa});
+
+        return pnpm(['install']).then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceOf(SystemError);
+            expect(error.message).to.equal('Corepack could not verify pnpm because its package-signing keys are out of date.');
+            expect(error.options.suggestion).to.equal('npm install -g corepack@latest && corepack enable');
+        });
+    });
+
     describe('can return observables', function () {
         it('ends properly', function () {
             const execa = sinon.stub().callsFake(() => {
@@ -149,6 +165,35 @@ describe('Unit: pnpm', function () {
                 expect(subscriber.next.called).to.be.false;
                 expect(subscriber.error.calledOnce).to.be.true;
                 expect(subscriber.error.args[0][0]).to.be.an.instanceOf(ProcessError);
+                expect(subscriber.complete.called).to.be.false;
+            });
+        });
+
+        it('passes corepack signature errors through as helpful system errors', function () {
+            const execa = sinon.stub().callsFake(() => {
+                const promise = Promise.reject({
+                    message: 'Command failed: pnpm install',
+                    stderr: '/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:21535\nError: Cannot find matching keyid'
+                });
+                promise.stdout = getReadableStream();
+                return promise;
+            });
+            const pnpm = setup({execa});
+
+            const res = pnpm([], {observe: true});
+            const subscriber = {
+                next: sinon.stub(),
+                error: sinon.stub(),
+                complete: sinon.stub()
+            };
+
+            res.subscribe(subscriber);
+
+            return res.toPromise().catch(() => {
+                expect(subscriber.error.calledOnce).to.be.true;
+                expect(subscriber.error.args[0][0]).to.be.an.instanceOf(SystemError);
+                expect(subscriber.error.args[0][0].options.suggestion).to.contain('corepack@latest');
+                expect(subscriber.error.args[0][0].options.suggestion).to.not.contain('prepare');
                 expect(subscriber.complete.called).to.be.false;
             });
         });

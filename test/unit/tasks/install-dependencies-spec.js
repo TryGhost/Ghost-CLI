@@ -161,7 +161,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             expect(pnpmStub.args[0][0]).to.deep.equal(['install', '--prod', '--reporter=append-only']);
             expect(pnpmStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
-                env: {NODE_ENV: 'production'},
+                env: {NODE_ENV: 'production', COREPACK_DEFAULT_TO_LATEST: '0'},
                 observe: true
             });
         });
@@ -229,7 +229,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
         return installDependencies({listr: listrStub}).then(() => {
             const pnpmOpts = pnpmStub.args[0][1];
-            expect(pnpmOpts.env).to.deep.equal({NODE_ENV: 'production'});
+            expect(pnpmOpts.env).to.deep.equal({NODE_ENV: 'production', COREPACK_DEFAULT_TO_LATEST: '0'});
             expect(pnpmOpts.env).to.not.have.property('YARN_IGNORE_PATH');
         });
     });
