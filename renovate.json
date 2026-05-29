@@ -10,6 +10,10 @@
   ],
   "packageRules": [
     {
+      "matchPackageNames": ["pnpm"],
+      "allowedVersions": "<11"
+    },
+    {
       "matchDepTypes": ["devDependencies"],
       "automerge": true,
       "automergeType": "branch"
