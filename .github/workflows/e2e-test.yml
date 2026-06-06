@@ -25,7 +25,7 @@ jobs:
         run: sudo service nginx start
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "cli"
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6
@@ -155,7 +155,7 @@ jobs:
           done
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-testing.ghost.org\n" | sudo tee -a /etc/hosts'
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "cli"
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6
@@ -211,7 +211,7 @@ jobs:
         run: sudo service nginx start
       - name: Updating hosts file
         run: 'echo -e "127.0.0.1 cli-update-testing.ghost.org\n" | sudo tee -a /etc/hosts'
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           path: "cli"
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6
