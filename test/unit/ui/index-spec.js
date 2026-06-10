@@ -645,7 +645,7 @@ describe('Unit: UI', function () {
             ui.log('my message', 'testing', 'green', 'link');
         });
 
-        it('displays a multi-line help message with extra line when called with 5 args', function (done) {
+        it('displays a multi-line help message with exta line when called with 5 args', function (done) {
             const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
                 expect(output, 'output value').to.include(chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`));
