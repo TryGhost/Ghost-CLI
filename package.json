@@ -89,7 +89,7 @@
     "tough-cookie": "6.0.1",
     "validator": "7.2.0",
     "which": "7.0.0",
-    "yargs": "17.7.2",
+    "yargs": "17.7.3",
     "yarn": "1.22.22"
   },
   "devDependencies": {
