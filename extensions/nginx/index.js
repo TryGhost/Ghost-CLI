@@ -167,6 +167,9 @@ class NginxExtension extends Extension {
             title: 'Installing acme.sh',
             task: () => acme.install(this.ui)
         }, {
+            title: 'Creating web root directory',
+            task: () => fs.ensureDir(rootPath)
+        }, {
             title: 'Getting SSL Certificate from Let\'s Encrypt',
             task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, argv.sslemail, argv.sslstaging)
         }, {
