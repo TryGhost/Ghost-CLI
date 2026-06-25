@@ -49,53 +49,49 @@ describe('Unit: Utils > local-process', function () {
     });
 
     describe('isRunning', function () {
-        it('returns false if pidfile doesn\'t exist', function () {
+        it('returns false if pidfile doesn\'t exist', async function () {
             const existsStub = sinon.stub(fs, 'existsSync').returns(false);
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const result = instance.isRunning('/var/www/ghost');
+            const result = await instance.isRunning('/var/www/ghost');
 
             expect(result).to.be.false;
             expect(existsStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
         });
 
-        it('fetches pid from file, removes pidfile and returns false if not running', function () {
+        it('fetches pid from file, removes pidfile and returns false if not a ghost process', async function () {
             const existsStub = sinon.stub(fs, 'existsSync').returns(true);
             const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
             const removeStub = sinon.stub(fs, 'removeSync');
-            const isRunningStub = sinon.stub().returns(false);
 
-            const LocalProcess = proxyquire(modulePath, {
-                'is-running': isRunningStub
-            });
-
+            const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const result = instance.isRunning('/var/www/ghost');
+            const ghostProcessStub = sinon.stub(instance, '_isGhostProcess').resolves(false);
+
+            const result = await instance.isRunning('/var/www/ghost');
 
             expect(result).to.be.false;
             expect(existsStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             expect(readFileStub.calledOnce).to.be.true;
-            expect(isRunningStub.calledWithExactly(42)).to.be.true;
+            expect(ghostProcessStub.calledWithExactly(42)).to.be.true;
             expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
         });
 
-        it('fetches pid from file, returns true if running', function () {
+        it('fetches pid from file, returns true if running ghost process', async function () {
             const existsStub = sinon.stub(fs, 'existsSync').returns(true);
             const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
             const removeStub = sinon.stub(fs, 'removeSync');
-            const isRunningStub = sinon.stub().returns(true);
 
-            const LocalProcess = proxyquire(modulePath, {
-                'is-running': isRunningStub
-            });
-
+            const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
-            const result = instance.isRunning('/var/www/ghost');
+            const ghostProcessStub = sinon.stub(instance, '_isGhostProcess').resolves(true);
+
+            const result = await instance.isRunning('/var/www/ghost');
 
             expect(result).to.be.true;
             expect(existsStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             expect(readFileStub.calledOnce).to.be.true;
-            expect(isRunningStub.calledWithExactly(42)).to.be.true;
+            expect(ghostProcessStub.calledWithExactly(42)).to.be.true;
             expect(removeStub.called).to.be.false;
         });
     });
@@ -285,6 +281,27 @@ describe('Unit: Utils > local-process', function () {
             });
         });
 
+        it('does not kill the process but removes the pidfile if not a ghost process', async function () {
+            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
+            const removeStub = sinon.stub(fs, 'removeSync');
+            const fkillStub = sinon.stub();
+
+            const LocalProcess = proxyquire(modulePath, {
+                fkill: {default: fkillStub}
+            });
+            const instance = new LocalProcess({}, {
+                platform: {macos: true, windows: false}
+            }, {});
+            const ghostProcessStub = sinon.stub(instance, '_isGhostProcess').resolves(false);
+
+            await instance.stop('/var/www/ghost');
+
+            expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(ghostProcessStub.calledWithExactly(42)).to.be.true;
+            expect(fkillStub.called).to.be.false;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+        });
+
         it('kills the process and removes the pidfile', async function () {
             let isChildRunning = true;
             const program = os.platform() === 'win32' ? 'timeout' : 'sleep';
@@ -300,6 +317,7 @@ describe('Unit: Utils > local-process', function () {
             const instance = new LocalProcess({}, {
                 platform: {windows: true}
             }, {});
+            sinon.stub(instance, '_isGhostProcess').resolves(true);
 
             expect(isChildRunning).to.be.true;
 
@@ -321,6 +339,7 @@ describe('Unit: Utils > local-process', function () {
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
             }, {});
+            sinon.stub(instance, '_isGhostProcess').resolves(true);
 
             return instance.stop('/var/www/ghost').then(() => {
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
@@ -340,6 +359,7 @@ describe('Unit: Utils > local-process', function () {
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
             }, {});
+            sinon.stub(instance, '_isGhostProcess').resolves(true);
 
             instance.stop('/var/www/ghost').then(() => {
                 done(new Error('stop should have rejected'));
@@ -351,6 +371,47 @@ describe('Unit: Utils > local-process', function () {
                 expect(removeStub.calledOnce).to.be.false;
                 done();
             });
+        });
+    });
+
+    describe('_isGhostProcess', function () {
+        it('returns false for a falsy or NaN pid', async function () {
+            const LocalProcess = require(modulePath);
+            const instance = new LocalProcess({}, {}, {});
+
+            expect(await instance._isGhostProcess(0)).to.be.false;
+            expect(await instance._isGhostProcess(NaN)).to.be.false;
+        });
+
+        it('returns false if no process matches the pid', async function () {
+            const processesStub = sinon.stub().resolves({list: [{pid: 99, command: 'node', params: '/usr/lib/ghost-cli/bin/ghost run'}]});
+            const LocalProcess = proxyquire(modulePath, {
+                systeminformation: {processes: processesStub}
+            });
+            const instance = new LocalProcess({}, {}, {});
+
+            expect(await instance._isGhostProcess(42)).to.be.false;
+            expect(processesStub.calledOnce).to.be.true;
+        });
+
+        it('returns false if the process is not a ghost run process', async function () {
+            const processesStub = sinon.stub().resolves({list: [{pid: 42, command: 'sleep', params: '10000'}]});
+            const LocalProcess = proxyquire(modulePath, {
+                systeminformation: {processes: processesStub}
+            });
+            const instance = new LocalProcess({}, {}, {});
+
+            expect(await instance._isGhostProcess(42)).to.be.false;
+        });
+
+        it('returns true if the process command line contains "ghost run"', async function () {
+            const processesStub = sinon.stub().resolves({list: [{pid: 42, command: 'node', params: '/usr/lib/ghost-cli/bin/ghost run'}]});
+            const LocalProcess = proxyquire(modulePath, {
+                systeminformation: {processes: processesStub}
+            });
+            const instance = new LocalProcess({}, {}, {});
+
+            expect(await instance._isGhostProcess(42)).to.be.true;
         });
     });
 

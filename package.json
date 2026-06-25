@@ -63,7 +63,6 @@
     "https-proxy-agent": "9.1.0",
     "ini": "7.0.0",
     "inquirer": "14.0.2",
-    "is-running": "2.1.0",
     "jsonwebtoken": "9.0.3",
     "latest-version": "5.1.0",
     "listr": "0.14.3",
