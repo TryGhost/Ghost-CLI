@@ -1,2 +1,6 @@
 allowBuilds:
   yarn: true
+
+minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
+blockExoticSubdeps: true
+
