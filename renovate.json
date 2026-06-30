@@ -8,11 +8,8 @@
     "standard-version",
     "validator"
   ],
+  "minimumReleaseAge": "3 days",
   "packageRules": [
-    {
-      "matchPackageNames": ["pnpm"],
-      "allowedVersions": "<11"
-    },
     {
       "matchDepTypes": ["devDependencies"],
       "automerge": true,
