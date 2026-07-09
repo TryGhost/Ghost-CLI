@@ -72,7 +72,7 @@ jobs:
         run: |
           cd /opt/ghost-e2e-test
           sudo find ./ -type d -exec chmod 00775 {} \;
-          sudo find ./ ! -path "./versions/*" -type f -exec chmod 664 {} \;
+          sudo find ./ ! -path "./versions/*" ! -path "./.pnpm-store/*" -type f -exec chmod 664 {} \;
       - name: Recording running service pid
         run: |
           BEFORE_PID="$(sudo systemctl show -p MainPID --value ghost_cli-testing-ghost-org)"
@@ -288,7 +288,7 @@ jobs:
         run: |
           cd "$UPDATE_DIR"
           sudo find ./ -type d -exec chmod 00775 {} \;
-          sudo find ./ ! -path "./versions/*" -type f -exec chmod 664 {} \;
+          sudo find ./ ! -path "./versions/*" ! -path "./.pnpm-store/*" -type f -exec chmod 664 {} \;
       - name: Recording running service pid before update
         run: |
           BEFORE_PID="$(sudo systemctl show -p MainPID --value "$UPDATE_SERVICE")"

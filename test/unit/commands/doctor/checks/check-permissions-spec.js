@@ -40,7 +40,7 @@ describe('Unit: Doctor Checks > Util > checkPermissions', function () {
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ProcessError);
             expect(error.message).to.match(/oops, cmd could not be executed/);
-            expect(execaStub.calledWithExactly('find ./  -type f ! -path "./versions/*" ! -perm 664 ! -perm 644', {maxBuffer: Infinity})).to.be.true;
+            expect(execaStub.calledWithExactly('find ./  -type f ! -path "./versions/*" ! -path "./.pnpm-store/*" ! -perm 664 ! -perm 644', {maxBuffer: Infinity})).to.be.true;
         });
     });
 });
