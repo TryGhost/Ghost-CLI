@@ -112,6 +112,21 @@ describe('Unit: pnpm', function () {
         });
     });
 
+    it('returns a helpful system error when the pnpm store is read-only', function () {
+        const execa = sinon.stub().rejects({
+            message: 'Command failed: pnpm install',
+            stderr: 'ERR_SQLITE_ERROR: attempt to write a readonly database'
+        });
+        const pnpm = setup({execa});
+
+        return pnpm(['install']).then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceOf(SystemError);
+            expect(error.message).to.equal('pnpm could not write to its package store because the store database is read-only.');
+        });
+    });
+
     describe('can return observables', function () {
         it('ends properly', function () {
             const execa = sinon.stub().callsFake(() => {
