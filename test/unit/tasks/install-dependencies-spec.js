@@ -70,7 +70,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
     });
 
-    it('base function calls subtasks and yarn util correctly with GHOST_NODE_VERISON_CHECK set', function () {
+    it('base function calls subtasks and yarn util correctly with GHOST_NODE_VERSION_CHECK set', function () {
         const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
@@ -306,7 +306,7 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     describe('dist subtask', function () {
-        it('rejects if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is not set', function () {
+        it('rejects if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERSION_CHECK is not set', function () {
             const data = {
                 engines: {node: '^0.10.0'},
                 dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
@@ -327,7 +327,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        it('resolves if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is set', function () {
+        it('resolves if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERSION_CHECK is set', function () {
             const data = {
                 engines: {node: '^0.10.0'},
                 dist: {shasum: 'asdf1234', tarball: 'something.tgz'}

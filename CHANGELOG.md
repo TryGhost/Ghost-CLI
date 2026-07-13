@@ -645,7 +645,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * **engines:** update node version restrictions to match Ghost ([c45909d](https://github.com/TryGhost/Ghost-CLI/commit/c45909d))
-* **utils:** prerelease statisfies engine definition ([8bfcc38](https://github.com/TryGhost/Ghost-CLI/commit/8bfcc38))
+* **utils:** prerelease satisfies engine definition ([8bfcc38](https://github.com/TryGhost/Ghost-CLI/commit/8bfcc38))
 
 
 
@@ -1322,7 +1322,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* **extensions:** remove unecessary getters from systemd and nginx extensions ([f5f6e05](https://github.com/TryGhost/Ghost-CLI/commit/f5f6e05))
+* **extensions:** remove unnecessary getters from systemd and nginx extensions ([f5f6e05](https://github.com/TryGhost/Ghost-CLI/commit/f5f6e05))
 * **instance:** clean up config usage around application (#254) ([22c804c](https://github.com/TryGhost/Ghost-CLI/commit/22c804c))
 * **setup:** reset setup default to true ([7c4cdf3](https://github.com/TryGhost/Ghost-CLI/commit/7c4cdf3))
 * **systemd:** fix is-enabled error handling in systemd process manager ([ff6cfba](https://github.com/TryGhost/Ghost-CLI/commit/ff6cfba))

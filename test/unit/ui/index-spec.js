@@ -927,7 +927,7 @@ describe('Unit: UI', function () {
 
             expect(formatDebug.calledOnce).to.be.true;
             expect(log.calledTwice).to.be.true;
-            expect(log.args[0][0]).to.match(/error occured/);
+            expect(log.args[0][0]).to.match(/error occurred/);
             expect(stripAnsi(log.args[1][0])).to.match(/Try running ghost doctor to check your system for known issues./);
             expect(log.args[0][2]).to.be.true;
         });
