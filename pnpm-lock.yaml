@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@tryghost/zip':
         specifier: 3.5.1
-        version: 3.5.1
+        version: 3.5.1(supports-color@8.1.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -57,8 +57,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       got:
-        specifier: 9.6.0
-        version: 9.6.0
+        specifier: 11.8.5
+        version: 11.8.5
       https-proxy-agent:
         specifier: 9.1.0
         version: 9.1.0(supports-color@8.1.1)
@@ -1797,6 +1797,10 @@ packages:
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
+
+  got@11.8.5:
+    resolution: {integrity: sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==}
+    engines: {node: '>=10.19.0'}
 
   got@11.8.6:
     resolution: {integrity: sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==}
@@ -4150,11 +4154,11 @@ snapshots:
 
   '@tryghost/errors@3.3.2': {}
 
-  '@tryghost/zip@3.5.1':
+  '@tryghost/zip@3.5.1(supports-color@8.1.1)':
     dependencies:
       '@tryghost/errors': 3.3.2
       archiver: 8.0.0
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -5314,7 +5318,7 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
-  extract-zip@2.0.1:
+  extract-zip@2.0.1(supports-color@8.1.1):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       get-stream: 5.2.0
@@ -5640,6 +5644,20 @@ snapshots:
       type-fest: 0.20.2
 
   gopd@1.2.0: {}
+
+  got@11.8.5:
+    dependencies:
+      '@sindresorhus/is': 4.6.0
+      '@szmarczak/http-timer': 4.0.6
+      '@types/cacheable-request': 6.0.3
+      '@types/responselike': 1.0.3
+      cacheable-lookup: 5.0.4
+      cacheable-request: 7.0.4
+      decompress-response: 6.0.0
+      http2-wrapper: 1.0.3
+      lowercase-keys: 2.0.0
+      p-cancelable: 2.1.1
+      responselike: 2.0.1
 
   got@11.8.6:
     dependencies:
