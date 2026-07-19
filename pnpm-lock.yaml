@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@tryghost/zip':
         specifier: 3.5.1
-        version: 3.5.1
+        version: 3.5.1(supports-color@8.1.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -21,8 +21,8 @@ importers:
         specifier: 8.0.1
         version: 8.0.1
       chalk:
-        specifier: 4.1.2
-        version: 4.1.2
+        specifier: 5.6.2
+        version: 5.6.2
       cli-table3:
         specifier: 0.5.0
         version: 0.5.0
@@ -4150,11 +4150,11 @@ snapshots:
 
   '@tryghost/errors@3.3.2': {}
 
-  '@tryghost/zip@3.5.1':
+  '@tryghost/zip@3.5.1(supports-color@8.1.1)':
     dependencies:
       '@tryghost/errors': 3.3.2
       archiver: 8.0.0
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -5314,7 +5314,7 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
-  extract-zip@2.0.1:
+  extract-zip@2.0.1(supports-color@8.1.1):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       get-stream: 5.2.0
