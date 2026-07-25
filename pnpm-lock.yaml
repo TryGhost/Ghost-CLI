@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@tryghost/zip':
         specifier: 3.5.1
-        version: 3.5.1
+        version: 3.5.1(supports-color@8.1.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -87,8 +87,8 @@ importers:
         specifier: 2.30.1
         version: 2.30.1
       mysql2:
-        specifier: 3.23.0
-        version: 3.23.0(@types/node@26.0.0)
+        specifier: 3.23.1
+        version: 3.23.1(@types/node@26.0.0)
       ora:
         specifier: 3.4.0
         version: 3.4.0
@@ -2530,8 +2530,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  mysql2@3.23.0:
-    resolution: {integrity: sha512-ZwyGLoG9BRlL7hKNDcIy7q18hA6WTWGEpLAerGHXj5Xahemia4msZdwjIOUIzesjK3B5z5gWLktf+2tYSLAyTA==}
+  mysql2@3.23.1:
+    resolution: {integrity: sha512-tTuRnC7qCet2IOfSNMYZ5SwXuBnfvBPAcIA28P0gtruXyZlU1LMxA6uha32kYypoFgyYklMqhLWwt4laYwXR/Q==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -4150,11 +4150,11 @@ snapshots:
 
   '@tryghost/errors@3.3.2': {}
 
-  '@tryghost/zip@3.5.1':
+  '@tryghost/zip@3.5.1(supports-color@8.1.1)':
     dependencies:
       '@tryghost/errors': 3.3.2
       archiver: 8.0.0
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -5314,7 +5314,7 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
-  extract-zip@2.0.1:
+  extract-zip@2.0.1(supports-color@8.1.1):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       get-stream: 5.2.0
@@ -6397,7 +6397,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  mysql2@3.23.0(@types/node@26.0.0):
+  mysql2@3.23.1(@types/node@26.0.0):
     dependencies:
       '@types/node': 26.0.0
       aws-ssl-profiles: 1.1.2
