@@ -129,8 +129,8 @@ importers:
         specifier: 1.3.1
         version: 1.3.1
       systeminformation:
-        specifier: 5.33.0
-        version: 5.33.0
+        specifier: 5.33.1
+        version: 5.33.1
       tail:
         specifier: 2.2.6
         version: 2.2.6
@@ -3424,8 +3424,8 @@ packages:
   symlink-or-copy@1.3.1:
     resolution: {integrity: sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA==}
 
-  systeminformation@5.33.0:
-    resolution: {integrity: sha512-0LYSL01CCbjVeJG7iXI8fUCFU76zMjzbHd/EU3or4QpSFYCLMgslR11prwHuA3siz5jmOkqoLhjgOyDRmXBKmA==}
+  systeminformation@5.33.1:
+    resolution: {integrity: sha512-DEN6ICHk3Tk0Uf/hrAHh7xlt7iL5CJFBtPZinA0H62DrGG/KPKqq/Nzj6lCXPS4Ay/sf/14zNnk9LpqKzBIc+w==}
     engines: {node: '>=10.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -7287,7 +7287,7 @@ snapshots:
 
   symlink-or-copy@1.3.1: {}
 
-  systeminformation@5.33.0: {}
+  systeminformation@5.33.1: {}
 
   table@5.4.6:
     dependencies:
