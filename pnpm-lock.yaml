@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@tryghost/zip':
         specifier: 3.5.5
-        version: 3.5.5
+        version: 3.5.5(supports-color@8.1.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -48,8 +48,8 @@ importers:
         specifier: 4.0.6
         version: 4.0.6
       fs-extra:
-        specifier: 11.3.6
-        version: 11.3.6
+        specifier: 11.4.0
+        version: 11.4.0
       generate-password:
         specifier: 1.7.1
         version: 1.7.1
@@ -1666,8 +1666,8 @@ packages:
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
 
-  fs-extra@11.3.6:
-    resolution: {integrity: sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA==}
+  fs-extra@11.4.0:
+    resolution: {integrity: sha512-EQsFzMUJkCKGr1ePqlYADkIUmHW1s3ZXr5Yqy6wbGrfUCphpl2maM/kyOIRA2HpP3AaFQTZXD4ldjek+nccddA==}
     engines: {node: '>=14.14'}
 
   fs.realpath@1.0.0:
@@ -4150,11 +4150,11 @@ snapshots:
 
   '@tryghost/errors@3.3.6': {}
 
-  '@tryghost/zip@3.5.5':
+  '@tryghost/zip@3.5.5(supports-color@8.1.1)':
     dependencies:
       '@tryghost/errors': 3.3.6
       archiver: 8.0.0
-      extract-zip: 2.0.1
+      extract-zip: 2.0.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -5314,7 +5314,7 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
-  extract-zip@2.0.1:
+  extract-zip@2.0.1(supports-color@8.1.1):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       get-stream: 5.2.0
@@ -5493,7 +5493,7 @@ snapshots:
 
   fs-constants@1.0.0: {}
 
-  fs-extra@11.3.6:
+  fs-extra@11.4.0:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.2.1
