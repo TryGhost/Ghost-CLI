@@ -97,7 +97,7 @@
     "eslint": "7.32.0",
     "eslint-plugin-ghost": "2.5.0",
     "has-ansi": "4.0.1",
-    "mocha": "11.7.6",
+    "mocha": "11.8.0",
     "nock": "14.0.17",
     "nyc": "18.0.0",
     "proxyquire": "2.1.3",
