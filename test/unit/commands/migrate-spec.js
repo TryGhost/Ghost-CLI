@@ -70,7 +70,7 @@ describe('Unit: Commands > Migrate', function () {
         });
     });
 
-    it('quiet supresses output', function () {
+    it('quiet suppresses output', function () {
         const {cmd, instance, parse} = build([]);
 
         return cmd.run({quiet: true}).then(() => {
