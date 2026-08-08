@@ -3,4 +3,6 @@ allowBuilds:
 
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
-
+minimumReleaseAgeExclude:
+  # Renovate security update: got@11.8.5
+  - got@11.8.5
