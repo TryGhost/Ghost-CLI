@@ -108,8 +108,8 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       read-last-lines:
-        specifier: 1.9.0
-        version: 1.9.0
+        specifier: 1.10.0
+        version: 1.10.0
       replace-in-file:
         specifier: 9.0.0
         version: 9.0.0
@@ -2964,8 +2964,8 @@ packages:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
 
-  read-last-lines@1.9.0:
-    resolution: {integrity: sha512-toU8ilGhDQrubHz4uOL6RNPd2chZUAFFQrjzMaik7PsbImJYVdpNw87oc3Ctav1eY1yM+W0ntGt88iYSmD13kg==}
+  read-last-lines@1.10.0:
+    resolution: {integrity: sha512-RnfSZUzg5y2TklfEzk8K/oQChYaLiYlH4Ee7M1SsDYoygvgl9N4DPrfiXXLlbENSaeWblV173HaP3aZ1G4dyMw==}
     engines: {node: '>=20'}
 
   read-pkg-up@1.0.1:
@@ -6814,7 +6814,7 @@ snapshots:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  read-last-lines@1.9.0: {}
+  read-last-lines@1.10.0: {}
 
   read-pkg-up@1.0.1:
     dependencies:
