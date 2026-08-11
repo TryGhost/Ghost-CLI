@@ -454,6 +454,18 @@ describe('Unit: Extensions > Nginx', function () {
                 });
             });
 
+            it('creates web root directory', function () {
+                const ensureDirStub = sinon.stub().resolves();
+                proxy['fs-extra'].ensureDir = ensureDirStub;
+                const ext = proxyNginx(proxy);
+                const tasks = getTasks(ext);
+
+                return tasks[3].task().then(() => {
+                    expect(ensureDirStub.calledOnce).to.be.true;
+                    expect(ensureDirStub.calledWithExactly(`${dir}/system/nginx-root`)).to.be.true;
+                });
+            });
+
             it('runs acme generate task', function () {
                 const generateStub = sinon.stub().resolves();
                 const ext = proxyNginx(Object.assign(proxy, {
@@ -461,7 +473,7 @@ describe('Unit: Extensions > Nginx', function () {
                 }));
                 const tasks = getTasks(ext, {sslemail: 'test@example.com', sslstaging: true});
 
-                return tasks[3].task().then(() => {
+                return tasks[4].task().then(() => {
                     expect(generateStub.calledOnce).to.be.true;
                     expect(generateStub.calledWithExactly(
                         ext.ui,
@@ -485,9 +497,9 @@ describe('Unit: Extensions > Nginx', function () {
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
 
-                expect(tasks[4].skip()).to.be.true;
+                expect(tasks[5].skip()).to.be.true;
 
-                return tasks[4].task().then(() => {
+                return tasks[5].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(ext.ui.sudo.args[0][0]).to.match(/openssl dhparam/);
                 });
@@ -499,8 +511,8 @@ describe('Unit: Extensions > Nginx', function () {
                 ext.ui.sudo.rejects(new Error('Go ask George'));
                 const tasks = getTasks(ext);
 
-                expect(tasks[4].skip()).to.be.false;
-                return tasks[4].task().then(() => {
+                expect(tasks[5].skip()).to.be.false;
+                return tasks[5].task().then(() => {
                     expect(false, 'Promise should have rejected').to.be.true;
                 }).catch((err) => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
@@ -521,8 +533,8 @@ describe('Unit: Extensions > Nginx', function () {
                 const tasks = getTasks(ext);
                 const expectedSudo = new RegExp(/(?=^mv)(?=.*snippets\/ssl-params\.conf)/);
 
-                expect(tasks[5].skip()).to.be.true;
-                return tasks[5].task().then(() => {
+                expect(tasks[6].skip()).to.be.true;
+                return tasks[6].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
                 });
@@ -534,8 +546,8 @@ describe('Unit: Extensions > Nginx', function () {
                 ext.ui.sudo.rejects(new Error('Potato'));
                 const tasks = getTasks(ext);
 
-                expect(tasks[5].skip()).to.be.false;
-                return tasks[5].task().then(() => {
+                expect(tasks[6].skip()).to.be.false;
+                return tasks[6].task().then(() => {
                     expect(false, 'Promise should have been rejected').to.be.true;
                 }).catch((err) => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
@@ -568,7 +580,7 @@ describe('Unit: Extensions > Nginx', function () {
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 ext.template = sinon.stub().resolves();
-                return tasks[6].task(ctx).then(() => {
+                return tasks[7].task(ctx).then(() => {
                     expect(stubs.template.calledTwice).to.be.true;
                     expect(stubs.templatify.calledOnce).to.be.true;
                     expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
@@ -587,7 +599,7 @@ describe('Unit: Extensions > Nginx', function () {
                 ext.template = sinon.stub().resolves();
                 expectedTemplate.location = '^~ /blog';
 
-                return tasks[6].task(ctx).then(() => {
+                return tasks[7].task(ctx).then(() => {
                     expect(stubs.template.calledTwice).to.be.true;
                     expect(stubs.templatify.calledOnce).to.be.true;
                     expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
@@ -601,7 +613,7 @@ describe('Unit: Extensions > Nginx', function () {
                 ext.template = sinon.stub().resolves();
                 ext.ui.sudo = sudo;
 
-                return tasks[6].task(ctx).then(() => {
+                return tasks[7].task(ctx).then(() => {
                     expect(false, 'Promise should have been rejected').to.be.true;
                 }).catch((err) => {
                     expect(stubs.template.calledTwice).to.be.true;
@@ -616,7 +628,7 @@ describe('Unit: Extensions > Nginx', function () {
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
 
-                return tasks[7].task(ctx).then(() => {
+                return tasks[8].task(ctx).then(() => {
                     expect(ext.restartNginx.calledOnce).to.be.true;
                 });
             });
