@@ -174,4 +174,138 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             });
         });
     });
+
+    describe('migrateActivityPubDns', function () {
+        const legacyConf = [
+            '    location ~ /.well-known/(webfinger|nodeinfo) {',
+            '        proxy_ssl_server_name on;',
+            '        proxy_pass https://ap.ghost.org;',
+            '    }'
+        ].join('\n');
+
+        const migratedConf = [
+            '    location ~ /.well-known/(webfinger|nodeinfo) {',
+            '        proxy_ssl_server_name on;',
+            '        # Resolved per-request so nginx can still start when DNS is briefly unavailable (Ghost-CLI#2044)',
+            '        resolver 127.0.0.53 valid=300s;',
+            '        resolver_timeout 5s;',
+            '        set $activitypub_upstream https://ap.ghost.org;',
+            '        proxy_pass $activitypub_upstream;',
+            '    }'
+        ].join('\n');
+
+        function getExtension() {
+            return {
+                getResolvers: sinon.stub().returns('127.0.0.53'),
+                template: sinon.stub().resolves(),
+                restartNginx: sinon.stub().resolves(),
+                ui: {sudo: sinon.stub().resolves()}
+            };
+        }
+
+        it('skips if no config uses the literal upstream', async function () {
+            const skip = sinon.stub();
+            const ext = getExtension();
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {
+                    existsSync: () => true,
+                    readFileSync: () => migratedConf
+                }
+            });
+
+            await migrate.migrateActivityPubDns.call(ext, context, {skip});
+
+            expect(skip.calledOnce).to.be.true;
+            expect(ext.template.called).to.be.false;
+            expect(ext.restartNginx.called).to.be.false;
+        });
+
+        it('rewrites every affected config, then tests and reloads nginx', async function () {
+            const skip = sinon.stub();
+            const ext = getExtension();
+            const existsSync = sinon.stub().returns(true);
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync, readFileSync: () => legacyConf}
+            });
+
+            await migrate.migrateActivityPubDns.call(ext, context, {skip});
+
+            expect(skip.called).to.be.false;
+            expect(existsSync.args.map(([file]) => file)).to.deep.equal([
+                '/etc/nginx/sites-available/ghost.org.conf',
+                '/etc/nginx/sites-available/ghost.org-ssl.conf'
+            ]);
+
+            expect(ext.template.calledTwice).to.be.true;
+            expect(ext.template.args[0][1]).to.equal(migratedConf);
+            expect(ext.template.args[0][3]).to.equal('ghost.org.conf');
+            expect(ext.template.args[0][4]).to.equal('/etc/nginx/sites-available');
+            expect(ext.template.args[1][3]).to.equal('ghost.org-ssl.conf');
+
+            expect(ext.ui.sudo.calledOnceWithExactly('nginx -t')).to.be.true;
+            expect(ext.restartNginx.calledOnce).to.be.true;
+        });
+
+        it('only migrates the configs that exist', async function () {
+            const ext = getExtension();
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {
+                    existsSync: file => !file.includes('-ssl'),
+                    readFileSync: () => legacyConf
+                }
+            });
+
+            await migrate.migrateActivityPubDns.call(ext, context, {skip: sinon.stub()});
+
+            expect(ext.template.calledOnce).to.be.true;
+            expect(ext.template.args[0][3]).to.equal('ghost.org.conf');
+        });
+
+        it('restores the original config if nginx rejects the new one', async function () {
+            const ext = getExtension();
+            ext.ui.sudo.rejects(new Error('bad config'));
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {
+                    existsSync: file => !file.includes('-ssl'),
+                    readFileSync: () => legacyConf
+                }
+            });
+
+            try {
+                await migrate.migrateActivityPubDns.call(ext, context, {skip: sinon.stub()});
+                expect(false, 'should have errored').to.be.true;
+            } catch (error) {
+                expect(error).to.be.an.instanceof(cli.errors.CliError);
+                expect(error.options.err.message).to.equal('bad config');
+            }
+
+            expect(ext.template.calledTwice).to.be.true;
+            expect(ext.template.args[0][1]).to.equal(migratedConf);
+            expect(ext.template.args[1][1]).to.equal(legacyConf);
+            expect(ext.restartNginx.called).to.be.false;
+        });
+
+        it('restores already migrated configs if a later write fails', async function () {
+            const ext = getExtension();
+            ext.template.onCall(1).rejects(new Error('mv failed'));
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: () => true, readFileSync: () => legacyConf}
+            });
+
+            try {
+                await migrate.migrateActivityPubDns.call(ext, context, {skip: sinon.stub()});
+                expect(false, 'should have errored').to.be.true;
+            } catch (error) {
+                expect(error).to.be.an.instanceof(cli.errors.CliError);
+                expect(error.options.err.message).to.equal('mv failed');
+            }
+
+            // both configs get rolled back, even though only the first one was written
+            expect(ext.template.callCount).to.equal(4);
+            expect(ext.template.args[2]).to.deep.equal([context.instance, legacyConf, 'nginx config', 'ghost.org.conf', '/etc/nginx/sites-available']);
+            expect(ext.template.args[3][1]).to.equal(legacyConf);
+            expect(ext.ui.sudo.called).to.be.false;
+            expect(ext.restartNginx.called).to.be.false;
+        });
+    });
 });
