@@ -31,6 +31,11 @@ class NginxExtension extends Extension {
             title: 'Fixing ActivityPub DNS resolution in nginx config',
             skip: () => !this.system.platform.linux,
             task: migrations.migrateActivityPubDns.bind(this)
+        }, {
+            before: '1.31.0',
+            title: 'Updating X-Forwarded-For header in nginx config',
+            skip: () => !this.system.platform.linux,
+            task: migrations.migrateXForwardedFor.bind(this)
         }];
     }
 

@@ -308,4 +308,93 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             expect(ext.restartNginx.called).to.be.false;
         });
     });
+
+    describe('migrateXForwardedFor', function () {
+        const confFile = '/etc/nginx/sites-available/ghost.org.conf';
+        const sslConfFile = '/etc/nginx/sites-available/ghost.org-ssl.conf';
+        const oldHeader = 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;';
+        const newHeader = 'proxy_set_header X-Forwarded-For $remote_addr;';
+
+        it('skips if no nginx config exists for this domain', async function () {
+            const existsSync = sinon.stub().returns(false);
+            const skip = sinon.stub();
+            const sudo = sinon.stub().resolves();
+            const restartNginx = sinon.stub().resolves();
+
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: existsSync}
+            });
+
+            await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
+
+            expect(existsSync.calledTwice).to.be.true;
+            expect(existsSync.calledWithExactly(confFile)).to.be.true;
+            expect(existsSync.calledWithExactly(sslConfFile)).to.be.true;
+            expect(skip.calledOnce).to.be.true;
+            expect(sudo.called).to.be.false;
+            expect(restartNginx.called).to.be.false;
+        });
+
+        it('skips if the configs already use the new header', async function () {
+            const existsSync = sinon.stub().returns(true);
+            const readFileSync = sinon.stub().returns(`server {\n    ${newHeader}\n}\n`);
+            const skip = sinon.stub();
+            const sudo = sinon.stub().resolves();
+            const restartNginx = sinon.stub().resolves();
+
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync}
+            });
+
+            await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
+
+            expect(readFileSync.calledTwice).to.be.true;
+            expect(skip.calledOnce).to.be.true;
+            expect(sudo.called).to.be.false;
+            expect(restartNginx.called).to.be.false;
+        });
+
+        it('updates only the configs that still use the old header', async function () {
+            const existsSync = sinon.stub();
+            const readFileSync = sinon.stub();
+            const skip = sinon.stub();
+            const sudo = sinon.stub().resolves();
+            const restartNginx = sinon.stub().resolves();
+
+            existsSync.withArgs(confFile).returns(true);
+            existsSync.withArgs(sslConfFile).returns(false);
+            readFileSync.withArgs(confFile).returns(`server {\n    ${oldHeader}\n}\n`);
+
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync}
+            });
+
+            await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
+
+            expect(skip.called).to.be.false;
+            expect(sudo.calledOnce).to.be.true;
+            expect(sudo.calledWithExactly(`sed -i 's|${oldHeader}|${newHeader}|' ${confFile}`)).to.be.true;
+            expect(restartNginx.calledOnce).to.be.true;
+        });
+
+        it('updates both configs and restarts nginx', async function () {
+            const existsSync = sinon.stub().returns(true);
+            const readFileSync = sinon.stub().returns(`server {\n    ${oldHeader}\n}\n`);
+            const skip = sinon.stub();
+            const sudo = sinon.stub().resolves();
+            const restartNginx = sinon.stub().resolves();
+
+            const migrate = proxyquire(modulePath, {
+                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync}
+            });
+
+            await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
+
+            expect(skip.called).to.be.false;
+            expect(sudo.calledTwice).to.be.true;
+            expect(sudo.calledWithExactly(`sed -i 's|${oldHeader}|${newHeader}|' ${confFile}`)).to.be.true;
+            expect(sudo.calledWithExactly(`sed -i 's|${oldHeader}|${newHeader}|' ${sslConfFile}`)).to.be.true;
+            expect(restartNginx.calledOnce).to.be.true;
+        });
+    });
 });
