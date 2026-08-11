@@ -29,7 +29,9 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
-          fetch-depth: 2
+          # Full history + tags: release notes are generated from the commits
+          # between the previous tag and this one
+          fetch-depth: 0
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
@@ -132,3 +134,27 @@ jobs:
             git tag -a "$TAG" -m "$TAG"
             git push origin "$TAG"
           fi
+      - name: Create GitHub release
+        if: github.event_name == 'push' && steps.release_commit.outputs.is_release_commit == 'true' && steps.check.outputs.should_publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ steps.check.outputs.version }}"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping"
+            exit 0
+          fi
+
+          # The tag immediately before this one
+          PREV_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | grep -v -- '-' | grep -v "^${TAG}$" | head -n 1)
+          if [ -n "$PREV_TAG" ]; then
+            echo "Previous tag: $PREV_TAG"
+            node scripts/release-notes.js "$PREV_TAG" "$TAG" > /tmp/release-notes.md
+          else
+            echo "::warning::No previous tag found — using the fallback release notes"
+            echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
+          fi
+
+          cat /tmp/release-notes.md
+          gh release create "$TAG" --title "$TAG" --notes-file /tmp/release-notes.md

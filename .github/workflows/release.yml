@@ -1,0 +1,63 @@
+name: Release
+run-name: "Release — ${{ inputs.bump-type }}${{ inputs.dry-run && ' (dry run)' || '' }}"
+on:
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: Version bump type
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
+      dry-run:
+        description: Prepare the release without pushing
+        type: boolean
+        default: false
+env:
+  FORCE_COLOR: 1
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+# The release commit is pushed with a PAT, so the default GITHUB_TOKEN only
+# needs read access. Pushing with GITHUB_TOKEN would not trigger the
+# "Publish to npm" workflow.
+permissions:
+  contents: read
+jobs:
+  release:
+    if: github.repository == 'TryGhost/Ghost-CLI'
+    runs-on: ubuntu-latest
+    name: Prepare & push release
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          # Full history + tags: the bump type is worked out from the commits
+          # since the last release tag
+          fetch-depth: 0
+          # Persisted for the push in the release script — GITHUB_TOKEN pushes
+          # don't trigger the publish workflow
+          token: ${{ secrets.GST_TOKEN }}
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.x
+          cache: pnpm
+        env:
+          FORCE_COLOR: 0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run tests
+        run: pnpm test
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Prepare release
+        run: node scripts/release.js
+        env:
+          RELEASE_BRANCH: ${{ github.ref_name }}
+          RELEASE_BUMP_TYPE: ${{ inputs.bump-type }}
+          RELEASE_DRY_RUN: ${{ inputs.dry-run }}

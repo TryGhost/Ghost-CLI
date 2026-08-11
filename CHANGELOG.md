@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+**This file is no longer updated.** Release notes for 1.30.1 and later live on the [releases page](https://github.com/TryGhost/Ghost-CLI/releases). The entries below are kept as a historical archive.
 
 <a name="1.30.1"></a>
 ## [1.30.1](https://github.com/TryGhost/Ghost-CLI/compare/v1.30.0...v1.30.1) (2026-07-28)
