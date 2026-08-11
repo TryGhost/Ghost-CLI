@@ -59,7 +59,7 @@ describe('Unit: Extensions > Nginx', function () {
         const migrateStub = sinon.stub(migrations, 'migrateSSL');
         const result = inst.migrations();
 
-        expect(result).to.have.length(2);
+        expect(result).to.have.length(3);
         const [task] = result;
 
         expect(task.before).to.equal('1.2.0');
@@ -90,6 +90,24 @@ describe('Unit: Extensions > Nginx', function () {
 
         expect(task.before).to.equal('1.31.0');
         expect(task.title).to.equal('Fixing ActivityPub DNS resolution in nginx config');
+
+        task.task();
+        expect(migrateStub.calledOnce).to.be.true;
+
+        inst.system.platform = {linux: false};
+        expect(task.skip()).to.be.true;
+
+        inst.system.platform = {linux: true};
+        expect(task.skip()).to.be.false;
+    });
+
+    it('migrations hook (x-forwarded-for)', function () {
+        const inst = new Nginx({}, {}, {}, '/some/dir');
+        const migrateStub = sinon.stub(migrations, 'migrateXForwardedFor');
+        const [,, task] = inst.migrations();
+
+        expect(task.before).to.equal('1.31.0');
+        expect(task.title).to.equal('Updating X-Forwarded-For header in nginx config');
 
         task.task();
         expect(migrateStub.calledOnce).to.be.true;
