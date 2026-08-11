@@ -88,7 +88,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, or 24\'');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, 24, or 26\'');
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -100,7 +100,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
         expect(false, 'error should have been thrown').to.be.true;
     });
 
-    it('rejects if os release is not Ubuntu 16, 18, 20, 22, or 24', async function () {
+    it('rejects if os release is not Ubuntu 16, 18, 20, 22, 24, or 26', async function () {
         const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '14.04.1 LTS'});
         const logStub = sinon.stub();
         const confirmStub = sinon.stub().resolves(false);
@@ -114,7 +114,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, or 24\'');
+            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, 24, or 26\'');
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -146,7 +146,29 @@ describe('Unit: Doctor Checks > systemStack', function () {
         expect(services.calledTwice).to.be.true;
         expect(logStub.calledTwice).to.be.true;
         expect(logStub.args[0][0]).to.contain('end-of-life');
-        expect(logStub.args[1][0]).to.contain('Consider upgrading to Ubuntu 22.04 or 24.04');
+        expect(logStub.args[1][0]).to.contain('Consider upgrading to Ubuntu 24.04 or 26.04');
+    });
+
+    it('returns without error on Ubuntu 26', async function () {
+        const osInfo = sinon.stub(sysinfo, 'osInfo').resolves({distro: 'Ubuntu', release: '26.04 LTS'});
+        const services = sinon.stub(sysinfo, 'services');
+
+        services.withArgs('nginx').resolves([{name: 'nginx', running: true}]);
+        services.withArgs('systemd').resolves([{name: 'systemd', running: true}]);
+
+        const logStub = sinon.stub();
+        const confirmStub = sinon.stub().resolves(false);
+
+        const ctx = {
+            ui: {log: logStub, confirm: confirmStub, allowPrompt: true},
+            system: {platform: {linux: true}}
+        };
+
+        await systemStack.task(ctx);
+        expect(osInfo.calledOnce).to.be.true;
+        expect(services.calledTwice).to.be.true;
+        expect(logStub.called).to.be.false;
+        expect(confirmStub.called).to.be.false;
     });
 
     it('returns without error when both systemd/nginx are found', async function () {

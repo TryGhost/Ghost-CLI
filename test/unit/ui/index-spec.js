@@ -515,6 +515,26 @@ describe('Unit: UI', function () {
             stderr.emit('data', '#node-sudo-passwd#');
         });
 
+        it('prompts for a password when sudo-rs wraps the prompt', function (done) {
+            const shellStub = sinon.stub(execa, 'shell');
+            const ui = new UI();
+
+            sinon.stub(ui, 'log');
+            const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
+            const stderr = new EventEmitter();
+
+            const stdin = streamTestUtils.getWritableStream((output) => {
+                expect(output).to.equal('password\n');
+                expect(promptStub.calledOnce).to.be.true;
+                done();
+            });
+            shellStub.returns({stdin: stdin, stderr: stderr});
+
+            ui.sudo('ghost -v', {sudoArgs: ['-E -u ghost']});
+            // sudo-rs (default on Ubuntu 26+) wraps the `-p` value rather than replacing the prompt
+            stderr.emit('data', '[sudo: #node-sudo-passwd#] Password: ');
+        });
+
         it('can handle defaults', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};
