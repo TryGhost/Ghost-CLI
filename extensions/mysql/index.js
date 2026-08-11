@@ -10,7 +10,9 @@ const localhostAliases = ['localhost', '127.0.0.1'];
 const {ConfigError, CliError, SystemError} = errors;
 
 function isMySQL8(version) {
-    return version && version.major === 8;
+    // MySQL 8.4 (the default on Ubuntu 26) and above still support the MySQL 8 setup path,
+    // whereas the MySQL 5 path relies on `old_passwords`/`PASSWORD()`, which are long gone
+    return version && version.major >= 8;
 }
 
 function isUnsupportedMySQL(version) {

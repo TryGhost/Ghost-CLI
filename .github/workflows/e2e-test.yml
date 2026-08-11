@@ -15,9 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, ubuntu-26.04]
         password: [root]
         node: [22.x]
     steps:
