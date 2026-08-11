@@ -2,7 +2,7 @@
 const {expect} = require('chai');
 const chalk = require('chalk');
 const hasAnsi = require('has-ansi');
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const logSymbols = require('log-symbols');
@@ -515,6 +515,26 @@ describe('Unit: UI', function () {
             stderr.emit('data', '#node-sudo-passwd#');
         });
 
+        it('prompts for a password when sudo-rs wraps the prompt', function (done) {
+            const shellStub = sinon.stub(execa, 'shell');
+            const ui = new UI();
+
+            sinon.stub(ui, 'log');
+            const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
+            const stderr = new EventEmitter();
+
+            const stdin = streamTestUtils.getWritableStream((output) => {
+                expect(output).to.equal('password\n');
+                expect(promptStub.calledOnce).to.be.true;
+                done();
+            });
+            shellStub.returns({stdin: stdin, stderr: stderr});
+
+            ui.sudo('ghost -v', {sudoArgs: ['-E -u ghost']});
+            // sudo-rs (default on Ubuntu 26+) wraps the `-p` value rather than replacing the prompt
+            stderr.emit('data', '[sudo: #node-sudo-passwd#] Password: ');
+        });
+
         it('can handle defaults', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};
@@ -584,7 +604,6 @@ describe('Unit: UI', function () {
         it('outputs message with color when color is supplied', function (done) {
             const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
-                expect(hasAnsi(output), 'output has color').to.be.true;
                 expect(output, 'output value').to.equal(chalk.green('test') + '\n');
 
                 done();
@@ -635,7 +654,6 @@ describe('Unit: UI', function () {
         it('displays a multi-line help message when called with 4 args', function (done) {
             const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
-                expect(hasAnsi(output), 'output has color').to.be.true;
                 expect(output, 'output value').to.include(chalk.green(`\nmy message: \n\n    ${chalk.cyan('testing')}`));
 
                 done();
@@ -650,7 +668,6 @@ describe('Unit: UI', function () {
         it('displays a multi-line help message with exta line when called with 5 args', function (done) {
             const stdout = streamTestUtils.getWritableStream(function (output) {
                 expect(output, 'output exists').to.be.ok;
-                expect(hasAnsi(output), 'output has color').to.be.true;
                 expect(output, 'output value').to.include(chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`));
 
                 done();

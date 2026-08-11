@@ -1,7 +1,7 @@
 'use strict';
 const {expect} = require('chai');
 const sinon = require('sinon');
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 
 const createRenderer = require('../../../lib/ui/renderer');
 const {Renderer} = createRenderer;

@@ -11,10 +11,11 @@ const sysinfo = require('systeminformation');
 const {Extension, errors} = require('../../lib');
 const {CliError} = errors;
 
-const {errorWrapper} = require('./utils');
+const {errorWrapper, parseResolvers} = require('./utils');
 
 const nginxConfigPath = process.env.NGINX_CONFIG_PATH || '/etc/nginx';
 const nginxProgramName = process.env.NGINX_PROGRAM_NAME || 'nginx';
+const resolvConfPath = process.env.NGINX_RESOLV_CONF || '/etc/resolv.conf';
 
 class NginxExtension extends Extension {
     migrations() {
@@ -25,7 +26,33 @@ class NginxExtension extends Extension {
             title: 'Migrating SSL certs',
             skip: () => !this.system.platform.linux || !fs.existsSync(path.join(os.homedir(), '.acme.sh')),
             task: migrations.migrateSSL.bind(this)
+        }, {
+            before: '1.31.0',
+            title: 'Fixing ActivityPub DNS resolution in nginx config',
+            skip: () => !this.system.platform.linux,
+            task: migrations.migrateActivityPubDns.bind(this)
+        }, {
+            before: '1.31.0',
+            title: 'Updating X-Forwarded-For header in nginx config',
+            skip: () => !this.system.platform.linux,
+            task: migrations.migrateXForwardedFor.bind(this)
         }];
+    }
+
+    /**
+     * Nginx OSS doesn't read /etc/resolv.conf, so the system nameservers have to be
+     * templated into any config that resolves a hostname at request time.
+     *
+     * @returns {string} Space separated list of resolver addresses
+     * @method getResolvers
+     * @public
+     */
+    getResolvers() {
+        try {
+            return parseResolvers(fs.readFileSync(resolvConfPath, 'utf8'));
+        } catch (error) {
+            return parseResolvers('');
+        }
     }
 
     setup() {
@@ -106,7 +133,8 @@ class NginxExtension extends Extension {
             url: hostname,
             webroot: rootPath,
             location: pathname !== '/' ? `^~ ${pathname}` : '/',
-            port: instance.config.get('server.port')
+            port: instance.config.get('server.port'),
+            resolvers: this.getResolvers()
         });
 
         await this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`);
@@ -196,7 +224,8 @@ class NginxExtension extends Extension {
                     privkey: path.join(acmeFolder, `${parsedUrl.hostname}.key`),
                     sslparams: sslParamsFile,
                     location: parsedUrl.pathname !== '/' ? `^~ ${parsedUrl.pathname}` : '/',
-                    port: instance.config.get('server.port')
+                    port: instance.config.get('server.port'),
+                    resolvers: this.getResolvers()
                 });
 
                 await this.template(instance, generatedSslConfig, 'ssl config', confFile, `${nginxConfigPath}/sites-available`);

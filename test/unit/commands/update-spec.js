@@ -790,10 +790,10 @@ describe('Unit: Commands > Update', function () {
     });
 
     describe('downloadAndUpdate task', function () {
-        it('runs yarnInstall task, sets title', async function () {
-            const yarnInstallStub = sinon.stub().resolves();
+        it('runs installDependencies task, sets title', async function () {
+            const installDependenciesStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/yarn-install': yarnInstallStub
+                '../tasks/install-dependencies': installDependenciesStub
             });
             const instance = new UpdateCommand({}, {});
             const env = setupTestFolder();
@@ -804,14 +804,14 @@ describe('Unit: Commands > Update', function () {
             const task = {};
 
             await instance.downloadAndUpdate(ctx, task);
-            expect(yarnInstallStub.calledOnce).to.be.true;
+            expect(installDependenciesStub.calledOnce).to.be.true;
             expect(task.title).to.equal('Downloading and updating Ghost to v1.0.0');
         });
 
         it('skips if install path exists and force is false', async function () {
-            const yarnInstallStub = sinon.stub().resolves();
+            const installDependenciesStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/yarn-install': yarnInstallStub
+                '../tasks/install-dependencies': installDependenciesStub
             });
             const instance = new UpdateCommand({}, {});
             const envCfg = {
@@ -829,14 +829,14 @@ describe('Unit: Commands > Update', function () {
 
             await instance.downloadAndUpdate(ctx, task);
             expect(fs.existsSync(ctx.installPath)).to.be.true;
-            expect(yarnInstallStub.called).to.be.false;
+            expect(installDependenciesStub.called).to.be.false;
             expect(task.skip.calledOnce).to.be.true;
         });
 
         it('removes install path if it exists and force is true', async function () {
-            const yarnInstallStub = sinon.stub().resolves();
+            const installDependenciesStub = sinon.stub().resolves();
             const UpdateCommand = proxyquire(modulePath, {
-                '../tasks/yarn-install': yarnInstallStub
+                '../tasks/install-dependencies': installDependenciesStub
             });
             const instance = new UpdateCommand({}, {});
             const envCfg = {
@@ -853,7 +853,7 @@ describe('Unit: Commands > Update', function () {
 
             await instance.downloadAndUpdate(ctx, {});
             expect(fs.existsSync(ctx.installPath)).to.be.false;
-            expect(yarnInstallStub.calledOnce).to.be.true;
+            expect(installDependenciesStub.calledOnce).to.be.true;
         });
     });
 

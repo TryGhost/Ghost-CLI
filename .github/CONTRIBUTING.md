@@ -8,11 +8,31 @@ Read through the list of [open issues](https://github.com/TryGhost/Ghost-CLI/iss
 
 Once you've implemented the feature or fixed the issue, please make sure:
 
-- it passes tests (`yarn test`)
+- it passes tests (`pnpm test`)
 - all commits are squashed into one or two commits
-- the commit message follows [this format](https://github.com/conventional-changelog/standard-version#commit-message-convention-at-a-glance)
+- the commit message follows the format below
 
 Then submit a PR and one of the core team will review it!
+
+## Commit Messages
+
+Ghost-CLI follows the same commit message convention as [Ghost](https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md#commit-messages):
+
+- **1st line:** Max 80 character summary, written in past tense e.g. "Fixed the thing" not "Fixes the thing"
+- **2nd line:** [Always blank]
+- **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
+- **4th line:** Why this change was made — the code includes the what, the commit message should describe the context of why
+
+If your change is **user-facing**, prepend the summary with an emoji key. Only commits with one of these emojis end up in the release notes:
+
+- 🔒 Security fix
+- ✨ Feature
+- 💄 Cosmetic / output change
+- 🎨 Improvement / change
+- 🐛 Bug fix
+- 💡 Anything else flagged to users or whoever is writing release notes
+
+A ✨ commit also bumps the next release to a minor version rather than a patch.
 
 If you have any questions, feel free to drop by our [forum](https://forum.ghost.org)! We'd be happy to help 😄
 

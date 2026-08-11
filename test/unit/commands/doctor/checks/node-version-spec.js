@@ -1,6 +1,6 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 const proxyquire = require('proxyquire');
 
 const path = require('path');

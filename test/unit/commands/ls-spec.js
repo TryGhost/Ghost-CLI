@@ -1,7 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 
 const LsCommand = require('../../../lib/commands/ls');
 
@@ -60,7 +60,8 @@ describe('Unit: Commands > ls', function () {
 
         expected.forEach((row, i) => {
             row.forEach((prop, j) => {
-                expect(stripAnsi(rows[i][j])).to.equal(prop);
+                const actual = typeof rows[i][j] === 'string' ? stripAnsi(rows[i][j]) : rows[i][j];
+                expect(actual).to.equal(prop);
             });
         });
     });

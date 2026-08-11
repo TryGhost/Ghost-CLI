@@ -59,7 +59,7 @@ describe('Unit: Extensions > Nginx', function () {
         const migrateStub = sinon.stub(migrations, 'migrateSSL');
         const result = inst.migrations();
 
-        expect(result).to.have.length(1);
+        expect(result).to.have.length(3);
         const [task] = result;
 
         expect(task.before).to.equal('1.2.0');
@@ -81,6 +81,59 @@ describe('Unit: Extensions > Nginx', function () {
         exists.returns(true);
         expect(task.skip()).to.be.false;
         expect(exists.calledTwice).to.be.true;
+    });
+
+    it('migrations hook (activitypub dns)', function () {
+        const inst = new Nginx({}, {}, {}, '/some/dir');
+        const migrateStub = sinon.stub(migrations, 'migrateActivityPubDns');
+        const [, task] = inst.migrations();
+
+        expect(task.before).to.equal('1.31.0');
+        expect(task.title).to.equal('Fixing ActivityPub DNS resolution in nginx config');
+
+        task.task();
+        expect(migrateStub.calledOnce).to.be.true;
+
+        inst.system.platform = {linux: false};
+        expect(task.skip()).to.be.true;
+
+        inst.system.platform = {linux: true};
+        expect(task.skip()).to.be.false;
+    });
+
+    it('migrations hook (x-forwarded-for)', function () {
+        const inst = new Nginx({}, {}, {}, '/some/dir');
+        const migrateStub = sinon.stub(migrations, 'migrateXForwardedFor');
+        const [,, task] = inst.migrations();
+
+        expect(task.before).to.equal('1.31.0');
+        expect(task.title).to.equal('Updating X-Forwarded-For header in nginx config');
+
+        task.task();
+        expect(migrateStub.calledOnce).to.be.true;
+
+        inst.system.platform = {linux: false};
+        expect(task.skip()).to.be.true;
+
+        inst.system.platform = {linux: true};
+        expect(task.skip()).to.be.false;
+    });
+
+    describe('getResolvers', function () {
+        it('uses the nameservers from resolv.conf', function () {
+            const readFileSync = sinon.stub().returns('# comment\nnameserver 127.0.0.53\nnameserver 10.0.0.1\n');
+            const ext = proxyNginx({'fs-extra': {readFileSync}});
+
+            expect(ext.getResolvers()).to.equal('127.0.0.53 10.0.0.1');
+            expect(readFileSync.calledOnceWithExactly('/etc/resolv.conf', 'utf8')).to.be.true;
+        });
+
+        it('falls back to public resolvers if resolv.conf is unreadable', function () {
+            const readFileSync = sinon.stub().throws(new Error('ENOENT'));
+            const ext = proxyNginx({'fs-extra': {readFileSync}});
+
+            expect(ext.getResolvers()).to.equal('1.1.1.1 8.8.8.8');
+        });
     });
 
     describe('setup hook', function () {
@@ -217,7 +270,8 @@ describe('Unit: Extensions > Nginx', function () {
                 url: 'ghost.dev',
                 webroot: `${dir}/system/nginx-root`,
                 location: '/',
-                port: 2368
+                port: 2368,
+                resolvers: '1.1.1.1 8.8.8.8'
             };
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
@@ -510,7 +564,8 @@ describe('Unit: Extensions > Nginx', function () {
                 privkey: '/etc/letsencrypt/ghost.dev/ghost.dev.key',
                 sslparams: '/etc/nginx/snippets/ssl-params.conf',
                 location: '/',
-                port: 2368
+                port: 2368,
+                resolvers: '1.1.1.1 8.8.8.8'
             };
             const expectedSudo = /(?=^ln -s)(?=.*sites-available)(?=.*sites-enabled)/;
 

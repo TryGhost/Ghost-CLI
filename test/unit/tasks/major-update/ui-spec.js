@@ -4,7 +4,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const configStub = require('../../../utils/config-stub');
-const stripAnsi = require('strip-ansi');
+const {stripVTControlCharacters: stripAnsi} = require('util');
 
 describe('Unit: Tasks > Major Update > UI', function () {
     let ui; let dataMock; let ctx;

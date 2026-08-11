@@ -277,6 +277,25 @@ describe('Unit: Mysql extension', function () {
             expect(getServerVersion.calledOnce).to.be.true;
             expect(isDeprecated).to.be.false;
         });
+
+        ['8.4.6-0ubuntu0.26.04.1', '9.4.0'].forEach((rawVersion) => {
+            it(`returns that ${rawVersion} is not deprecated`, async function () {
+                const connectStub = sinon.stub().callsArg(0);
+                const endStub = sinon.stub();
+                const createConnectionStub = sinon.stub().returns({connect: connectStub, end: endStub});
+
+                const MysqlExtension = proxyquire(modulePath, {
+                    mysql2: {createConnection: createConnectionStub}
+                });
+                const instance = new MysqlExtension({logVerbose: () => {}}, {}, {}, '/some/dir');
+
+                sinon.stub(instance, '_query').resolves([{version: rawVersion}]);
+
+                const isDeprecated = await instance.isDeprecated({user: 'someuser', password: 'somepass', database: 'testing'});
+
+                expect(isDeprecated).to.be.false;
+            });
+        });
     });
 
     describe('createUser', function () {
@@ -301,6 +320,21 @@ describe('Unit: Mysql extension', function () {
             expect(ctx.mysql).to.exist;
             expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
             expect(ctx.mysql.password).to.match(/^[a-zA-Z0-9!@#$%^&*()+_\-=}{[\]|:;"/?.><,`~]*$/);
+        });
+
+        ['8.4.6-0ubuntu0.26.04.1', '9.4.0'].forEach((rawVersion) => {
+            it(`uses the MySQL 8 path on MySQL ${rawVersion}`, async function () {
+                const logStub = sinon.stub();
+                const instance = new MysqlExtension({logVerbose: logStub}, {}, {}, '/some/dir');
+                const queryStub = sinon.stub(instance, '_query').resolves([{'generated password': 'randompassword'}]);
+                const ctx = {mysql: {version: semver.parse(rawVersion, true)}};
+
+                await instance.createUser(ctx, {host: 'localhost'});
+                expect(queryStub.calledOnce).to.be.true;
+                expect(queryStub.args[0][0]).to.match(/^CREATE USER 'ghost-[0-9]{1,4}'@'localhost' IDENTIFIED BY RANDOM PASSWORD$/);
+                expect(ctx.mysql.username).to.match(/^ghost-[0-9]{1,4}$/);
+                expect(ctx.mysql.password).to.equal('randompassword');
+            });
         });
 
         it('uses % for user host if db host is not localhost or 127.0.0.1', async function () {

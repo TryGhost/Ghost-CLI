@@ -3,11 +3,22 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 
 const streams = require('stream');
+const chalk = require('chalk');
 
 // const modulePath = '../../../lib/ui/pretty-stream';
 const PrettyStream = require('../../../lib/ui/pretty-stream');
 
 describe('Unit: UI > PrettyStream', function () {
+    const originalChalkLevel = chalk.level;
+
+    before(() => {
+        chalk.level = 1;
+    });
+
+    after(() => {
+        chalk.level = originalChalkLevel;
+    });
+
     afterEach(() => {
         sinon.restore();
     });

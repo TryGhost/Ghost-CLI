@@ -1,0 +1,160 @@
+name: Publish to npm
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: How this run should exercise npm publishing
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - publish
+        default: dry-run
+      npm_tag:
+        description: Dist-tag to use for manual runs
+        required: true
+        type: string
+        default: next
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          # Full history + tags: release notes are generated from the commits
+          # between the previous tag and this one
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+        env:
+          FORCE_COLOR: 0
+      - name: Resolve publish mode
+        id: publish_mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> "$GITHUB_OUTPUT"
+            echo "tag=${{ inputs.npm_tag }}" >> "$GITHUB_OUTPUT"
+            echo "manual=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=publish" >> "$GITHUB_OUTPUT"
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "manual=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Resolve release commit
+        id: release_commit
+        env:
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "is_release_commit=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git rev-parse HEAD^ >/dev/null 2>&1; then
+            echo "Unable to inspect the previous commit for release detection"
+            exit 1
+          fi
+
+          if ! git diff --unified=0 HEAD^ HEAD -- package.json | grep -qE '^[+-][[:space:]]+"version":'; then
+            echo "is_release_commit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! "$HEAD_COMMIT_MESSAGE" =~ ^chore\(release\):[[:space:]]+(.+)$ ]]; then
+            echo "package.json version changed, but HEAD is not a release commit"
+            exit 1
+          fi
+
+          echo "is_release_commit=true" >> "$GITHUB_OUTPUT"
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+      - name: Check if version is already published
+        id: check
+        run: |
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ steps.publish_mode.outputs.manual }}" != "true" ] && [ "${{ steps.release_commit.outputs.is_release_commit }}" != "true" ]; then
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RELEASE_VERSION="${{ steps.release_commit.outputs.version }}"
+          if [ -n "$RELEASE_VERSION" ] && [ "$LOCAL_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Release commit version $RELEASE_VERSION does not match package.json version $LOCAL_VERSION"
+            exit 1
+          fi
+
+          NPM_VERSION=$(npm view ghost-cli version 2>/dev/null || echo "0.0.0")
+          if [ "${{ steps.publish_mode.outputs.manual }}" = "true" ] || [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Upgrade npm for trusted publishing support
+        run: npm install -g npm@latest
+      - name: Print runtime versions
+        run: |
+          node --version
+          npm --version
+      - name: Install dependencies
+        if: steps.check.outputs.should_publish == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Preview publish tarball
+        if: steps.check.outputs.should_publish == 'true'
+        run: npm pack --dry-run
+      - name: Publish to npm
+        if: steps.check.outputs.should_publish == 'true'
+        run: |
+          PUBLISH_ARGS=(--access public --tag "${{ steps.publish_mode.outputs.tag }}" --provenance)
+          if [ "${{ steps.publish_mode.outputs.mode }}" = "dry-run" ]; then
+            PUBLISH_ARGS=(--dry-run "${PUBLISH_ARGS[@]}")
+          fi
+          npm publish "${PUBLISH_ARGS[@]}"
+      - name: Create git tag
+        if: github.event_name == 'push' && steps.release_commit.outputs.is_release_commit == 'true' && steps.check.outputs.should_publish == 'true'
+        run: |
+          TAG="v${{ steps.check.outputs.version }}"
+          if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
+            echo "Tag $TAG already exists on remote, skipping"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "$TAG"
+            git push origin "$TAG"
+          fi
+      - name: Create GitHub release
+        if: github.event_name == 'push' && steps.release_commit.outputs.is_release_commit == 'true' && steps.check.outputs.should_publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ steps.check.outputs.version }}"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping"
+            exit 0
+          fi
+
+          # The tag immediately before this one
+          PREV_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | grep -v -- '-' | grep -v "^${TAG}$" | head -n 1)
+          if [ -n "$PREV_TAG" ]; then
+            echo "Previous tag: $PREV_TAG"
+            node scripts/release-notes.js "$PREV_TAG" "$TAG" > /tmp/release-notes.md
+          else
+            echo "::warning::No previous tag found — using the fallback release notes"
+            echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
+          fi
+
+          cat /tmp/release-notes.md
+          gh release create "$TAG" --title "$TAG" --notes-file /tmp/release-notes.md
