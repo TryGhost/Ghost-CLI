@@ -99,6 +99,36 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
             const result = pythonSetuptools.enabled(ctx);
             expect(result).to.be.false;
         });
+
+        it('returns false for Ghost 6.50.0+ (better-sqlite3)', function () {
+            const ctx = {local: true, instance: {}, version: '6.50.0'};
+            const result = pythonSetuptools.enabled(ctx);
+            expect(result).to.be.false;
+        });
+
+        it('returns true for Ghost < 6.50.0', function () {
+            const ctx = {local: true, instance: {}, version: '6.49.0'};
+            const result = pythonSetuptools.enabled(ctx);
+            expect(result).to.be.true;
+        });
+
+        it('returns false when the installed instance is on 6.50.0+', function () {
+            const ctx = {
+                instance: {
+                    isSetup: true,
+                    version: '6.51.0',
+                    config: {
+                        values: {
+                            database: {
+                                client: 'sqlite3'
+                            }
+                        }
+                    }
+                }
+            };
+            const result = pythonSetuptools.enabled(ctx);
+            expect(result).to.be.false;
+        });
     });
 
     describe('task', function () {
