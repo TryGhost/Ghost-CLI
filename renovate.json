@@ -5,7 +5,6 @@
   ],
   "ignoreDeps": [
     "cli-table3",
-    "standard-version",
     "validator"
   ],
   "minimumReleaseAge": "3 days",

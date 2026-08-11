@@ -27,10 +27,11 @@
   },
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "lint": "eslint bin/* lib test extensions",
+    "lint": "eslint bin/* lib test extensions scripts",
     "test": "nyc --reporter=html --reporter=text mocha -t 5000 --recursive test/unit extensions/**/test",
     "posttest": "pnpm lint",
-    "ship": "f() { STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then standard-version --skip.tag $@ && git push;  fi; }; f"
+    "release": "node scripts/release.js",
+    "release-notes": "node scripts/release-notes.js"
   },
   "nyc": {
     "exclude": [
@@ -102,7 +103,6 @@
     "nyc": "18.0.0",
     "proxyquire": "2.1.3",
     "sinon": "22.1.0",
-    "standard-version": "4.3.0",
     "tmp": "0.2.7"
   },
   "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee"
