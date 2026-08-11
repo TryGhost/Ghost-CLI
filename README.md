@@ -96,6 +96,24 @@ pnpm release-notes v1.30.0 v1.30.1
 
 The Release workflow pushes with the `GST_TOKEN` PAT. A push made with the default `GITHUB_TOKEN` would not trigger the Publish workflow, so that token needs write access to this repo.
 
+#### Publishing a prerelease
+
+Prereleases are manual — the Release workflow only cuts stable versions.
+
+1. Branch off `main` and set the prerelease version in `package.json` by hand, e.g. `1.31.0-beta.0`
+2. Push the branch
+3. Run the [Publish workflow](https://github.com/TryGhost/Ghost-CLI/actions/workflows/publish.yml) via "Run workflow", selecting your branch as the ref, with `mode: publish` and `npm_tag: next`
+
+Install it with:
+
+```sh
+npm install -g ghost-cli@next
+```
+
+Keep the prerelease on a branch — a prerelease version in a `chore(release):` commit on `main` would be published under `latest`. The manual dispatch also skips git tagging and the GitHub Release, so a prerelease leaves no tag behind.
+
+Use `mode: dry-run` to preview the tarball without publishing.
+
 # Copyright & License
 
 Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
