@@ -384,7 +384,8 @@ describe('Unit: Command', function () {
             expect(uiStub.calledWithExactly({
                 verbose: true,
                 allowPrompt: true,
-                auto: false
+                auto: false,
+                json: undefined
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
@@ -395,6 +396,43 @@ describe('Unit: Command', function () {
             expect(deprecationChecks.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
             expect(runStub.calledWithExactly({verbose: true, prompt: true, development: true, auto: false})).to.be.true;
+        });
+
+        it('passes the json flag through to the ui', async function () {
+            const run = sinon.stub().callsFake(fn => fn());
+            const log = sinon.stub();
+            const uiStub = sinon.stub().returns({ui: true, run, log});
+            const setEnvironmentStub = sinon.stub();
+            const loadOsInfo = sinon.stub().resolves();
+            const systemStub = sinon.stub().returns({setEnvironment: setEnvironmentStub, loadOsInfo});
+            const deprecationChecks = sinon.stub().resolves();
+
+            const Command = proxyquire(modulePath, {
+                './ui': uiStub,
+                './system': systemStub,
+                './utils/deprecation-checks': deprecationChecks
+            });
+
+            class TestCommand extends Command {}
+            TestCommand.global = true;
+
+            sinon.stub(TestCommand.prototype, 'run');
+
+            await TestCommand._run('test', {
+                verbose: false,
+                prompt: true,
+                development: false,
+                auto: false,
+                json: true
+            }, []);
+
+            expect(uiStub.calledOnce).to.be.true;
+            expect(uiStub.calledWithExactly({
+                verbose: false,
+                allowPrompt: true,
+                auto: false,
+                json: true
+            })).to.be.true;
         });
 
         it('binds cleanup handler if cleanup method is defined', async function () {
@@ -432,7 +470,8 @@ describe('Unit: Command', function () {
             expect(uiStub.calledWithExactly({
                 verbose: false,
                 allowPrompt: false,
-                auto: true
+                auto: true,
+                json: undefined
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
@@ -483,7 +522,8 @@ describe('Unit: Command', function () {
             expect(uiStub.calledWithExactly({
                 verbose: false,
                 allowPrompt: false,
-                auto: false
+                auto: false,
+                json: undefined
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
@@ -535,7 +575,8 @@ describe('Unit: Command', function () {
             expect(uiStub.calledWithExactly({
                 verbose: false,
                 allowPrompt: false,
-                auto: false
+                auto: false,
+                json: undefined
             })).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;

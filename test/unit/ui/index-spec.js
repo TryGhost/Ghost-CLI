@@ -122,6 +122,17 @@ describe('Unit: UI', function () {
             }).catch(done);
         });
 
+        it('with json enabled, skips the spinner', function () {
+            const ui = new UI({json: true});
+            const testFunc = sinon.stub().resolves('foo');
+
+            return ui.run(testFunc, 'do a thing').then((result) => {
+                expect(result).to.equal('foo');
+                expect(testFunc.calledOnce).to.be.true;
+                expect(oraStub.called).to.be.false;
+            });
+        });
+
         it('starts spinner with options, resolves single value', function () {
             const ui = new UI({stdout: {stdout: true}});
 
@@ -629,6 +640,21 @@ describe('Unit: UI', function () {
             expect(stdout.write.firstCall.args[0]).to.equal('Good\n');
         });
 
+        it('outputs everything to stderr in json mode', function () {
+            const stdout = {write: sinon.stub()};
+            const stderr = {write: sinon.stub()};
+
+            const ui = new UI({stdout: stdout, stderr: stderr, json: true});
+
+            ui.log('Error', null, true);
+            ui.log('Good', null, false);
+
+            expect(stdout.write.called).to.be.false;
+            expect(stderr.write.calledTwice).to.be.true;
+            expect(stderr.write.args[0][0]).to.equal('Error\n');
+            expect(stderr.write.args[1][0]).to.equal('Good\n');
+        });
+
         it('resets spinner', function () {
             const stdout = {write: sinon.stub()};
             const ui = new UI({stdout: stdout});
@@ -677,6 +703,22 @@ describe('Unit: UI', function () {
             const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('my message', 'testing', 'white', 'cmd', true);
+        });
+    });
+
+    describe('output', function () {
+        const UI = require(modulePath);
+
+        it('writes serialized json to stdout', function () {
+            const stdout = {write: sinon.stub()};
+            const stderr = {write: sinon.stub()};
+
+            const ui = new UI({stdout: stdout, stderr: stderr, json: true});
+            ui.output({a: 1});
+
+            expect(stderr.write.called).to.be.false;
+            expect(stdout.write.calledOnce).to.be.true;
+            expect(stdout.write.firstCall.args[0]).to.equal('{\n  "a": 1\n}\n');
         });
     });
 

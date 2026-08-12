@@ -36,4 +36,42 @@ describe('Unit: Commands > Version', function () {
         expect(stripAnsi(logStub.args[1][0])).to.match(/Ghost version: 1\.5\.0 \(at ~\/ghost\)/);
         expect(getInstanceStub.calledOnce).to.be.true;
     });
+
+    it('outputs json when the json flag is passed and not in a ghost folder', function () {
+        const VersionCommand = require(modulePath);
+        const logStub = sinon.stub();
+        const outputStub = sinon.stub();
+        const getInstanceStub = sinon.stub().returns({version: null});
+        const instance = new VersionCommand(
+            {log: logStub, output: outputStub},
+            {getInstance: getInstanceStub, cliVersion: '1.0.0'}
+        );
+
+        instance.run({json: true});
+        expect(logStub.called).to.be.false;
+        expect(outputStub.calledOnceWithExactly({
+            cliVersion: '1.0.0',
+            ghostVersion: null,
+            dir: null
+        })).to.be.true;
+    });
+
+    it('outputs json when the json flag is passed in a ghost folder', function () {
+        const VersionCommand = require(modulePath);
+        const logStub = sinon.stub();
+        const outputStub = sinon.stub();
+        const getInstanceStub = sinon.stub().returns({version: '1.5.0', dir: '/var/www/ghost'});
+        const instance = new VersionCommand(
+            {log: logStub, output: outputStub},
+            {getInstance: getInstanceStub, cliVersion: '1.0.0'}
+        );
+
+        instance.run({json: true});
+        expect(logStub.called).to.be.false;
+        expect(outputStub.calledOnceWithExactly({
+            cliVersion: '1.0.0',
+            ghostVersion: '1.5.0',
+            dir: '/var/www/ghost'
+        })).to.be.true;
+    });
 });
