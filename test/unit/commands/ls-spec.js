@@ -66,6 +66,68 @@ describe('Unit: Commands > ls', function () {
         });
     });
 
+    it('outputs json when the json flag is passed', async function () {
+        const summaryStub = sinon.stub();
+        summaryStub.onFirstCall().resolves({
+            name: 'testa',
+            dir: '/var/www/testa',
+            version: '1.5.0',
+            running: false
+        });
+        summaryStub.onSecondCall().resolves({
+            name: 'testb',
+            dir: '/var/www/testb',
+            version: '1.2.0',
+            running: true,
+            mode: 'production',
+            url: 'https://testa.com',
+            port: 2369,
+            process: 'systemd'
+        });
+        const getAllInstancesStub = sinon.stub().resolves([
+            {summary: summaryStub},
+            {summary: summaryStub}
+        ]);
+        const tableStub = sinon.stub();
+        const outputStub = sinon.stub();
+
+        const instance = new LsCommand({table: tableStub, output: outputStub}, {getAllInstances: getAllInstancesStub});
+
+        await instance.run({json: true});
+        expect(tableStub.called).to.be.false;
+        expect(outputStub.calledOnce).to.be.true;
+        expect(outputStub.args[0][0]).to.deep.equal([{
+            name: 'testa',
+            dir: '/var/www/testa',
+            version: '1.5.0',
+            running: false,
+            mode: null,
+            url: null,
+            port: null,
+            process: null
+        }, {
+            name: 'testb',
+            dir: '/var/www/testb',
+            version: '1.2.0',
+            running: true,
+            mode: 'production',
+            url: 'https://testa.com',
+            port: 2369,
+            process: 'systemd'
+        }]);
+    });
+
+    it('outputs an empty json array when no instances exist', async function () {
+        const getAllInstancesStub = sinon.stub().resolves([]);
+        const logStub = sinon.stub();
+        const outputStub = sinon.stub();
+
+        const instance = new LsCommand({log: logStub, output: outputStub}, {getAllInstances: getAllInstancesStub});
+        await instance.run({json: true});
+        expect(logStub.called).to.be.false;
+        expect(outputStub.calledOnceWithExactly([])).to.be.true;
+    });
+
     it('Doesn\'t create a table when no instances exist', async function () {
         const getAllInstancesStub = sinon.stub().resolves([]);
         const tableStub = sinon.stub();

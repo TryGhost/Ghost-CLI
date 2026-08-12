@@ -88,4 +88,50 @@ describe('Unit: Commands > check-update', function () {
         expect(log.calledThrice).to.be.true;
         expect(log.thirdCall.firstArg).to.match(/^Major/);
     });
+
+    it('outputs json when the json flag is passed and an update is available', async function () {
+        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v3: '3.42.0', v4: '4.1.0'}});
+        const CheckUpdateCommand = proxyquire(modulePath, {
+            '../utils/version': {loadVersions}
+        });
+
+        const log = sinon.stub();
+        const output = sinon.stub();
+        const getInstance = sinon.stub().returns({version: '3.1.0'});
+
+        const cmd = new CheckUpdateCommand({log, output}, {getInstance});
+        await cmd.run({json: true});
+
+        expect(log.called).to.be.false;
+        expect(output.calledOnceWithExactly({
+            currentVersion: '3.1.0',
+            latestVersion: '4.1.0',
+            latestMinorVersion: '3.42.0',
+            updateAvailable: true,
+            updateType: 'major'
+        })).to.be.true;
+    });
+
+    it('outputs json when the json flag is passed and no update is available', async function () {
+        const loadVersions = sinon.stub().resolves({latest: '2.0.0', latestMajor: {v1: '1.0.0', v2: '2.0.0'}});
+        const CheckUpdateCommand = proxyquire(modulePath, {
+            '../utils/version': {loadVersions}
+        });
+
+        const log = sinon.stub();
+        const output = sinon.stub();
+        const getInstance = sinon.stub().returns({version: '2.0.0'});
+
+        const cmd = new CheckUpdateCommand({log, output}, {getInstance});
+        await cmd.run({json: true});
+
+        expect(log.called).to.be.false;
+        expect(output.calledOnceWithExactly({
+            currentVersion: '2.0.0',
+            latestVersion: '2.0.0',
+            latestMinorVersion: '2.0.0',
+            updateAvailable: false,
+            updateType: null
+        })).to.be.true;
+    });
 });

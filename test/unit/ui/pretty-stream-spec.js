@@ -4,19 +4,25 @@ const sinon = require('sinon');
 
 const streams = require('stream');
 const chalk = require('chalk');
+// prettyjson colors object keys via `colors`, which does its own
+// TTY detection independently of chalk
+const colors = require('colors/safe');
 
 // const modulePath = '../../../lib/ui/pretty-stream';
 const PrettyStream = require('../../../lib/ui/pretty-stream');
 
 describe('Unit: UI > PrettyStream', function () {
     const originalChalkLevel = chalk.level;
+    const originalColorsEnabled = colors.enabled;
 
     before(() => {
         chalk.level = 1;
+        colors.enabled = true;
     });
 
     after(() => {
         chalk.level = originalChalkLevel;
+        colors.enabled = originalColorsEnabled;
     });
 
     afterEach(() => {
