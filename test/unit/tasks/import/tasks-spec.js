@@ -47,6 +47,8 @@ describe('Unit: Tasks > Import > Tasks', function () {
             const usernamePrompt = prompt.args[0][0][0];
             const passwordPrompt = prompt.args[0][0][1];
 
+            expect(usernamePrompt.type).to.equal('input');
+            expect(passwordPrompt.type).to.equal('password');
             expect(usernamePrompt.validate('test@example.com')).to.be.true;
             expect(usernamePrompt.validate('not an email')).to.include('valid email');
             expect(passwordPrompt.validate('1234567890')).to.be.true;
@@ -215,6 +217,7 @@ describe('Unit: Tasks > Import > Tasks', function () {
             expect(isSetup.calledOnceWithExactly(TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368')).to.be.true;
             expect(prompt.calledOnce).to.be.true;
             expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['token']);
+            expect(prompt.args[0][0][0].type).to.equal('input');
             expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
                 token: 'abcd'
             }, 'test-export.json'));
