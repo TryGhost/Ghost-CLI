@@ -68,9 +68,6 @@ importers:
       log-symbols:
         specifier: 7.0.1
         version: 7.0.1
-      moment:
-        specifier: 2.30.1
-        version: 2.30.1
       mysql2:
         specifier: 3.23.3
         version: 3.23.3(@types/node@26.0.0)
@@ -1873,9 +1870,6 @@ packages:
 
   module-not-found-error@1.0.1:
     resolution: {integrity: sha512-pEk4ECWQXV6z2zjhRZUongnLJNUeGQJ3w6OQ5ctGwD+i5o93qjRQUk2Rt6VdNeu3sEP0AB4LcfvdebpxBRVr4g==}
-
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -4480,8 +4474,6 @@ snapshots:
       yargs-unparser: 2.0.0
 
   module-not-found-error@1.0.1: {}
-
-  moment@2.30.1: {}
 
   ms@2.1.3: {}
 
