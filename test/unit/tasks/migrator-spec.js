@@ -16,7 +16,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -36,7 +36,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(true);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -56,7 +56,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -74,7 +74,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -92,7 +92,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -114,7 +114,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -140,7 +140,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -164,7 +164,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -186,7 +186,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -208,7 +208,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(true);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -228,7 +228,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -246,7 +246,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -264,7 +264,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -282,7 +282,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -304,7 +304,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 
@@ -321,7 +321,7 @@ describe('Unit: Tasks > Migrator', function () {
             const useGhostUserStub = sinon.stub().returns(false);
 
             const migrator = proxyquire(migratePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/use-ghost-user': {shouldUseGhostUser: useGhostUserStub}
             });
 

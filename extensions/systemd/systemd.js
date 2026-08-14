@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const execa = require('execa');
+const {execaSync} = require('execa');
 const getUid = require('./get-uid');
 const chalk = require('chalk').default;
 const {ProcessManager, errors} = require('../../lib');
@@ -161,7 +161,7 @@ class SystemdProcessManager extends ProcessManager {
 
     static willRun() {
         try {
-            execa.shellSync('which systemctl', {stdio: 'ignore'});
+            execaSync('which', ['systemctl'], {stdio: 'ignore'});
             return true;
         } catch {
             return false;

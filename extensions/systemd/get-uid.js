@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const execa = require('execa');
+const {execaSync} = require('execa');
 
 /**
  * Helper function used by both the extension setup method
@@ -12,7 +12,7 @@ const execa = require('execa');
  */
 module.exports = function getUid(dir) {
     try {
-        const uid = execa.shellSync('id -u ghost').stdout;
+        const uid = execaSync('id', ['-u', 'ghost']).stdout;
         const stat = fs.lstatSync(path.join(dir, 'content'));
 
         if (stat.uid.toString() !== uid) {

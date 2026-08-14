@@ -8,7 +8,7 @@ const {ProcessError, SystemError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/pnpm';
 
-const setup = proxies => proxyquire(modulePath, proxies);
+const setup = ({execa, ...proxies}) => proxyquire(modulePath, execa ? {...proxies, execa: {execa}} : proxies);
 
 describe('Unit: pnpm', function () {
     it('spawns pnpm process with no arguments correctly', function () {

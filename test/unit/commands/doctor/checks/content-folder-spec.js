@@ -2,10 +2,20 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
-const execa = require('execa');
+const proxyquire = require('proxyquire');
 const errors = require('../../../../../lib/errors');
 
-const contentFolderPermissions = require('../../../../../lib/commands/doctor/checks/content-folder');
+const modulePath = '../../../../../lib/commands/doctor/checks/content-folder';
+
+function setup(execaStub) {
+    const checkPermissions = proxyquire('../../../../../lib/commands/doctor/checks/check-permissions', {
+        execa: {execa: execaStub}
+    });
+
+    return proxyquire(modulePath, {'./check-permissions': checkPermissions});
+}
+
+const contentFolderPermissions = setup(sinon.stub());
 
 describe('Unit: Doctor Checks > Checking content folder ownership', function () {
     const shouldUseGhostUserStub = sinon.stub();
@@ -25,7 +35,8 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
 
     it('skips when content folder is not owned by ghost', function () {
         shouldUseGhostUserStub.returns(false);
-        const execaStub = sinon.stub(execa, 'shell').resolves();
+        const execaStub = sinon.stub().resolves();
+        const contentFolderPermissions = setup(execaStub);
 
         expect(contentFolderPermissions).to.exist;
         expect(contentFolderPermissions.enabled(), 'skips if no Ghost user should be used').to.be.false;
@@ -33,7 +44,8 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if folders have incorrect permissions', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: './content/images\n./content/apps\n./content/themes'});
+        const execaStub = sinon.stub().resolves({stdout: './content/images\n./content/apps\n./content/themes'});
+        const contentFolderPermissions = setup(execaStub);
 
         shouldUseGhostUserStub.returns(true);
 
@@ -49,7 +61,8 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if files have incorrect permissions', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: './content/images/test.jpg'});
+        const execaStub = sinon.stub().resolves({stdout: './content/images/test.jpg'});
+        const contentFolderPermissions = setup(execaStub);
 
         shouldUseGhostUserStub.returns(true);
 
@@ -65,7 +78,8 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('passes if all folders have the correct permissions', function () {
-        const execaStub = sinon.stub(execa, 'shell').resolves({stdout: ''});
+        const execaStub = sinon.stub().resolves({stdout: ''});
+        const contentFolderPermissions = setup(execaStub);
 
         shouldUseGhostUserStub.returns(true);
 
@@ -75,7 +89,8 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
     });
 
     it('rejects with error if execa command fails', function () {
-        const execaStub = sinon.stub(execa, 'shell').rejects(new Error('oops, cmd could not be executed'));
+        const execaStub = sinon.stub().rejects(new Error('oops, cmd could not be executed'));
+        const contentFolderPermissions = setup(execaStub);
 
         shouldUseGhostUserStub.returns(true);
 

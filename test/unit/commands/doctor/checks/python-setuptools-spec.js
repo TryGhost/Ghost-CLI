@@ -145,7 +145,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
             beforeEach(function () {
                 const execaStub = sinon.stub().rejects(new Error('Command not found'));
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                    execa: execaStub
+                    execa: {execa: execaStub}
                 });
             });
 
@@ -167,7 +167,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                 execaStub.withArgs('python3', ['-c', 'import setuptools']).resolves();
                 
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                    execa: execaStub
+                    execa: {execa: execaStub}
                 });
 
                 await pythonSetuptools.task(ctx, task);
@@ -180,7 +180,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                 execaStub.withArgs('python3', ['--version']).resolves({stdout: 'Python 3.11.0'});
                 
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                    execa: execaStub
+                    execa: {execa: execaStub}
                 });
 
                 await pythonSetuptools.task(ctx, task);
@@ -195,7 +195,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                     execaStub.withArgs('python3', ['-c', 'import setuptools']).rejects(new Error('Module not found'));
                     
                     pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                        execa: execaStub
+                        execa: {execa: execaStub}
                     });
                 });
 
@@ -217,7 +217,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                     execaStub.withArgs('python3', ['-c', 'import setuptools']).resolves();
                     
                     pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                        execa: execaStub
+                        execa: {execa: execaStub}
                     });
                 });
 
@@ -233,7 +233,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
             it('handles timeout for python3 --version', async function () {
                 const execaStub = sinon.stub().rejects(new Error('Timeout'));
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                    execa: execaStub
+                    execa: {execa: execaStub}
                 });
 
                 try {
@@ -251,7 +251,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                 execaStub.withArgs('python3', ['-c', 'import setuptools'], {timeout: 5000}).rejects(new Error('Timeout'));
                 
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
-                    execa: execaStub
+                    execa: {execa: execaStub}
                 });
 
                 try {

@@ -50,7 +50,7 @@
     "chalk": "6.0.0",
     "cli-table3": "0.5.0",
     "debug": "4.4.3",
-    "execa": "1.0.0",
+    "execa": "10.0.1",
     "find-plugins": "1.1.7",
     "fkill": "10.0.3",
     "form-data": "4.0.6",

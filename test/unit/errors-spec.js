@@ -95,7 +95,7 @@ describe('Unit: Errors', function () {
     describe('ProcessError', function () {
         it('outputs just command name by default', function () {
             const processError = new errors.ProcessError({
-                cmd: 'ls -al'
+                command: 'ls -al'
             });
 
             const errorOutput = stripAnsi(processError.toString());
@@ -105,8 +105,8 @@ describe('Unit: Errors', function () {
 
         it('outputs special message if process was killed', function () {
             const processError = new errors.ProcessError({
-                cmd: 'npm install',
-                killed: true
+                command: 'npm install',
+                isTerminated: true
             });
 
             const errorOutput = stripAnsi(processError.toString());
@@ -117,8 +117,8 @@ describe('Unit: Errors', function () {
 
         it('outputs exit code if it exists', function () {
             const processError = new errors.ProcessError({
-                cmd: 'npm install',
-                code: 42
+                command: 'npm install',
+                exitCode: 42
             });
 
             const errorOutput = stripAnsi(processError.toString());
@@ -129,7 +129,7 @@ describe('Unit: Errors', function () {
 
         it('outputs stdout and stderr in verbose mode', function () {
             const processError = new errors.ProcessError({
-                cmd: 'npm install',
+                command: 'npm install',
                 stdout: 'some stdout',
                 stderr: 'some stderr'
             });
