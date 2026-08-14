@@ -4,8 +4,7 @@
     ":semanticCommitTypeAll(chore)"
   ],
   "ignoreDeps": [
-    "cli-table3",
-    "validator"
+    "cli-table3"
   ],
   "minimumReleaseAge": "3 days",
   "packageRules": [

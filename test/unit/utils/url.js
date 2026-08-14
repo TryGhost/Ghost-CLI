@@ -22,9 +22,20 @@ describe('Unit: Utils > URL', function () {
             expect(url.validate('https://myghost.blog/ghost/')).to.match(/path that ends with `ghost`/);
         });
 
+        it('non-http protocols fail', function () {
+            expect(url.validate('ftp://myghost.blog')).to.match(/Invalid domain/);
+            expect(url.validate('javascript:alert(1)')).to.match(/Invalid domain/);
+        });
+
+        it('TLD-less hosts fail', function () {
+            expect(url.validate('http://notaurl')).to.match(/Invalid domain/);
+        });
+
         it('everything else works', function () {
             expect(url.validate('http://localhost:2368/')).to.be.true;
             expect(url.validate('http://localhost:2368/testing')).to.be.true;
+            expect(url.validate('http://127.0.0.1:2368')).to.be.true;
+            expect(url.validate('http://[::1]:2368')).to.be.true;
             expect(url.validate('https://myghost.blog/')).to.be.true;
             expect(url.validate('https://ghost.org/blog')).to.be.true;
             expect(url.validate('https://blog.ghost.org/')).to.be.true;
