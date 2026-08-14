@@ -1,4 +1,4 @@
-const isIP = require('validator/lib/isIP');
+const {isIP} = require('net');
 
 const {errors} = require('../../lib');
 const {ProcessError, CliError} = errors;
@@ -35,7 +35,7 @@ function parseResolvers(contents) {
         .map(([, address]) => address)
         .filter(address => isIP(address))
         // nginx expects IPv6 addresses to be wrapped in square brackets
-        .map(address => (isIP(address, 6) ? `[${address}]` : address));
+        .map(address => (isIP(address) === 6 ? `[${address}]` : address));
 
     return (nameservers.length ? nameservers : fallbackResolvers).join(' ');
 }
