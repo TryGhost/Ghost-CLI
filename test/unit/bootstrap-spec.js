@@ -5,7 +5,10 @@ const {setupTestFolder, cleanupTestFolders} = require('../utils/test-folder');
 const path = require('path');
 const proxyquire = require('proxyquire');
 
-const yargs = require('yargs');
+const yargs = require('yargs')();
+// yargs instance methods live on the prototype, not as own properties
+const yargsMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(yargs))
+    .filter(key => key !== 'constructor' && typeof yargs[key] === 'function');
 
 const modulePath = '../../lib/bootstrap';
 
@@ -226,10 +229,8 @@ describe('Unit: Bootstrap', function () {
 
             yargsStubs = {};
 
-            Object.keys(yargs).forEach((key) => {
-                if (typeof yargs[key] === 'function') {
-                    yargsStubs[key] = sinon.stub(yargs, key).returns(yargs);
-                }
+            yargsMethods.forEach((key) => {
+                yargsStubs[key] = sinon.stub(yargs, key).returns(yargs);
             });
         });
 
