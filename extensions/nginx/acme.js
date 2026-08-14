@@ -1,5 +1,6 @@
 'use strict';
-const fs = require('fs-extra');
+const fs = require('node:fs');
+const fsp = require('node:fs/promises');
 const os = require('os');
 const ky = require('ky').default;
 const tar = require('tar');
@@ -22,7 +23,6 @@ async function install(ui) {
         return;
     }
 
-    const acmeTmpDir = path.join(os.tmpdir(), 'acme.sh');
     const acmeApiUrl = 'https://api.github.com/repos/Neilpang/acme.sh/releases/latest';
 
     ui.logVerbose('ssl: creating /etc/letsencrypt directory', 'green');
@@ -31,40 +31,47 @@ async function install(ui) {
     // sure it has global read permissions first
     await ui.sudo('mkdir -p /etc/letsencrypt');
     ui.logVerbose('ssl: downloading acme.sh to temporary directory', 'green');
-    await fs.emptyDir(acmeTmpDir);
 
-    let downloadURL;
+    // We run acme.sh from this directory as root, so it must not be a predictable path -
+    // mkdtemp gives us a unique 0700 directory another local user can't pre-create
+    const acmeTmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'acme.sh-'));
 
     try {
-        downloadURL = (await ky(acmeApiUrl).json()).tarball_url;
-    } catch (error) {
-        throw new CliError({
-            message: 'Unable to fetch download URL from GitHub',
-            err: error
-        });
+        let downloadURL;
+
+        try {
+            downloadURL = (await ky(acmeApiUrl).json()).tarball_url;
+        } catch (error) {
+            throw new CliError({
+                message: 'Unable to fetch download URL from GitHub',
+                err: error
+            });
+        }
+
+        // fetch has no default timeout, so a stalled connection would hang the install forever
+        const signal = AbortSignal.timeout(30 * 1000);
+        const response = await fetch(downloadURL, {signal});
+
+        if (!response.ok) {
+            throw new CliError(`Unable to download acme.sh (${response.status})`);
+        }
+
+        // GitHub wraps the archive in a single `{user}-{repo}-{commit}` folder, strip it
+        // so the acme.sh code ends up directly in acmeTmpDir. `strict` makes tar reject on
+        // entry errors it would otherwise just warn about, rather than install a partial copy
+        await pipeline(
+            Readable.fromWeb(response.body),
+            tar.x({cwd: acmeTmpDir, strip: 1, strict: true}),
+            {signal}
+        );
+
+        ui.logVerbose('ssl: installing acme.sh components', 'green');
+
+        // Installs acme.sh into /etc/letsencrypt
+        await ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
+    } finally {
+        await fsp.rm(acmeTmpDir, {recursive: true, force: true});
     }
-
-    // fetch has no default timeout, so a stalled connection would hang the install forever
-    const signal = AbortSignal.timeout(30 * 1000);
-    const response = await fetch(downloadURL, {signal});
-
-    if (!response.ok) {
-        throw new CliError(`Unable to download acme.sh (${response.status})`);
-    }
-
-    // GitHub wraps the archive in a single `{user}-{repo}-{commit}` folder, strip it
-    // so the acme.sh code ends up directly in acmeTmpDir. `strict` makes tar reject on
-    // entry errors it would otherwise just warn about, rather than install a partial copy
-    await pipeline(
-        Readable.fromWeb(response.body),
-        tar.x({cwd: acmeTmpDir, strip: 1, strict: true}),
-        {signal}
-    );
-
-    ui.logVerbose('ssl: installing acme.sh components', 'green');
-
-    // Installs acme.sh into /etc/letsencrypt
-    await ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
 }
 
 async function generateCert(ui, domain, webroot, email, staging) {

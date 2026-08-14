@@ -6,7 +6,7 @@ const configStub = require('../../../test/utils/config-stub');
 
 const uiStub = () => ({log: sinon.stub()});
 
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 const modulePath = '../index';
 const errors = require('../../../lib/errors');
@@ -90,7 +90,7 @@ describe('Unit: Systemd > Extension', function () {
 
             const SystemdExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
-                'fs-extra': {readFileSync: readFileSyncStub}
+                'node:fs': {readFileSync: readFileSyncStub}
             });
 
             const logStub = sinon.stub();
@@ -122,7 +122,7 @@ describe('Unit: Systemd > Extension', function () {
 
             const SystemdExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
-                'fs-extra': {readFileSync: readFileSyncStub}
+                'node:fs': {readFileSync: readFileSyncStub}
             });
 
             const logStub = sinon.stub();
@@ -158,7 +158,7 @@ describe('Unit: Systemd > Extension', function () {
         beforeEach(() => {
             existsStub = sinon.stub();
             SystemdExtension = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsStub}
+                'node:fs': {existsSync: existsStub}
             });
         });
 

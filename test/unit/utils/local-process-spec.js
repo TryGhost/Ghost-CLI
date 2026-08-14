@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire');
 const errors = require('../../../lib/errors');
 const EventEmitter = require('events').EventEmitter;
 
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const os = require('node:os');
 const childProcess = require('child_process');
 
@@ -60,8 +60,9 @@ describe('Unit: Utils > local-process', function () {
 
         it('fetches pid from file, removes pidfile and returns false if not a ghost process', async function () {
             const existsStub = sinon.stub(fs, 'existsSync').returns(true);
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sinon.stub(fs, 'removeSync');
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
+            const removeStub = sinon.stub(fs, 'rmSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
@@ -73,13 +74,14 @@ describe('Unit: Utils > local-process', function () {
             expect(existsStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             expect(readFileStub.calledOnce).to.be.true;
             expect(ghostProcessStub.calledWithExactly(42)).to.be.true;
-            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
         });
 
         it('fetches pid from file, returns true if running ghost process', async function () {
             const existsStub = sinon.stub(fs, 'existsSync').returns(true);
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sinon.stub(fs, 'removeSync');
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
+            const removeStub = sinon.stub(fs, 'rmSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
@@ -146,7 +148,7 @@ describe('Unit: Utils > local-process', function () {
             cp.pid = 42;
             const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
             const writeFileStub = sinon.stub(fs, 'writeFileSync');
-            const removeStub = sinon.stub(fs, 'removeSync');
+            const removeStub = sinon.stub(fs, 'rmSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
@@ -164,7 +166,7 @@ describe('Unit: Utils > local-process', function () {
             expect(spawnStub.calledOnce).to.be.true;
             expect(cp.stderr.on.calledOnce).to.be.true;
             expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
-            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
         });
 
         it('writes pid to file, rejects on message event with error', async function () {
@@ -176,7 +178,7 @@ describe('Unit: Utils > local-process', function () {
             cp.pid = 42;
             const spawnStub = sinon.stub(childProcess, 'spawn').returns(cp);
             const writeFileStub = sinon.stub(fs, 'writeFileSync');
-            const removeStub = sinon.stub(fs, 'removeSync');
+            const removeStub = sinon.stub(fs, 'rmSync');
 
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
@@ -194,7 +196,7 @@ describe('Unit: Utils > local-process', function () {
             expect(spawnStub.called).to.be.true;
             expect(cp.stderr.on.calledOnce).to.be.true;
             expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
-            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
         });
 
         it('writes pid to file, resolves on start message', async function () {
@@ -232,12 +234,14 @@ describe('Unit: Utils > local-process', function () {
 
     describe('stop', function () {
         it('returns if pidfile not found', function () {
-            const readFileStub = sinon.stub(fs, 'readFileSync').throws({code: 'ENOENT'});
             const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: {default: fkillStub}
             });
+            // only throw for the pidfile - the CJS loader reads source via readFileSync too
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').throws({code: 'ENOENT'});
             const instance = new LocalProcess({}, {}, {});
 
             return instance.stop('/var/www/ghost').then(() => {
@@ -247,12 +251,13 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('rejects if any unexpected error occurs during reading of pidfile', async function () {
-            const readFileStub = sinon.stub(fs, 'readFileSync').throws(new Error('test error'));
             const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: {default: fkillStub}
             });
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').throws(new Error('test error'));
             const instance = new LocalProcess({}, {}, {});
 
             const error = await instance.stop('/var/www/ghost').catch(e => e);
@@ -264,13 +269,14 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('does not kill the process but removes the pidfile if not a ghost process', async function () {
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sinon.stub(fs, 'removeSync');
             const fkillStub = sinon.stub();
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: {default: fkillStub}
             });
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
+            const removeStub = sinon.stub(fs, 'rmSync');
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
             }, {});
@@ -281,7 +287,7 @@ describe('Unit: Utils > local-process', function () {
             expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
             expect(ghostProcessStub.calledWithExactly(42)).to.be.true;
             expect(fkillStub.called).to.be.false;
-            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
         });
 
         it('kills the process and removes the pidfile', async function () {
@@ -292,10 +298,10 @@ describe('Unit: Utils > local-process', function () {
                 isChildRunning = false;
             });
 
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns(child.pid.toString());
-            const removeStub = sinon.stub(fs, 'removeSync');
-
             const LocalProcess = require(modulePath);
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').returns(child.pid.toString());
+            const removeStub = sinon.stub(fs, 'rmSync');
             const instance = new LocalProcess({}, {
                 platform: {windows: true}
             }, {});
@@ -307,17 +313,18 @@ describe('Unit: Utils > local-process', function () {
 
             expect(isChildRunning).to.be.false;
             expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
         });
 
         it('resolves if process didn\'t exist', function () {
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sinon.stub(fs, 'removeSync');
             const fkillStub = sinon.stub().rejects(new Error('No such process: 42'));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: {default: fkillStub}
             });
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
+            const removeStub = sinon.stub(fs, 'rmSync');
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
             }, {});
@@ -326,18 +333,19 @@ describe('Unit: Utils > local-process', function () {
             return instance.stop('/var/www/ghost').then(() => {
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
                 expect(fkillStub.calledWithExactly(42, sinon.match({force: false}))).to.be.true;
-                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
             });
         });
 
         it('rejects with an unknown error from fkill', async function () {
-            const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
-            const removeStub = sinon.stub(fs, 'removeSync');
             const fkillStub = sinon.stub().callsFake(() => Promise.reject(new Error('no idea')));
 
             const LocalProcess = proxyquire(modulePath, {
                 fkill: {default: fkillStub}
             });
+            const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
+            readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
+            const removeStub = sinon.stub(fs, 'rmSync');
             const instance = new LocalProcess({}, {
                 platform: {macos: true, windows: false}
             }, {});

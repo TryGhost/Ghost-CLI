@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const createConfig = require('../utils/config-stub');
 
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const ghostUser = require('../../lib/utils/use-ghost-user');
 
 const migrations = require('../../lib/migrations');
@@ -36,7 +36,7 @@ describe('Unit: Migrations', function () {
 
         it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
             const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(false);
-            const fsStub = sinon.stub(fs, 'ensureDirSync');
+            const fsStub = sinon.stub(fs, 'mkdir').resolves();
             const config = createConfig();
             config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
 
@@ -46,7 +46,7 @@ describe('Unit: Migrations', function () {
                 expect(ghostUserStub.calledOnce).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(fsStub.calledOnce).to.be.true;
-                expect(fsStub.calledWithExactly('/var/www/ghost/content/settings')).to.be.true;
+                expect(fsStub.calledWithExactly('/var/www/ghost/content/settings', {recursive: true})).to.be.true;
             });
         });
     });
@@ -114,7 +114,7 @@ describe('Unit: Migrations', function () {
 
         it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
             const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(false);
-            const fsStub = sinon.stub(fs, 'ensureDirSync');
+            const fsStub = sinon.stub(fs, 'mkdir').resolves();
             const config = createConfig();
             config.get.withArgs('paths.contentPath').returns('/var/www/ghost/content');
 
@@ -124,9 +124,9 @@ describe('Unit: Migrations', function () {
                 expect(ghostUserStub.calledThrice).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(fsStub.calledThrice).to.be.true;
-                expect(fsStub.firstCall.calledWithExactly('/var/www/ghost/content/media')).to.be.true;
-                expect(fsStub.secondCall.calledWithExactly('/var/www/ghost/content/files')).to.be.true;
-                expect(fsStub.thirdCall.calledWithExactly('/var/www/ghost/content/public')).to.be.true;
+                expect(fsStub.firstCall.calledWithExactly('/var/www/ghost/content/media', {recursive: true})).to.be.true;
+                expect(fsStub.secondCall.calledWithExactly('/var/www/ghost/content/files', {recursive: true})).to.be.true;
+                expect(fsStub.thirdCall.calledWithExactly('/var/www/ghost/content/public', {recursive: true})).to.be.true;
             });
         });
     });

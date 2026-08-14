@@ -10,10 +10,6 @@ const {getReadableStream, erroringStream, collect, isReadable} = require('../../
 const modulePath = '../../../lib/tasks/install-dependencies';
 const errors = require('../../../lib/errors');
 
-// Save the fs-extra cache entry so noPreserveCache doesn't corrupt it for other test files
-const fsExtraResolved = require.resolve('fs-extra');
-const fsExtraCacheEntry = require.cache[fsExtraResolved];
-
 describe('Unit: Tasks > install-dependencies', function () {
     let originalEnv;
 
@@ -25,10 +21,6 @@ describe('Unit: Tasks > install-dependencies', function () {
     afterEach(() => {
         process.env = originalEnv;
         sinon.restore();
-        // Restore fs-extra cache entry that noPreserveCache may have evicted
-        if (fsExtraCacheEntry) {
-            require.cache[fsExtraResolved] = fsExtraCacheEntry;
-        }
     });
 
     afterAll(() => {
@@ -159,7 +151,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {existsSync: existsSyncStub, rmSync: sinon.stub(), mkdtempSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -199,7 +191,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {existsSync: existsSyncStub, rmSync: sinon.stub(), mkdtempSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -234,7 +226,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: sinon.stub(), ensureDirSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {existsSync: existsSyncStub, rmSync: sinon.stub(), mkdtempSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -260,11 +252,11 @@ describe('Unit: Tasks > install-dependencies', function () {
     it('cleans up installPath on pnpm error', function () {
         const pnpmStub = sinon.stub().returns(erroringStream(new Error('pnpm failed')));
         const existsSyncStub = sinon.stub().returns(true);
-        const removeSyncStub = sinon.stub();
+        const rmSyncStub = sinon.stub();
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': sinon.stub(),
             '../utils/pnpm': pnpmStub,
-            'fs-extra': {existsSync: existsSyncStub, removeSync: removeSyncStub, ensureDirSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {existsSync: existsSyncStub, rmSync: rmSyncStub, mkdtempSync: sinon.stub(), '@noCallThru': true}
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
@@ -285,7 +277,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         }).catch((error) => {
             expect(error.message).to.equal('pnpm failed');
             expect(pnpmStub.calledOnce).to.be.true;
-            expect(removeSyncStub.calledWith('/var/www/ghost/versions/1.5.0')).to.be.true;
+            expect(rmSyncStub.calledWith('/var/www/ghost/versions/1.5.0', {recursive: true, force: true})).to.be.true;
         });
     });
 

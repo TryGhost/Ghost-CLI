@@ -1,7 +1,7 @@
 const nock = require('nock');
 const path = require('path');
 const tmp = require('tmp');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 const {SystemError} = require('../../../../lib/errors');
 const {getBaseUrl, isSetup, setup, runImport, downloadContentExport} = require('../../../../lib/tasks/import/api');
@@ -428,7 +428,7 @@ describe('Unit > Tasks > Import > setup', function () {
             expect(configScope.isDone()).to.be.true;
             expect(tokenScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
-            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+            expect(JSON.parse(fs.readFileSync(outputFile, 'utf8'))).to.deep.equal(exportData);
         });
 
         it('1.x with token auth', async function () {
@@ -484,7 +484,7 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
-            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+            expect(JSON.parse(fs.readFileSync(outputFile, 'utf8'))).to.deep.equal(exportData);
         });
 
         it('3.x', async function () {
@@ -528,7 +528,7 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
-            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+            expect(JSON.parse(fs.readFileSync(outputFile, 'utf8'))).to.deep.equal(exportData);
         });
 
         it('4.x', async function () {
@@ -572,7 +572,7 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
-            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+            expect(JSON.parse(fs.readFileSync(outputFile, 'utf8'))).to.deep.equal(exportData);
         });
 
         it('5.x', async function () {
@@ -616,7 +616,7 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
-            expect(fs.readJsonSync(outputFile)).to.deep.equal(exportData);
+            expect(JSON.parse(fs.readFileSync(outputFile, 'utf8'))).to.deep.equal(exportData);
         });
 
         it('Older 5.x with token auth', async function () {

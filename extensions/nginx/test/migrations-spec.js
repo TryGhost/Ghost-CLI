@@ -27,7 +27,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const skipStub = sinon.stub();
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsStub}
+                'node:fs': {existsSync: existsStub}
             });
 
             migrate.migrateSSL(context, {skip: skipStub});
@@ -45,7 +45,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             existsSync.withArgs('/home/ghost/.acme.sh/ghost.org').returns(false);
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync},
+                'node:fs': {existsSync: existsSync},
                 os: {homedir: () => '/home/ghost'}
             });
 
@@ -69,7 +69,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             readFileSync.withArgs(confFile).returns(sslWithoutLe);
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync},
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync},
                 os: {homedir: () => '/home/ghost'}
             });
 
@@ -91,7 +91,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             readFileSync.onSecondCall().returns('');
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync},
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync},
                 os: {homedir: () => '/home/ghost'}
             });
 
@@ -127,7 +127,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             };
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync},
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync},
                 'replace-in-file': replaceStub,
                 './acme': acme,
                 os: {homedir: () => '/home/ghost'}
@@ -206,7 +206,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const skip = sinon.stub();
             const ext = getExtension();
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {
+                'node:fs': {
                     existsSync: () => true,
                     readFileSync: () => migratedConf
                 }
@@ -224,7 +224,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const ext = getExtension();
             const existsSync = sinon.stub().returns(true);
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync, readFileSync: () => legacyConf}
+                'node:fs': {existsSync, readFileSync: () => legacyConf}
             });
 
             await migrate.migrateActivityPubDns.call(ext, context, {skip});
@@ -248,7 +248,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
         it('only migrates the configs that exist', async function () {
             const ext = getExtension();
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {
+                'node:fs': {
                     existsSync: file => !file.includes('-ssl'),
                     readFileSync: () => legacyConf
                 }
@@ -264,7 +264,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const ext = getExtension();
             ext.ui.sudo.rejects(new Error('bad config'));
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {
+                'node:fs': {
                     existsSync: file => !file.includes('-ssl'),
                     readFileSync: () => legacyConf
                 }
@@ -288,7 +288,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const ext = getExtension();
             ext.template.onCall(1).rejects(new Error('mv failed'));
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: () => true, readFileSync: () => legacyConf}
+                'node:fs': {existsSync: () => true, readFileSync: () => legacyConf}
             });
 
             try {
@@ -321,7 +321,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const restartNginx = sinon.stub().resolves();
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync}
+                'node:fs': {existsSync: existsSync}
             });
 
             await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
@@ -342,7 +342,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const restartNginx = sinon.stub().resolves();
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync}
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync}
             });
 
             await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
@@ -365,7 +365,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             readFileSync.withArgs(confFile).returns(`server {\n    ${oldHeader}\n}\n`);
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync}
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync}
             });
 
             await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});
@@ -384,7 +384,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const restartNginx = sinon.stub().resolves();
 
             const migrate = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSync, readFileSync: readFileSync}
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync}
             });
 
             await migrate.migrateXForwardedFor.call({ui: {sudo}, restartNginx}, context, {skip});

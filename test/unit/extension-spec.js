@@ -1,6 +1,6 @@
 'use strict';
 const sinon = require('sinon');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const os = require('os');
 const path = require('path');
 const proxyquire = require('proxyquire').noCallThru();
@@ -49,7 +49,7 @@ describe('Unit: Extension', function () {
         });
 
         it('skips log if verbose is false', async function () {
-            const ensureDir = sinon.stub(fs, 'ensureDir').resolves();
+            const mkdir = sinon.stub(fs, 'mkdir').resolves();
             const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
             const writeFile = sinon.stub(fs, 'writeFile').resolves();
             const sudo = sinon.stub().resolves();
@@ -63,13 +63,13 @@ describe('Unit: Extension', function () {
             expect(confirm.called).to.be.false;
             expect(log.called).to.be.false;
             expect(tmpdir.calledOnce).to.be.true;
-            expect(ensureDir.calledOnceWithExactly('/tmp/test')).to.be.true;
+            expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
             expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
             expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
         });
 
         it('skips log if confirm returns false', async function () {
-            const ensureDir = sinon.stub(fs, 'ensureDir').resolves();
+            const mkdir = sinon.stub(fs, 'mkdir').resolves();
             const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
             const writeFile = sinon.stub(fs, 'writeFile').resolves();
             const sudo = sinon.stub().resolves();
@@ -86,13 +86,13 @@ describe('Unit: Extension', function () {
             )).to.be.true;
             expect(log.called).to.be.false;
             expect(tmpdir.calledOnce).to.be.true;
-            expect(ensureDir.calledOnceWithExactly('/tmp/test')).to.be.true;
+            expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
             expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
             expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
         });
 
         it('logs contents if confirm returns true', async function () {
-            const ensureDir = sinon.stub(fs, 'ensureDir').resolves();
+            const mkdir = sinon.stub(fs, 'mkdir').resolves();
             const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
             const writeFile = sinon.stub(fs, 'writeFile').resolves();
             const sudo = sinon.stub().resolves();
@@ -109,7 +109,7 @@ describe('Unit: Extension', function () {
             )).to.be.true;
             expect(log.calledOnceWithExactly('test file contents')).to.be.true;
             expect(tmpdir.calledOnce).to.be.true;
-            expect(ensureDir.calledOnceWithExactly('/tmp/test')).to.be.true;
+            expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
             expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
             expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
         });
@@ -138,7 +138,7 @@ describe('Unit: Extension', function () {
         it('returns nothing if main file does not exist', function () {
             const existsSyncStub = sinon.stub().returns(false);
             const Extension = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSyncStub}
+                'node:fs': {existsSync: existsSyncStub}
             });
             const logStub = sinon.stub();
 
@@ -160,7 +160,7 @@ describe('Unit: Extension', function () {
         it('returns nothing if main file exists but exports nothing', function () {
             const existsSyncStub = sinon.stub().returns(true);
             const Extension = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSyncStub},
+                'node:fs': {existsSync: existsSyncStub},
                 '/some/dir/index': {}
             });
             const logStub = sinon.stub();
@@ -183,7 +183,7 @@ describe('Unit: Extension', function () {
         it('returns nothing if main file exists but is not an extension subclass', function () {
             const existsSyncStub = sinon.stub().returns(true);
             const Extension = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsSyncStub},
+                'node:fs': {existsSync: existsSyncStub},
                 '/some/dir/index': class NotAnExtension {}
             });
             const logStub = sinon.stub();

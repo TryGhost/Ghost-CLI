@@ -1,5 +1,5 @@
 'use strict';
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const tmp = require('tmp');
 const path = require('path');
 const isObject = require('lodash/isObject');
@@ -50,26 +50,30 @@ function setupTestFolder(typeOrDefinition, dir) {
 
     if (setup.dirs) {
         setup.dirs.forEach((dirToCreate) => {
-            fs.ensureDirSync(path.join(dir, dirToCreate));
+            fs.mkdirSync(path.join(dir, dirToCreate), {recursive: true});
         });
     }
 
     if (setup.files) {
         setup.files.forEach((file) => {
-            fs[(file.json ? 'writeJsonSync' : 'writeFileSync')](path.join(dir, file.path), file.content);
+            const target = path.join(dir, file.path);
+            fs.mkdirSync(path.dirname(target), {recursive: true});
+            fs.writeFileSync(target, file.json ? JSON.stringify(file.content) : file.content);
         });
     }
 
     if (setup.links) {
         setup.links.forEach((link) => {
-            fs.ensureSymlinkSync(path.join(dir, link[0]), path.join(dir, link[1]));
+            const linkPath = path.join(dir, link[1]);
+            fs.mkdirSync(path.dirname(linkPath), {recursive: true});
+            fs.symlinkSync(path.join(dir, link[0]), linkPath);
         });
     }
 
     const testFolder = {
         dir: dir,
         cleanup: () => {
-            fs.removeSync(dir);
+            fs.rmSync(dir, {recursive: true, force: true});
             delete currentTestFolders[dir];
         }
     };

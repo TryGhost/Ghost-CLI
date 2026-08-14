@@ -1,4 +1,5 @@
-const fs = require('fs-extra');
+const fs = require('node:fs');
+const fsp = require('node:fs/promises');
 const os = require('os');
 const dns = require('dns');
 const url = require('url');
@@ -197,7 +198,7 @@ class NginxExtension extends Extension {
             task: () => acme.install(this.ui)
         }, {
             title: 'Creating web root directory',
-            task: () => fs.ensureDir(rootPath)
+            task: () => fsp.mkdir(rootPath, {recursive: true})
         }, {
             title: 'Getting SSL Certificate from Let\'s Encrypt',
             task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, argv.sslemail, argv.sslstaging)
@@ -210,7 +211,7 @@ class NginxExtension extends Extension {
             skip: () => fs.existsSync(sslParamsFile),
             task: errorWrapper(async () => {
                 const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
-                await fs.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'});
+                await fsp.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'});
                 await this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`);
             })
         }, {

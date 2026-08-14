@@ -11,11 +11,11 @@ describe('Unit: Tasks > ensure-structure', function () {
         cleanupTestFolders();
     });
 
-    it('works', function () {
+    it('works', async function () {
         const env = setupTestFolder();
         const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
 
-        ensureStructure();
+        await ensureStructure();
         expect(cwdStub.calledOnce).to.be.true;
 
         const expectedFiles = [

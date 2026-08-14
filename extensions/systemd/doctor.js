@@ -1,4 +1,5 @@
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
+const {readJSON} = require('../../lib/utils/json');
 const get = require('lodash/get');
 const path = require('path');
 const ini = require('ini');
@@ -69,7 +70,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
 
     try {
         const packagePath = path.join(instance.dir, 'current/package.json');
-        const ghostPkg = await fs.readJson(packagePath);
+        const ghostPkg = await readJSON(packagePath);
         nodeRange = get(ghostPkg, 'engines.node', null);
     } catch {
         return;

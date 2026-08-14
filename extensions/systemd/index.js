@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
 const template = require('lodash/template');
 

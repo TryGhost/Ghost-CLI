@@ -9,7 +9,8 @@ const {Writable} = require('stream');
 const modulePath = '../acme';
 
 const cli = require('../../../lib');
-const acmeTmpDir = path.join(os.tmpdir(), 'acme.sh');
+// whatever mkdtemp hands back - the path is unique per run, not a fixed location
+const acmeTmpDir = '/tmp/acme.sh-abc123';
 
 /**
  * Stubs out the acme.sh tarball download - a global fetch that streams the
@@ -44,7 +45,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
     it('isInstalled checks if /etc/letsencrypt/acme.sh exists', function () {
         const existsStub = sinon.stub().returns(true);
         const acme = proxyquire(modulePath, {
-            'fs-extra': {existsSync: existsStub}
+            'node:fs': {existsSync: existsStub}
         });
 
         const result = acme.isInstalled();
@@ -59,7 +60,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const existsStub = sinon.stub().returns(true);
 
             const acme = proxyquire(modulePath, {
-                'fs-extra': {existsSync: existsStub}
+                'node:fs': {existsSync: existsStub}
             });
 
             return acme.install({sudo}).then(() => {
@@ -72,7 +73,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
             const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
-            const emptyStub = sinon.stub();
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const {extractStub} = stubDownload();
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
@@ -82,7 +84,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
@@ -101,7 +104,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
             const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
-            const emptyStub = sinon.stub();
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const {fetchStub, extractStub} = stubDownload();
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
@@ -114,7 +118,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
@@ -133,7 +138,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
             const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
-            const emptyStub = sinon.stub();
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const {extractStub} = stubDownload();
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
@@ -148,7 +154,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
@@ -165,7 +172,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
             const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
-            const emptyStub = sinon.stub();
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const {fetchStub, extractStub} = stubDownload();
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
@@ -173,7 +181,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
@@ -190,6 +199,34 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(sudoStub.args[0][0]).to.match(/mkdir -p/);
                 expect(sudoStub.args[1][0]).to.match(/acme\.sh --install/);
                 expect(sudoStub.args[1][1]).to.deep.equal({cwd: acmeTmpDir});
+                // the staging dir is created fresh under tmp, then cleaned up
+                expect(mkdtempStub.calledOnce).to.be.true;
+                expect(mkdtempStub.args[0][0]).to.equal(path.join(os.tmpdir(), 'acme.sh-'));
+                expect(emptyStub.calledWithExactly(acmeTmpDir, {recursive: true, force: true})).to.be.true;
+            });
+        });
+
+        it('removes the staging directory when the install fails', function () {
+            const kyStub = stubApi({resolves: {tarball_url: 'test'}});
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
+            const existsStub = sinon.stub().returns(false);
+            const {extractStub} = stubDownload();
+
+            const acme = proxyquire(modulePath, {
+                ky: {default: kyStub},
+                tar: {x: extractStub},
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
+            });
+
+            const sudoStub = sinon.stub().resolves();
+            sudoStub.onSecondCall().rejects(new Error('acme.sh blew up'));
+
+            return acme.install({sudo: sudoStub, logVerbose: sinon.stub()}).then(() => {
+                expect(false, 'Promise should have been rejected').to.be.true;
+            }).catch(() => {
+                expect(emptyStub.calledOnceWithExactly(acmeTmpDir, {recursive: true, force: true})).to.be.true;
             });
         });
 
@@ -200,7 +237,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             // see https://github.com/sindresorhus/ky#httperror
             const kyStub = stubApi({rejects: err});
             const existsStub = sinon.stub().returns(false);
-            const emptyStub = sinon.stub();
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const {fetchStub, extractStub} = stubDownload();
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
@@ -208,7 +246,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}, {}).then(() => {
@@ -230,7 +269,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             // a 200 whose body isn't JSON - ky surfaces the parse failure from `.json()`
             const kyStub = stubApi({rejects: new SyntaxError('Unexpected token \'W\', "Waffles" is not valid JSON')});
             const existsStub = sinon.stub().returns(false);
-            const emptyStub = sinon.stub();
+            const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const {fetchStub, extractStub} = stubDownload();
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
@@ -238,7 +278,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}, {}).then(() => {
@@ -259,13 +300,15 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         it('Rejects when acme.sh fails', function () {
             const kyStub = stubApi({resolves: {tarball_url: 'test'}});
             const emptyStub = sinon.stub().resolves();
+            const mkdtempStub = sinon.stub().resolves(acmeTmpDir);
             const existsStub = sinon.stub().returns(false);
             const {fetchStub, extractStub} = stubDownload();
 
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
                 tar: {x: extractStub},
-                'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
+                'node:fs': {existsSync: existsStub},
+                'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
             const logStub = sinon.stub();

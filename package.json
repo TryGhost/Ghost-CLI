@@ -47,7 +47,6 @@
     "execa": "10.0.1",
     "find-plugins": "1.1.7",
     "fkill": "10.0.3",
-    "fs-extra": "11.4.0",
     "generate-password": "1.7.1",
     "global-modules": "2.0.0",
     "ini": "7.0.0",

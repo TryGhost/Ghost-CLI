@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const createConfigStub = require('../utils/config-stub');
 const {setupTestFolder} = require('../utils/test-folder');
 
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 const Instance = require('../../lib/instance');
 const Config = require('../../lib/utils/config');
@@ -178,27 +178,27 @@ describe('Unit: Instance', function () {
             const testInstance = new Instance({}, {}, '/test/dir');
             testInstance._cliConfig = config;
 
-            // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
-            const readJsonSync = sinon.stub(fs, 'readJsonSync').returns({version: '2.0.0'});
+            // stub readFileSync *after* new instance so instance construction doesn't affect stub behavior
+            const readFileSync = sinon.stub(fs, 'readFileSync').returns(JSON.stringify({version: '2.0.0'}));
 
             expect(testInstance.version).to.equal('1.0.0');
             expect(config.get.calledOnce).to.be.true;
-            expect(readJsonSync.called).to.be.false;
+            expect(readFileSync.called).to.be.false;
         });
 
-        it('version getter handles error from readJsonSync', function () {
+        it('version getter handles error from readFileSync', function () {
             const config = createConfigStub();
             config.get.withArgs('active-version', null).returns(null);
 
             const testInstance = new Instance({}, {}, '/test/dir');
             testInstance._cliConfig = config;
 
-            // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
-            const readJsonSync = sinon.stub(fs, 'readJsonSync').throws(new Error('test error'));
+            // stub readFileSync *after* new instance so instance construction doesn't affect stub behavior
+            const readFileSync = sinon.stub(fs, 'readFileSync').throws(new Error('test error'));
 
             expect(testInstance.version).to.equal(null);
             expect(config.get.calledOnce).to.be.true;
-            expect(readJsonSync.calledOnceWithExactly('/test/dir/current/package.json')).to.be.true;
+            expect(readFileSync.calledOnceWithExactly('/test/dir/current/package.json', 'utf8')).to.be.true;
             expect(config.set.called).to.be.false;
             expect(config.save.called).to.be.false;
         });
@@ -211,12 +211,12 @@ describe('Unit: Instance', function () {
             const testInstance = new Instance({}, {}, '/test/dir');
             testInstance._cliConfig = config;
 
-            // stub readJsonSync *after* new instance so instance construction doesn't affect stub behavior
-            const readJsonSync = sinon.stub(fs, 'readJsonSync').returns({version: '2.0.0'});
+            // stub readFileSync *after* new instance so instance construction doesn't affect stub behavior
+            const readFileSync = sinon.stub(fs, 'readFileSync').returns(JSON.stringify({version: '2.0.0'}));
 
             expect(testInstance.version).to.equal('2.0.0');
             expect(config.get.calledOnce).to.be.true;
-            expect(readJsonSync.calledOnceWithExactly('/test/dir/current/package.json')).to.be.true;
+            expect(readFileSync.calledOnceWithExactly('/test/dir/current/package.json', 'utf8')).to.be.true;
             expect(config.set.calledOnce).to.be.true;
             expect(config.save.calledOnce).to.be.true;
         });

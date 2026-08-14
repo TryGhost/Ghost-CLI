@@ -1,7 +1,8 @@
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
-const fs = require('fs-extra');
+const fs = require('node:fs');
+const fsp = require('node:fs/promises');
 const UI = require('../../../lib/ui');
 const System = require('../../../lib/system');
 
@@ -143,7 +144,7 @@ describe('Unit: Commands > Uninstall', function () {
                 const {command, ui, system} = createInstance();
                 system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
                 const readdirStub = sinon.stub(fs, 'readdirSync').returns(fileList);
-                const removeStub = sinon.stub(fs, 'remove').resolves();
+                const removeStub = sinon.stub(fsp, 'rm').resolves();
 
                 const [,,,task] = await getSteps(command, ui);
 
@@ -156,7 +157,7 @@ describe('Unit: Commands > Uninstall', function () {
                 expect(removeStub.callCount).to.equal(fileList.length);
 
                 fileList.forEach((f) => {
-                    expect(removeStub.calledWithExactly(f)).to.be.true;
+                    expect(removeStub.calledWithExactly(f, {recursive: true, force: true})).to.be.true;
                 });
             });
         });
