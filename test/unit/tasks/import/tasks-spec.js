@@ -23,7 +23,7 @@ describe('Unit: Tasks > Import > Tasks', function () {
 
             const {importTask} = proxyquire(modulePath, {
                 './parse-export': parseExport,
-                './api': {isSetup, setup, runImport}
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, setup, runImport}
             });
 
             const prompt = sinon.stub().resolves({username: 'setup@example.com', password: '1234567890'});
@@ -70,7 +70,7 @@ describe('Unit: Tasks > Import > Tasks', function () {
 
             const {importTask} = proxyquire(modulePath, {
                 './parse-export': parseExport,
-                './api': {isSetup, setup, runImport}
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, setup, runImport}
             });
 
             const prompt = sinon.stub().resolves({password: '1234567890'});
@@ -101,6 +101,60 @@ describe('Unit: Tasks > Import > Tasks', function () {
                 username: 'test@example.com',
                 password: '1234567890'
             }, 'test-export.json')).to.be.true;
+        });
+
+        it(`prompts for a staff auth token on a set up blog >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
+            const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
+            const isSetup = sinon.stub().resolves(true);
+            const setup = sinon.stub().resolves();
+            const runImport = sinon.stub().resolves();
+
+            const {importTask} = proxyquire(modulePath, {
+                './parse-export': parseExport,
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, setup, runImport}
+            });
+
+            const prompt = sinon.stub().resolves({token: 'abcd'});
+            const listr = sinon.stub().callsFake(tasks => each(tasks, t => t.task()));
+            const config = createConfigStub();
+            config.get.withArgs('url').returns('http://localhost:2368');
+
+            await importTask({prompt, listr}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json');
+
+            expect(prompt.calledOnce).to.be.true;
+            expect(prompt.args[0][0].map(p => p.name)).to.deep.equal(['token']);
+            expect(setup.called).to.be.false;
+            expect(runImport.calledOnceWithExactly(
+                TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368', {token: 'abcd'}, 'test-export.json'
+            )).to.be.true;
+        });
+
+        it(`uses defined GHOST_CLI_STAFF_AUTH_TOKEN env var >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
+            const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
+            const isSetup = sinon.stub().resolves(true);
+            const setup = sinon.stub().resolves();
+            const runImport = sinon.stub().resolves();
+
+            const {importTask} = proxyquire(modulePath, {
+                './parse-export': parseExport,
+                './api': {TOKEN_AUTH_MIN_VERSION, isSetup, setup, runImport}
+            });
+
+            const prompt = sinon.stub().rejects(new Error('Should not have been called'));
+            const listr = sinon.stub().callsFake(tasks => each(tasks, t => t.task()));
+            const config = createConfigStub();
+            config.get.withArgs('url').returns('http://localhost:2368');
+
+            const token = ''.padStart(24, '0') + ':' + ''.padStart(64, '0');
+            process.env.GHOST_CLI_STAFF_AUTH_TOKEN = token;
+
+            await importTask({prompt, listr}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json');
+
+            expect(prompt.called).to.be.false;
+            expect(setup.called).to.be.false;
+            expect(runImport.calledOnceWithExactly(
+                TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368', {token}, 'test-export.json'
+            )).to.be.true;
         });
     });
 
