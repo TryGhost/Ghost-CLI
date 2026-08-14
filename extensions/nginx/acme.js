@@ -2,8 +2,10 @@
 const fs = require('fs-extra');
 const os = require('os');
 const got = require('got');
+const tar = require('tar');
 const path = require('path');
-const download = require('download');
+const {Readable} = require('node:stream');
+const {pipeline} = require('node:stream/promises');
 
 const {errors: {CliError, ProcessError, SystemError}} = require('../../lib');
 const {errorWrapper} = require('./utils');
@@ -42,17 +44,27 @@ async function install(ui) {
         });
     }
 
-    await download(downloadURL, acmeTmpDir, {extract: true});
-    // The archive contains a single folder with the structure
-    //  `{user}-{repo}-{commit}`, but we don't know what commit is
-    //  from the API call. Since the dir is empty (we cleared it),
-    //  the only thing in acmeTmpDir will be the extracted zip.
-    const acmeCodeDir = path.resolve(acmeTmpDir, fs.readdirSync(acmeTmpDir)[0]);
+    // fetch has no default timeout, so a stalled connection would hang the install forever
+    const signal = AbortSignal.timeout(30 * 1000);
+    const response = await fetch(downloadURL, {signal});
+
+    if (!response.ok) {
+        throw new CliError(`Unable to download acme.sh (${response.status})`);
+    }
+
+    // GitHub wraps the archive in a single `{user}-{repo}-{commit}` folder, strip it
+    // so the acme.sh code ends up directly in acmeTmpDir. `strict` makes tar reject on
+    // entry errors it would otherwise just warn about, rather than install a partial copy
+    await pipeline(
+        Readable.fromWeb(response.body),
+        tar.x({cwd: acmeTmpDir, strip: 1, strict: true}),
+        {signal}
+    );
 
     ui.logVerbose('ssl: installing acme.sh components', 'green');
 
     // Installs acme.sh into /etc/letsencrypt
-    await ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeCodeDir});
+    await ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
 }
 
 async function generateCert(ui, domain, webroot, email, staging) {

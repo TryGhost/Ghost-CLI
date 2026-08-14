@@ -52,12 +52,12 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const compatTaskStub = sinon.stub(subTasks, 'compatibility').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
         return installDependencies({listr: listrStub}).then(() => {
             expect(listrStub.calledOnce).to.be.true;
-            expect(distTaskStub.calledOnce).to.be.true;
+            expect(compatTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
             expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
@@ -86,14 +86,14 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const compatTaskStub = sinon.stub(subTasks, 'compatibility').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
         process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
         return installDependencies({listr: listrStub}).then(() => {
             expect(listrStub.calledOnce).to.be.true;
-            expect(distTaskStub.calledOnce).to.be.true;
+            expect(compatTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
             expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress', '--ignore-engines']);
@@ -107,10 +107,10 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('base function can take zip file', function () {
-        const decompressStub = sinon.stub().resolves();
+        const extractStub = sinon.stub().resolves();
         const listrStub = sinon.stub().resolves();
         const installDependencies = proxyquire(modulePath, {
-            decompress: decompressStub
+            '../utils/archive': {extract: extractStub}
         });
 
         return installDependencies({listr: listrStub}, 'test.zip').then(() => {
@@ -122,8 +122,32 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             tasks[0].task(ctx);
 
-            expect(decompressStub.called).to.be.true;
-            expect(decompressStub.calledWith('test.zip','/var/www/ghost')).to.be.true;
+            expect(extractStub.calledOnce).to.be.true;
+            expect(extractStub.calledWithExactly('test.zip', '/var/www/ghost')).to.be.true;
+        });
+    });
+
+    it('cleans up the install folder if the local archive fails to extract', function () {
+        const env = setupTestFolder();
+        const extractStub = sinon.stub().rejects(new Error('bad archive'));
+        const listrStub = sinon.stub().resolves();
+        const installDependencies = proxyquire(modulePath, {
+            '../utils/archive': {extract: extractStub}
+        });
+        const ctx = {installPath: path.join(env.dir, 'versions/1.0.0')};
+
+        fs.mkdirSync(ctx.installPath, {recursive: true});
+
+        return installDependencies({listr: listrStub}, 'test.zip').then(() => {
+            const tasks = listrStub.args[0][0];
+
+            return tasks[0].task(ctx).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error.message).to.equal('bad archive');
+                expect(extractStub.calledOnce).to.be.true;
+                expect(fs.existsSync(ctx.installPath)).to.be.false;
+            });
         });
     });
 
@@ -149,12 +173,12 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const compatTaskStub = sinon.stub(subTasks, 'compatibility').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
         return installDependencies({listr: listrStub}).then(() => {
             expect(listrStub.calledOnce).to.be.true;
-            expect(distTaskStub.calledOnce).to.be.true;
+            expect(compatTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(pnpmStub.calledOnce).to.be.true;
             expect(yarnStub.called).to.be.false;
@@ -189,12 +213,12 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const compatTaskStub = sinon.stub(subTasks, 'compatibility').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
         return installDependencies({listr: listrStub}).then(() => {
             expect(listrStub.calledOnce).to.be.true;
-            expect(distTaskStub.calledOnce).to.be.true;
+            expect(compatTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
             expect(pnpmStub.called).to.be.false;
@@ -224,7 +248,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        sinon.stub(subTasks, 'dist').resolves();
+        sinon.stub(subTasks, 'compatibility').resolves();
         sinon.stub(subTasks, 'download');
 
         return installDependencies({listr: listrStub}).then(() => {
@@ -254,7 +278,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        sinon.stub(subTasks, 'dist').resolves();
+        sinon.stub(subTasks, 'compatibility').resolves();
         sinon.stub(subTasks, 'download');
 
         return installDependencies({listr: listrStub}).then(() => {
@@ -283,7 +307,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
-        const distTaskStub = sinon.stub(subTasks, 'dist').resolves();
+        const compatTaskStub = sinon.stub(subTasks, 'compatibility').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
         return installDependencies({listr: listrStub, verbose: true}).then(() => {
@@ -291,7 +315,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         }).catch((error) => {
             expect(error.message).to.equal('an error occurred');
             expect(listrStub.calledOnce).to.be.true;
-            expect(distTaskStub.calledOnce).to.be.true;
+            expect(compatTaskStub.calledOnce).to.be.true;
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(yarnStub.calledOnce).to.be.true;
             expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
@@ -305,19 +329,16 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
     });
 
-    describe('dist subtask', function () {
+    describe('compatibility subtask', function () {
         it('rejects if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is not set', function () {
-            const data = {
-                engines: {node: '^0.10.0'},
-                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-            };
+            const data = {engines: {node: '^0.10.0'}};
             const infoStub = sinon.stub().resolves(data);
-            const dist = proxyquire(modulePath, {
+            const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub}
-            }).subTasks.dist;
+            }).subTasks.compatibility;
             const ctx = {version: '1.5.0', agent: false};
 
-            return dist(ctx).then(() => {
+            return compatibility(ctx).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
@@ -328,27 +349,18 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
 
         it('resolves if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is set', function () {
-            const data = {
-                engines: {node: '^0.10.0'},
-                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-            };
+            const data = {engines: {node: '^0.10.0'}};
             const infoStub = sinon.stub().resolves(data);
-            const dist = proxyquire(modulePath, {
+            const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub}
-            }).subTasks.dist;
+            }).subTasks.compatibility;
             const ctx = {version: '1.5.0', agent: false};
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
-            return dist(ctx).then(() => {
+            return compatibility(ctx).then(() => {
                 delete process.env.GHOST_NODE_VERSION_CHECK;
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
-                expect(ctx).to.deep.equal({
-                    agent: false,
-                    version: '1.5.0',
-                    shasum: 'asdf1234',
-                    tarball: 'something.tgz'
-                });
             }).catch((error) => {
                 delete process.env.GHOST_NODE_VERSION_CHECK;
                 return Promise.reject(error);
@@ -356,18 +368,15 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
 
         it('rejects if Ghost version isn\'t compatible with the current CLI version', function () {
-            const data = {
-                engines: {node: process.versions.node, cli: '^0.0.1'},
-                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-            };
+            const data = {engines: {node: process.versions.node, cli: '^0.0.1'}};
             const infoStub = sinon.stub().resolves(data);
-            const dist = proxyquire(modulePath, {
+            const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub},
                 '../../package.json': {version: '1.0.0'}
-            }).subTasks.dist;
+            }).subTasks.compatibility;
             const ctx = {version: '1.5.0', agent: false};
 
-            return dist(ctx).then(() => {
+            return compatibility(ctx).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error).to.be.an.instanceof(errors.SystemError);
@@ -378,123 +387,102 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
 
         it('resolves if Ghost version isn\'t compatible with CLI version, but CLI is a prerelease version', function () {
-            const data = {
-                engines: {node: process.versions.node, cli: '^1.9.0'},
-                dist: {shasum: 'asdf1234', tarball: 'something.tgz'}
-            };
+            const data = {engines: {node: process.versions.node, cli: '^1.9.0'}};
             const infoStub = sinon.stub().resolves(data);
-            const dist = proxyquire(modulePath, {
+            const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub},
                 '../../package.json': {version: '1.10.0-beta.0'}
-            }).subTasks.dist;
+            }).subTasks.compatibility;
             const ctx = {version: '1.5.0', agent: false};
 
-            return dist(ctx).then(() => {
+            return compatibility(ctx).then(() => {
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
-                expect(ctx).to.deep.equal({
-                    agent: false,
-                    version: '1.5.0',
-                    shasum: 'asdf1234',
-                    tarball: 'something.tgz'
-                });
             });
         });
 
-        it('adds shasum and tarball values to context', function () {
-            const data = {dist: {shasum: 'asdf1234', tarball: 'something.tgz'}};
-            const infoStub = sinon.stub().resolves(data);
-            const dist = proxyquire(modulePath, {
+        it('resolves if no engines are specified', function () {
+            const infoStub = sinon.stub().resolves({});
+            const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub}
-            }).subTasks.dist;
+            }).subTasks.compatibility;
             const ctx = {version: '1.5.0', agent: false};
 
-            return dist(ctx).then(() => {
+            return compatibility(ctx).then(() => {
                 expect(infoStub.calledOnce).to.be.true;
                 expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
-                expect(ctx).to.deep.equal({
-                    agent: false,
-                    version: '1.5.0',
-                    shasum: 'asdf1234',
-                    tarball: 'something.tgz'
-                });
+                expect(ctx).to.deep.equal({agent: false, version: '1.5.0'});
             });
         });
     });
 
     describe('download subtask', function () {
-        it('rejects if shasum does not match the sha hash of the downloaded data', function () {
-            const downloadStub = sinon.stub().resolves({downloadedData: true});
-            const shasumStub = sinon.stub().returns('badshasum');
-            const downloadTask = proxyquire(modulePath, {
-                download: downloadStub,
-                shasum: shasumStub
-            }).subTasks.download;
-            const ctx = {
-                tarball: 'something.tgz',
-                shasum: 'asdf1234'
-            };
+        const packResult = {stdout: JSON.stringify([{filename: 'ghost-1.0.0.tgz'}])};
 
-            return downloadTask(ctx).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.match(/download integrity compromised/);
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(downloadStub.calledWithExactly('something.tgz'));
-                expect(shasumStub.calledOnce).to.be.true;
-                expect(shasumStub.calledWithExactly({downloadedData: true})).to.be.true;
-            });
-        });
-
-        it('creates dir, decompresses and maps files', function () {
+        it('packs the requested version and extracts the tarball', function () {
             const env = setupTestFolder();
-            const downloadStub = sinon.stub().resolves({downloadedData: true});
-            const shasumStub = sinon.stub().returns('asdf1234');
-            const decompressStub = sinon.stub().resolves();
+            const execaStub = sinon.stub().resolves(packResult);
+            const extractStub = sinon.stub().resolves();
             const downloadTask = proxyquire(modulePath, {
-                download: downloadStub,
-                shasum: shasumStub,
-                decompress: decompressStub
+                execa: execaStub,
+                '../utils/archive': {extract: extractStub}
             }).subTasks.download;
             const ctx = {
-                tarball: 'something.tgz',
-                shasum: 'asdf1234',
+                version: '1.0.0',
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
             return downloadTask(ctx).then(() => {
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(downloadStub.calledWithExactly('something.tgz'));
-                expect(shasumStub.calledOnce).to.be.true;
-                expect(shasumStub.calledWithExactly({downloadedData: true})).to.be.true;
-                expect(decompressStub.calledOnce).to.be.true;
-                expect(fs.existsSync(ctx.installPath)).to.be.true;
+                expect(execaStub.calledOnce).to.be.true;
+                expect(execaStub.args[0][0]).to.equal('npm');
+                expect(execaStub.args[0][1]).to.deep.equal(['pack', 'ghost@1.0.0', '--json']);
 
-                expect(decompressStub.args[0][0]).to.deep.equal({downloadedData: true});
-                expect(decompressStub.args[0][1]).to.equal(ctx.installPath);
-                expect(decompressStub.args[0][2].map).to.exist;
+                const tmpDir = execaStub.args[0][2].cwd;
+                expect(tmpDir).to.be.a('string');
+                expect(fs.existsSync(tmpDir)).to.be.false;
 
-                const files = [{path: 'package/index.js'}, {path: 'package/package.json'}, {path: 'package/yarn.lock'}];
-                const mapResult = files.map(decompressStub.args[0][2].map);
-                expect(mapResult).to.deep.equal([{path: 'index.js'}, {path: 'package.json'}, {path: 'yarn.lock'}]);
+                expect(extractStub.calledOnce).to.be.true;
+                expect(extractStub.calledWithExactly(
+                    path.join(tmpDir, 'ghost-1.0.0.tgz'),
+                    ctx.installPath
+                )).to.be.true;
             });
         });
 
-        it('catches errors from decompress and cleans up the install folder', function () {
+        it('wraps npm pack failures in a ProcessError', function () {
             const env = setupTestFolder();
-            const downloadStub = sinon.stub().resolves({downloadedData: true});
-            const shasumStub = sinon.stub().returns('asdf1234');
-            const decompressStub = sinon.stub().rejects(new Error('an error occurred'));
+            const execaStub = sinon.stub().rejects(new Error('npm exploded'));
+            const extractStub = sinon.stub().resolves();
             const downloadTask = proxyquire(modulePath, {
-                download: downloadStub,
-                shasum: shasumStub,
-                decompress: decompressStub
+                execa: execaStub,
+                '../utils/archive': {extract: extractStub}
             }).subTasks.download;
             const ctx = {
-                tarball: 'something.tgz',
-                shasum: 'asdf1234',
+                version: '1.0.0',
+                installPath: path.join(env.dir, 'versions/1.0.0')
+            };
+
+            return downloadTask(ctx).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(execaStub.calledOnce).to.be.true;
+                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                expect(extractStub.called).to.be.false;
+                expect(fs.existsSync(ctx.installPath)).to.be.false;
+            });
+        });
+
+        it('catches extraction errors and cleans up the install folder', function () {
+            const env = setupTestFolder();
+            const execaStub = sinon.stub().resolves(packResult);
+            const extractStub = sinon.stub().rejects(new Error('an error occurred'));
+            const downloadTask = proxyquire(modulePath, {
+                execa: execaStub,
+                '../utils/archive': {extract: extractStub}
+            }).subTasks.download;
+            const ctx = {
+                version: '1.0.0',
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
@@ -502,11 +490,9 @@ describe('Unit: Tasks > install-dependencies', function () {
                 expect(false, 'Error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error.message).to.equal('an error occurred');
-                expect(downloadStub.calledOnce).to.be.true;
-                expect(downloadStub.calledWithExactly('something.tgz'));
-                expect(shasumStub.calledOnce).to.be.true;
-                expect(shasumStub.calledWithExactly({downloadedData: true})).to.be.true;
-                expect(decompressStub.calledOnce).to.be.true;
+                expect(execaStub.calledOnce).to.be.true;
+                expect(extractStub.calledOnce).to.be.true;
+                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
                 expect(fs.existsSync(ctx.installPath)).to.be.false;
             });
         });
