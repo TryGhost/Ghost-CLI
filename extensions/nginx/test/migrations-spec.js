@@ -113,9 +113,10 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
 
             readFileSync.onFirstCall().returns(oldSslWithLe);
             readFileSync.onSecondCall().returns('ACCOUNT_EMAIL=\'test@example.com\'\n');
+            readFileSync.onThirdCall().returns(oldSslWithLe);
 
             const restartStub = sinon.stub().resolves();
-            const replaceStub = sinon.stub().resolves();
+            const writeFileSync = sinon.stub();
 
             const acme = {
                 install: sinon.stub().resolves(),
@@ -127,8 +128,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             };
 
             const migrate = proxyquire(modulePath, {
-                'node:fs': {existsSync: existsSync, readFileSync: readFileSync},
-                'replace-in-file': replaceStub,
+                'node:fs': {existsSync: existsSync, readFileSync: readFileSync, writeFileSync: writeFileSync},
                 './acme': acme,
                 os: {homedir: () => '/home/ghost'}
             });
@@ -160,7 +160,13 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
 
                 return tasks[2].task();
             }).then(() => {
-                expect(replaceStub.calledOnce).to.be.true;
+                expect(writeFileSync.calledOnce).to.be.true;
+
+                const [file, contents] = writeFileSync.args[0];
+                expect(file).to.equal('/var/www/ghost/system/files/ghost.org-ssl.conf');
+                expect(contents).to.contain('ssl_certificate /etc/letsencrypt/ghost.org/fullchain.cer;');
+                expect(contents).to.contain('ssl_certificate_key /etc/letsencrypt/ghost.org/ghost.org.key;');
+                expect(contents).to.not.contain('/home/ghost/.acme.sh/ghost.org/');
 
                 return tasks[3].task();
             }).then(() => {

@@ -404,13 +404,9 @@ describe('Unit: Utils > local-process', function () {
 
     describe('_checkContentFolder', function () {
         let LocalProcess;
-        let modeStub;
 
         beforeEach(() => {
-            modeStub = sinon.stub();
-            LocalProcess = proxyquire(modulePath, {
-                'stat-mode': modeStub
-            });
+            LocalProcess = proxyquire(modulePath, {});
         });
 
         it('skips if windows', function () {
@@ -418,19 +414,16 @@ describe('Unit: Utils > local-process', function () {
             const instance = new LocalProcess({}, {
                 platform: {windows: true}
             }, {});
-            modeStub.returns({others: {write: false, read: false}});
 
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.true;
             expect(statStub.called).to.be.false;
-            expect(modeStub.called).to.be.false;
         });
 
         it('returns true if getuid and lstatSync match', function () {
-            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 1});
+            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 1, mode: 0o750});
             const uidStub = sinon.stub(process, 'getuid').returns(1);
-            modeStub.returns({others: {write: false, read: false}});
 
             const instance = new LocalProcess({}, {
                 platform: {linux: true}
@@ -441,13 +434,11 @@ describe('Unit: Utils > local-process', function () {
             expect(statStub.calledOnce).to.be.true;
             expect(statStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
             expect(uidStub.calledOnce).to.be.true;
-            expect(modeStub.called).to.be.false;
         });
 
         it('returns true if getuid and lstatSync don\'t match, but current user has read&write permissions', function () {
-            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2});
+            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2, mode: 0o757});
             const uidStub = sinon.stub(process, 'getuid').returns(1);
-            modeStub.returns({others: {write: true, read: true}});
 
             const instance = new LocalProcess({}, {
                 platform: {linux: true}
@@ -458,13 +449,11 @@ describe('Unit: Utils > local-process', function () {
             expect(statStub.calledOnce).to.be.true;
             expect(statStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
             expect(uidStub.calledOnce).to.be.true;
-            expect(modeStub.calledOnce).to.be.true;
         });
 
         it('returns false if getuid and lstatSync don\'t match, and current user doesn\'t have read&write permissions', function () {
-            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2});
+            const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2, mode: 0o755});
             const uidStub = sinon.stub(process, 'getuid').returns(1);
-            modeStub.returns({others: {write: false, read: false}});
 
             const instance = new LocalProcess({}, {
                 platform: {linux: true}
@@ -475,7 +464,6 @@ describe('Unit: Utils > local-process', function () {
             expect(statStub.calledOnce).to.be.true;
             expect(statStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
             expect(uidStub.calledOnce).to.be.true;
-            expect(modeStub.calledOnce).to.be.true;
         });
     });
 });
