@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const mysql = require('mysql2');
 const omit = require('lodash/omit');
 const generator = require('generate-password');
@@ -87,7 +86,9 @@ class MySQLExtension extends Extension {
         this.connection = mysql.createConnection(omit(dbconfig, 'database'));
 
         try {
-            await Promise.fromCallback(cb => this.connection.connect(cb));
+            await new Promise((resolve, reject) => {
+                this.connection.connect(error => (error ? reject(error) : resolve()));
+            });
         } catch (error) {
             if (error.code === 'ECONNREFUSED') {
                 throw new ConfigError({
@@ -263,7 +264,9 @@ class MySQLExtension extends Extension {
     async _query(queryString) {
         this.ui.logVerbose(`MySQL: running query > ${queryString}`, 'gray');
         try {
-            const result = await Promise.fromCallback(cb => this.connection.query(queryString, cb));
+            const result = await new Promise((resolve, reject) => {
+                this.connection.query(queryString, (error, results) => (error ? reject(error) : resolve(results)));
+            });
             return result;
         } catch (error) {
             if (error instanceof CliError) {

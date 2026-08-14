@@ -1,7 +1,7 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const Promise = require('bluebird');
+const each = require('../../utils/each');
 const path = require('path');
 const fs = require('fs-extra');
 
@@ -219,7 +219,7 @@ describe('Unit: Commands > Install', function () {
             const dirEmptyStub = sinon.stub().returns(true);
             const installDependenciesStub = sinon.stub().resolves();
             const ensureStructureStub = sinon.stub().resolves();
-            const listrStub = sinon.stub().callsFake((tasks, ctx) => Promise.each(tasks, task => task.task(ctx, {})));
+            const listrStub = sinon.stub().callsFake((tasks, ctx) => each(tasks, task => task.task(ctx, {})));
 
             const InstallCommand = proxyquire(modulePath, {
                 '../tasks/install-dependencies': installDependenciesStub,

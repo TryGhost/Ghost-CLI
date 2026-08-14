@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const configStub = require('../../utils/config-stub');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
-const Promise = require('bluebird');
+const each = require('../../utils/each');
 const path = require('path');
 const fs = require('fs-extra');
 
@@ -212,7 +212,7 @@ describe('Unit: Commands > Update', function () {
             const system = {getInstance: sinon.stub()};
 
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
                 if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
                     return;
                 }
@@ -289,7 +289,7 @@ describe('Unit: Commands > Update', function () {
             const system = {getInstance: sinon.stub()};
 
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
                 if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
                     return;
                 }
@@ -461,7 +461,7 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
                 if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
                     return;
                 }
@@ -523,7 +523,7 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
                 if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
                     return;
                 }
@@ -590,7 +590,7 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => Promise.each(tasks, (task) => {
+            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
                 if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
                     return;
                 }

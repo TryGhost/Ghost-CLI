@@ -4,7 +4,6 @@ const dns = require('dns');
 const url = require('url');
 const isIP = require('validator/lib/isIP');
 const path = require('path');
-const Promise = require('bluebird');
 const template = require('lodash/template');
 const sysinfo = require('systeminformation');
 
@@ -155,13 +154,15 @@ class NginxExtension extends Extension {
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
-            task: () => Promise.fromNode(cb => dns.lookup(parsedUrl.hostname, {family: 4}, cb)).catch((error) => {
+            task: () => new Promise((resolve, reject) => {
+                dns.lookup(parsedUrl.hostname, {family: 4}, error => (error ? reject(error) : resolve()));
+            }).catch((error) => {
                 if (error.code !== 'ENOTFOUND') {
                     // Some other error
-                    return Promise.reject(new CliError({
+                    throw new CliError({
                         message: `Error trying to lookup DNS for '${parsedUrl.hostname}'`,
                         err: error
-                    }));
+                    });
                 }
 
                 // DNS entry has not populated yet, log an error and skip rest of the
@@ -171,10 +172,10 @@ class NginxExtension extends Extension {
                     'Because of this, SSL setup won\'t work correctly. Once you\'ve set up your domain',
                     'and pointed it at this server\'s IP, try running `ghost setup ssl` again.'
                 ];
-                return Promise.reject(new CliError({
+                throw new CliError({
                     message: text.join('\n'),
                     task: 'Setting up SSL'
-                }));
+                });
             })
         }, {
             title: 'Getting additional configuration',

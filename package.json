@@ -46,7 +46,6 @@
   "dependencies": {
     "@tryghost/zip": "3.5.5",
     "abbrev": "5.0.0",
-    "bluebird": "3.7.2",
     "boxen": "8.0.1",
     "chalk": "6.0.0",
     "cli-table3": "0.5.0",

@@ -4,7 +4,6 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const modulePath = '../index';
-const Promise = require('bluebird');
 const {errors, Extension} = require('../../../lib');
 const configStub = require('../../../test/utils/config-stub');
 

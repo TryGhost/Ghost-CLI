@@ -1,7 +1,6 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const Promise = require('bluebird');
 const path = require('path');
 
 const options = require('../../../../lib/tasks/configure/options');
@@ -30,7 +29,7 @@ describe('Unit: Tasks: Configure > options', function () {
         expect(options.adminUrl.transform('http://MyUpperCaseUrl.com')).to.equal('http://myuppercaseurl.com');
     });
 
-    it('port', function () {
+    it('port', async function () {
         const getPortPromise = sinon.stub().resolves('2367');
         const options = proxyquire('../../../../lib/tasks/configure/options', {portfinder: {getPortPromise}});
 
@@ -39,20 +38,20 @@ describe('Unit: Tasks: Configure > options', function () {
         // Check validate
         expect(options.port.validate('not an int')).to.match(/must be an integer/);
 
-        return Promise.props({
-            validateExpectsTrue: options.port.validate('2367'),
-            validateExpectsMessage: options.port.validate('2366'),
-            defaultCalledWithUrlPort: options.port.defaultValue({get: () => 'http://localhost:2369'}),
-            defaultCalledWithNoUrlPort: options.port.defaultValue({get: () => 'http://example.com'})
-        }).then((results) => {
-            expect(results.validateExpectsTrue).to.be.true;
-            expect(results.validateExpectsMessage).to.match(/'2366' is in use/);
+        const [validateExpectsTrue, validateExpectsMessage] = await Promise.all([
+            options.port.validate('2367'),
+            options.port.validate('2366'),
+            options.port.defaultValue({get: () => 'http://localhost:2369'}),
+            options.port.defaultValue({get: () => 'http://example.com'})
+        ]);
 
-            expect(getPortPromise.calledWithExactly({port: 2366})).to.be.true;
-            expect(getPortPromise.calledWithExactly({port: 2367})).to.be.true;
-            expect(getPortPromise.calledWithExactly({port: 2368})).to.be.true;
-            expect(getPortPromise.calledWithExactly({port: 2369})).to.be.true;
-        });
+        expect(validateExpectsTrue).to.be.true;
+        expect(validateExpectsMessage).to.match(/'2366' is in use/);
+
+        expect(getPortPromise.calledWithExactly({port: 2366})).to.be.true;
+        expect(getPortPromise.calledWithExactly({port: 2367})).to.be.true;
+        expect(getPortPromise.calledWithExactly({port: 2368})).to.be.true;
+        expect(getPortPromise.calledWithExactly({port: 2369})).to.be.true;
     });
 
     it('db', function () {
