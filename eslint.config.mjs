@@ -43,7 +43,7 @@ const base = {
 };
 
 export default defineConfig([
-    globalIgnores(['**/node_modules/**', '**/coverage/**']),
+    globalIgnores(['**/node_modules/**', '**/coverage/**', '.claude/**']),
     {
         files: ['**/*.js'],
         ...base
