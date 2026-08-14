@@ -11,6 +11,7 @@ if (argv.length === 0) {
     process.exit(1);
 }
 
-const yargs = require('yargs');
+// yargs v18 exports a factory rather than a singleton instance
+const yargs = require('yargs')();
 const bootstrap = require('../lib/bootstrap');
 bootstrap.run(argv, yargs);
