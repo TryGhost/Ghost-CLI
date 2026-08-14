@@ -77,7 +77,7 @@ describe('Unit: UI', function () {
         const startStub = sinon.stub().returns(spinner);
         const oraStub = sinon.stub().returns({start: startStub});
         const UI = proxyquire(modulePath, {
-            ora: oraStub
+            ora: {default: oraStub}
         });
 
         afterEach(() => {
