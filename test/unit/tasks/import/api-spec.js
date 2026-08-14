@@ -295,7 +295,7 @@ describe('Unit > Tasks > Import > setup', function () {
                 }, path.join(__dirname, 'fixtures/3.x.json'));
             } catch (error) {
                 expect(error.response).to.exist;
-                expect(error.response.statusCode).to.equal(500);
+                expect(error.response.status).to.equal(500);
                 expect(sessionScope.isDone()).to.be.true;
                 expect(importScope.isDone()).to.be.false;
                 return;
@@ -351,9 +351,16 @@ describe('Unit > Tasks > Import > setup', function () {
                     cookie: [
                         'ghost-admin-api-session=test-session-data'
                     ],
-                    origin: testUrl
+                    origin: testUrl,
+                    'content-type': /^multipart\/form-data; boundary=/
                 }
-            }).post('/ghost/api/admin/db/').reply(201, {});
+            }).post('/ghost/api/admin/db/', (body) => {
+                // Ghost picks the importer from the part's filename, so it has to survive
+                expect(body).to.match(/name="importfile"/);
+                expect(body).to.match(/filename="5\.x\.json"/);
+                expect(body).to.match(/Content-Type: application\/json/i);
+                return true;
+            }).reply(201, {});
 
             await runImport('5.0.0', 'http://localhost:2368', {
                 username: 'test@example.com',
