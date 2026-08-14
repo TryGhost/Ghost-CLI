@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@tryghost/zip':
-        specifier: 3.5.5
-        version: 3.5.5(supports-color@8.1.1)
+        specifier: 3.5.6
+        version: 3.5.6(supports-color@8.1.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -548,11 +548,11 @@ packages:
   '@sinonjs/samsam@10.0.2':
     resolution: {integrity: sha512-8lVwD1Df1BmzoaOLhMcGGcz/Jyr5QY2KSB75/YK1QgKzoabTeLdIVyhXNZK9ojfSKSdirbXqdbsXXqP9/Ve8+A==}
 
-  '@tryghost/errors@3.3.6':
-    resolution: {integrity: sha512-F4eR8iyccP/UkuHEbwgVMLDYGRv8vaXsPVDsYNcNmFbOi5TaC1RmOxpwx9ggdTc5SToKuO1YL+cvqaa+EO4O7w==}
+  '@tryghost/errors@3.3.7':
+    resolution: {integrity: sha512-dfP7FBHxKP0vRWggvlhtYSdzaPMAtsOM6MmY7OMSh39iPRlP8Hd+Kc2IUiO9KiG8gEqg0BMXmVd1zvvneyyyKg==}
 
-  '@tryghost/zip@3.5.5':
-    resolution: {integrity: sha512-iR2oo2qGVb4FBSLsBb6ZOMGhvBopNCTojmFJUjYDp+4ZsjRtRlIVPClwDtMgP5wBH0Q6lfOMjgTL+ErtjO81PA==}
+  '@tryghost/zip@3.5.6':
+    resolution: {integrity: sha512-rkKtBtsWE6uPHJJeinKDTKayn1tR3Om59ol2piHNYNTd/9ElyfqDU7QmHttsH4BAiPOymmXRr2cY8QBlfnoq9Q==}
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
@@ -3116,11 +3116,11 @@ snapshots:
       '@sinonjs/commons': 3.0.1
       type-detect: 4.1.0
 
-  '@tryghost/errors@3.3.6': {}
+  '@tryghost/errors@3.3.7': {}
 
-  '@tryghost/zip@3.5.5(supports-color@8.1.1)':
+  '@tryghost/zip@3.5.6(supports-color@8.1.1)':
     dependencies:
-      '@tryghost/errors': 3.3.6
+      '@tryghost/errors': 3.3.7
       archiver: 8.0.0
       extract-zip: 2.0.1(supports-color@8.1.1)
     transitivePeerDependencies:
