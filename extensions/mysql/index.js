@@ -77,7 +77,7 @@ class MySQLExtension extends Extension {
             }
 
             return null;
-        } catch (error) {
+        } catch {
             this.ui.logVerbose('MySQL: failed to determine server version, assuming 5.x', 'gray');
             return null;
         }

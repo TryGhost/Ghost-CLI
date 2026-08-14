@@ -590,7 +590,6 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Templates subdirectories properly', function () {
-                // eslint-disable-next-line arrow-body-style
                 ctx.instance.config.get = (key) => {
                     return key === 'url' ? 'http://ghost.dev/blog' : 2368;
                 };

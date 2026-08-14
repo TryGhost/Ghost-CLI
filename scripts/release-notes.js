@@ -27,7 +27,7 @@ function getCommitLog(fromTag, toTag) {
     let log;
     try {
         log = execSync(cmd, {cwd: ROOT_DIR, encoding: 'utf8'}).trim();
-    } catch (e) {
+    } catch {
         return [];
     }
 

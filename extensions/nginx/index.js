@@ -50,7 +50,7 @@ class NginxExtension extends Extension {
     getResolvers() {
         try {
             return parseResolvers(fs.readFileSync(resolvConfPath, 'utf8'));
-        } catch (error) {
+        } catch {
             return parseResolvers('');
         }
     }
@@ -302,7 +302,7 @@ class NginxExtension extends Extension {
         try {
             const services = await sysinfo.services('*');
             return services.some(s => s.name === nginxProgramName);
-        } catch (error) {
+        } catch {
             return false;
         }
     }

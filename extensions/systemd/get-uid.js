@@ -21,7 +21,7 @@ module.exports = function getUid(dir) {
         }
 
         return uid;
-    } catch (e) {
+    } catch {
         // CASE: the ghost user doesn't exist, hence can't be used
         // We just return null and not doing anything with the error,
         // as it would either mean, that the user doesn't exist (this

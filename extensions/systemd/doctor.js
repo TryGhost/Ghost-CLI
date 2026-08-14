@@ -47,7 +47,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
     try {
         const stdout = await execa.stdout(nodePath, ['--version']);
         version = semver.valid(stdout.trim());
-    } catch (_) {
+    } catch {
         throw new SystemError(errBlock);
     }
 
@@ -71,7 +71,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
         const packagePath = path.join(instance.dir, 'current/package.json');
         const ghostPkg = await fs.readJson(packagePath);
         nodeRange = get(ghostPkg, 'engines.node', null);
-    } catch (_) {
+    } catch {
         return;
     }
 
