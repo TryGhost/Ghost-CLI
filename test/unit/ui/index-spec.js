@@ -1,7 +1,7 @@
 'use strict';
 const {expect} = require('chai');
 const chalk = require('chalk');
-const hasAnsi = require('has-ansi');
+const hasAnsi = require('has-ansi').default;
 const {stripVTControlCharacters: stripAnsi} = require('util');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
