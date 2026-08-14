@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 
 const streams = require('stream');
-const chalk = require('chalk');
+const chalk = require('chalk').default;
 // prettyjson colors object keys via `colors`, which does its own
 // TTY detection independently of chalk
 const colors = require('colors/safe');

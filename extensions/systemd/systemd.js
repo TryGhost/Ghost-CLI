@@ -3,7 +3,7 @@
 const fs = require('fs');
 const execa = require('execa');
 const getUid = require('./get-uid');
-const chalk = require('chalk');
+const chalk = require('chalk').default;
 const {ProcessManager, errors} = require('../../lib');
 
 const {CliError, ProcessError, SystemError} = errors;

@@ -1,6 +1,6 @@
 'use strict';
 const {expect} = require('chai');
-const chalk = require('chalk');
+const chalk = require('chalk').default;
 const hasAnsi = require('has-ansi').default;
 const {stripVTControlCharacters: stripAnsi} = require('util');
 const sinon = require('sinon');
