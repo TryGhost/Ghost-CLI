@@ -2,7 +2,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noPreserveCache();
-const Promise = require('bluebird');
+const each = require('../../utils/each');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const path = require('path');
 const fs = require('fs');
@@ -46,7 +46,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });
@@ -80,7 +80,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });
@@ -167,7 +167,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });
@@ -207,7 +207,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });
@@ -242,7 +242,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });
@@ -272,7 +272,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });
@@ -301,7 +301,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         const listrStub = sinon.stub().callsFake((tasks) => {
             expect(tasks).to.have.length(3);
 
-            return Promise.each(tasks, (task) => {
+            return each(tasks, (task) => {
                 const result = task.task(ctx);
                 return isObservable(result) ? result.toPromise() : result;
             });

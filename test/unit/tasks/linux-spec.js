@@ -2,13 +2,13 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
-const Promise = require('bluebird');
+const each = require('../../utils/each');
 
 const modulePath = '../../../lib/tasks/linux';
 
 function fakeListr(tasks, ctx) {
     expect(ctx).to.be.false;
-    return Promise.each(tasks, (task) => {
+    return each(tasks, (task) => {
         if (task.skip && task.skip()) {
             return;
         }

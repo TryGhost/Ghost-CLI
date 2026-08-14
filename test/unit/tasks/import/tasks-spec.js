@@ -1,7 +1,7 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const Promise = require('bluebird');
+const each = require('../../../utils/each');
 const createConfigStub = require('../../../utils/config-stub');
 
 const {SystemError} = require('../../../../lib/errors');
@@ -27,7 +27,7 @@ describe('Unit: Tasks > Import > Tasks', function () {
             });
 
             const prompt = sinon.stub().resolves({username: 'setup@example.com', password: '1234567890'});
-            const listr = sinon.stub().callsFake(tasks => Promise.each(tasks, async (t) => {
+            const listr = sinon.stub().callsFake(tasks => each(tasks, async (t) => {
                 if (t.enabled && !t.enabled()) {
                     return;
                 }
@@ -74,7 +74,7 @@ describe('Unit: Tasks > Import > Tasks', function () {
             });
 
             const prompt = sinon.stub().resolves({password: '1234567890'});
-            const listr = sinon.stub().callsFake(tasks => Promise.each(tasks, async (t) => {
+            const listr = sinon.stub().callsFake(tasks => each(tasks, async (t) => {
                 if (t.enabled && !t.enabled()) {
                     return;
                 }
