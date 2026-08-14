@@ -4,7 +4,7 @@ const path = require('path');
 const ini = require('ini');
 const chalk = require('chalk').default;
 const semver = require('semver');
-const execa = require('execa');
+const {execa} = require('execa');
 const {errors} = require('../../lib');
 
 const {SystemError} = errors;
@@ -45,7 +45,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
     let version;
 
     try {
-        const stdout = await execa.stdout(nodePath, ['--version']);
+        const {stdout} = await execa(nodePath, ['--version']);
         version = semver.valid(stdout.trim());
     } catch {
         throw new SystemError(errBlock);

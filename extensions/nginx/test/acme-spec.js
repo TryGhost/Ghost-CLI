@@ -271,7 +271,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
-            sudoStub.onSecondCall().rejects({stderr: 'CODE: ENOTFOUND', cmd: 'acme'});
+            sudoStub.onSecondCall().rejects({stderr: 'CODE: ENOTFOUND', command: 'acme'});
 
             return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
                 expect(false, 'Promise should have been rejected').to.be.true;
@@ -308,7 +308,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
         it('Knows when a certificate already exists', function () {
             const acmeError = new Error('Cert exists');
-            acmeError.code = 2;
+            acmeError.exitCode = 2;
             const sudoStub = sinon.stub().rejects(acmeError);
 
             return acme.generate({sudo: sudoStub}).then((result) => {

@@ -424,7 +424,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             const execaStub = sinon.stub().resolves(packResult);
             const extractStub = sinon.stub().resolves();
             const downloadTask = proxyquire(modulePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/archive': {extract: extractStub}
             }).subTasks.download;
             const ctx = {
@@ -454,7 +454,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             const execaStub = sinon.stub().rejects(new Error('npm exploded'));
             const extractStub = sinon.stub().resolves();
             const downloadTask = proxyquire(modulePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/archive': {extract: extractStub}
             }).subTasks.download;
             const ctx = {
@@ -478,7 +478,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             const execaStub = sinon.stub().resolves(packResult);
             const extractStub = sinon.stub().rejects(new Error('an error occurred'));
             const downloadTask = proxyquire(modulePath, {
-                execa: execaStub,
+                execa: {execa: execaStub},
                 '../utils/archive': {extract: extractStub}
             }).subTasks.download;
             const ctx = {

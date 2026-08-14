@@ -9,8 +9,6 @@ const logSymbols = require('log-symbols');
 const streamTestUtils = require('../../utils/stream');
 const EventEmitter = require('events');
 
-const execa = require('execa');
-
 const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {
@@ -498,10 +496,11 @@ describe('Unit: UI', function () {
     });
 
     describe('sudo', function () {
-        const UI = require(modulePath);
+        const setupUI = execa => proxyquire(modulePath, {execa: {execa}});
 
         it('runs a sudo command', function (done) {
-            const shellStub = sinon.stub(execa, 'shell');
+            const shellStub = sinon.stub();
+            const UI = setupUI(shellStub);
             const ui = new UI();
 
             const logStub = sinon.stub(ui, 'log');
@@ -516,18 +515,19 @@ describe('Unit: UI', function () {
                 expect(logStub.calledWithExactly('+ sudo ghost -v', 'gray')).to.be.true;
                 expect(shellStub.calledOnce).to.be.true;
                 expect(shellStub.args[0][0]).to.match(eCall);
-                expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo'});
+                expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo', shell: true});
                 expect(promptStub.calledOnce).to.be.true;
                 done();
             });
-            shellStub.returns({stdin: stdin, stderr: stderr});
+            shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
 
             ui.sudo('ghost -v', {cwd: '/var/foo', sudoArgs: ['-E -u ghost']});
             stderr.emit('data', '#node-sudo-passwd#');
         });
 
         it('prompts for a password when sudo-rs wraps the prompt', function (done) {
-            const shellStub = sinon.stub(execa, 'shell');
+            const shellStub = sinon.stub();
+            const UI = setupUI(shellStub);
             const ui = new UI();
 
             sinon.stub(ui, 'log');
@@ -539,7 +539,7 @@ describe('Unit: UI', function () {
                 expect(promptStub.calledOnce).to.be.true;
                 done();
             });
-            shellStub.returns({stdin: stdin, stderr: stderr});
+            shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
 
             ui.sudo('ghost -v', {sudoArgs: ['-E -u ghost']});
             // sudo-rs (default on Ubuntu 26+) wraps the `-p` value rather than replacing the prompt
@@ -550,7 +550,8 @@ describe('Unit: UI', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};
 
-            const shellStub = sinon.stub(execa, 'shell').returns(shell);
+            const shellStub = sinon.stub().returns(shell);
+            const UI = setupUI(shellStub);
             const ui = new UI();
 
             sinon.stub(ui, 'log').returns(true);
@@ -559,6 +560,26 @@ describe('Unit: UI', function () {
             return ui.sudo('echo').then(() => {
                 expect(shellStub.calledOnce).to.be.true;
                 expect(shellStub.args[0][0]).to.match(/#'[ ]{2}echo/);
+            });
+        });
+
+        it('returns a plain promise so listr doesn\'t mistake it for a stream', function () {
+            // execa's subprocess promise has a `pipe` method, which is what `is-stream`
+            // (used by listr) checks for
+            const shell = Promise.resolve('result');
+            shell.stderr = {on: () => true};
+            shell.pipe = () => true;
+
+            const UI = setupUI(sinon.stub().returns(shell));
+            const ui = new UI();
+
+            sinon.stub(ui, 'log').returns(true);
+
+            const result = ui.sudo('echo');
+            expect(result.pipe).to.be.undefined;
+
+            return result.then((value) => {
+                expect(value).to.equal('result');
             });
         });
     });

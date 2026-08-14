@@ -89,7 +89,7 @@ async function generateCert(ui, domain, webroot, email, staging) {
     try {
         await ui.sudo(cmd);
     } catch (error) {
-        if (error.code === 2) {
+        if (error.exitCode === 2) {
             // error code 2 is given if a cert doesn't need to be renewed
             return;
         }

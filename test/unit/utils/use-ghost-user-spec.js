@@ -2,10 +2,15 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
-const ghostUser = require('../../../lib/utils/use-ghost-user');
+const proxyquire = require('proxyquire');
 const os = require('os');
-const execa = require('execa');
 const fs = require('fs');
+
+const modulePath = '../../../lib/utils/use-ghost-user';
+
+const setup = execaSync => proxyquire(modulePath, {execa: {execaSync}});
+
+const ghostUser = setup(sinon.stub());
 
 describe('Unit: Utils > ghostUser', function () {
     afterEach(() => {
@@ -24,7 +29,8 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns false if no ghost user found', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').throws(new Error('no such user'));
+            const execaStub = sinon.stub().throws(new Error('no such user'));
+            const ghostUser = setup(execaStub);
 
             const result = ghostUser.shouldUseGhostUser();
 
@@ -35,7 +41,8 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns false if the ghost owner/group is not the owner of the content folder', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: '50'});
+            const execaStub = sinon.stub().returns({stdout: '50'});
+            const ghostUser = setup(execaStub);
             const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 30, gid: 30});
 
             const result = ghostUser.shouldUseGhostUser('/some-dir/content');
@@ -48,7 +55,8 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns false if the current user is ghost', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: '50'});
+            const execaStub = sinon.stub().returns({stdout: '50'});
+            const ghostUser = setup(execaStub);
             const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 50, gid: 50});
 
             const originalGetuid = process.getuid;
@@ -66,7 +74,8 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns true if user is not ghost', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: '50'});
+            const execaStub = sinon.stub().returns({stdout: '50'});
+            const ghostUser = setup(execaStub);
             const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 50, gid: 50});
 
             const originalGetuid = process.getuid;
@@ -95,7 +104,8 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns uid and guid object', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').returns({stdout: 501});
+            const execaStub = sinon.stub().returns({stdout: 501});
+            const ghostUser = setup(execaStub);
 
             const result = ghostUser.getGhostUid();
             expect(result).to.be.an('object');
@@ -107,7 +117,8 @@ describe('Unit: Utils > ghostUser', function () {
 
         it('returns false if "no such user" error is thrown', function () {
             const platformStub = sinon.stub(os, 'platform').returns('linux');
-            const execaStub = sinon.stub(execa, 'shellSync').throws(new Error('no such user'));
+            const execaStub = sinon.stub().throws(new Error('no such user'));
+            const ghostUser = setup(execaStub);
 
             const result = ghostUser.getGhostUid();
             expect(result).to.be.false;

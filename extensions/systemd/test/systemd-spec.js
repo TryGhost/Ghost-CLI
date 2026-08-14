@@ -386,19 +386,19 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Calls execa', function () {
-            const expectedCmd = 'which systemctl';
             const Systemd = proxyquire(modulePath,
-                {execa: {shellSync: execaStub}});
+                {execa: {execaSync: execaStub}});
 
             expect(Systemd.willRun()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
-            expect(execaStub.args[0][0]).to.equal(expectedCmd);
+            expect(execaStub.args[0][0]).to.equal('which');
+            expect(execaStub.args[0][1]).to.deep.equal(['systemctl']);
         });
 
         it('Always fails', function () {
             execaStub = sinon.stub().throws(new Error());
             const Systemd = proxyquire(modulePath,
-                {execa: {shellSync: execaStub}});
+                {execa: {execaSync: execaStub}});
 
             expect(Systemd.willRun()).to.be.false;
             expect(execaStub.calledOnce).to.be.true;

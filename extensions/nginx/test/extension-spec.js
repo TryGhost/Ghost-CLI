@@ -486,11 +486,6 @@ describe('Unit: Extensions > Nginx', function () {
         });
 
         describe('dhparam', function () {
-            beforeEach(function () {
-                stubs.exec = sinon.stub().throws(new Error('Uh-oh'));
-                proxy.execa = {shell: stubs.exec};
-            });
-
             it('Uses OpenSSL (and skips if already exists)', function () {
                 proxy['fs-extra'].existsSync = () => true;
                 const ext = proxyNginx(proxy);

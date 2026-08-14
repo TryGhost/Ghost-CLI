@@ -8,7 +8,7 @@ const {ProcessError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/yarn';
 
-const setup = proxies => proxyquire(modulePath, proxies);
+const setup = ({execa, ...proxies}) => proxyquire(modulePath, execa ? {...proxies, execa: {execa}} : proxies);
 
 describe('Unit: yarn', function () {
     let currentEnv;
