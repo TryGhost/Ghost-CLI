@@ -424,12 +424,17 @@ describe('Unit: UI', function () {
     });
 
     describe('listr', function () {
-        it('passes tasks to constructor', function () {
+        const listrStub = (errors = []) => {
             const runStub = sinon.stub().resolves();
-            const ListrStub = sinon.stub().returns({run: runStub});
+            const instance = {run: runStub, errors};
+            return {runStub, instance, ListrStub: sinon.stub().returns(instance)};
+        };
+
+        it('passes tasks to constructor', function () {
+            const {runStub, instance, ListrStub} = listrStub();
             const createRendererStub = sinon.stub().returns({RendererClass: true});
             const UI = proxyquire(modulePath, {
-                listr: ListrStub,
+                listr2: {Listr: ListrStub},
                 './renderer': createRendererStub
             });
             const ui = new UI();
@@ -440,22 +445,24 @@ describe('Unit: UI', function () {
                 expect(createRendererStub.calledOnce).to.be.true;
                 expect(ListrStub.calledWithExactly(tasks, {
                     renderer: {RendererClass: true},
+                    fallbackRenderer: 'verbose',
+                    collectErrors: true,
+                    registerSignalListeners: false,
                     exitOnError: true
                 })).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
                 expect(runStub.calledWithExactly({
                     ui: ui,
-                    listr: {run: runStub}
+                    listr: instance
                 })).to.be.true;
             });
         });
 
         it('sets verbose renderer', function () {
-            const runStub = sinon.stub().resolves();
-            const ListrStub = sinon.stub().returns({run: runStub});
+            const {runStub, instance, ListrStub} = listrStub();
             const createRendererStub = sinon.stub().returns({RendererClass: true});
             const UI = proxyquire(modulePath, {
-                listr: ListrStub,
+                listr2: {Listr: ListrStub},
                 './renderer': createRendererStub
             });
             const ui = new UI({verbose: true});
@@ -466,32 +473,59 @@ describe('Unit: UI', function () {
                 expect(createRendererStub.called).to.be.false;
                 expect(ListrStub.calledWithExactly(tasks, {
                     renderer: 'verbose',
+                    fallbackRenderer: 'verbose',
+                    collectErrors: true,
+                    registerSignalListeners: false,
                     exitOnError: false
                 })).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
                 expect(runStub.calledWithExactly({
                     something: 'foo',
                     ui: ui,
-                    listr: {run: runStub}
+                    listr: instance
                 })).to.be.true;
             });
         });
 
         it('returns listr instance if context is false', function () {
-            const runStub = sinon.stub().resolves();
-            const ListrStub = sinon.stub().returns({run: runStub});
-            const UI = proxyquire(modulePath, {listr: ListrStub});
+            const {runStub, instance, ListrStub} = listrStub();
+            const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
             const ui = new UI();
             const tasks = ['test','ing','is','necessary'];
 
             const result = ui.listr(tasks, false, {renderer: 'update'});
-            expect(result).to.deep.equal({run: runStub});
+            expect(result).to.equal(instance);
             expect(ListrStub.calledWithNew()).to.be.true;
             expect(ListrStub.calledWithExactly(tasks, {
                 renderer: 'update',
+                fallbackRenderer: 'verbose',
+                collectErrors: true,
+                registerSignalListeners: false,
                 exitOnError: true
             })).to.be.true;
             expect(runStub.called).to.be.false;
+        });
+
+        it('aggregates any errors collected during the run', async function () {
+            const collected = [new Error('a'), new Error('b')];
+            const {instance, runStub, ListrStub} = listrStub();
+            runStub.callsFake(() => {
+                instance.errors.push(...collected.map(error => ({error})));
+                return Promise.resolve();
+            });
+            const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
+            const ui = new UI();
+
+            const error = await expect(ui.listr(['tasks'], false).run({})).to.be.rejectedWith(AggregateError);
+            expect(error.errors).to.deep.equal(collected);
+        });
+
+        it('ignores errors collected before the run (subtask lists share the parent\'s errors)', async function () {
+            const {ListrStub} = listrStub([{error: new Error('a')}]);
+            const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
+            const ui = new UI();
+
+            await expect(ui.listr(['tasks'], false).run({})).to.be.fulfilled;
         });
     });
 
@@ -864,18 +898,15 @@ describe('Unit: UI', function () {
             });
         });
 
-        describe('handles ListrErrors', function () {
-            const ListrError = require('listr/lib/listr-error');
-
+        describe('handles aggregated listr errors', function () {
             it('verbose without log output', function () {
-                const err = new ListrError('Something happened');
-                err.errors = [
+                const err = new AggregateError([
                     new errors.SystemError('Error 1'),
                     new errors.SystemError({
                         message: 'Error 2',
                         task: 'Task 2'
                     })
-                ];
+                ], 'Something happened');
 
                 const ui = new UI({verbose: true});
                 const log = sinon.stub(ui, 'log');
@@ -899,14 +930,13 @@ describe('Unit: UI', function () {
             });
 
             it('non-verbose with log output', function () {
-                const err = new ListrError('Something happened');
-                err.errors = [
+                const err = new AggregateError([
                     new errors.ProcessError({message: 'Error 1'}),
                     new errors.ProcessError({
                         message: 'Error 2',
                         task: 'Task 2'
                     })
-                ];
+                ], 'Something happened');
 
                 const ui = new UI({verbose: false});
                 const log = sinon.stub(ui, 'log');

@@ -2,8 +2,7 @@
 const expect = require('chai').expect;
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
-const {isObservable} = require('rxjs');
-const {getReadableStream} = require('../../utils/stream');
+const {getReadableStream, collect, isReadable} = require('../../utils/stream');
 const {ProcessError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/yarn';
@@ -98,8 +97,8 @@ describe('Unit: yarn', function () {
         });
     });
 
-    describe('can return observables', function () {
-        it('ends properly', function () {
+    describe('can return a readable stream', function () {
+        it('ends properly', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.resolve();
                 promise.stdout = getReadableStream();
@@ -108,25 +107,13 @@ describe('Unit: yarn', function () {
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().then(() => {
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.called).to.be.false;
-                expect(subscriber.error.called).to.be.false;
-                expect(subscriber.complete.calledOnce).to.be.true;
-            });
+            expect(await collect(res)).to.deep.equal([]);
+            expect(execa.calledOnce).to.be.true;
         });
 
-        it('ends properly (error)', function () {
+        it('ends properly (error)', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.reject(new Error('test error'));
                 promise.stdout = getReadableStream();
@@ -135,27 +122,15 @@ describe('Unit: yarn', function () {
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().catch((error) => {
-                expect(error.message).to.equal('test error');
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.called).to.be.false;
-                expect(subscriber.error.calledOnce).to.be.true;
-                expect(subscriber.error.args[0][0]).to.be.an.instanceOf(ProcessError);
-                expect(subscriber.complete.called).to.be.false;
-            });
+            const error = await collect(res).then(() => null, err => err);
+            expect(error).to.be.an.instanceOf(ProcessError);
+            expect(error.message).to.equal('test error');
+            expect(execa.calledOnce).to.be.true;
         });
 
-        it('passes data through', function () {
+        it('passes data through', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.resolve();
                 promise.stdout = getReadableStream(function () {
@@ -167,26 +142,13 @@ describe('Unit: yarn', function () {
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().then(() => {
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.calledOnce).to.be.true;
-                expect(subscriber.next.calledWithExactly('test message')).to.be.true;
-                expect(subscriber.error.called).to.be.false;
-                expect(subscriber.complete.calledOnce).to.be.true;
-            });
+            expect(await collect(res)).to.deep.equal(['test message\n']);
+            expect(execa.calledOnce).to.be.true;
         });
 
-        it('passes data through with verbose', function () {
+        it('passes data through with verbose', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.resolve();
                 promise.stdout = getReadableStream(function () {
@@ -202,24 +164,10 @@ describe('Unit: yarn', function () {
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true, verbose: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().then(() => {
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.calledTwice).to.be.true;
-                expect(subscriber.next.calledWithExactly('test message')).to.be.true;
-                expect(subscriber.next.calledWithExactly('test stderr message')).to.be.true;
-                expect(subscriber.error.called).to.be.false;
-                expect(subscriber.complete.calledOnce).to.be.true;
-            });
+            expect(await collect(res)).to.have.members(['test message\n', 'test stderr message\n']);
+            expect(execa.calledOnce).to.be.true;
         });
     });
 });

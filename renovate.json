@@ -16,7 +16,7 @@
     },
     {
       "groupName": "CLI Tools",
-      "matchPackageNames": ["chalk", "inquirer", "listr", "log-symbols", "ora"],
+      "matchPackageNames": ["chalk", "inquirer", "listr2", "log-symbols", "ora"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     },

@@ -6,7 +6,7 @@ const each = require('../../utils/each');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const path = require('path');
 const fs = require('fs');
-const {Observable, isObservable} = require('rxjs');
+const {getReadableStream, erroringStream, collect, isReadable} = require('../../utils/stream');
 
 const modulePath = '../../../lib/tasks/install-dependencies';
 const errors = require('../../../lib/errors');
@@ -37,7 +37,7 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('base function calls subtasks and yarn util', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const yarnStub = sinon.stub().returns(getReadableStream());
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
@@ -48,7 +48,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
@@ -71,7 +71,7 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('base function calls subtasks and yarn util correctly with GHOST_NODE_VERISON_CHECK set', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const yarnStub = sinon.stub().returns(getReadableStream());
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
@@ -82,7 +82,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
@@ -152,8 +152,8 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('uses pnpm when pnpm-lock.yaml exists in installPath', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
-        const pnpmStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const yarnStub = sinon.stub().returns(getReadableStream());
+        const pnpmStub = sinon.stub().returns(getReadableStream());
         const existsSyncStub = sinon.stub();
         existsSyncStub.withArgs(path.join('/var/www/ghost/versions/1.5.0', 'pnpm-lock.yaml')).returns(true);
         existsSyncStub.returns(true);
@@ -169,7 +169,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
@@ -192,8 +192,8 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('uses yarn when pnpm-lock.yaml does not exist in installPath', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
-        const pnpmStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const yarnStub = sinon.stub().returns(getReadableStream());
+        const pnpmStub = sinon.stub().returns(getReadableStream());
         const existsSyncStub = sinon.stub();
         existsSyncStub.withArgs(path.join('/var/www/ghost/versions/1.5.0', 'pnpm-lock.yaml')).returns(false);
         existsSyncStub.returns(true);
@@ -209,7 +209,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
@@ -227,8 +227,8 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('passes correct env for pnpm (no YARN_IGNORE_PATH)', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.complete()));
-        const pnpmStub = sinon.stub().returns(new Observable(o => o.complete()));
+        const yarnStub = sinon.stub().returns(getReadableStream());
+        const pnpmStub = sinon.stub().returns(getReadableStream());
         const existsSyncStub = sinon.stub();
         existsSyncStub.withArgs(path.join('/var/www/ghost/versions/1.5.0', 'pnpm-lock.yaml')).returns(true);
         existsSyncStub.returns(true);
@@ -244,7 +244,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
@@ -259,7 +259,7 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('cleans up installPath on pnpm error', function () {
-        const pnpmStub = sinon.stub().returns(new Observable(o => o.error(new Error('pnpm failed'))));
+        const pnpmStub = sinon.stub().returns(erroringStream(new Error('pnpm failed')));
         const existsSyncStub = sinon.stub().returns(true);
         const removeSyncStub = sinon.stub();
         const installDependencies = proxyquire(modulePath, {
@@ -274,7 +274,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
@@ -291,7 +291,7 @@ describe('Unit: Tasks > install-dependencies', function () {
     });
 
     it('catches errors from yarn and cleans up install folder', function () {
-        const yarnStub = sinon.stub().returns(new Observable(o => o.error(new Error('an error occurred'))));
+        const yarnStub = sinon.stub().returns(erroringStream(new Error('an error occurred')));
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub
         });
@@ -303,7 +303,7 @@ describe('Unit: Tasks > install-dependencies', function () {
 
             return each(tasks, (task) => {
                 const result = task.task(ctx);
-                return isObservable(result) ? result.toPromise() : result;
+                return isReadable(result) ? collect(result) : result;
             });
         });
 
