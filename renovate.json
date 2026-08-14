@@ -21,7 +21,7 @@
     },
     {
       "groupName": "Well Known",
-      "matchPackageNames": ["debug", "fs-extra", "got", "lodash", "moment", "semver", "yarn"],
+      "matchPackageNames": ["debug", "fs-extra", "lodash", "moment", "semver", "yarn"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
