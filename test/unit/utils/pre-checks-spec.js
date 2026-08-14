@@ -49,7 +49,7 @@ describe('Unit: Utils > pre-checks', function () {
 
             const {updateCheck} = load({
                 '../../package.json': pkg,
-                'latest-version': latestVersion
+                'latest-version': {default: latestVersion}
             });
 
             await expect(updateCheck({ui})).to.be.rejectedWith(testError);
@@ -67,7 +67,7 @@ describe('Unit: Utils > pre-checks', function () {
 
             const {updateCheck} = load({
                 '../../package.json': pkg,
-                'latest-version': latestVersion
+                'latest-version': {default: latestVersion}
             });
 
             await updateCheck({ui});
@@ -86,7 +86,7 @@ describe('Unit: Utils > pre-checks', function () {
 
             const {updateCheck} = load({
                 '../../package.json': pkg,
-                'latest-version': latestVersion
+                'latest-version': {default: latestVersion}
             });
 
             await updateCheck({ui});
