@@ -1,7 +1,6 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 

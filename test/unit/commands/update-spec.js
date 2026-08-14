@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const configStub = require('../../utils/config-stub');
@@ -33,7 +32,7 @@ function createTestInstance(version, cliVersion, previousVersion = null, config 
 }
 
 describe('Unit: Commands > Update', function () {
-    after(() => {
+    afterAll(() => {
         cleanupTestFolders();
     });
 

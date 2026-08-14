@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 const os = require('os');
@@ -52,7 +51,7 @@ describe('Unit: Utils > pre-checks', function () {
                 'latest-version': {default: latestVersion}
             });
 
-            await expect(updateCheck({ui})).to.be.rejectedWith(testError);
+            await expect(updateCheck({ui})).rejects.toBe(testError);
             expect(latestVersion.calledOnce).to.be.true;
             expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
@@ -112,7 +111,7 @@ describe('Unit: Utils > pre-checks', function () {
 
             const {checkConfigPerms} = load();
 
-            await expect(checkConfigPerms({ui})).to.be.rejectedWith(testErr);
+            await expect(checkConfigPerms({ui})).rejects.toBe(testErr);
             expect(homedir.calledOnce).to.be.true;
             expect(lstat.calledOnce).to.be.true;
             expect(lstat.calledWithExactly('/home/ghost/.config')).to.be.true;

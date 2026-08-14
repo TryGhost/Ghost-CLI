@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const errors = require('../../../lib/errors');
@@ -12,7 +11,7 @@ const childProcess = require('child_process');
 const modulePath = '../../../lib/utils/local-process';
 
 describe('Unit: Utils > local-process', function () {
-    before(() => {
+    beforeAll(() => {
         process.send = process.send || (() => {});
     });
 
@@ -97,24 +96,20 @@ describe('Unit: Utils > local-process', function () {
     });
 
     describe('start', function () {
-        it('errors if _checkContentFolder returns false', function (done) {
+        it('errors if _checkContentFolder returns false', async function () {
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
 
             const checkStub = sinon.stub(instance, '_checkContentFolder').returns(false);
 
-            instance.start('/var/www/ghost', 'development').then(() => {
-                done(new Error('start should have rejected'));
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/content folder is not owned by the current user/);
-                expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
+            const error = await instance.start('/var/www/ghost', 'development').catch(e => e);
 
-                done();
-            });
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.match(/content folder is not owned by the current user/);
+            expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
         });
 
-        it('writes pid to file, rejects on error event', function (done) {
+        it('writes pid to file, rejects on error event', async function () {
             const cp = new EventEmitter();
             cp.stderr = {
                 on: sinon.stub(),
@@ -130,22 +125,19 @@ describe('Unit: Utils > local-process', function () {
             const startPromise = instance.start('/var/www/ghost', 'production');
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
-
-            startPromise.then(() => {
-                done(new Error('Start should have rejected'));
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.equal('An error occurred while starting Ghost.');
-                expect(spawnStub.calledOnce).to.be.true;
-                expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
-                done();
-            });
 
             cp.emit('error', {message: 'something happened'});
+
+            const error = await startPromise.catch(e => e);
+
+            expect(error).to.be.an.instanceof(errors.CliError);
+            expect(error.message).to.equal('An error occurred while starting Ghost.');
+            expect(spawnStub.calledOnce).to.be.true;
+            expect(cp.stderr.on.calledOnce).to.be.true;
+            expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
         });
 
-        it('writes pid to file, rejects on exit event', function (done) {
+        it('writes pid to file, rejects on exit event', async function () {
             const cp = new EventEmitter();
             cp.stderr = {
                 on: sinon.stub(),
@@ -162,23 +154,20 @@ describe('Unit: Utils > local-process', function () {
             const startPromise = instance.start('/var/www/ghost', 'production');
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
-
-            startPromise.then(() => {
-                done(new Error('Start should have rejected'));
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.GhostError);
-                expect(error.message).to.equal('Ghost process exited with code: 1');
-                expect(spawnStub.calledOnce).to.be.true;
-                expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
-                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                done();
-            });
 
             cp.emit('exit', 1);
+
+            const error = await startPromise.catch(e => e);
+
+            expect(error).to.be.an.instanceof(errors.GhostError);
+            expect(error.message).to.equal('Ghost process exited with code: 1');
+            expect(spawnStub.calledOnce).to.be.true;
+            expect(cp.stderr.on.calledOnce).to.be.true;
+            expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
         });
 
-        it('writes pid to file, rejects on message event with error', function (done) {
+        it('writes pid to file, rejects on message event with error', async function () {
             const cp = new EventEmitter();
             cp.stderr = {
                 on: sinon.stub(),
@@ -196,22 +185,19 @@ describe('Unit: Utils > local-process', function () {
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
 
-            startPromise.then(() => {
-                done(new Error('Start should have rejected'));
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.GhostError);
-                expect(error.message).to.equal('Test Error Message');
-                expect(spawnStub.called).to.be.true;
-                expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
-                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                done();
-            });
-
             cp.emit('message', {error: true, message: 'Test Error Message'});
+
+            const error = await startPromise.catch(e => e);
+
+            expect(error).to.be.an.instanceof(errors.GhostError);
+            expect(error.message).to.equal('Test Error Message');
+            expect(spawnStub.called).to.be.true;
+            expect(cp.stderr.on.calledOnce).to.be.true;
+            expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
+            expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
         });
 
-        it('writes pid to file, resolves on start message', function (done) {
+        it('writes pid to file, resolves on start message', async function () {
             const cp = new EventEmitter();
             cp.stderr = {
                 on: sinon.stub(),
@@ -231,17 +217,16 @@ describe('Unit: Utils > local-process', function () {
 
             expect(checkStub.calledWithExactly('/var/www/ghost')).to.be.true;
 
-            startPromise.then(() => {
-                expect(spawnStub.calledOnce).to.be.true;
-                expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
-                expect(cp.stderr.on.calledOnce).to.be.true;
-                expect(cp.stderr.destroy.calledOnce).to.be.true;
-                expect(cp.disconnect.calledOnce).to.be.true;
-                expect(cp.unref.calledOnce).to.be.true;
-                done();
-            }).catch(done);
-
             cp.emit('message', {started: true});
+
+            await startPromise;
+
+            expect(spawnStub.calledOnce).to.be.true;
+            expect(writeFileStub.calledWithExactly('/var/www/ghost/.ghostpid', '42')).to.be.true;
+            expect(cp.stderr.on.calledOnce).to.be.true;
+            expect(cp.stderr.destroy.calledOnce).to.be.true;
+            expect(cp.disconnect.calledOnce).to.be.true;
+            expect(cp.unref.calledOnce).to.be.true;
         });
     });
 
@@ -261,7 +246,7 @@ describe('Unit: Utils > local-process', function () {
             });
         });
 
-        it('rejects if any unexpected error occurs during reading of pidfile', function (done) {
+        it('rejects if any unexpected error occurs during reading of pidfile', async function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').throws(new Error('test error'));
             const fkillStub = sinon.stub();
 
@@ -270,15 +255,12 @@ describe('Unit: Utils > local-process', function () {
             });
             const instance = new LocalProcess({}, {}, {});
 
-            instance.stop('/var/www/ghost').then(() => {
-                done(new Error('stop should have rejected'));
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.equal('An unexpected error occurred when reading the pidfile.');
-                expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(fkillStub.called).to.be.false;
-                done();
-            });
+            const error = await instance.stop('/var/www/ghost').catch(e => e);
+
+            expect(error).to.be.an.instanceof(errors.CliError);
+            expect(error.message).to.equal('An unexpected error occurred when reading the pidfile.');
+            expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(fkillStub.called).to.be.false;
         });
 
         it('does not kill the process but removes the pidfile if not a ghost process', async function () {
@@ -348,7 +330,7 @@ describe('Unit: Utils > local-process', function () {
             });
         });
 
-        it('rejects with an unknown error from fkill', function (done) {
+        it('rejects with an unknown error from fkill', async function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').returns('42');
             const removeStub = sinon.stub(fs, 'removeSync');
             const fkillStub = sinon.stub().callsFake(() => Promise.reject(new Error('no idea')));
@@ -361,16 +343,13 @@ describe('Unit: Utils > local-process', function () {
             }, {});
             sinon.stub(instance, '_isGhostProcess').resolves(true);
 
-            instance.stop('/var/www/ghost').then(() => {
-                done(new Error('stop should have rejected'));
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.equal('An unexpected error occurred while stopping Ghost.');
-                expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
-                expect(fkillStub.calledWithExactly(42, sinon.match({force: false}))).to.be.true;
-                expect(removeStub.calledOnce).to.be.false;
-                done();
-            });
+            const error = await instance.stop('/var/www/ghost').catch(e => e);
+
+            expect(error).to.be.an.instanceof(errors.CliError);
+            expect(error.message).to.equal('An unexpected error occurred while stopping Ghost.');
+            expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
+            expect(fkillStub.calledWithExactly(42, sinon.match({force: false}))).to.be.true;
+            expect(removeStub.calledOnce).to.be.false;
         });
     });
 

@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const errors = require('../../../../../lib/errors');
 const ghostUser = require('../../../../../lib/utils/use-ghost-user');

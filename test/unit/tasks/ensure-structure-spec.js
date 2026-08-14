@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const fs = require('fs');
@@ -8,7 +7,7 @@ const path = require('path');
 const ensureStructure = require('../../../lib/tasks/ensure-structure');
 
 describe('Unit: Tasks > ensure-structure', function () {
-    after(() => {
+    afterAll(() => {
         cleanupTestFolders();
     });
 

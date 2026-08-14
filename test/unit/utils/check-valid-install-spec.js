@@ -1,6 +1,5 @@
 // @ts-check
 
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const checkValidInstall = require('../../../lib/utils/check-valid-install');
 

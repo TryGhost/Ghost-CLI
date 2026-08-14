@@ -1,13 +1,10 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const net = require('net');
 
 const portPolling = require('../../../lib/utils/port-polling');
 
 describe('Unit: Utils > portPolling', function () {
-    this.slow(1000);
-
     afterEach(function () {
         sinon.restore();
     });

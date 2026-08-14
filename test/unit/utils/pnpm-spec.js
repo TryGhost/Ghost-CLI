@@ -1,8 +1,7 @@
 'use strict';
-const expect = require('chai').expect;
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
-const {getReadableStream, collect, isReadable} = require('../../utils/stream');
+const {getReadableStream, collect, isReadable, fakeSubprocess} = require('../../utils/stream');
 const {ProcessError, SystemError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/pnpm';
@@ -190,14 +189,12 @@ describe('Unit: pnpm', function () {
         });
 
         it('passes data through', async function () {
-            const execa = sinon.stub().callsFake(() => {
-                const promise = Promise.resolve();
-                promise.stdout = getReadableStream(function () {
+            const execa = sinon.stub().callsFake(() => fakeSubprocess({
+                stdout: getReadableStream(function () {
                     this.push('test message\n');
                     this.push(null);
-                });
-                return promise;
-            });
+                })
+            }));
             const pnpm = setup({execa});
 
             const res = pnpm([], {observe: true});

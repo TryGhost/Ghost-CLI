@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 
 const streams = require('stream');
@@ -15,12 +14,12 @@ describe('Unit: UI > PrettyStream', function () {
     const originalChalkLevel = chalk.level;
     const originalColorsEnabled = colors.enabled;
 
-    before(() => {
+    beforeAll(() => {
         chalk.level = 1;
         colors.enabled = true;
     });
 
-    after(() => {
+    afterAll(() => {
         chalk.level = originalChalkLevel;
         colors.enabled = originalColorsEnabled;
     });

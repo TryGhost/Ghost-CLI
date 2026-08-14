@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const {SystemError} = require('../../../lib/errors');
@@ -19,7 +18,7 @@ describe('Unit: Utils > getInstance', function () {
         });
     });
 
-    this.afterEach(function () {
+    afterEach(function () {
         sinon.restore();
     });
 

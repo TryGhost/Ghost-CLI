@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const EventEmitter = require('events');
@@ -143,9 +142,7 @@ describe('Unit: Commands > Run', function () {
         }
     });
 
-    it('useDirect spawns child process and handles events correctly', function (done) {
-        this.timeout(5000);
-
+    it('useDirect spawns child process and handles events correctly', {timeout: 5000}, async function () {
         const childStub = new EventEmitter();
         childStub.stderr = getReadableStream();
 
@@ -190,21 +187,16 @@ describe('Unit: Commands > Run', function () {
         // check message handler with error
         childStub.emit('message', {error: 'oops I did it again'});
 
-        setTimeout(() => {
-            try {
-                expect(successStub.called).to.be.false;
-                expect(errorStub.calledOnce).to.be.true;
-                expect(errorStub.calledWithExactly({message: 'oops I did it again'})).to.be.true;
-                done();
-            } catch (e) {
-                done(e);
-            }
-        }, 2000);
+        await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+        });
+
+        expect(successStub.called).to.be.false;
+        expect(errorStub.calledOnce).to.be.true;
+        expect(errorStub.calledWithExactly({message: 'oops I did it again'})).to.be.true;
     });
 
-    it('useDirect spawns child process and handles events correctly (v4+)', async function () {
-        this.timeout(10000);
-
+    it('useDirect spawns child process and handles events correctly (v4+)', {timeout: 10000}, async function () {
         const childStub = new EventEmitter();
         childStub.stderr = getReadableStream();
 

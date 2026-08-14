@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const sinon = require('sinon');
 const createConfig = require('../utils/config-stub');
 
@@ -82,7 +81,7 @@ describe('Unit: Migrations', function () {
         expect(configs.production.save.called).to.be.false;
     });
 
-    it('ensureMediaFileAndPublicFolders', async () => {
+    describe('ensureMediaFileAndPublicFolders', () => {
         it('if ghost user owns directory, runs `sudo mkdir` as ghost user', function () {
             const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(true);
             const sudoStub = sinon.stub().resolves();
@@ -94,7 +93,7 @@ describe('Unit: Migrations', function () {
                 ui: {sudo: sudoStub}
             };
 
-            return migrations[0].task(context).then(() => {
+            return migrations[2].task(context).then(() => {
                 expect(ghostUserStub.calledThrice).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(sudoStub.calledThrice).to.be.true;
@@ -121,7 +120,7 @@ describe('Unit: Migrations', function () {
 
             const context = {instance: {config: config}};
 
-            return migrations[0].task(context).then(() => {
+            return migrations[2].task(context).then(() => {
                 expect(ghostUserStub.calledThrice).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(fsStub.calledThrice).to.be.true;

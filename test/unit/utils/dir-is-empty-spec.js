@@ -1,5 +1,4 @@
 const proxyquire = require('proxyquire');
-const {expect} = require('chai');
 
 const proxy = files => proxyquire('../../../lib/utils/dir-is-empty', {
     fs: {readdirSync: () => files}

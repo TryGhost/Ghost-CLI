@@ -1,6 +1,5 @@
 'use strict';
 const path = require('path');
-const expect = require('chai').expect;
 const proxyquire = require('proxyquire').noCallThru();
 
 const errors = require('../../lib/errors');

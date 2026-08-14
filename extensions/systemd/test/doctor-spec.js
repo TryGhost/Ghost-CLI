@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const sinon = require('sinon');
 
 const fs = require('fs-extra');
@@ -25,7 +24,7 @@ describe('Unit: Systemd > doctor checks', function () {
 
             const expectedPath = '/lib/systemd/system/ghost_test.service';
 
-            await expect(checkUnitFile(ctx)).to.be.rejectedWith(errors.SystemError);
+            await expect(checkUnitFile(ctx)).rejects.toThrow(errors.SystemError);
             expect(readFile.calledOnceWithExactly(expectedPath)).to.be.true;
             expect(ctx.systemd).to.deep.equal({unitFilePath: expectedPath});
         });
@@ -58,7 +57,7 @@ Test=Value
                 }
             };
 
-            await expect(checkUnitFile(ctx)).to.not.be.rejected;
+            await checkUnitFile(ctx);
             expect(readFile.calledOnceWithExactly(expectedPath)).to.be.true;
             expect(ctx.systemd).to.deep.equal(expectedCtx);
         });
@@ -74,7 +73,7 @@ Test=Value
             };
             const task = {};
 
-            await expect(checkNodeVersion(ctx, task)).to.be.rejectedWith(errors.SystemError);
+            await expect(checkNodeVersion(ctx, task)).rejects.toThrow(errors.SystemError);
         });
 
         it('rejects if node --version rejects', async function () {
@@ -93,7 +92,7 @@ Test=Value
             };
             const task = {};
 
-            await expect(checkNodeVersion(ctx, task)).to.be.rejectedWith(errors.SystemError);
+            await expect(checkNodeVersion(ctx, task)).rejects.toThrow(errors.SystemError);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
         });
 
@@ -113,7 +112,7 @@ Test=Value
             };
             const task = {};
 
-            await expect(checkNodeVersion(ctx, task)).to.be.rejectedWith(errors.SystemError);
+            await expect(checkNodeVersion(ctx, task)).rejects.toThrow(errors.SystemError);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
         });
 
@@ -137,7 +136,7 @@ Test=Value
             };
             const task = {};
 
-            await expect(checkNodeVersion(ctx, task)).to.not.be.rejected;
+            await checkNodeVersion(ctx, task);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
             expect(task.title).to.equal('Checking systemd node version - found v12.0.0');
             expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json')).to.be.true;
@@ -164,7 +163,7 @@ Test=Value
             };
             const task = {};
 
-            await expect(checkNodeVersion(ctx, task)).to.not.be.rejected;
+            await checkNodeVersion(ctx, task);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
             expect(task.title).to.equal(`Checking systemd node version - found v${process.versions.node}`);
             expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json')).to.be.true;
@@ -193,7 +192,7 @@ Test=Value
             };
             const task = {};
 
-            await expect(checkNodeVersion(ctx, task)).to.be.rejectedWith(errors.SystemError);
+            await expect(checkNodeVersion(ctx, task)).rejects.toThrow(errors.SystemError);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
             expect(task.title).to.equal(`Checking systemd node version - found v${process.versions.node}`);
             expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json')).to.be.true;

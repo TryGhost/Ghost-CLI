@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const nock = require('nock');
 const path = require('path');
 const tmp = require('tmp');

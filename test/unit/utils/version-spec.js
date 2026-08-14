@@ -1,5 +1,4 @@
 const path = require('path');
-const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 
@@ -376,7 +375,7 @@ describe('Unit: Utils: version', function () {
     describe('versionFromArchive', function () {
         const currentNodeVersion = process.versions.node;
 
-        before(function () {
+        beforeAll(function () {
             Object.defineProperty(process.versions, 'node', {
                 value: '8.11.0', // CHANGE THIS WHENEVER RECOMMENDED NODE VERSION CHANGES
                 writable: true,
@@ -389,7 +388,7 @@ describe('Unit: Utils: version', function () {
             delete process.env.GHOST_NODE_VERSION_CHECK;
         });
 
-        after(function () {
+        afterAll(function () {
             Object.defineProperty(process.versions, 'node', {
                 value: currentNodeVersion,
                 writeable: false,

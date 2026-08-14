@@ -3,7 +3,7 @@
 [![E2E Tests](https://github.com/TryGhost/Ghost-CLI/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/e2e-test.yml)
 [![Local E2E Tests](https://github.com/TryGhost/Ghost-CLI/actions/workflows/local-e2e-test.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/local-e2e-test.yml)
 [![Unit Tests](https://github.com/TryGhost/Ghost-CLI/actions/workflows/unit-test.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/unit-test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/TryGhost/Ghost-CLI/badge.svg?branch=master)](https://coveralls.io/github/TryGhost/Ghost-CLI?branch=master)
+[![Coverage Status](https://codecov.io/gh/TryGhost/Ghost-CLI/branch/main/graph/badge.svg)](https://codecov.io/gh/TryGhost/Ghost-CLI)
 [![npm version](https://img.shields.io/npm/v/ghost-cli.svg)](https://npmjs.com/package/ghost-cli/)
 
 ## Basic Setup

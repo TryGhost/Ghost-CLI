@@ -1,5 +1,4 @@
 'use strict';
-const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 const configStub = require('../../utils/config-stub');

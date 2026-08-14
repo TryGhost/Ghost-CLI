@@ -1,5 +1,4 @@
 'use strict';
-const {expect} = require('chai');
 const chalk = require('chalk').default;
 const hasAnsi = require('has-ansi').default;
 const {stripVTControlCharacters: stripAnsi} = require('util');
@@ -12,7 +11,7 @@ const EventEmitter = require('events');
 const modulePath = '../../../lib/ui';
 
 describe('Unit: UI', function () {
-    before(() => {
+    beforeAll(() => {
         // Workaround because GitHub Actions doesn't currently report a TTY
         process.stdout.isTTY = true;
     });
@@ -105,19 +104,13 @@ describe('Unit: UI', function () {
             });
         });
 
-        it('with quiet enabled, passes through rejection', function (done) {
+        it('with quiet enabled, passes through rejection', async function () {
             const ui = new UI();
             const testFunc = sinon.stub().rejects(new Error('something went wrong!'));
 
-            ui.run(testFunc, null, {quiet: true}).then(() => {
-                done(new Error('then should not be called'));
-            }).catch((error) => {
-                expect(error, 'run catch error').to.be.an.instanceOf(Error);
-                expect(error.message, 'run catch error message').to.equal('something went wrong!');
-                expect(testFunc.calledOnce).to.be.true;
-                expect(oraStub.called).to.be.false;
-                done();
-            }).catch(done);
+            await expect(ui.run(testFunc, null, {quiet: true})).rejects.toThrow('something went wrong!');
+            expect(testFunc.calledOnce).to.be.true;
+            expect(oraStub.called).to.be.false;
         });
 
         it('with json enabled, skips the spinner', function () {
@@ -187,28 +180,22 @@ describe('Unit: UI', function () {
             });
         });
 
-        it('starts spinner with options, handles rejection', function (done) {
+        it('starts spinner with options, handles rejection', async function () {
             const ui = new UI({stdout: {stdout: true}});
             const testFunc = sinon.stub().rejects(new Error('something went wrong!'));
 
-            ui.run(testFunc, 'test').then(() => {
-                done(new Error('then should not be called'));
-            }).catch((error) => {
-                expect(error, 'run catch error').to.be.an.instanceOf(Error);
-                expect(error.message, 'run catch error message').to.equal('something went wrong!');
-                expect(testFunc.calledOnce).to.be.true;
-                expect(oraStub.calledOnce).to.be.true;
-                expect(oraStub.calledWithExactly({
-                    text: 'test',
-                    spinner: 'dots',
-                    stream: {stdout: true}
-                })).to.be.true;
-                expect(startStub.calledOnce).to.be.true;
-                expect(spinner.succeed.called).to.be.false;
-                expect(spinner.fail.calledOnce).to.be.true;
-                expect(ui.spinner, 'spinner is set to null').to.be.null;
-                done();
-            }).catch(done);
+            await expect(ui.run(testFunc, 'test')).rejects.toThrow('something went wrong!');
+            expect(testFunc.calledOnce).to.be.true;
+            expect(oraStub.calledOnce).to.be.true;
+            expect(oraStub.calledWithExactly({
+                text: 'test',
+                spinner: 'dots',
+                stream: {stdout: true}
+            })).to.be.true;
+            expect(startStub.calledOnce).to.be.true;
+            expect(spinner.succeed.called).to.be.false;
+            expect(spinner.fail.calledOnce).to.be.true;
+            expect(ui.spinner, 'spinner is set to null').to.be.null;
         });
     });
 
@@ -240,23 +227,17 @@ describe('Unit: UI', function () {
     describe('prompt', function () {
         const UI = require(modulePath);
 
-        it('fails when prompting is disabled', function (done) {
+        it('fails when prompting is disabled', function () {
             const ui = new UI();
             ui.allowPrompt = false;
             const noSpinStub = sinon.stub(ui, 'noSpin');
 
-            try {
-                ui.prompt({
-                    name: 'test',
-                    type: 'input',
-                    message: 'Enter anything'
-                });
-                done(new Error('error should have been thrown'));
-            } catch (error) {
-                expect(error.message).to.match(/Prompts have been disabled/);
-                expect(noSpinStub.called).to.be.false;
-                done();
-            }
+            expect(() => ui.prompt({
+                name: 'test',
+                type: 'input',
+                message: 'Enter anything'
+            })).to.throw(/Prompts have been disabled/);
+            expect(noSpinStub.called).to.be.false;
         });
 
         it('returns default if auto is true and prompts is an object', function () {
@@ -516,7 +497,8 @@ describe('Unit: UI', function () {
             const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
             const ui = new UI();
 
-            const error = await expect(ui.listr(['tasks'], false).run({})).to.be.rejectedWith(AggregateError);
+            const error = await ui.listr(['tasks'], false).run({}).catch(e => e);
+            expect(error).to.be.an.instanceof(AggregateError);
             expect(error.errors).to.deep.equal(collected);
         });
 
@@ -525,14 +507,14 @@ describe('Unit: UI', function () {
             const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
             const ui = new UI();
 
-            await expect(ui.listr(['tasks'], false).run({})).to.be.fulfilled;
+            await ui.listr(['tasks'], false).run({});
         });
     });
 
     describe('sudo', function () {
         const setupUI = execa => proxyquire(modulePath, {execa: {execa}});
 
-        it('runs a sudo command', function (done) {
+        it('runs a sudo command', async function () {
             const shellStub = sinon.stub();
             const UI = setupUI(shellStub);
             const ui = new UI();
@@ -541,25 +523,25 @@ describe('Unit: UI', function () {
             const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
             const stderr = new EventEmitter();
 
-            const eCall = new RegExp(`sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`);
+            // argv contains the test runner's own path, which isn't regex-safe
+            const eCall = `sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`;
 
-            const stdin = streamTestUtils.getWritableStream((output) => {
-                expect(output).to.equal('password\n');
-                expect(logStub.calledOnce).to.be.true;
-                expect(logStub.calledWithExactly('+ sudo ghost -v', 'gray')).to.be.true;
-                expect(shellStub.calledOnce).to.be.true;
-                expect(shellStub.args[0][0]).to.match(eCall);
-                expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo', shell: true});
-                expect(promptStub.calledOnce).to.be.true;
-                done();
-            });
+            const {stream: stdin, written} = streamTestUtils.captureFirstWrite();
             shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
 
             ui.sudo('ghost -v', {cwd: '/var/foo', sudoArgs: ['-E -u ghost']});
             stderr.emit('data', '#node-sudo-passwd#');
+
+            expect(await written).to.equal('password\n');
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.calledWithExactly('+ sudo ghost -v', 'gray')).to.be.true;
+            expect(shellStub.calledOnce).to.be.true;
+            expect(shellStub.args[0][0]).to.contain(eCall);
+            expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo', shell: true});
+            expect(promptStub.calledOnce).to.be.true;
         });
 
-        it('prompts for a password when sudo-rs wraps the prompt', function (done) {
+        it('prompts for a password when sudo-rs wraps the prompt', async function () {
             const shellStub = sinon.stub();
             const UI = setupUI(shellStub);
             const ui = new UI();
@@ -568,16 +550,15 @@ describe('Unit: UI', function () {
             const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
             const stderr = new EventEmitter();
 
-            const stdin = streamTestUtils.getWritableStream((output) => {
-                expect(output).to.equal('password\n');
-                expect(promptStub.calledOnce).to.be.true;
-                done();
-            });
+            const {stream: stdin, written} = streamTestUtils.captureFirstWrite();
             shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
 
             ui.sudo('ghost -v', {sudoArgs: ['-E -u ghost']});
             // sudo-rs (default on Ubuntu 26+) wraps the `-p` value rather than replacing the prompt
             stderr.emit('data', '[sudo: #node-sudo-passwd#] Password: ');
+
+            expect(await written).to.equal('password\n');
+            expect(promptStub.calledOnce).to.be.true;
         });
 
         it('can handle defaults', function () {
@@ -652,32 +633,28 @@ describe('Unit: UI', function () {
     describe('log', function () {
         const UI = require(modulePath);
 
-        it('outputs message without color when no color is supplied', function (done) {
-            const stdout = streamTestUtils.getWritableStream(function (output) {
-                expect(output, 'output exists').to.be.ok;
-                expect(hasAnsi(output), 'output has color').to.be.false;
-                expect(output, 'output value').to.equal('test\n');
-
-                done();
-            });
-            stdout.on('error', done);
+        it('outputs message without color when no color is supplied', async function () {
+            const {stream: stdout, written} = streamTestUtils.captureFirstWrite();
 
             const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('test');
+
+            const output = await written;
+            expect(output, 'output exists').to.be.ok;
+            expect(hasAnsi(output), 'output has color').to.be.false;
+            expect(output, 'output value').to.equal('test\n');
         });
 
-        it('outputs message with color when color is supplied', function (done) {
-            const stdout = streamTestUtils.getWritableStream(function (output) {
-                expect(output, 'output exists').to.be.ok;
-                expect(output, 'output value').to.equal(chalk.green('test') + '\n');
-
-                done();
-            });
-            stdout.on('error', done);
+        it('outputs message with color when color is supplied', async function () {
+            const {stream: stdout, written} = streamTestUtils.captureFirstWrite();
 
             const ui = new UI({stdout: stdout});
             ui.log('test', 'green');
+
+            const output = await written;
+            expect(output, 'output exists').to.be.ok;
+            expect(output, 'output value').to.equal(chalk.green('test') + '\n');
         });
 
         it('outputs message to proper stream', function () {
@@ -732,32 +709,28 @@ describe('Unit: UI', function () {
             expect(stdout.write.args[1][0]).to.equal('best\n');
         });
 
-        it('displays a multi-line help message when called with 4 args', function (done) {
-            const stdout = streamTestUtils.getWritableStream(function (output) {
-                expect(output, 'output exists').to.be.ok;
-                expect(output, 'output value').to.include(chalk.green(`\nmy message: \n\n    ${chalk.cyan('testing')}`));
-
-                done();
-            });
-            stdout.on('error', done);
+        it('displays a multi-line help message when called with 4 args', async function () {
+            const {stream: stdout, written} = streamTestUtils.captureFirstWrite();
 
             const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('my message', 'testing', 'green', 'link');
+
+            const output = await written;
+            expect(output, 'output exists').to.be.ok;
+            expect(output, 'output value').to.include(chalk.green(`\nmy message: \n\n    ${chalk.cyan('testing')}`));
         });
 
-        it('displays a multi-line help message with exta line when called with 5 args', function (done) {
-            const stdout = streamTestUtils.getWritableStream(function (output) {
-                expect(output, 'output exists').to.be.ok;
-                expect(output, 'output value').to.include(chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`));
-
-                done();
-            });
-            stdout.on('error', done);
+        it('displays a multi-line help message with exta line when called with 5 args', async function () {
+            const {stream: stdout, written} = streamTestUtils.captureFirstWrite();
 
             const UI = require(modulePath);
             const ui = new UI({stdout: stdout});
             ui.log('my message', 'testing', 'white', 'cmd', true);
+
+            const output = await written;
+            expect(output, 'output exists').to.be.ok;
+            expect(output, 'output value').to.include(chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`));
         });
     });
 
@@ -798,32 +771,28 @@ describe('Unit: UI', function () {
         });
     });
 
-    it('success outputs message with correct symbols', function (done) {
-        const stdout = streamTestUtils.getWritableStream(function (output) {
-            expect(output, 'output exists').to.be.ok;
-            expect(output, 'output value').to.equal(`${logSymbols.success} test\n`);
-
-            done();
-        });
-        stdout.on('error', done);
+    it('success outputs message with correct symbols', async function () {
+        const {stream: stdout, written} = streamTestUtils.captureFirstWrite();
 
         const UI = require(modulePath);
         const ui = new UI({stdout: stdout});
         ui.success('test');
+
+        const output = await written;
+        expect(output, 'output exists').to.be.ok;
+        expect(output, 'output value').to.equal(`${logSymbols.success} test\n`);
     });
 
-    it('fail outputs message with correct formatting', function (done) {
-        const stdout = streamTestUtils.getWritableStream(function (output) {
-            expect(output, 'output exists').to.be.ok;
-            expect(output, 'output value').to.equal(`${logSymbols.error} test\n`);
-
-            done();
-        });
-        stdout.on('error', done);
+    it('fail outputs message with correct formatting', async function () {
+        const {stream: stdout, written} = streamTestUtils.captureFirstWrite();
 
         const UI = require(modulePath);
         const ui = new UI({stdout: stdout});
         ui.fail('test');
+
+        const output = await written;
+        expect(output, 'output exists').to.be.ok;
+        expect(output, 'output value').to.equal(`${logSymbols.error} test\n`);
     });
 
     describe('error', function () {
