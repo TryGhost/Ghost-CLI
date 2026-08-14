@@ -133,7 +133,7 @@ importers:
         specifier: 9.39.5
         version: 9.39.5
       '@vitest/coverage-v8':
-        specifier: ^4.1.10
+        specifier: 4.1.10
         version: 4.1.10(vitest@4.1.10)
       eslint:
         specifier: 9.39.5
@@ -160,7 +160,7 @@ importers:
         specifier: 0.2.7
         version: 0.2.7
       vitest:
-        specifier: ^4.1.10
+        specifier: 4.1.10
         version: 4.1.10(@types/node@26.2.0)(@vitest/coverage-v8@4.1.10)(vite@8.2.1(@types/node@26.2.0))
 
 packages:
