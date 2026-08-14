@@ -313,7 +313,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             };
             const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                'package-json': infoStub
+                'package-json': {default: infoStub}
             }).subTasks.dist;
             const ctx = {version: '1.5.0', agent: false};
 
@@ -334,7 +334,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             };
             const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                'package-json': infoStub
+                'package-json': {default: infoStub}
             }).subTasks.dist;
             const ctx = {version: '1.5.0', agent: false};
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
@@ -362,7 +362,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             };
             const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                'package-json': infoStub,
+                'package-json': {default: infoStub},
                 '../../package.json': {version: '1.0.0'}
             }).subTasks.dist;
             const ctx = {version: '1.5.0', agent: false};
@@ -384,7 +384,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             };
             const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                'package-json': infoStub,
+                'package-json': {default: infoStub},
                 '../../package.json': {version: '1.10.0-beta.0'}
             }).subTasks.dist;
             const ctx = {version: '1.5.0', agent: false};
@@ -405,7 +405,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             const data = {dist: {shasum: 'asdf1234', tarball: 'something.tgz'}};
             const infoStub = sinon.stub().resolves(data);
             const dist = proxyquire(modulePath, {
-                'package-json': infoStub
+                'package-json': {default: infoStub}
             }).subTasks.dist;
             const ctx = {version: '1.5.0', agent: false};
 

@@ -26,7 +26,7 @@ describe('Unit: Utils: version', function () {
                 return {...obj, [v]: true};
             }, {});
             const {loadVersions} = proxyquire(modulePath, {
-                'package-json': async () => ({versions})
+                'package-json': {default: async () => ({versions})}
             });
 
             return loadVersions;
@@ -480,7 +480,7 @@ describe('Unit: Utils: version', function () {
                 }
             });
             const proxied = proxyquire(modulePath, {
-                'package-json': packageJson
+                'package-json': {default: packageJson}
             });
 
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
@@ -509,7 +509,7 @@ describe('Unit: Utils: version', function () {
                 }
             });
             const proxied = proxyquire(modulePath, {
-                'package-json': packageJson
+                'package-json': {default: packageJson}
             });
 
             try {
@@ -530,7 +530,7 @@ describe('Unit: Utils: version', function () {
                 }
             });
             const proxied = proxyquire(modulePath, {
-                'package-json': packageJson
+                'package-json': {default: packageJson}
             });
 
             const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', {force: true});
@@ -545,7 +545,7 @@ describe('Unit: Utils: version', function () {
                 }
             });
             const proxied = proxyquire(modulePath, {
-                'package-json': packageJson
+                'package-json': {default: packageJson}
             });
 
             const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghostrelease.zip'));
