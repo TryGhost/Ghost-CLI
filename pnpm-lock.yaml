@@ -51,8 +51,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       got:
-        specifier: 11.8.5
-        version: 11.8.5
+        specifier: 11.8.6
+        version: 11.8.6
       https-proxy-agent:
         specifier: 9.1.0
         version: 9.1.0(supports-color@8.1.1)
@@ -1606,8 +1606,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  got@11.8.5:
-    resolution: {integrity: sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==}
+  got@11.8.6:
+    resolution: {integrity: sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==}
     engines: {node: '>=10.19.0'}
 
   graceful-fs@4.2.10:
@@ -4616,7 +4616,7 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  got@11.8.5:
+  got@11.8.6:
     dependencies:
       '@sindresorhus/is': 4.6.0
       '@szmarczak/http-timer': 4.0.6
