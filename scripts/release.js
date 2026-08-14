@@ -84,7 +84,7 @@ function resolveBaseTag(version) {
     try {
         run(`git rev-parse --verify --quiet refs/tags/${tag}`, {stdio: 'pipe'});
         return tag;
-    } catch (e) {
+    } catch {
         const described = run(`git describe --tags --abbrev=0 --match 'v[0-9]*'`);
         log(`Tag ${tag} not found, falling back to ${described}`);
         return described;

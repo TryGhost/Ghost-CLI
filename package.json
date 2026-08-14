@@ -27,7 +27,7 @@
   },
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "lint": "eslint bin/* lib test extensions scripts",
+    "lint": "eslint .",
     "test": "nyc --reporter=html --reporter=text mocha -t 5000 --recursive test/unit extensions/**/test",
     "posttest": "pnpm lint",
     "release": "node scripts/release.js",
@@ -92,10 +92,13 @@
     "yarn": "1.22.22"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "3.3.6",
+    "@eslint/js": "9.39.5",
     "chai": "6.2.2",
     "chai-as-promised": "8.0.2",
-    "eslint": "7.32.0",
-    "eslint-plugin-ghost": "2.5.0",
+    "eslint": "9.39.5",
+    "eslint-plugin-ghost": "3.5.0",
+    "globals": "17.9.0",
     "has-ansi": "6.0.2",
     "mocha": "11.8.0",
     "nock": "14.0.17",

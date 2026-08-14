@@ -129,8 +129,8 @@ class SystemdProcessManager extends ProcessManager {
                 if (error.stdout && error.stdout.match(/failed/)) {
                     return this.ui.sudo(`systemctl reset-failed ${this.systemdName}`)
                         .then(() => false)
-                        .catch((error) => {
-                            throw new ProcessError(error);
+                        .catch((err) => {
+                            throw new ProcessError(err);
                         });
                 }
 
@@ -163,7 +163,7 @@ class SystemdProcessManager extends ProcessManager {
         try {
             execa.shellSync('which systemctl', {stdio: 'ignore'});
             return true;
-        } catch (e) {
+        } catch {
             return false;
         }
     }

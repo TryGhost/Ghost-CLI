@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 'use strict';
 const stream = require('stream');
 const isString = require('lodash/isString');
@@ -9,12 +8,12 @@ function noopRead(stream) {
     };
 }
 
-function noopWrite(chunk, enc, next) {
+function noopWrite(_chunk, _enc, next) {
     next();
 }
 
 function writeWrap(writeFunc) {
-    return function (chunk, enc, next) {
+    return function (chunk, _enc, next) {
         if (!isString(chunk)) {
             // chunk is a buffer, convert it to string
             writeFunc(chunk.toString());
