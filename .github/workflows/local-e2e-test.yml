@@ -26,8 +26,6 @@ jobs:
           node-version: 22.x
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
-      - name: Install Setuptools (Linux)
-        run: pip3 install --upgrade setuptools
       - name: Prepare CLI
         working-directory: ./cli
         run: pnpm install --frozen-lockfile
@@ -112,8 +110,6 @@ jobs:
           node-version: 22.x
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
-      - name: Install Setuptools (MacOS)
-        run: brew install python-setuptools
       - name: Prepare CLI
         working-directory: ./cli
         run: pnpm install --frozen-lockfile

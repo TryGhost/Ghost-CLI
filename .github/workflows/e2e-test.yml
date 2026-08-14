@@ -10,6 +10,9 @@ concurrency:
   group: e2e-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   e2e:
     runs-on: ${{ matrix.os }}
@@ -347,3 +350,140 @@ jobs:
         run: |
           journalctl -u "$UPDATE_SERVICE" -n 100
           curl -i "$UPDATE_URL" || true
+
+  e2e-import-export:
+    runs-on: ubuntu-latest
+    name: ubuntu-latest (Import/Export from v${{ matrix.source_major }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # The target is always the current major - we only care that recent
+        # exports can be imported into it
+        source_major: [5, 6]
+    env:
+      TARGET_MAJOR: 6
+      SOURCE_DIR: /opt/ghost-e2e-source
+      SOURCE_URL: http://cli-source-testing.ghost.org
+      SOURCE_EXPORT: /tmp/e2e-source-export.json
+      TARGET_DIR: /opt/ghost-e2e-target
+      TARGET_URL: http://cli-target-testing.ghost.org
+      TARGET_EXPORT: /tmp/e2e-target-export.json
+      OWNER_EMAIL: e2e-owner@ghost.org
+      POST_TITLE: Ghost-CLI import export e2e
+    steps:
+      - name: Generating an owner password
+        run: |
+          # Ghost rejects passwords from its insecure password blocklist, so
+          # this is generated rather than hardcoded
+          OWNER_PASSWORD="$(openssl rand -hex 16)"
+          echo "::add-mask::$OWNER_PASSWORD"
+          echo "OWNER_PASSWORD=$OWNER_PASSWORD" >> "$GITHUB_ENV"
+      - name: Start nginx
+        run: sudo service nginx start
+      - name: Updating hosts file
+        run: 'echo -e "127.0.0.1 cli-source-testing.ghost.org\n127.0.0.1 cli-target-testing.ghost.org\n" | sudo tee -a /etc/hosts'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: "cli"
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          package_json_file: cli/package.json
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+        env:
+          FORCE_COLOR: 0
+      - name: Start MySQL service
+        run: sudo systemctl start mysql.service
+      - name: Prepare CLI
+        run: |
+          cp -r ./cli /opt/cli
+          chmod 755 /opt/cli
+          cd /opt/cli
+          pnpm install --ignore-scripts --frozen-lockfile
+          sudo ln -s /opt/cli/bin/ghost /usr/local/bin/ghost
+      - name: Setting up source instance (Ghost v${{ matrix.source_major }})
+        run: |
+          mkdir "$SOURCE_DIR"
+          chmod 775 "$SOURCE_DIR"
+          ghost install ${{ matrix.source_major }} \
+            -d "$SOURCE_DIR" \
+            --auto \
+            --no-prompt \
+            --url "$SOURCE_URL" \
+            --db mysql \
+            --dbhost 127.0.0.1 \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost_e2e_source
+      - name: Setting up target instance (Ghost v6)
+        run: |
+          mkdir "$TARGET_DIR"
+          chmod 775 "$TARGET_DIR"
+          ghost install "$TARGET_MAJOR" \
+            -d "$TARGET_DIR" \
+            --auto \
+            --no-prompt \
+            --url "$TARGET_URL" \
+            --db mysql \
+            --dbhost 127.0.0.1 \
+            --dbuser root \
+            --dbpass root \
+            --dbname ghost_e2e_target
+      - name: Normalizing install permissions
+        run: |
+          for dir in "$SOURCE_DIR" "$TARGET_DIR"; do
+            cd "$dir"
+            sudo find ./ -type d -exec chmod 00775 {} \;
+            sudo find ./ ! -path "./versions/*" ! -path "./.pnpm-store/*" -type f -exec chmod 664 {} \;
+          done
+      - name: Disabling staff device verification
+        run: |
+          # Both instances are driven over the Admin API with a password, which 2FA would block
+          for dir in "$SOURCE_DIR" "$TARGET_DIR"; do
+            cd "$dir"
+            ghost config set security.staffDeviceVerification false
+            ghost restart
+          done
+      - name: Setting up blog owners
+        run: |
+          node /opt/cli/scripts/e2e-api.js setup "$SOURCE_URL" "$OWNER_EMAIL" "$OWNER_PASSWORD" "Source blog"
+          node /opt/cli/scripts/e2e-api.js setup "$TARGET_URL" "$OWNER_EMAIL" "$OWNER_PASSWORD" "Target blog"
+      - name: Creating content to export
+        run: node /opt/cli/scripts/e2e-api.js create-post "$SOURCE_URL" "$OWNER_EMAIL" "$OWNER_PASSWORD" "$POST_TITLE"
+      - name: Reading staff access tokens
+        run: |
+          SOURCE_TOKEN="$(node /opt/cli/scripts/e2e-api.js token "$SOURCE_URL" "$OWNER_EMAIL" "$OWNER_PASSWORD")"
+          TARGET_TOKEN="$(node /opt/cli/scripts/e2e-api.js token "$TARGET_URL" "$OWNER_EMAIL" "$OWNER_PASSWORD")"
+          echo "::add-mask::$SOURCE_TOKEN"
+          echo "::add-mask::$TARGET_TOKEN"
+          echo "SOURCE_TOKEN=$SOURCE_TOKEN" >> "$GITHUB_ENV"
+          echo "TARGET_TOKEN=$TARGET_TOKEN" >> "$GITHUB_ENV"
+      - name: Exporting from source instance
+        env:
+          GHOST_CLI_STAFF_AUTH_TOKEN: ${{ env.SOURCE_TOKEN }}
+        run: |
+          cd "$SOURCE_DIR"
+          ghost export "$SOURCE_EXPORT"
+          node /opt/cli/scripts/e2e-api.js assert-post "$SOURCE_EXPORT" "$POST_TITLE"
+      - name: Importing into target instance
+        env:
+          GHOST_CLI_STAFF_AUTH_TOKEN: ${{ env.TARGET_TOKEN }}
+        run: |
+          cd "$TARGET_DIR"
+          ghost import "$SOURCE_EXPORT"
+      - name: Verifying Import
+        env:
+          GHOST_CLI_STAFF_AUTH_TOKEN: ${{ env.TARGET_TOKEN }}
+        run: |
+          cd "$TARGET_DIR"
+          ghost export "$TARGET_EXPORT"
+          node /opt/cli/scripts/e2e-api.js assert-post "$TARGET_EXPORT" "$POST_TITLE"
+          curl -fsS "$TARGET_URL" | grep -qi ghost
+      - name: Debugging Failure
+        if: failure()
+        run: |
+          journalctl -u ghost_cli-source-testing-ghost-org -n 100 || true
+          journalctl -u ghost_cli-target-testing-ghost-org -n 100 || true
