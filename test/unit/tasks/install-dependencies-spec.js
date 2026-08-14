@@ -336,7 +336,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub}
             }).subTasks.compatibility;
-            const ctx = {version: '1.5.0', agent: false};
+            const ctx = {version: '1.5.0'};
 
             return compatibility(ctx).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -344,7 +344,7 @@ describe('Unit: Tasks > install-dependencies', function () {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.equal(`Ghost v1.5.0 is not compatible with the current Node version. Your node version is ${process.versions.node}, but Ghost v1.5.0 requires ^0.10.0`);
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
             });
         });
 
@@ -354,13 +354,13 @@ describe('Unit: Tasks > install-dependencies', function () {
             const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub}
             }).subTasks.compatibility;
-            const ctx = {version: '1.5.0', agent: false};
+            const ctx = {version: '1.5.0'};
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
             return compatibility(ctx).then(() => {
                 delete process.env.GHOST_NODE_VERSION_CHECK;
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
             }).catch((error) => {
                 delete process.env.GHOST_NODE_VERSION_CHECK;
                 return Promise.reject(error);
@@ -374,7 +374,7 @@ describe('Unit: Tasks > install-dependencies', function () {
                 'package-json': {default: infoStub},
                 '../../package.json': {version: '1.0.0'}
             }).subTasks.compatibility;
-            const ctx = {version: '1.5.0', agent: false};
+            const ctx = {version: '1.5.0'};
 
             return compatibility(ctx).then(() => {
                 expect(false, 'error should have been thrown').to.be.true;
@@ -382,7 +382,7 @@ describe('Unit: Tasks > install-dependencies', function () {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.equal(`Ghost v1.5.0 is not compatible with this version of the CLI. Your CLI version is 1.0.0, but Ghost v1.5.0 requires ^0.0.1`);
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
             });
         });
 
@@ -393,11 +393,11 @@ describe('Unit: Tasks > install-dependencies', function () {
                 'package-json': {default: infoStub},
                 '../../package.json': {version: '1.10.0-beta.0'}
             }).subTasks.compatibility;
-            const ctx = {version: '1.5.0', agent: false};
+            const ctx = {version: '1.5.0'};
 
             return compatibility(ctx).then(() => {
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
             });
         });
 
@@ -406,12 +406,12 @@ describe('Unit: Tasks > install-dependencies', function () {
             const compatibility = proxyquire(modulePath, {
                 'package-json': {default: infoStub}
             }).subTasks.compatibility;
-            const ctx = {version: '1.5.0', agent: false};
+            const ctx = {version: '1.5.0'};
 
             return compatibility(ctx).then(() => {
                 expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0', agent: false})).to.be.true;
-                expect(ctx).to.deep.equal({agent: false, version: '1.5.0'});
+                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                expect(ctx).to.deep.equal({version: '1.5.0'});
             });
         });
     });

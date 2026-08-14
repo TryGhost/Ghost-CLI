@@ -14,6 +14,10 @@
 
 #### NOTE: This CLI is not designed to work with any Ghost versions < 1.0.0
 
+#### Running behind a proxy
+
+Set `NODE_USE_ENV_PROXY=1` (or `NODE_OPTIONS=--use-env-proxy`) so Node picks up `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` from the environment. This requires Node 22.21.0 or Node 24.5.0 and above.
+
 ## Documentation
 
 - [Complete Setup Guide](https://ghost.org/docs/install/ubuntu/)

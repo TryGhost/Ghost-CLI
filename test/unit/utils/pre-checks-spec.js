@@ -54,7 +54,7 @@ describe('Unit: Utils > pre-checks', function () {
 
             await expect(updateCheck({ui})).to.be.rejectedWith(testError);
             expect(latestVersion.calledOnce).to.be.true;
-            expect(latestVersion.calledWithExactly('ghost', {agent: false})).to.be.true;
+            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
 
         it('doesn\'t do anything if there are no updates', async function () {
@@ -73,7 +73,7 @@ describe('Unit: Utils > pre-checks', function () {
             await updateCheck({ui});
             expect(ui.log.called).to.be.false;
             expect(latestVersion.calledOnce).to.be.true;
-            expect(latestVersion.calledWithExactly('ghost', {agent: false})).to.be.true;
+            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
 
         it('logs a message if an update is available', async function () {
@@ -93,7 +93,7 @@ describe('Unit: Utils > pre-checks', function () {
             expect(ui.log.calledOnce).to.be.true;
             expect(ui.log.args[0][0]).to.match(/You are running an outdated version of Ghost-CLI/);
             expect(latestVersion.calledOnce).to.be.true;
-            expect(latestVersion.calledWithExactly('ghost', {agent: false})).to.be.true;
+            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
         });
     });
 
