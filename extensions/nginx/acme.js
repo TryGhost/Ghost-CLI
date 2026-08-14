@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs-extra');
 const os = require('os');
-const got = require('got');
+const ky = require('ky').default;
 const tar = require('tar');
 const path = require('path');
 const {Readable} = require('node:stream');
@@ -36,7 +36,7 @@ async function install(ui) {
     let downloadURL;
 
     try {
-        downloadURL = JSON.parse((await got(acmeApiUrl)).body).tarball_url;
+        downloadURL = (await ky(acmeApiUrl).json()).tarball_url;
     } catch (error) {
         throw new CliError({
             message: 'Unable to fetch download URL from GitHub',

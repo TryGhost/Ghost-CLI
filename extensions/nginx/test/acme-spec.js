@@ -28,6 +28,15 @@ function stubDownload(chunks = ['acme tarball']) {
     return {fetchStub, extractStub};
 }
 
+/**
+ * Stubs out the GitHub release lookup - ky returns a thenable exposing `.json()`,
+ * which resolves the parsed body or rejects for network/parse failures.
+ */
+function stubApi({resolves, rejects} = {}) {
+    const json = rejects ? sinon.stub().rejects(rejects) : sinon.stub().resolves(resolves);
+    return sinon.stub().returns({json});
+}
+
 describe('Unit: Extensions > Nginx > Acme', function () {
     afterEach(() => {
         sinon.restore();
@@ -62,7 +71,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
         it('rejects if the tarball download returns an error status', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
-            const gotStub = sinon.stub().resolves({body: JSON.stringify({tarball_url: dwUrl})});
+            const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
             const emptyStub = sinon.stub();
             const {extractStub} = stubDownload();
@@ -72,7 +81,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             global.fetch.resolves({ok: false, status: 503});
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -91,7 +100,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
         it('rejects without installing if extraction fails', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
-            const gotStub = sinon.stub().resolves({body: JSON.stringify({tarball_url: dwUrl})});
+            const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
             const emptyStub = sinon.stub();
             const {fetchStub, extractStub} = stubDownload();
@@ -104,7 +113,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             }));
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -123,7 +132,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
         it('rejects without installing if the download stream aborts', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
-            const gotStub = sinon.stub().resolves({body: JSON.stringify({tarball_url: dwUrl})});
+            const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
             const emptyStub = sinon.stub();
             const {extractStub} = stubDownload();
@@ -138,7 +147,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             });
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -155,12 +164,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
         it('downloads acme.sh', function () {
             const dwUrl = 'https://ghost.org/docs/install/';
-            const fakeResponse = {
-                body: JSON.stringify({tarball_url: dwUrl}),
-                statusCode: 200
-            };
-
-            const gotStub = sinon.stub().resolves(fakeResponse);
+            const kyStub = stubApi({resolves: {tarball_url: dwUrl}});
             const existsStub = sinon.stub().returns(false);
             const emptyStub = sinon.stub();
             const {fetchStub, extractStub} = stubDownload();
@@ -168,7 +172,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const sudoStub = sinon.stub().resolves();
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -178,7 +182,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(logStub.calledThrice).to.be.true;
                 expect(sudoStub.calledTwice).to.be.true;
                 expect(emptyStub.calledOnce).to.be.true;
-                expect(gotStub.calledOnce).to.be.true;
+                expect(kyStub.calledOnce).to.be.true;
                 expect(fetchStub.calledOnce).to.be.true;
                 expect(fetchStub.args[0][0]).to.equal(dwUrl);
                 expect(fetchStub.args[0][1].signal).to.be.an.instanceof(AbortSignal);
@@ -193,9 +197,9 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         it('Errors when github is down', function () {
             const err = new Error('Not Found');
             err.statusCode = '404';
-            // got resolves only, when statusCode = 2xx
-            // see https://github.com/sindresorhus/got#gothttperror
-            const gotStub = sinon.stub().rejects(err);
+            // ky resolves only when the status is 2xx, otherwise it throws an HTTPError
+            // see https://github.com/sindresorhus/ky#httperror
+            const kyStub = stubApi({rejects: err});
             const existsStub = sinon.stub().returns(false);
             const emptyStub = sinon.stub();
             const {fetchStub, extractStub} = stubDownload();
@@ -203,7 +207,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const sudoStub = sinon.stub().resolves();
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -217,19 +221,15 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(logStub.calledTwice).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(emptyStub.calledOnce).to.be.true;
-                expect(gotStub.calledOnce).to.be.true;
+                expect(kyStub.calledOnce).to.be.true;
                 expect(fetchStub.called).to.be.false;
                 expect(extractStub.called).to.be.false;
             });
         });
 
         it('Errors when bad data is passed', function () {
-            const fakeResponse = {
-                body: 'Waffles',
-                statusCode: 200
-            };
-
-            const gotStub = sinon.stub().resolves(fakeResponse);
+            // a 200 whose body isn't JSON - ky surfaces the parse failure from `.json()`
+            const kyStub = stubApi({rejects: new SyntaxError('Unexpected token \'W\', "Waffles" is not valid JSON')});
             const existsStub = sinon.stub().returns(false);
             const emptyStub = sinon.stub();
             const {fetchStub, extractStub} = stubDownload();
@@ -237,7 +237,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const sudoStub = sinon.stub().resolves();
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -251,20 +251,20 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(logStub.calledTwice).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(emptyStub.calledOnce).to.be.true;
-                expect(gotStub.calledOnce).to.be.true;
+                expect(kyStub.calledOnce).to.be.true;
                 expect(fetchStub.called).to.be.false;
                 expect(extractStub.called).to.be.false;
             });
         });
 
         it('Rejects when acme.sh fails', function () {
-            const gotStub = sinon.stub().resolves({body: '{"tarball_url": "test"}'});
+            const kyStub = stubApi({resolves: {tarball_url: 'test'}});
             const emptyStub = sinon.stub().resolves();
             const existsStub = sinon.stub().returns(false);
             const {fetchStub, extractStub} = stubDownload();
 
             const acme = proxyquire(modulePath, {
-                got: gotStub,
+                ky: {default: kyStub},
                 tar: {x: extractStub},
                 'fs-extra': {existsSync: existsStub, emptyDir: emptyStub}
             });
@@ -281,7 +281,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(logStub.calledThrice).to.be.true;
                 expect(sudoStub.calledTwice).to.be.true;
                 expect(emptyStub.calledOnce).to.be.true;
-                expect(gotStub.calledOnce).to.be.true;
+                expect(kyStub.calledOnce).to.be.true;
                 expect(fetchStub.calledOnce).to.be.true;
                 expect(extractStub.calledOnce).to.be.true;
             });
