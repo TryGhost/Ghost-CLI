@@ -21,6 +21,12 @@ const ghostPreset = name => compat.extends(`plugin:ghost/${name}`).map(config =>
     ))
 } : config));
 
+// the globals package doesn't ship a vitest set, and vitest.config.mjs turns globals on
+const vitestGlobals = Object.fromEntries([
+    'suite', 'test', 'describe', 'it', 'expect', 'assert', 'vi',
+    'beforeAll', 'afterAll', 'beforeEach', 'afterEach', 'onTestFailed', 'onTestFinished'
+].map(name => [name, 'readonly']));
+
 const plugins = {ghost};
 const base = {
     ...js.configs.recommended,
@@ -70,7 +76,7 @@ export default defineConfig([
         extends: ghostPreset('test'),
         languageOptions: {
             ...base.languageOptions,
-            globals: {...globals.node, ...globals.mocha}
+            globals: {...globals.node, ...vitestGlobals}
         },
         rules: {
             ...base.rules,

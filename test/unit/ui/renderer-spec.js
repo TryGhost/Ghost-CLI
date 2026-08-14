@@ -1,5 +1,4 @@
 'use strict';
-const {expect} = require('chai');
 const sinon = require('sinon');
 const {stripVTControlCharacters: stripAnsi} = require('util');
 
@@ -36,21 +35,19 @@ describe('Unit: UI > Renderer', function () {
     describe('#render', function () {
         let rdr;
 
-        before(function () {
+        beforeAll(function () {
             rdr = new Renderer();
         });
 
-        it('returns when id is set', function (done) {
+        it('returns when id is set', function () {
             const ctx = {subscribeToEvents: sinon.stub(), id: 42};
             rdr.render.bind(ctx)();
 
             // Should be unreachable
             expect(ctx.subscribeToEvents.called).to.be.false;
-
-            done();
         });
 
-        it('subscribes to events', function (done) {
+        it('subscribes to events', async function () {
             const ctx = {
                 subscribeToEvents: sinon.stub(),
                 ui: {
@@ -64,11 +61,11 @@ describe('Unit: UI > Renderer', function () {
             expect(ctx.subscribeToEvents.calledOnce).to.be.true;
             expect(ctx.id).to.exist;
             // Give frame time to be called
-            setTimeout(function () {
-                expect(ctx.frame.called).to.be.true;
-                clearInterval(ctx.id);
-                done();
-            }, 10);
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
+            expect(ctx.frame.called).to.be.true;
+            clearInterval(ctx.id);
         });
     });
 

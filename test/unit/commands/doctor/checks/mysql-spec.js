@@ -1,4 +1,3 @@
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const configStub = require('../../../../utils/config-stub');
 

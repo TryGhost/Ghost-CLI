@@ -1,8 +1,7 @@
 'use strict';
-const expect = require('chai').expect;
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
-const {getReadableStream, collect, isReadable} = require('../../utils/stream');
+const {getReadableStream, collect, isReadable, fakeSubprocess} = require('../../utils/stream');
 const {ProcessError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/yarn';
@@ -131,14 +130,12 @@ describe('Unit: yarn', function () {
         });
 
         it('passes data through', async function () {
-            const execa = sinon.stub().callsFake(() => {
-                const promise = Promise.resolve();
-                promise.stdout = getReadableStream(function () {
+            const execa = sinon.stub().callsFake(() => fakeSubprocess({
+                stdout: getReadableStream(function () {
                     this.push('test message\n');
                     this.push(null);
-                });
-                return promise;
-            });
+                })
+            }));
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true});
@@ -149,18 +146,16 @@ describe('Unit: yarn', function () {
         });
 
         it('passes data through with verbose', async function () {
-            const execa = sinon.stub().callsFake(() => {
-                const promise = Promise.resolve();
-                promise.stdout = getReadableStream(function () {
+            const execa = sinon.stub().callsFake(() => fakeSubprocess({
+                stdout: getReadableStream(function () {
                     this.push('test message\n');
                     this.push(null);
-                });
-                promise.stderr = getReadableStream(function () {
+                }),
+                stderr: getReadableStream(function () {
                     this.push('test stderr message\n');
                     this.push(null);
-                });
-                return promise;
-            });
+                })
+            }));
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true, verbose: true});

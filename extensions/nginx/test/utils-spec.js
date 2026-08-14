@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 
 const {parseResolvers} = require('../utils');
 

@@ -74,6 +74,41 @@ const streamUtils = {
         return writeStream;
     },
 
+    /**
+     * Stands in for an execa subprocess: a promise with the given streams hung off it that
+     * only resolves once they've all ended, which is the ordering the real thing guarantees.
+     * Resolving any earlier lets consumers end their output stream mid-pipe
+     */
+    fakeSubprocess: function fakeSubprocess(streams) {
+        const ended = Object.values(streams).map(
+            stream => new Promise((resolve) => {
+                stream.on('end', resolve);
+            })
+        );
+
+        return Object.assign(Promise.all(ended).then(() => {}), streams);
+    },
+
+    /**
+     * A writable stream plus a promise that resolves with the first chunk written to it,
+     * or rejects if the stream errors. Lets tests await output rather than assert inside
+     * the stream's write callback
+     */
+    captureFirstWrite: function captureFirstWrite() {
+        let resolve;
+        let reject;
+
+        const written = new Promise((res, rej) => {
+            resolve = res;
+            reject = rej;
+        });
+
+        const writeStream = streamUtils.getWritableStream(chunk => resolve(chunk.toString()));
+        writeStream.on('error', reject);
+
+        return {stream: writeStream, written};
+    },
+
     mockStandardStreams: function mockStandardStreams(streamCallbacks, errorCallback) {
         streamCallbacks = streamCallbacks || {};
 

@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 
 const {buildReleaseNotes, NO_CHANGES_MESSAGE} = require('../../../scripts/release-notes');
 

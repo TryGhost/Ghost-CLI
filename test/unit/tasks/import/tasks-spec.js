@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const each = require('../../../utils/each');
@@ -315,7 +314,7 @@ describe('Unit: Tasks > Import > Tasks', function () {
             process.env.GHOST_CLI_STAFF_AUTH_TOKEN = 'invalid-token';
             await expect(
                 exportTask({prompt}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json')
-            ).to.be.rejectedWith('GHOST_CLI_STAFF_AUTH_TOKEN is not a valid token');
+            ).rejects.toThrow('GHOST_CLI_STAFF_AUTH_TOKEN is not a valid token');
             expect(isSetup.calledOnceWithExactly(TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368')).to.be.true;
             expect(prompt.called).to.be.false;
             expect(downloadContentExport.called).to.be.false;

@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const fs = require('fs-extra');
 const path = require('path');
 const tar = require('tar');
@@ -26,7 +25,7 @@ function createTarball(dir, name, files) {
 }
 
 describe('Unit: Utils > archive', function () {
-    after(() => {
+    afterAll(() => {
         cleanupTestFolders();
     });
 

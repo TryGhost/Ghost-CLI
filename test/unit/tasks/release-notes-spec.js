@@ -1,4 +1,3 @@
-const {expect} = require('chai');
 const sinon = require('sinon');
 const nock = require('nock');
 
@@ -23,12 +22,12 @@ function stubGithub() {
 }
 
 describe('Unit: Tasks > Release Notes', function () {
-    before(function () {
+    beforeAll(function () {
         // ky retries failed requests, so an unmocked attempt would otherwise hit the real API
         nock.disableNetConnect();
     });
 
-    after(function () {
+    afterAll(function () {
         nock.enableNetConnect();
     });
 

@@ -24,7 +24,7 @@ These instructions apply to the entire repository.
 
 - Follow the existing CommonJS module style and current file structure.
 - Keep changes targeted; prefer updating existing commands, tasks, utils, or extensions over introducing new abstractions.
-- Match the existing test style with Mocha, Chai, Sinon, Proxyquire, and Nock where applicable.
+- Match the existing test style with Vitest, Sinon, Proxyquire, and Nock where applicable. Vitest's `expect` is chai-based, so the existing `expect(...).to.be.true` style still applies; globals are enabled, so specs don't import the runner.
 - Add or update tests for behavior changes, especially command flows, task execution, and extension behavior.
 
 ## Product Boundaries

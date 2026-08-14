@@ -1,7 +1,5 @@
 'use strict';
 
-const {expect} = require('chai');
-
 const url = require('../../../lib/utils/url');
 
 describe('Unit: Utils > URL', function () {

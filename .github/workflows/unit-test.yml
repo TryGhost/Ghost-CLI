@@ -24,4 +24,15 @@ jobs:
           FORCE_COLOR: 0
       - run: pnpm install
       - run: pnpm lint
-      - run: pnpm test
+      # `pnpm coverage` runs the same specs as `pnpm test`, minus the posttest
+      # lint that's already run above
+      - run: pnpm coverage
+      # Every matrix leg covers the same lines, so one upload is enough. Forks
+      # don't report to Ghost-CLI's Codecov project, so skip them too
+      - name: Upload coverage
+        if: matrix.node == '22.x' && github.repository == 'TryGhost/Ghost-CLI'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        with:
+          flags: unit-tests
+          files: coverage/cobertura-coverage.xml
+          disable_search: true

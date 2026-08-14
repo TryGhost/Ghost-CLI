@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const {setupTestFolder, cleanupTestFolders} = require('../utils/test-folder');
 const path = require('path');
@@ -12,12 +11,16 @@ const yargsMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(yargs))
 
 const modulePath = '../../lib/bootstrap';
 
+// the test runner registers unhandledRejection listeners of its own, so snapshot them
+// before the CLI's handler is added in order to tell them apart later
+const preexistingRejectionListeners = process.listeners('unhandledRejection');
+
 describe('Unit: Bootstrap', function () {
     afterEach(function () {
         sinon.restore();
     });
 
-    after(() => {
+    afterAll(() => {
         cleanupTestFolders();
     });
 
@@ -119,6 +122,9 @@ describe('Unit: Bootstrap', function () {
     describe('process rejection handler', function () {
         require(modulePath);
 
+        const rejectionHandler = () => process.listeners('unhandledRejection')
+            .find(listener => !preexistingRejectionListeners.includes(listener));
+
         let consoleStub;
 
         beforeEach(function () {
@@ -126,12 +132,11 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('is registered', function () {
-            // mocha itself registers an unhandledRejection listener, so this is 2 instead of 1
-            expect(process.listenerCount('unhandledRejection')).to.equal(2);
+            expect(rejectionHandler()).to.exist;
         });
 
         it('throws reason and logs to console if it exists', function () {
-            const handler = process.listeners('unhandledRejection')[0];
+            const handler = rejectionHandler();
             const testError = new Error('some problem');
 
             try {
@@ -145,7 +150,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('logs reason if reason isn\'t an error', function () {
-            const handler = process.listeners('unhandledRejection')[0];
+            const handler = rejectionHandler();
 
             try {
                 handler('some problem');
@@ -158,7 +163,7 @@ describe('Unit: Bootstrap', function () {
         });
 
         it('logs promise if no reason given', function () {
-            const handler = process.listeners('unhandledRejection')[0];
+            const handler = rejectionHandler();
             const p = new Promise((resolve) => {
                 resolve();
             });
@@ -234,9 +239,8 @@ describe('Unit: Bootstrap', function () {
             });
         });
 
-        it('errors if no command name matches', function () {
-            this.timeout(10000); // this test can take awhile depending on the system
-
+        // this test can take awhile depending on the system
+        it('errors if no command name matches', {timeout: 10000}, function () {
             const error = sinon.stub(console, 'error');
             const exit = sinon.stub(process, 'exit');
 

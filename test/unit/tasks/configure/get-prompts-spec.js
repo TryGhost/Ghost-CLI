@@ -1,5 +1,3 @@
-const {expect} = require('chai');
-
 const Config = require('../../../../lib/utils/config');
 const getPrompts = require('../../../../lib/tasks/configure/get-prompts');
 const {validate: validateUrl, ensureProtocol} = require('../../../../lib/utils/url');

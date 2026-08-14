@@ -1,5 +1,4 @@
 'use strict';
-const expect = require('chai').expect;
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noPreserveCache();
 const each = require('../../utils/each');
@@ -32,7 +31,7 @@ describe('Unit: Tasks > install-dependencies', function () {
         }
     });
 
-    after(() => {
+    afterAll(() => {
         cleanupTestFolders();
     });
 
