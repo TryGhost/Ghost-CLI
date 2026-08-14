@@ -26,6 +26,39 @@ function writeWrap(writeFunc) {
 }
 
 const streamUtils = {
+    /**
+     * Consumes a readable stream the same way Listr does - resolves with all of the
+     * chunks that were emitted, rejects with whatever the stream errored with
+     */
+    collect: function collect(readable) {
+        return new Promise((resolve, reject) => {
+            const chunks = [];
+
+            readable.on('data', chunk => chunks.push(chunk.toString()));
+            readable.on('error', reject);
+            readable.on('end', () => resolve(chunks));
+        });
+    },
+
+    /**
+     * Matches the check Listr uses to decide whether a task returned a stream
+     */
+    isReadable: function isReadable(obj) {
+        return Boolean(obj) && typeof obj === 'object' && obj.readable === true &&
+            typeof obj.read === 'function' && typeof obj.on === 'function';
+    },
+
+    /**
+     * A readable stream that fails with the given error as soon as it's read from
+     */
+    erroringStream: function erroringStream(error) {
+        return new stream.Readable({
+            read() {
+                process.nextTick(() => this.destroy(error));
+            }
+        });
+    },
+
     getReadableStream: function getReadableStream(_read) {
         const readStream = stream.Readable();
 

@@ -2,8 +2,7 @@
 const expect = require('chai').expect;
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
-const {isObservable} = require('rxjs');
-const {getReadableStream} = require('../../utils/stream');
+const {getReadableStream, collect, isReadable} = require('../../utils/stream');
 const {ProcessError, SystemError} = require('../../../lib/errors');
 
 const modulePath = '../../../lib/utils/pnpm';
@@ -127,8 +126,8 @@ describe('Unit: pnpm', function () {
         });
     });
 
-    describe('can return observables', function () {
-        it('ends properly', function () {
+    describe('can return a readable stream', function () {
+        it('ends properly', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.resolve();
                 promise.stdout = getReadableStream();
@@ -137,25 +136,13 @@ describe('Unit: pnpm', function () {
             const pnpm = setup({execa});
 
             const res = pnpm([], {observe: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().then(() => {
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.called).to.be.false;
-                expect(subscriber.error.called).to.be.false;
-                expect(subscriber.complete.calledOnce).to.be.true;
-            });
+            expect(await collect(res)).to.deep.equal([]);
+            expect(execa.calledOnce).to.be.true;
         });
 
-        it('ends properly (error)', function () {
+        it('ends properly (error)', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.reject(new Error('test error'));
                 promise.stdout = getReadableStream();
@@ -164,27 +151,26 @@ describe('Unit: pnpm', function () {
             const pnpm = setup({execa});
 
             const res = pnpm([], {observe: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().catch((error) => {
-                expect(error.message).to.equal('test error');
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.called).to.be.false;
-                expect(subscriber.error.calledOnce).to.be.true;
-                expect(subscriber.error.args[0][0]).to.be.an.instanceOf(ProcessError);
-                expect(subscriber.complete.called).to.be.false;
-            });
+            const error = await collect(res).then(() => null, err => err);
+            expect(error).to.be.an.instanceOf(ProcessError);
+            expect(error.message).to.equal('test error');
+            expect(execa.calledOnce).to.be.true;
         });
 
-        it('passes corepack signature errors through as helpful system errors', function () {
+        it('errors when pnpm itself is unavailable', async function () {
+            const which = {sync: sinon.stub().returns(null)};
+            const pnpm = setup({which});
+
+            const res = pnpm([], {observe: true});
+
+            const error = await collect(res).then(() => null, err => err);
+            expect(error).to.be.an.instanceOf(SystemError);
+            expect(error.message).to.match(/pnpm is not installed/);
+        });
+
+        it('passes corepack signature errors through as helpful system errors', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.reject({
                     message: 'Command failed: pnpm install',
@@ -196,24 +182,14 @@ describe('Unit: pnpm', function () {
             const pnpm = setup({execa});
 
             const res = pnpm([], {observe: true});
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
 
-            res.subscribe(subscriber);
-
-            return res.toPromise().catch(() => {
-                expect(subscriber.error.calledOnce).to.be.true;
-                expect(subscriber.error.args[0][0]).to.be.an.instanceOf(SystemError);
-                expect(subscriber.error.args[0][0].options.suggestion).to.contain('corepack@latest');
-                expect(subscriber.error.args[0][0].options.suggestion).to.not.contain('prepare');
-                expect(subscriber.complete.called).to.be.false;
-            });
+            const error = await collect(res).then(() => null, err => err);
+            expect(error).to.be.an.instanceOf(SystemError);
+            expect(error.options.suggestion).to.contain('corepack@latest');
+            expect(error.options.suggestion).to.not.contain('prepare');
         });
 
-        it('passes data through', function () {
+        it('passes data through', async function () {
             const execa = sinon.stub().callsFake(() => {
                 const promise = Promise.resolve();
                 promise.stdout = getReadableStream(function () {
@@ -225,23 +201,10 @@ describe('Unit: pnpm', function () {
             const pnpm = setup({execa});
 
             const res = pnpm([], {observe: true});
-            expect(isObservable(res)).to.be.true;
+            expect(isReadable(res)).to.be.true;
 
-            const subscriber = {
-                next: sinon.stub(),
-                error: sinon.stub(),
-                complete: sinon.stub()
-            };
-
-            res.subscribe(subscriber);
-
-            return res.toPromise().then(() => {
-                expect(execa.calledOnce).to.be.true;
-                expect(subscriber.next.calledOnce).to.be.true;
-                expect(subscriber.next.calledWithExactly('test message')).to.be.true;
-                expect(subscriber.error.called).to.be.false;
-                expect(subscriber.complete.calledOnce).to.be.true;
-            });
+            expect(await collect(res)).to.deep.equal(['test message\n']);
+            expect(execa.calledOnce).to.be.true;
         });
     });
 });

@@ -34,7 +34,7 @@ describe('Unit: Utils > pre-checks', function () {
             const [tasks, ctx, opts] = listr.args[0];
             expect(tasks).to.have.length(2);
             expect(ctx).to.deep.equal({ui});
-            expect(opts).to.deep.equal({clearOnSuccess: true});
+            expect(opts).to.deep.equal({rendererOptions: {clearOnSuccess: true}});
         });
     });
 
