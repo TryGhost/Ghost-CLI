@@ -165,7 +165,7 @@ class MySQLExtension extends Extension {
         // e.g. if we would rely on the instance name, the instance naming only auto increments if there are existing instances
         // the most important fact is, that if a MySQL user exists, we have no access to the password, which we need to autofill the Ghost config
         // disadvantage: the CLI could potentially create lot's of MySQL users (but this should only happen if the user installs Ghost over and over again with root credentials)
-        return `ghost-${Math.floor(Math.random() * 1000)}`;
+        return `ghost-${crypto.randomInt(1000)}`;
     }
 
     async getMySQL5Password() {
