@@ -1,4 +1,4 @@
-name: E2E Tests
+name: CI
 on:
   pull_request:
   push:
@@ -7,16 +7,303 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: e2e-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22.x, 24.x]
+    env:
+      FORCE_COLOR: 1
+    name: Unit (Node ${{ matrix.node }})
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+        env:
+          FORCE_COLOR: 0
+      - run: pnpm install
+      - run: pnpm lint
+      # `pnpm coverage` runs the same specs as `pnpm test`, minus the posttest
+      # lint that's already run above
+      - run: pnpm coverage
+      # Every matrix leg covers the same lines, so one upload is enough. Forks
+      # don't report to Ghost-CLI's Codecov project, so skip them too
+      - name: Upload coverage
+        if: matrix.node == '22.x' && github.repository == 'TryGhost/Ghost-CLI'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        with:
+          flags: unit-tests
+          files: coverage/cobertura-coverage.xml
+          disable_search: true
+
+  local-e2e-linux:
+    runs-on: ubuntu-latest
+    name: Local E2E (ubuntu-latest)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: "cli"
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          package_json_file: cli/package.json
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+      - name: Prepare CLI
+        working-directory: ./cli
+        run: pnpm install --frozen-lockfile
+      - name: Setting up Ghost instance
+        run: node ./cli/bin/ghost install local -d ghost
+      - name: Verifying Installation
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost site did not become reachable after install"
+          exit 1
+      - name: Recording running process pid
+        run: |
+          if [ ! -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile was missing before stop"
+            exit 1
+          fi
+          BEFORE_PID="$(cat ghost/.ghostpid)"
+          if [ -z "$BEFORE_PID" ]; then
+            echo "Ghost pidfile was empty before stop"
+            exit 1
+          fi
+          echo "LOCAL_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          for attempt in {1..15}; do
+            pidfile_removed=true
+            site_stopped=true
+
+            if [ -f ghost/.ghostpid ]; then
+              pidfile_removed=false
+            fi
+
+            if curl -fsS http://localhost:2368 > /dev/null; then
+              site_stopped=false
+            fi
+
+            if [ "$pidfile_removed" = true ] && [ "$site_stopped" = true ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost local process did not fully stop within the retry window"
+          exit 1
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
+        run: |
+          for attempt in {1..15}; do
+            if [ -f ghost/.ghostpid ] && \
+              [ "$(cat ghost/.ghostpid)" != "$LOCAL_BEFORE_PID" ] && \
+              curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost local process did not restart with a new pid"
+          exit 1
+
+  local-e2e-macos:
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: macos-latest
+    name: Local E2E (macos-latest)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: "cli"
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          package_json_file: cli/package.json
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+      - name: Prepare CLI
+        working-directory: ./cli
+        run: pnpm install --frozen-lockfile
+      - name: Setting up Ghost instance
+        run: node ./cli/bin/ghost install local -d ghost
+      - name: Verifying Installation
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost site did not become reachable after install"
+          exit 1
+      - name: Recording running process pid
+        run: |
+          if [ ! -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile was missing before stop"
+            exit 1
+          fi
+          BEFORE_PID="$(cat ghost/.ghostpid)"
+          if [ -z "$BEFORE_PID" ]; then
+            echo "Ghost pidfile was empty before stop"
+            exit 1
+          fi
+          echo "LOCAL_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          for attempt in {1..15}; do
+            pidfile_removed=true
+            site_stopped=true
+
+            if [ -f ghost/.ghostpid ]; then
+              pidfile_removed=false
+            fi
+
+            if curl -fsS http://localhost:2368 > /dev/null; then
+              site_stopped=false
+            fi
+
+            if [ "$pidfile_removed" = true ] && [ "$site_stopped" = true ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost local process did not fully stop within the retry window"
+          exit 1
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
+        run: |
+          for attempt in {1..15}; do
+            if [ -f ghost/.ghostpid ] && \
+              [ "$(cat ghost/.ghostpid)" != "$LOCAL_BEFORE_PID" ] && \
+              curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost local process did not restart with a new pid"
+          exit 1
+
+  local-e2e-windows:
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: windows-latest
+    name: Local E2E (windows-latest)
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: "cli"
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          package_json_file: cli/package.json
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+      - name: Prepare CLI
+        working-directory: ./cli
+        run: pnpm install --frozen-lockfile
+      - name: Setting up Ghost instance
+        run: node ./cli/bin/ghost install local -d ghost
+      - name: Verifying Installation
+        run: |
+          for attempt in {1..15}; do
+            if curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost site did not become reachable after install"
+          exit 1
+      - name: Recording running process pid
+        run: |
+          if [ ! -f ghost/.ghostpid ]; then
+            echo "Ghost pidfile was missing before stop"
+            exit 1
+          fi
+          BEFORE_PID="$(cat ghost/.ghostpid)"
+          if [ -z "$BEFORE_PID" ]; then
+            echo "Ghost pidfile was empty before stop"
+            exit 1
+          fi
+          echo "LOCAL_BEFORE_PID=$BEFORE_PID" >> "$GITHUB_ENV"
+      - name: Stopping Ghost instance
+        run: |
+          node ./cli/bin/ghost stop -d ghost
+          for attempt in {1..15}; do
+            pidfile_removed=true
+            site_stopped=true
+
+            if [ -f ghost/.ghostpid ]; then
+              pidfile_removed=false
+            fi
+
+            if curl -fsS http://localhost:2368 > /dev/null; then
+              site_stopped=false
+            fi
+
+            if [ "$pidfile_removed" = true ] && [ "$site_stopped" = true ]; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Ghost local process did not fully stop within the retry window"
+          exit 1
+      - name: Starting Ghost instance
+        run: node ./cli/bin/ghost start -d ghost
+      - name: Verifying Restart
+        run: |
+          for attempt in {1..15}; do
+            if [ -f ghost/.ghostpid ] && \
+              [ "$(cat ghost/.ghostpid)" != "$LOCAL_BEFORE_PID" ] && \
+              curl -fsS http://localhost:2368 | grep -qi ghost; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Ghost local process did not restart with a new pid"
+          exit 1
+
   e2e:
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }}
+    name: E2E (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -139,7 +426,7 @@ jobs:
 
   e2e-mysql84:
     runs-on: ubuntu-latest
-    name: ubuntu-latest (MySQL 8.4)
+    name: E2E (MySQL 8.4)
     steps:
       - name: Start nginx
         run: sudo service nginx start
@@ -202,7 +489,7 @@ jobs:
 
   e2e-update:
     runs-on: ubuntu-latest
-    name: ubuntu-latest (Update)
+    name: E2E (Update)
     env:
       UPDATE_ARCHIVE_DIR: /tmp/ghost-archives
       UPDATE_DIR: /opt/ghost-e2e-update
@@ -353,7 +640,7 @@ jobs:
 
   e2e-import-export:
     runs-on: ubuntu-latest
-    name: ubuntu-latest (Import/Export from v${{ matrix.source_major }})
+    name: E2E (Import/Export from v${{ matrix.source_major }})
     strategy:
       fail-fast: false
       matrix:
@@ -487,3 +774,28 @@ jobs:
         run: |
           journalctl -u ghost_cli-source-testing-ghost-org -n 100 || true
           journalctl -u ghost_cli-target-testing-ghost-org -n 100 || true
+
+  # Single job to hang branch protection off of - it passes only when every
+  # job above succeeded or was skipped
+  required-tests:
+    name: All required tests passed or skipped
+    needs:
+      [
+        unit,
+        local-e2e-linux,
+        local-e2e-macos,
+        local-e2e-windows,
+        e2e,
+        e2e-mysql84,
+        e2e-update,
+        e2e-import-export
+      ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output needs
+        run: echo "${{ toJson(needs) }}"
+      - name: Check if any required jobs failed or were cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "One of the dependent jobs has failed or been cancelled. You may need to re-run it." && exit 1

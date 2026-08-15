@@ -1,8 +1,6 @@
 # Ghost-CLI
 
-[![E2E Tests](https://github.com/TryGhost/Ghost-CLI/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/e2e-test.yml)
-[![Local E2E Tests](https://github.com/TryGhost/Ghost-CLI/actions/workflows/local-e2e-test.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/local-e2e-test.yml)
-[![Unit Tests](https://github.com/TryGhost/Ghost-CLI/actions/workflows/unit-test.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/unit-test.yml)
+[![CI](https://github.com/TryGhost/Ghost-CLI/actions/workflows/ci.yml/badge.svg)](https://github.com/TryGhost/Ghost-CLI/actions/workflows/ci.yml)
 [![Coverage Status](https://codecov.io/gh/TryGhost/Ghost-CLI/branch/main/graph/badge.svg)](https://codecov.io/gh/TryGhost/Ghost-CLI)
 [![npm version](https://img.shields.io/npm/v/ghost-cli.svg)](https://npmjs.com/package/ghost-cli/)
 
