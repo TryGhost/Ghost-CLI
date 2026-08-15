@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const proxyquire = require('proxyquire');
 const {errors} = require('../../../lib');
 
@@ -119,7 +119,7 @@ Test=Value
         it('returns if unable to parse ghost pkg json', async function () {
             const execaStub = sinon.stub().resolves({stdout: '12.0.0'});
             const {checkNodeVersion} = setup(execaStub);
-            const readJson = sinon.stub(fs, 'readJson').rejects(new Error('test'));
+            const readJson = sinon.stub(fs, 'readFile').rejects(new Error('test'));
             const log = sinon.stub();
 
             const ctx = {
@@ -139,14 +139,14 @@ Test=Value
             await checkNodeVersion(ctx, task);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
             expect(task.title).to.equal('Checking systemd node version - found v12.0.0');
-            expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json')).to.be.true;
+            expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json', 'utf8')).to.be.true;
             expect(log.calledOnce).to.be.true;
         });
 
         it('returns if unable to find node range in ghost pkg json', async function () {
             const execaStub = sinon.stub().resolves({stdout: process.versions.node});
             const {checkNodeVersion} = setup(execaStub);
-            const readJson = sinon.stub(fs, 'readJson').resolves({});
+            const readJson = sinon.stub(fs, 'readFile').resolves('{}');
             const log = sinon.stub();
 
             const ctx = {
@@ -166,16 +166,16 @@ Test=Value
             await checkNodeVersion(ctx, task);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
             expect(task.title).to.equal(`Checking systemd node version - found v${process.versions.node}`);
-            expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json')).to.be.true;
+            expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json', 'utf8')).to.be.true;
             expect(log.called).to.be.false;
         });
 
         it('rejects if node version isn\'t compatible with Ghost' , async function () {
             const execaStub = sinon.stub().resolves({stdout: process.versions.node});
             const {checkNodeVersion} = setup(execaStub);
-            const readJson = sinon.stub(fs, 'readJson').resolves({
+            const readJson = sinon.stub(fs, 'readFile').resolves(JSON.stringify({
                 engines: {node: '< 1.0.0'}
-            });
+            }));
             const log = sinon.stub();
 
             const ctx = {
@@ -195,7 +195,7 @@ Test=Value
             await expect(checkNodeVersion(ctx, task)).rejects.toThrow(errors.SystemError);
             expect(execaStub.calledOnceWithExactly('/usr/bin/node', ['--version'])).to.be.true;
             expect(task.title).to.equal(`Checking systemd node version - found v${process.versions.node}`);
-            expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json')).to.be.true;
+            expect(readJson.calledOnceWithExactly('/var/www/ghost/current/package.json', 'utf8')).to.be.true;
             expect(log.called).to.be.false;
         });
     });

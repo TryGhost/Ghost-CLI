@@ -1,6 +1,7 @@
 const sinon = require('sinon');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
+const tmp = require('tmp');
 
 const {SystemError} = require('../../../../lib/errors');
 
@@ -11,8 +12,8 @@ describe('Unit > Tasks > Import > parse-export', function () {
         sinon.restore();
     });
 
-    it('forwards error from readJsonSync', function () {
-        const stub = sinon.stub(fs, 'readJsonSync').throws(new Error('file not found'));
+    it('forwards error from readFileSync', function () {
+        const stub = sinon.stub(fs, 'readFileSync').throws(new Error('file not found'));
 
         try {
             parseExport('notfoundfile.json');
@@ -20,7 +21,7 @@ describe('Unit > Tasks > Import > parse-export', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.include('file not found');
             expect(stub.calledOnce).to.be.true;
-            expect(stub.calledWithExactly('notfoundfile.json')).to.be.true;
+            expect(stub.calledWithExactly('notfoundfile.json', 'utf8')).to.be.true;
             return;
         }
 
@@ -28,7 +29,7 @@ describe('Unit > Tasks > Import > parse-export', function () {
     });
 
     it('throws error if version can\'t be determined', function () {
-        const stub = sinon.stub(fs, 'readJsonSync').returns({});
+        const stub = sinon.stub(fs, 'readFileSync').returns('{}');
 
         try {
             parseExport('unrecognized.json');
@@ -36,7 +37,7 @@ describe('Unit > Tasks > Import > parse-export', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.include('Unable to determine export version');
             expect(stub.calledOnce).to.be.true;
-            expect(stub.calledWithExactly('unrecognized.json')).to.be.true;
+            expect(stub.calledWithExactly('unrecognized.json', 'utf8')).to.be.true;
             return;
         }
 
@@ -44,9 +45,9 @@ describe('Unit > Tasks > Import > parse-export', function () {
     });
 
     it('throws error if unrecognized version', function () {
-        const stub = sinon.stub(fs, 'readJsonSync').returns({
+        const stub = sinon.stub(fs, 'readFileSync').returns(JSON.stringify({
             meta: {version: 'this isnt semver'}
-        });
+        }));
 
         try {
             parseExport('unrecognized.json');
@@ -54,7 +55,7 @@ describe('Unit > Tasks > Import > parse-export', function () {
             expect(error).to.be.an.instanceof(SystemError);
             expect(error.message).to.include('Unrecognized export version: this isnt semver');
             expect(stub.calledOnce).to.be.true;
-            expect(stub.calledWithExactly('unrecognized.json')).to.be.true;
+            expect(stub.calledWithExactly('unrecognized.json', 'utf8')).to.be.true;
             return;
         }
 
@@ -99,6 +100,22 @@ describe('Unit > Tasks > Import > parse-export', function () {
 
     it('returns correct data for 3.x export file', function () {
         const result = parseExport(path.join(__dirname, 'fixtures/3.x.json'));
+        expect(result).to.deep.equal({
+            version: '3.0.2',
+            data: {
+                name: 'Test 3.x User',
+                email: 'test@example.com',
+                blogTitle: 'Test 3.x Blog'
+            }
+        });
+    });
+
+    it('parses an export file that starts with a BOM', function () {
+        const {name: file} = tmp.fileSync();
+        const contents = fs.readFileSync(path.join(__dirname, 'fixtures/3.x.json'), 'utf8');
+        fs.writeFileSync(file, `\uFEFF${contents}`);
+
+        const result = parseExport(file);
         expect(result).to.deep.equal({
             version: '3.0.2',
             data: {

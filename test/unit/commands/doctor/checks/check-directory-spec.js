@@ -2,7 +2,7 @@
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const errors = require('../../../../../lib/errors');
 
 const modulePath = '../../../../../lib/commands/doctor/checks/check-directory';

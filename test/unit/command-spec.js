@@ -336,8 +336,8 @@ describe('Unit: Command', function () {
             sinon.stub(process.stderr, 'write');
             sinon.stub(process, 'exit').throws(new Error('exit_stub'));
             sinon.stub(process, 'chdir').throws(new Error('chdir_stub'));
-            const fs = require('fs-extra');
-            const fsStub = sinon.stub(fs, 'ensureDirSync');
+            const fs = require('node:fs');
+            const fsStub = sinon.stub(fs, 'mkdirSync');
             const Command = require(modulePath);
             class TestCommand extends Command {}
             TestCommand.ensureDir = true;

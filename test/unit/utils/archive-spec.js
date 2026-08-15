@@ -1,5 +1,5 @@
 'use strict';
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
 const tar = require('tar');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
@@ -15,7 +15,9 @@ function createTarball(dir, name, files) {
     const contents = path.join(dir, 'contents');
 
     Object.keys(files).forEach((file) => {
-        fs.outputFileSync(path.join(contents, 'package', file), files[file]);
+        const target = path.join(contents, 'package', file);
+        fs.mkdirSync(path.dirname(target), {recursive: true});
+        fs.writeFileSync(target, files[file]);
     });
 
     const tarball = path.join(dir, name);

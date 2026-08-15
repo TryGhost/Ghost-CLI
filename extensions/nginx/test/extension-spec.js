@@ -7,7 +7,7 @@ const {errors, Extension} = require('../../../lib');
 const configStub = require('../../../test/utils/config-stub');
 
 // Proxied things
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const sysinfo = require('systeminformation');
 const migrations = require('../migrations');
 
@@ -120,7 +120,7 @@ describe('Unit: Extensions > Nginx', function () {
     describe('getResolvers', function () {
         it('uses the nameservers from resolv.conf', function () {
             const readFileSync = sinon.stub().returns('# comment\nnameserver 127.0.0.53\nnameserver 10.0.0.1\n');
-            const ext = proxyNginx({'fs-extra': {readFileSync}});
+            const ext = proxyNginx({'node:fs': {readFileSync}});
 
             expect(ext.getResolvers()).to.equal('127.0.0.53 10.0.0.1');
             expect(readFileSync.calledOnceWithExactly('/etc/resolv.conf', 'utf8')).to.be.true;
@@ -128,7 +128,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         it('falls back to public resolvers if resolv.conf is unreadable', function () {
             const readFileSync = sinon.stub().throws(new Error('ENOENT'));
-            const ext = proxyNginx({'fs-extra': {readFileSync}});
+            const ext = proxyNginx({'node:fs': {readFileSync}});
 
             expect(ext.getResolvers()).to.equal('1.1.1.1 8.8.8.8');
         });
@@ -274,7 +274,7 @@ describe('Unit: Extensions > Nginx', function () {
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
-                'fs-extra': {
+                'node:fs': {
                     existsSync: () => false,
                     readFileSync: () => 'hello'
                 },
@@ -309,7 +309,7 @@ describe('Unit: Extensions > Nginx', function () {
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
-                'fs-extra': {
+                'node:fs': {
                     existsSync: () => false,
                     readFileSync: () => 'hello'
                 },
@@ -364,10 +364,11 @@ describe('Unit: Extensions > Nginx', function () {
                 single: true
             };
             proxy = {
-                'fs-extra': {
+                'node:fs': {
                     existsSync: stubs.es,
                     readFileSync: value => value
-                }
+                },
+                'node:fs/promises': {}
             };
         });
 
@@ -454,13 +455,13 @@ describe('Unit: Extensions > Nginx', function () {
 
             it('creates web root directory', function () {
                 const ensureDirStub = sinon.stub().resolves();
-                proxy['fs-extra'].ensureDir = ensureDirStub;
+                proxy['node:fs/promises'].mkdir = ensureDirStub;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
 
                 return tasks[3].task().then(() => {
                     expect(ensureDirStub.calledOnce).to.be.true;
-                    expect(ensureDirStub.calledWithExactly(`${dir}/system/nginx-root`)).to.be.true;
+                    expect(ensureDirStub.calledWithExactly(`${dir}/system/nginx-root`, {recursive: true})).to.be.true;
                 });
             });
 
@@ -486,7 +487,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         describe('dhparam', function () {
             it('Uses OpenSSL (and skips if already exists)', function () {
-                proxy['fs-extra'].existsSync = () => true;
+                proxy['node:fs'].existsSync = () => true;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
 
@@ -499,7 +500,7 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Rejects when command fails', function () {
-                proxy['fs-extra'].existsSync = () => false;
+                proxy['node:fs'].existsSync = () => false;
                 const ext = proxyNginx(proxy);
                 ext.ui.sudo.rejects(new Error('Go ask George'));
                 const tasks = getTasks(ext);
@@ -517,11 +518,11 @@ describe('Unit: Extensions > Nginx', function () {
         describe('Headers', function () {
             beforeEach(function () {
                 stubs.wf = sinon.stub().resolves();
-                proxy['fs-extra'].writeFile = stubs.wf;
+                proxy['node:fs/promises'].writeFile = stubs.wf;
             });
 
             it('Writes & moves file to proper location', function () {
-                proxy['fs-extra'].existsSync = () => true;
+                proxy['node:fs'].existsSync = () => true;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
                 const expectedSudo = new RegExp(/(?=^mv)(?=.*snippets\/ssl-params\.conf)/);
@@ -534,7 +535,7 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Throws an error when moving fails', function () {
-                proxy['fs-extra'].existsSync = () => false;
+                proxy['node:fs'].existsSync = () => false;
                 const ext = proxyNginx(proxy);
                 ext.ui.sudo.rejects(new Error('Potato'));
                 const tasks = getTasks(ext);
@@ -565,7 +566,7 @@ describe('Unit: Extensions > Nginx', function () {
             beforeEach(function () {
                 stubs.templatify = sinon.stub().returns('nginx ssl config');
                 stubs.template = sinon.stub().returns(stubs.templatify);
-                proxy['fs-extra'].writeFile = sinon.stub().resolves();
+                proxy['node:fs/promises'].writeFile = sinon.stub().resolves();
                 proxy['lodash/template'] = stubs.template;
             });
 

@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 const each = require('../../utils/each');
 const path = require('path');
-const fs = require('fs-extra');
+const fsp = require('node:fs/promises');
 
 const modulePath = '../../../lib/commands/install';
 const errors = require('../../../lib/errors');
@@ -37,7 +37,7 @@ describe('Unit: Commands > Install', function () {
         });
 
         beforeEach(() => {
-            sinon.stub(fs, 'removeSync');
+            sinon.stub(fsp, 'rm').resolves();
             uiRunStub = sinon.stub().callsFake(task => task());
         });
 
@@ -448,7 +448,7 @@ describe('Unit: Commands > Install', function () {
             existsSyncStub.returns(false);
             const InstallCommand = proxyquire(modulePath, {
                 'symlink-or-copy': {sync: symlinkSyncStub},
-                'fs-extra': {readdirSync: readdirSyncStub, existsSync: existsSyncStub}
+                'node:fs': {readdirSync: readdirSyncStub, existsSync: existsSyncStub}
             });
 
             const testInstance = new InstallCommand({}, {});
@@ -509,6 +509,53 @@ describe('Unit: Commands > Install', function () {
                 version: '1.5.0',
                 cliVersion: '1.0.0',
                 channel: 'next'
+            });
+        });
+    });
+
+    describe('cleanInstallDirectory', function () {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        it('reports a failed cleanup but still surfaces the install error', async function () {
+            const dirEmptyStub = sinon.stub().returns(true);
+            const listrStub = sinon.stub().rejects(new Error('install blew up'));
+            const logStub = sinon.stub();
+
+            const InstallCommand = proxyquire(modulePath, {
+                '../utils/dir-is-empty': dirEmptyStub
+            });
+            const runStub = sinon.stub().callsFake(task => task());
+            const testInstance = new InstallCommand({listr: listrStub, run: runStub, log: logStub}, {});
+            sinon.stub(testInstance, 'runCommand').resolves();
+            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+                ctx.version = '1.0.0';
+            });
+            sinon.stub(testInstance, 'cleanInstallDirectory').rejects(new Error('cleanup blew up'));
+
+            const error = await testInstance.run({argv: true}).catch(e => e);
+
+            expect(error.message).to.equal('install blew up');
+            expect(logStub.calledOnce).to.be.true;
+            expect(logStub.args[0][0]).to.match(/cleanup blew up/);
+        });
+
+        it('removes every entry in the cwd', async function () {
+            const readdirSyncStub = sinon.stub().returns(['.ghost-cli', 'versions', 'content']);
+            const rmStub = sinon.stub(fsp, 'rm').resolves();
+
+            const InstallCommand = proxyquire(modulePath, {
+                'node:fs': {readdirSync: readdirSyncStub}
+            });
+            const testInstance = new InstallCommand({}, {});
+
+            await testInstance.cleanInstallDirectory();
+
+            expect(readdirSyncStub.calledOnceWithExactly(process.cwd())).to.be.true;
+            expect(rmStub.callCount).to.equal(3);
+            ['.ghost-cli', 'versions', 'content'].forEach((file) => {
+                expect(rmStub.calledWithExactly(file, {recursive: true, force: true})).to.be.true;
             });
         });
     });

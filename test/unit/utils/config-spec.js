@@ -1,5 +1,5 @@
 'use strict';
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 const Config = require('../../../lib/utils/config');
 
@@ -16,10 +16,10 @@ describe('Unit: Config', function () {
     });
 
     it('loads values from file correctly', function () {
-        fs.writeJsonSync('config-test.json', {test: 'a'});
+        fs.writeFileSync('config-test.json', JSON.stringify({test: 'a'}));
         test = new Config('config-test.json');
         expect(test.values).to.deep.equal({test: 'a'});
-        fs.removeSync('config-test.json');
+        fs.rmSync('config-test.json', {force: true});
     });
 
     it('loads empty value set when file does not exist', function () {
@@ -29,12 +29,12 @@ describe('Unit: Config', function () {
 
     describe('get()', function () {
         beforeEach(function () {
-            fs.writeJsonSync('config-test.json', {a: 'b'});
+            fs.writeFileSync('config-test.json', JSON.stringify({a: 'b'}));
             test = new Config('config-test.json');
         });
 
         afterEach(function () {
-            fs.removeSync('config-test.json');
+            fs.rmSync('config-test.json', {force: true});
         });
 
         it('returns value correctly', function () {
@@ -48,12 +48,12 @@ describe('Unit: Config', function () {
 
     describe('set()', function () {
         beforeEach(function () {
-            fs.writeJsonSync('config-test.json', {});
+            fs.writeFileSync('config-test.json', JSON.stringify({}));
             test = new Config('config-test.json');
         });
 
         afterEach(function () {
-            fs.removeSync('config-test.json');
+            fs.rmSync('config-test.json', {force: true});
         });
 
         it('sets single value correctly', function () {
@@ -81,27 +81,34 @@ describe('Unit: Config', function () {
         });
 
         it('returns true when value exists', function () {
-            fs.writeJsonSync('config-test.json', {a: 'b'});
+            fs.writeFileSync('config-test.json', JSON.stringify({a: 'b'}));
             test = new Config('config-test.json');
             expect(test.has('a')).to.be.true;
-            fs.removeSync('config-test.json');
+            fs.rmSync('config-test.json', {force: true});
         });
 
         it('returns true when value exists and is false', function () {
-            fs.writeJsonSync('config-test.json', {a: false});
+            fs.writeFileSync('config-test.json', JSON.stringify({a: false}));
             test = new Config('config-test.json');
             expect(test.has('a')).to.be.true;
-            fs.removeSync('config-test.json');
+            fs.rmSync('config-test.json', {force: true});
         });
     });
 
     describe('save()', function () {
         it('saves file correctly', function () {
-            fs.writeJsonSync('config-test.json', {});
+            fs.writeFileSync('config-test.json', JSON.stringify({}));
             test = new Config('config-test.json');
             test.set('a', 'b').save();
-            expect(fs.readJsonSync('config-test.json')).to.deep.equal({a: 'b'});
-            fs.removeSync('config-test.json');
+            expect(JSON.parse(fs.readFileSync('config-test.json', 'utf8'))).to.deep.equal({a: 'b'});
+            fs.rmSync('config-test.json', {force: true});
+        });
+
+        it('writes indented json with a trailing newline', function () {
+            test = new Config('config-test.json');
+            test.set('a', 'b').save();
+            expect(fs.readFileSync('config-test.json', 'utf8')).to.equal('{\n  "a": "b"\n}\n');
+            fs.rmSync('config-test.json', {force: true});
         });
     });
 
@@ -116,14 +123,14 @@ describe('Unit: Config', function () {
             fs.writeFileSync('config-test.json', 'invalid json');
             const result = Config.exists('config-test.json');
             expect(result).to.be.false;
-            fs.removeSync('config-test.json');
+            fs.rmSync('config-test.json', {force: true});
         });
 
         it('returns parsed contents of file if valid JSON', function () {
-            fs.writeJsonSync('config-test.json', {test: 'a'});
+            fs.writeFileSync('config-test.json', JSON.stringify({test: 'a'}));
             const result = Config.exists('config-test.json');
             expect(result.test).to.equal('a');
-            fs.removeSync('config-test.json');
+            fs.rmSync('config-test.json', {force: true});
         });
     });
 });

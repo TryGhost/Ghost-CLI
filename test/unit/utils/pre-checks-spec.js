@@ -1,7 +1,7 @@
 const proxyquire = require('proxyquire').noCallThru();
 const sinon = require('sinon');
 const os = require('os');
-const fs = require('fs-extra');
+const fsp = require('node:fs/promises');
 
 function load(stubs = {}) {
     return proxyquire('../../../lib/utils/pre-checks', stubs);
@@ -106,7 +106,7 @@ describe('Unit: Utils > pre-checks', function () {
             const testErr = new Error('test error');
 
             const homedir = sinon.stub(os, 'homedir').returns('/home/ghost');
-            const lstat = sinon.stub(fs, 'lstat').rejects(testErr);
+            const lstat = sinon.stub(fsp, 'lstat').rejects(testErr);
             const ui = {};
 
             const {checkConfigPerms} = load();
@@ -119,7 +119,7 @@ describe('Unit: Utils > pre-checks', function () {
 
         it('doesn\'t do anything if directory ownership if fine', async function () {
             sinon.stub(os, 'homedir').returns('/home/ghost');
-            sinon.stub(fs, 'lstat').resolves({uid: 1, gid: 1});
+            sinon.stub(fsp, 'lstat').resolves({uid: 1, gid: 1});
             const uid = sinon.stub(process, 'getuid').returns(1);
             const gid = sinon.stub(process, 'getgid').returns(1);
             const sudo = sinon.stub().resolves();
@@ -135,7 +135,7 @@ describe('Unit: Utils > pre-checks', function () {
 
         it('calls chown if directory owner is not correct', async function () {
             sinon.stub(os, 'homedir').returns('/home/ghost');
-            sinon.stub(fs, 'lstat').resolves({uid: 1, gid: 1});
+            sinon.stub(fsp, 'lstat').resolves({uid: 1, gid: 1});
             const uid = sinon.stub(process, 'getuid').returns(2);
             const gid = sinon.stub(process, 'getgid').returns(2);
             const sudo = sinon.stub().resolves();
@@ -154,7 +154,7 @@ describe('Unit: Utils > pre-checks', function () {
 
         it('calls chown if directory group is not correct', async function () {
             sinon.stub(os, 'homedir').returns('/home/ghost');
-            sinon.stub(fs, 'lstat').resolves({uid: 2, gid: 1});
+            sinon.stub(fsp, 'lstat').resolves({uid: 2, gid: 1});
             const uid = sinon.stub(process, 'getuid').returns(2);
             const gid = sinon.stub(process, 'getgid').returns(2);
             const sudo = sinon.stub().resolves();

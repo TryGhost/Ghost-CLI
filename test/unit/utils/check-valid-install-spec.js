@@ -3,7 +3,7 @@
 const sinon = require('sinon');
 const checkValidInstall = require('../../../lib/utils/check-valid-install');
 
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 describe('Unit: Utils > checkValidInstall', function () {
     afterEach(() => {
@@ -25,12 +25,12 @@ describe('Unit: Utils > checkValidInstall', function () {
 
     it('fails within a Ghost git clone', function () {
         const existsStub = sinon.stub(fs, 'existsSync');
-        const readJsonStub = sinon.stub(fs, 'readJsonSync');
+        const readJsonStub = sinon.stub(fs, 'readFileSync');
 
         existsStub.withArgs(sinon.match(/config\.js/)).returns(false);
         existsStub.withArgs(sinon.match(/package\.json/)).returns(true);
         existsStub.withArgs(sinon.match(/Gruntfile\.js/)).returns(true);
-        readJsonStub.returns({name: 'ghost'});
+        readJsonStub.returns(JSON.stringify({name: 'ghost'}));
 
         const errorStub = sinon.stub(console, 'error');
 

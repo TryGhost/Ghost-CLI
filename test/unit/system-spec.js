@@ -44,7 +44,7 @@ describe('Unit: System', function () {
         const ensureDirStub = sinon.stub();
 
         const System = proxyquire(modulePath, {
-            'fs-extra': {ensureDirSync: ensureDirStub}
+            'node:fs': {mkdirSync: ensureDirStub}
         });
         System.globalDir = '/home/user/.ghost';
         const systemInstance = new System({}, []);
@@ -52,7 +52,7 @@ describe('Unit: System', function () {
         const config = systemInstance.globalConfig;
         expect(config).to.be.an.instanceof(Config);
         expect(ensureDirStub.calledOnce).to.be.true;
-        expect(ensureDirStub.calledWithExactly('/home/user/.ghost')).to.be.true;
+        expect(ensureDirStub.calledWithExactly('/home/user/.ghost', {recursive: true})).to.be.true;
 
         const configTwo = systemInstance.globalConfig;
         expect(configTwo).to.be.an.instanceof(Config);
@@ -309,7 +309,7 @@ describe('Unit: System', function () {
             fsStub.withArgs('/dir/c/.ghost-cli').returns(false);
 
             const System = proxyquire(modulePath, {
-                'fs-extra': {existsSync: fsStub}
+                'node:fs': {existsSync: fsStub}
             });
             const instances = {
                 testa: {cwd: '/dir/a'},
@@ -348,7 +348,7 @@ describe('Unit: System', function () {
             fsStub.withArgs('/dir/b/.ghost-cli').returns(true);
 
             const System = proxyquire(modulePath, {
-                'fs-extra': {existsSync: fsStub}
+                'node:fs': {existsSync: fsStub}
             });
             const instances = {
                 testa: {cwd: '/dir/a'},
@@ -531,7 +531,7 @@ describe('Unit: System', function () {
         const existsSyncStub = sinon.stub();
         const System = proxyquire(modulePath, {
             './extension': {getInstance: getInstanceStub},
-            'fs-extra': {existsSync: existsSyncStub}
+            'node:fs': {existsSync: existsSyncStub}
         });
 
         existsSyncStub.withArgs('./foo').returns(true);
@@ -582,14 +582,14 @@ describe('Unit: System', function () {
         const writeFileStub = sinon.stub();
 
         const System = proxyquire(modulePath, {
-            'fs-extra': {ensureDirSync: ensureDirStub, writeFileSync: writeFileStub}
+            'node:fs': {mkdirSync: ensureDirStub, writeFileSync: writeFileStub}
         });
         System.globalDir = '/global/dir';
         const systemInstance = new System({}, []);
 
         systemInstance.writeErrorLog('heres an error');
         expect(ensureDirStub.calledOnce).to.be.true;
-        expect(ensureDirStub.calledWithExactly('/global/dir/logs')).to.be.true;
+        expect(ensureDirStub.calledWithExactly('/global/dir/logs', {recursive: true})).to.be.true;
         expect(writeFileStub.calledOnce).to.be.true;
         expect(writeFileStub.args[0][0]).to.match(/global\/dir\/logs\/ghost-cli-debug-(.*).log/);
         expect(writeFileStub.args[0][1]).to.equal('heres an error');

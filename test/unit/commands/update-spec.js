@@ -5,7 +5,7 @@ const configStub = require('../../utils/config-stub');
 const {setupTestFolder, cleanupTestFolders} = require('../../utils/test-folder');
 const each = require('../../utils/each');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 
 const modulePath = '../../../lib/commands/update';
 const errors = require('../../../lib/errors');
