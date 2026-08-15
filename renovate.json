@@ -21,7 +21,7 @@
     },
     {
       "groupName": "Well Known",
-      "matchPackageNames": ["debug", "lodash", "semver", "yarn"],
+      "matchPackageNames": ["debug", "semver", "yarn"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }

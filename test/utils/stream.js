@@ -1,6 +1,5 @@
 'use strict';
 const stream = require('stream');
-const isString = require('lodash/isString');
 
 function noopRead(stream) {
     return function () {
@@ -14,7 +13,7 @@ function noopWrite(_chunk, _enc, next) {
 
 function writeWrap(writeFunc) {
     return function (chunk, _enc, next) {
-        if (!isString(chunk)) {
+        if (typeof chunk !== 'string') {
             // chunk is a buffer, convert it to string
             writeFunc(chunk.toString());
         } else {

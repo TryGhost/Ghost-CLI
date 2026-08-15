@@ -1,18 +1,14 @@
-map $status $header_content_type_options {
+module.exports = ({url, webroot, location, port, resolvers}) => `map $status $header_content_type_options {
     204 "";
     default "nosniff";
 }
 
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+    listen 80;
+    listen [::]:80;
 
-    server_name <%= url %>;
-    root <%= webroot %>; # Used for acme.sh SSL verification (https://acme.sh)
-
-    ssl_certificate <%= fullchain %>;
-    ssl_certificate_key <%= privkey %>;
-    include <%= sslparams %>;
+    server_name ${url};
+    root ${webroot}; # Used for acme.sh SSL verification (https://acme.sh)
 
     location ~ /.ghost/activitypub/* {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -22,7 +18,7 @@ server {
         add_header X-Content-Type-Options $header_content_type_options;
         proxy_ssl_server_name on;
         # Resolved per-request so nginx can still start when DNS is briefly unavailable (Ghost-CLI#2044)
-        resolver <%= resolvers %> valid=300s;
+        resolver ${resolvers} valid=300s;
         resolver_timeout 5s;
         set $activitypub_upstream https://ap.ghost.org;
         proxy_pass $activitypub_upstream;
@@ -36,21 +32,26 @@ server {
         add_header X-Content-Type-Options $header_content_type_options;
         proxy_ssl_server_name on;
         # Resolved per-request so nginx can still start when DNS is briefly unavailable (Ghost-CLI#2044)
-        resolver <%= resolvers %> valid=300s;
+        resolver ${resolvers} valid=300s;
         resolver_timeout 5s;
         set $activitypub_upstream https://ap.ghost.org;
         proxy_pass $activitypub_upstream;
     }
 
-    location <%= location %> {
+    location ${location} {
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header Host $http_host;
-        proxy_pass http://127.0.0.1:<%= port %>;
-        <% if (location !== '/') { %>proxy_redirect off;<% } %>
+        proxy_pass http://127.0.0.1:${port};
+        ${location !== '/' ? 'proxy_redirect off;' : ''}
         add_header X-Content-Type-Options $header_content_type_options;
     }
 
-    client_max_body_size 1g;
+    location ~ ^/.well-known/acme-challenge {
+        allow all;
+    }
+
+    client_max_body_size 50m;
 }
+`;

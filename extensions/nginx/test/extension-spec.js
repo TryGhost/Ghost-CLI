@@ -271,14 +271,13 @@ describe('Unit: Extensions > Nginx', function () {
                 port: 2368,
                 resolvers: '1.1.1.1 8.8.8.8'
             };
-            const loadStub = sinon.stub().returns('nginx config file');
-            const templateStub = sinon.stub().returns(loadStub);
+            const templateStub = sinon.stub().returns('nginx config file');
             const ext = proxyNginx({
                 'node:fs': {
                     existsSync: () => false,
                     readFileSync: () => 'hello'
                 },
-                'lodash/template': templateStub
+                './templates/nginx.conf': templateStub
             });
             ext.template = sinon.stub().resolves();
             const sudo = sinon.stub().resolves();
@@ -286,34 +285,32 @@ describe('Unit: Extensions > Nginx', function () {
 
             await ext.setupNginx({instance: {config, dir}});
             expect(templateStub.calledOnce).to.be.true;
-            expect(loadStub.calledOnce).to.be.true;
-            expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
+            expect(templateStub.args[0][0]).to.deep.equal(expectedConfig);
             expect(sudo.calledOnce).to.be.true;
             expect(sudo.args[0][0]).to.match(lnExp);
             expect(ext.restartNginx.calledOnce).to.be.true;
 
             // Testing handling of subdirectory installations
 
-            loadStub.reset();
+            templateStub.resetHistory();
             config.get.withArgs('url').returns(`${testURL}/a/b/c`);
             expectedConfig.location = '^~ /a/b/c';
 
             await ext.setupNginx({instance: {config, dir}});
-            expect(loadStub.calledOnce).to.be.true;
-            expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
+            expect(templateStub.calledOnce).to.be.true;
+            expect(templateStub.args[0][0]).to.deep.equal(expectedConfig);
         });
 
         it('passes the error if it\'s already a CliError', async function () {
             const name = 'ghost.dev.conf';
             const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
-            const loadStub = sinon.stub().returns('nginx config file');
-            const templateStub = sinon.stub().returns(loadStub);
+            const templateStub = sinon.stub().returns('nginx config file');
             const ext = proxyNginx({
                 'node:fs': {
                     existsSync: () => false,
                     readFileSync: () => 'hello'
                 },
-                'lodash/template': templateStub
+                './templates/nginx.conf': templateStub
             });
             const sudo = sinon.stub().resolves();
             ext.template = sinon.stub().resolves();
@@ -327,7 +324,6 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.be.equal('Did not restart');
                 expect(templateStub.calledOnce).to.be.true;
-                expect(loadStub.calledOnce).to.be.true;
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.args[0][0]).to.match(lnExp);
                 expect(ext.restartNginx.calledOnce).to.be.true;
@@ -564,10 +560,9 @@ describe('Unit: Extensions > Nginx', function () {
             const expectedSudo = /(?=^ln -s)(?=.*sites-available)(?=.*sites-enabled)/;
 
             beforeEach(function () {
-                stubs.templatify = sinon.stub().returns('nginx ssl config');
-                stubs.template = sinon.stub().returns(stubs.templatify);
+                stubs.sslTemplate = sinon.stub().returns('nginx ssl config');
                 proxy['node:fs/promises'].writeFile = sinon.stub().resolves();
-                proxy['lodash/template'] = stubs.template;
+                proxy['./templates/nginx-ssl.conf'] = stubs.sslTemplate;
             });
 
             it('Provides necessary template data', function () {
@@ -575,9 +570,8 @@ describe('Unit: Extensions > Nginx', function () {
                 const tasks = getTasks(ext);
                 ext.template = sinon.stub().resolves();
                 return tasks[7].task(ctx).then(() => {
-                    expect(stubs.template.calledTwice).to.be.true;
-                    expect(stubs.templatify.calledOnce).to.be.true;
-                    expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
+                    expect(stubs.sslTemplate.calledOnce).to.be.true;
+                    expect(stubs.sslTemplate.args[0][0]).to.deep.equal(expectedTemplate);
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
                 });
@@ -593,9 +587,8 @@ describe('Unit: Extensions > Nginx', function () {
                 expectedTemplate.location = '^~ /blog';
 
                 return tasks[7].task(ctx).then(() => {
-                    expect(stubs.template.calledTwice).to.be.true;
-                    expect(stubs.templatify.calledOnce).to.be.true;
-                    expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
+                    expect(stubs.sslTemplate.calledOnce).to.be.true;
+                    expect(stubs.sslTemplate.args[0][0]).to.deep.equal(expectedTemplate);
                 });
             });
 
@@ -609,8 +602,7 @@ describe('Unit: Extensions > Nginx', function () {
                 return tasks[7].task(ctx).then(() => {
                     expect(false, 'Promise should have been rejected').to.be.true;
                 }).catch((err) => {
-                    expect(stubs.template.calledTwice).to.be.true;
-                    expect(stubs.templatify.calledOnce).to.be.true;
+                    expect(stubs.sslTemplate.calledOnce).to.be.true;
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(err.options.stderr).to.equal('oh no!');
                 });

@@ -86,11 +86,11 @@ describe('Unit: Systemd > Extension', function () {
 
         it('runs through template method and reloads daemon', function () {
             const uidStub = sinon.stub().returns(true);
-            const readFileSyncStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
+            const serviceTemplateStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
 
             const SystemdExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
-                'node:fs': {readFileSync: readFileSyncStub}
+                './ghost.service': serviceTemplateStub
             });
 
             const logStub = sinon.stub();
@@ -105,7 +105,7 @@ describe('Unit: Systemd > Extension', function () {
             return testInstance._setup({instance, ui: uiStub()}, {skip: skipStub}).then(() => {
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(readFileSyncStub.calledOnce).to.be.true;
+                expect(serviceTemplateStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
                 expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
@@ -118,11 +118,11 @@ describe('Unit: Systemd > Extension', function () {
 
         it('can handle error when template method fails', function () {
             const uidStub = sinon.stub().returns(true);
-            const readFileSyncStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
+            const serviceTemplateStub = sinon.stub().returns('SOME TEMPLATE CONTENTS');
 
             const SystemdExtension = proxyquire(modulePath, {
                 './get-uid': uidStub,
-                'node:fs': {readFileSync: readFileSyncStub}
+                './ghost.service': serviceTemplateStub
             });
 
             const logStub = sinon.stub();
@@ -140,7 +140,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(error.options.stderr).to.be.equal('something went wrong');
                 expect(uidStub.calledOnce).to.be.true;
                 expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(readFileSyncStub.calledOnce).to.be.true;
+                expect(serviceTemplateStub.calledOnce).to.be.true;
                 expect(templateStub.calledOnce).to.be.true;
                 expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;

@@ -2,7 +2,6 @@
 const fs = require('node:fs');
 const tmp = require('tmp');
 const path = require('path');
-const isObject = require('lodash/isObject');
 
 const currentTestFolders = {};
 
@@ -40,7 +39,7 @@ const builtin = {
 function setupTestFolder(typeOrDefinition, dir) {
     typeOrDefinition = typeOrDefinition || {}; // default to empty object
 
-    const setup = isObject(typeOrDefinition) ? typeOrDefinition : builtin[typeOrDefinition];
+    const setup = typeof typeOrDefinition === 'object' ? typeOrDefinition : builtin[typeOrDefinition];
 
     if (!setup) {
         return null;

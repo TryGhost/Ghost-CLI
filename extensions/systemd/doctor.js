@@ -1,6 +1,5 @@
 const fs = require('node:fs/promises');
 const {readJSON} = require('../../lib/utils/json');
-const get = require('lodash/get');
 const path = require('path');
 const ini = require('ini');
 const chalk = require('chalk').default;
@@ -37,7 +36,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
         help: `Ensure 'ExecStart' exists in ${chalk.cyan(systemd.unitFilePath)} and uses a valid Node version`
     };
 
-    const execStart = get(systemd, 'unit.Service.ExecStart', null);
+    const execStart = systemd.unit?.Service?.ExecStart ?? null;
     if (!execStart) {
         throw new SystemError(errBlock);
     }
@@ -71,7 +70,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
     try {
         const packagePath = path.join(instance.dir, 'current/package.json');
         const ghostPkg = await readJSON(packagePath);
-        nodeRange = get(ghostPkg, 'engines.node', null);
+        nodeRange = ghostPkg.engines?.node ?? null;
     } catch {
         return;
     }

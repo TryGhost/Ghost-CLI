@@ -5,13 +5,16 @@ const dns = require('dns');
 const url = require('url');
 const {isIP} = require('net');
 const path = require('path');
-const template = require('lodash/template');
 const sysinfo = require('systeminformation');
 
 const {Extension, errors} = require('../../lib');
 const {CliError} = errors;
 
 const {errorWrapper, parseResolvers} = require('./utils');
+
+const nginxTemplate = require('./templates/nginx.conf');
+const nginxSslTemplate = require('./templates/nginx-ssl.conf');
+const sslParamsTemplate = require('./templates/ssl-params.conf');
 
 const nginxConfigPath = process.env.NGINX_CONFIG_PATH || '/etc/nginx';
 const nginxProgramName = process.env.NGINX_PROGRAM_NAME || 'nginx';
@@ -124,12 +127,10 @@ class NginxExtension extends Extension {
 
     async setupNginx({instance}) {
         const {hostname, pathname} = url.parse(instance.config.get('url'));
-        const conf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx.conf'), 'utf8'));
-
         const rootPath = path.resolve(instance.dir, 'system', 'nginx-root');
         const confFile = `${hostname}.conf`;
 
-        const generatedConfig = conf({
+        const generatedConfig = nginxTemplate({
             url: hostname,
             webroot: rootPath,
             location: pathname !== '/' ? `^~ ${pathname}` : '/',
@@ -151,7 +152,6 @@ class NginxExtension extends Extension {
         const rootPath = path.resolve(instance.dir, 'system', 'nginx-root');
         const dhparamFile = `${nginxConfigPath}/snippets/dhparam.pem`;
         const sslParamsFile = `${nginxConfigPath}/snippets/ssl-params.conf`;
-        const sslParamsConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'ssl-params.conf'), 'utf8'));
 
         return this.ui.listr([{
             title: 'Checking DNS resolution',
@@ -211,15 +211,14 @@ class NginxExtension extends Extension {
             skip: () => fs.existsSync(sslParamsFile),
             task: errorWrapper(async () => {
                 const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
-                await fsp.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'});
+                await fsp.writeFile(tmpfile, sslParamsTemplate({dhparam: dhparamFile}), {encoding: 'utf8'});
                 await this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`);
             })
         }, {
             title: 'Generating SSL configuration',
             task: errorWrapper(async () => {
                 const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
-                const sslConf = template(fs.readFileSync(path.join(__dirname, 'templates', 'nginx-ssl.conf'), 'utf8'));
-                const generatedSslConfig = sslConf({
+                const generatedSslConfig = nginxSslTemplate({
                     url: parsedUrl.hostname,
                     webroot: rootPath,
                     fullchain: path.join(acmeFolder, 'fullchain.cer'),

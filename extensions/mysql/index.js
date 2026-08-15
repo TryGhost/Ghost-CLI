@@ -1,5 +1,4 @@
 const mysql = require('mysql2');
-const omit = require('lodash/omit');
 const generator = require('generate-password');
 const semver = require('semver');
 
@@ -83,7 +82,10 @@ class MySQLExtension extends Extension {
     }
 
     async canConnect(ctx, dbconfig) {
-        this.connection = mysql.createConnection(omit(dbconfig, 'database'));
+        // The database itself doesn't exist yet, so connect without it
+        const connectionConfig = {...dbconfig};
+        delete connectionConfig.database;
+        this.connection = mysql.createConnection(connectionConfig);
 
         try {
             await new Promise((resolve, reject) => {

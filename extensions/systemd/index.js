@@ -1,8 +1,7 @@
 const fs = require('node:fs');
-const path = require('path');
-const template = require('lodash/template');
 
 const getUid = require('./get-uid');
+const serviceTemplate = require('./ghost.service');
 const {Extension, errors} = require('../../lib');
 
 const {ProcessError, SystemError} = errors;
@@ -49,13 +48,12 @@ class SystemdExtension extends Extension {
         }
 
         const serviceFilename = `ghost_${instance.name}.service`;
-        const service = template(fs.readFileSync(path.join(__dirname, 'ghost.service.template'), 'utf8'));
-        const contents = service({
+        const contents = serviceTemplate({
             name: instance.name,
             dir: process.cwd(),
             user: uid,
             environment: this.system.environment,
-            ghost_exec_path: process.argv.slice(0,2).join(' ')
+            ghostExecPath: process.argv.slice(0,2).join(' ')
         });
 
         return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system').then(
