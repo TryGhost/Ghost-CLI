@@ -523,8 +523,9 @@ describe('Unit: UI', function () {
             const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
             const stderr = new EventEmitter();
 
-            // argv contains the test runner's own path, which isn't regex-safe
-            const eCall = `sudo -S -p '#node-sudo-passwd#' -E -u ghost ${process.argv.slice(0, 2).join(' ')} -v`;
+            // argv contains the test runner's own path, which isn't regex-safe and gets shell-quoted
+            const quotedArgv = process.argv.slice(0, 2).map(arg => `'${arg.replace(/'/g, '\'\\\'\'')}'`).join(' ');
+            const eCall = `sudo -S -p '#node-sudo-passwd#' -E -u ghost ${quotedArgv} -v`;
 
             const {stream: stdin, written} = streamTestUtils.captureFirstWrite();
             shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
