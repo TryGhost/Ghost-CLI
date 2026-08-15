@@ -17,7 +17,6 @@ const OLD_XFF_HEADER = 'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_
 const NEW_XFF_HEADER = 'proxy_set_header X-Forwarded-For $remote_addr;';
 
 function migrateSSL(ctx, migrateTask) {
-    const replace = require('replace-in-file');
     const acme = require('./acme');
 
     const parsedUrl = url.parse(ctx.instance.config.get('url'));
@@ -66,20 +65,15 @@ function migrateSSL(ctx, migrateTask) {
         title: 'Updating nginx config',
         task: () => {
             const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
+            const keyCheck = new RegExp(`ssl_certificate_key ${originalCertFolder}/${parsedUrl.hostname}.key;`);
 
-            return replace({
-                files: confFile,
-                from: [
-                    // Ensure here that we ONLY replace instances of the LetsEncrypt cert in the file,
-                    // that way we don't overwrite the cert config of other certs.
-                    certCheck,
-                    new RegExp(`ssl_certificate_key ${originalCertFolder}/${parsedUrl.hostname}.key;`)
-                ],
-                to: [
-                    `ssl_certificate ${path.join(acmeFolder, 'fullchain.cer')};`,
-                    `ssl_certificate_key ${path.join(acmeFolder, `${parsedUrl.hostname}.key`)};`
-                ]
-            });
+            // Ensure here that we ONLY replace instances of the LetsEncrypt cert in the file,
+            // that way we don't overwrite the cert config of other certs.
+            const updated = fs.readFileSync(confFile, {encoding: 'utf8'})
+                .replace(certCheck, `ssl_certificate ${path.join(acmeFolder, 'fullchain.cer')};`)
+                .replace(keyCheck, `ssl_certificate_key ${path.join(acmeFolder, `${parsedUrl.hostname}.key`)};`);
+
+            fs.writeFileSync(confFile, updated);
         }
     }, {
         title: 'Restarting Nginx',

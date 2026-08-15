@@ -38,27 +38,27 @@ describe('Unit: Utils > pre-checks', function () {
     });
 
     describe('update check', function () {
-        it('rejects error if latestVersion has an error', async function () {
+        it('rejects error if the version lookup has an error', async function () {
             const pkg = {name: 'ghost', version: '1.0.0'};
             const testError = new Error('update check');
-            const latestVersion = sinon.stub().rejects(testError);
+            const packageJson = sinon.stub().rejects(testError);
             const ui = {
                 log: sinon.stub()
             };
 
             const {updateCheck} = load({
                 '../../package.json': pkg,
-                'latest-version': {default: latestVersion}
+                'package-json': {default: packageJson}
             });
 
             await expect(updateCheck({ui})).rejects.toBe(testError);
-            expect(latestVersion.calledOnce).to.be.true;
-            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
+            expect(packageJson.calledOnce).to.be.true;
+            expect(packageJson.calledWithExactly('ghost')).to.be.true;
         });
 
         it('doesn\'t do anything if there are no updates', async function () {
             const pkg = {name: 'ghost', version: '1.0.0'};
-            const latestVersion = sinon.stub().resolves('1.0.0');
+            const packageJson = sinon.stub().resolves({version: '1.0.0'});
 
             const ui = {
                 log: sinon.stub()
@@ -66,18 +66,18 @@ describe('Unit: Utils > pre-checks', function () {
 
             const {updateCheck} = load({
                 '../../package.json': pkg,
-                'latest-version': {default: latestVersion}
+                'package-json': {default: packageJson}
             });
 
             await updateCheck({ui});
             expect(ui.log.called).to.be.false;
-            expect(latestVersion.calledOnce).to.be.true;
-            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
+            expect(packageJson.calledOnce).to.be.true;
+            expect(packageJson.calledWithExactly('ghost')).to.be.true;
         });
 
         it('logs a message if an update is available', async function () {
             const pkg = {name: 'ghost', version: '1.0.0'};
-            const latestVersion = sinon.stub().resolves('1.1.0');
+            const packageJson = sinon.stub().resolves({version: '1.1.0'});
 
             const ui = {
                 log: sinon.stub()
@@ -85,14 +85,14 @@ describe('Unit: Utils > pre-checks', function () {
 
             const {updateCheck} = load({
                 '../../package.json': pkg,
-                'latest-version': {default: latestVersion}
+                'package-json': {default: packageJson}
             });
 
             await updateCheck({ui});
             expect(ui.log.calledOnce).to.be.true;
             expect(ui.log.args[0][0]).to.match(/You are running an outdated version of Ghost-CLI/);
-            expect(latestVersion.calledOnce).to.be.true;
-            expect(latestVersion.calledWithExactly('ghost')).to.be.true;
+            expect(packageJson.calledOnce).to.be.true;
+            expect(packageJson.calledWithExactly('ghost')).to.be.true;
         });
     });
 

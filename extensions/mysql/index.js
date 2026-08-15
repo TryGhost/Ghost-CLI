@@ -1,12 +1,39 @@
+const crypto = require('crypto');
 const mysql = require('mysql2');
 const omit = require('lodash/omit');
-const generator = require('generate-password');
 const semver = require('semver');
 
 const {Extension, errors} = require('../../lib');
 
 const localhostAliases = ['localhost', '127.0.0.1'];
 const {ConfigError, CliError, SystemError} = errors;
+
+// Note that none of these contain a single quote or a backslash - generated passwords
+// get interpolated into SQL string literals in `getMySQL5Password` below.
+const passwordPools = [
+    'abcdefghijklmnopqrstuvwxyz',
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    '0123456789',
+    '!@#$%^&*()+_-=}{[]|:;"/?.><,`~'
+];
+
+function generatePassword(length) {
+    const pool = passwordPools.join('');
+    // Start with one character from every pool so the result always mixes all four
+    const chars = passwordPools.map(set => set[crypto.randomInt(set.length)]);
+
+    while (chars.length < length) {
+        chars.push(pool[crypto.randomInt(pool.length)]);
+    }
+
+    // Shuffle so the guaranteed characters aren't always in the same positions
+    for (let i = chars.length - 1; i > 0; i -= 1) {
+        const j = crypto.randomInt(i + 1);
+        [chars[i], chars[j]] = [chars[j], chars[i]];
+    }
+
+    return chars.join('');
+}
 
 function isMySQL8(version) {
     // MySQL 8.4 (the default on Ubuntu 26) and above still support the MySQL 8 setup path,
@@ -142,12 +169,7 @@ class MySQLExtension extends Extension {
     }
 
     async getMySQL5Password() {
-        const randomPassword = generator.generate({
-            length: 20,
-            numbers: true,
-            symbols: true,
-            strict: true
-        });
+        const randomPassword = generatePassword(20);
 
         await this._query('SET old_passwords = 0;');
         this.ui.logVerbose('MySQL: successfully disabled old_passwords', 'green');
