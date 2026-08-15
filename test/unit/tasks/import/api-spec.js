@@ -631,4 +631,112 @@ describe('Unit > Tasks > Import > setup', function () {
             }
         });
     });
+
+    describe('http error messages', function () {
+        const sessionOk = () => nock(testUrl).post('/ghost/api/admin/session/').reply(201, 'Success', {
+            'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+        });
+
+        const auth = {username: 'test@example.com', password: 'password'};
+        const exportFile = path.join(__dirname, 'fixtures/5.x.json');
+
+        it('surfaces the Ghost error from the response body', async function () {
+            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(500, {
+                errors: [{
+                    message: 'Failed to send email.',
+                    context: 'Check your mail configuration.'
+                }]
+            });
+
+            try {
+                await runImport('5.0.0', testUrl, auth, exportFile);
+            } catch (error) {
+                expect(error.message).to.equal(
+                    'POST /ghost/api/admin/session/ failed (500): Failed to send email. Check your mail configuration.'
+                );
+                expect(scope.isDone()).to.be.true;
+                return;
+            }
+
+            expect.fail('runImport should have errored');
+        });
+
+        it('includes the failing request when the body has no Ghost error', async function () {
+            const sessionScope = sessionOk();
+            const importScope = nock(testUrl).post('/ghost/api/admin/db/').reply(500, 'Internal Server Error');
+
+            try {
+                await runImport('5.0.0', testUrl, auth, exportFile);
+            } catch (error) {
+                expect(error.message).to.equal('POST /ghost/api/admin/db/ failed (500)');
+                expect(sessionScope.isDone()).to.be.true;
+                expect(importScope.isDone()).to.be.true;
+                return;
+            }
+
+            expect.fail('runImport should have errored');
+        });
+
+        it('points at Staff access tokens when 2FA is required', async function () {
+            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(403, {
+                errors: [{
+                    code: '2FA_NEW_DEVICE_DETECTED',
+                    message: 'User must verify session to login.'
+                }]
+            });
+
+            try {
+                await runImport('5.129.0', testUrl, auth, exportFile);
+            } catch (error) {
+                expect(error).to.be.an.instanceof(SystemError);
+                expect(error.message).to.equal(
+                    'Two-factor authentication is required, which Ghost-CLI can\'t complete.\nUse a Staff access token instead.'
+                );
+                expect(scope.isDone()).to.be.true;
+                return;
+            }
+
+            expect.fail('runImport should have errored');
+        });
+
+        it('suggests upgrading when 2FA is required and tokens are unsupported', async function () {
+            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(403, {
+                errors: [{
+                    code: '2FA_TOKEN_REQUIRED',
+                    message: 'User must verify session to login.'
+                }]
+            });
+
+            try {
+                await runImport('5.120.0', testUrl, auth, exportFile);
+            } catch (error) {
+                expect(error).to.be.an.instanceof(SystemError);
+                expect(error.message).to.equal(
+                    'Two-factor authentication is required, which Ghost-CLI can\'t complete.\n' +
+                    'Upgrade to Ghost v5.129.0 or later to use a Staff access token instead.'
+                );
+                expect(scope.isDone()).to.be.true;
+                return;
+            }
+
+            expect.fail('runImport should have errored');
+        });
+
+        it('keeps the friendly message for known auth errors', async function () {
+            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(422, {
+                errors: [{message: 'Validation error'}]
+            });
+
+            try {
+                await runImport('5.0.0', testUrl, auth, exportFile);
+            } catch (error) {
+                expect(error).to.be.an.instanceof(SystemError);
+                expect(error.message).to.equal('Your password is incorrect.');
+                expect(scope.isDone()).to.be.true;
+                return;
+            }
+
+            expect.fail('runImport should have errored');
+        });
+    });
 });
