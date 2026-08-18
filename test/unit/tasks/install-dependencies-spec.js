@@ -464,6 +464,29 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
+        it('extracts the tarball when npm pack returns the npm >=12 object format', function () {
+            const env = setupTestFolder();
+            const execaStub = sinon.stub().resolves({stdout: JSON.stringify({ghost: {filename: 'ghost-1.0.0.tgz'}}), stderr: ''});
+            const extractStub = sinon.stub().resolves();
+            const downloadTask = proxyquire(modulePath, {
+                execa: {execa: execaStub},
+                '../utils/archive': {extract: extractStub}
+            }).subTasks.download;
+            const ctx = {
+                version: '1.0.0',
+                installPath: path.join(env.dir, 'versions/1.0.0')
+            };
+
+            return downloadTask(ctx).then(() => {
+                const tmpDir = execaStub.args[0][2].cwd;
+                expect(extractStub.calledOnce).to.be.true;
+                expect(extractStub.calledWithExactly(
+                    path.join(tmpDir, 'ghost-1.0.0.tgz'),
+                    ctx.installPath
+                )).to.be.true;
+            });
+        });
+
         it('throws a ProcessError when npm pack output is not valid JSON', function () {
             const env = setupTestFolder();
             const execaStub = sinon.stub().resolves({stdout: 'npm notice not json', stderr: 'boom'});
