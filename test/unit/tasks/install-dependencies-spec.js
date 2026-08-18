@@ -464,6 +464,81 @@ describe('Unit: Tasks > install-dependencies', function () {
             });
         });
 
+        it('throws a ProcessError when npm pack output is not valid JSON', function () {
+            const env = setupTestFolder();
+            const execaStub = sinon.stub().resolves({stdout: 'npm notice not json', stderr: 'boom'});
+            const extractStub = sinon.stub().resolves();
+            const downloadTask = proxyquire(modulePath, {
+                execa: {execa: execaStub},
+                '../utils/archive': {extract: extractStub}
+            }).subTasks.download;
+            const ctx = {
+                version: '1.0.0',
+                installPath: path.join(env.dir, 'versions/1.0.0')
+            };
+
+            return downloadTask(ctx).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error.message).to.contain('Could not parse');
+                expect(error.options.stdout).to.equal('npm notice not json');
+                expect(error.options.stderr).to.equal('boom');
+                expect(extractStub.called).to.be.false;
+                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                expect(fs.existsSync(ctx.installPath)).to.be.false;
+            });
+        });
+
+        it('throws a ProcessError when npm pack returns no tarball', function () {
+            const env = setupTestFolder();
+            const execaStub = sinon.stub().resolves({stdout: JSON.stringify({error: {code: 'E404'}}), stderr: ''});
+            const extractStub = sinon.stub().resolves();
+            const downloadTask = proxyquire(modulePath, {
+                execa: {execa: execaStub},
+                '../utils/archive': {extract: extractStub}
+            }).subTasks.download;
+            const ctx = {
+                version: '1.0.0',
+                installPath: path.join(env.dir, 'versions/1.0.0')
+            };
+
+            return downloadTask(ctx).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error.message).to.contain('did not return a tarball');
+                expect(error.options.stdout).to.equal(JSON.stringify({error: {code: 'E404'}}));
+                expect(extractStub.called).to.be.false;
+                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                expect(fs.existsSync(ctx.installPath)).to.be.false;
+            });
+        });
+
+        it('throws a ProcessError when npm pack returns a non-string filename', function () {
+            const env = setupTestFolder();
+            const execaStub = sinon.stub().resolves({stdout: JSON.stringify([{filename: 42}]), stderr: ''});
+            const extractStub = sinon.stub().resolves();
+            const downloadTask = proxyquire(modulePath, {
+                execa: {execa: execaStub},
+                '../utils/archive': {extract: extractStub}
+            }).subTasks.download;
+            const ctx = {
+                version: '1.0.0',
+                installPath: path.join(env.dir, 'versions/1.0.0')
+            };
+
+            return downloadTask(ctx).then(() => {
+                expect(false, 'Error should have been thrown').to.be.true;
+            }).catch((error) => {
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error.message).to.contain('did not return a tarball');
+                expect(extractStub.called).to.be.false;
+                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                expect(fs.existsSync(ctx.installPath)).to.be.false;
+            });
+        });
+
         it('catches extraction errors and cleans up the install folder', function () {
             const env = setupTestFolder();
             const execaStub = sinon.stub().resolves(packResult);
