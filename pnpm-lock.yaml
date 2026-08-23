@@ -60,8 +60,8 @@ importers:
         specifier: 7.0.1
         version: 7.0.1
       mysql2:
-        specifier: 3.23.3
-        version: 3.23.3(@types/node@26.2.0)
+        specifier: 3.23.4
+        version: 3.23.4(@types/node@26.2.0)
       node-stream-zip:
         specifier: 1.16.0
         version: 1.16.0
@@ -1864,8 +1864,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  mysql2@3.23.3:
-    resolution: {integrity: sha512-ehp9HEKr4wVJaBOUVxNFa+CNrsCCCZ6363/jbGhb7WpEmSRNIXjHBjFs5K2s2cXn7j/RhDieejsQJ6nfUwD6vQ==}
+  mysql2@3.23.4:
+    resolution: {integrity: sha512-J1Rgl8Oy5iw3mOBjKeTMQ3cJNjMYtJYavQVXShsMtSj9rKV8Q1+QaGKNJqDVQFcNINqYYp6Vxd90r69cCoBxBA==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -4359,7 +4359,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  mysql2@3.23.3(@types/node@26.2.0):
+  mysql2@3.23.4(@types/node@26.2.0):
     dependencies:
       '@types/node': 26.2.0
       aws-ssl-profiles: 1.1.2
