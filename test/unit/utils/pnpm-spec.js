@@ -110,6 +110,72 @@ describe('Unit: pnpm', function () {
         });
     });
 
+    it('returns a helpful system error when the pinned pnpm was installed without its binary', function () {
+        const execa = sinon.stub().rejects({
+            message: 'Command failed with exit code 2: pnpm install --prod',
+            stderr: '/home/ghost/.local/share/pnpm/.tools/pnpm/12.2.1/bin/pnpm: 4: Syntax error: ")" unexpected'
+        });
+        const pnpm = setup({execa});
+
+        return pnpm(['install']).then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceOf(SystemError);
+            expect(error.message).to.match(/without its native binary/);
+            expect(error.options.help).to.contain('11.10.0');
+            expect(error.options.suggestion).to.equal('npm install -g pnpm@latest');
+        });
+    });
+
+    it('detects the placeholder pnpm binary across shells', function () {
+        const stderrs = [
+            '/root/.local/share/pnpm/.tools/pnpm/12.2.1/bin/pnpm: 4: Syntax error: ")" unexpected',
+            '/usr/local/bin/pnpm: line 4: syntax error near unexpected token `)\'',
+            '/usr/local/bin/pnpm:4: parse error near `)\'',
+            'This is a placeholder. pnpm\'s native binary replaces this file'
+        ];
+
+        return Promise.all(stderrs.map((stderr) => {
+            const execa = sinon.stub().rejects({message: 'Command failed', stderr});
+            const pnpm = setup({execa});
+
+            return pnpm(['install']).then(() => {
+                expect(false, `Promise should have rejected for: ${stderr}`).to.be.true;
+            }, (error) => {
+                expect(error, stderr).to.be.an.instanceOf(SystemError);
+                expect(error.message, stderr).to.match(/without its native binary/);
+            });
+        }));
+    });
+
+    it('does not mistake unrelated placeholder output for a broken pnpm binary', function () {
+        const execa = sinon.stub().rejects({
+            message: 'Command failed with exit code 1: pnpm install --prod',
+            stderr: 'node-pre-gyp WARN This is a placeholder build, run `make` to replace it'
+        });
+        const pnpm = setup({execa});
+
+        return pnpm(['install']).then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceOf(ProcessError);
+        });
+    });
+
+    it('does not mistake an unrelated syntax error for a broken pnpm binary', function () {
+        const execa = sinon.stub().rejects({
+            message: 'Command failed with exit code 1: pnpm install --prod \'--store-dir=/var/www/ghost/.pnpm-store\'',
+            stderr: '/var/www/ghost/versions/6.62.0/node_modules/.pnpm/sharp@0.34.0/install.js:12\nSyntaxError: Unexpected token'
+        });
+        const pnpm = setup({execa});
+
+        return pnpm(['install']).then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceOf(ProcessError);
+        });
+    });
+
     it('returns a helpful system error when the pnpm store is read-only', function () {
         const execa = sinon.stub().rejects({
             message: 'Command failed: pnpm install',
