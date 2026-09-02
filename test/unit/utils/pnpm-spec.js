@@ -148,6 +148,20 @@ describe('Unit: pnpm', function () {
         }));
     });
 
+    it('does not mistake unrelated placeholder output for a broken pnpm binary', function () {
+        const execa = sinon.stub().rejects({
+            message: 'Command failed with exit code 1: pnpm install --prod',
+            stderr: 'node-pre-gyp WARN This is a placeholder build, run `make` to replace it'
+        });
+        const pnpm = setup({execa});
+
+        return pnpm(['install']).then(() => {
+            expect(false, 'Promise should have rejected').to.be.true;
+        }).catch((error) => {
+            expect(error).to.be.an.instanceOf(ProcessError);
+        });
+    });
+
     it('does not mistake an unrelated syntax error for a broken pnpm binary', function () {
         const execa = sinon.stub().rejects({
             message: 'Command failed with exit code 1: pnpm install --prod \'--store-dir=/var/www/ghost/.pnpm-store\'',
