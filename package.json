@@ -52,7 +52,7 @@
     "inquirer": "14.2.0",
     "jsonwebtoken": "9.0.3",
     "ky": "1.14.3",
-    "listr2": "11.0.1",
+    "listr2": "11.1.0",
     "lodash": "4.18.1",
     "log-symbols": "7.0.1",
     "mysql2": "3.24.3",
