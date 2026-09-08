@@ -22,6 +22,7 @@ Set `NODE_USE_ENV_PROXY=1` (or `NODE_OPTIONS=--use-env-proxy`) so Node picks up 
 - [Command Reference](https://ghost.org/docs/ghost-cli/)
 - [Knowledgebase](https://ghost.org/docs/ghost-cli/#knowledgebase)
 - [Forum](https://forum.ghost.org)
+- [Migration bundle format](docs/migration-bundle.md) — what `ghost migrate-export` produces (Ghost 6.x)
 
 ## Project Goals
 
