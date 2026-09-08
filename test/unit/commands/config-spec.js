@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
 
 const Config = require('../../../lib/utils/config');
+const errors = require('../../../lib/errors');
 
 const modulePath = '../../../lib/commands/config';
 
@@ -87,6 +88,87 @@ describe('Unit: Command > Config', function () {
             expect(saveStub.calledOnce).to.be.true;
             expect(setStub.args[0]).to.deep.equal(['url', 'http://localhost:2368']);
             expect(log.calledOnce).to.be.true;
+        });
+
+        it('transforms value before setting it', async function () {
+            const ConfigCommand = fake();
+            const checkEnvironment = sinon.stub();
+            const config = new Config('config.json');
+            const getInstance = sinon.stub().returns({checkEnvironment, config});
+            const setStub = sinon.stub(config, 'set').returns(config);
+            const saveStub = sinon.stub(config, 'save');
+            const log = sinon.stub();
+
+            const cmd = new ConfigCommand({log}, {getInstance});
+
+            await cmd.run({key: 'url', value: 'LoveGhost.com'});
+            expect(setStub.args[0]).to.deep.equal(['url', 'https://loveghost.com']);
+            expect(saveStub.calledOnce).to.be.true;
+            expect(log.args[0][0]).to.contain('https://loveghost.com');
+        });
+
+        it('validates value before setting it', async function () {
+            const ConfigCommand = fake();
+            const checkEnvironment = sinon.stub();
+            const config = new Config('config.json');
+            const getInstance = sinon.stub().returns({checkEnvironment, config});
+            const setStub = sinon.stub(config, 'set').returns(config);
+            const saveStub = sinon.stub(config, 'save');
+            const log = sinon.stub();
+
+            const cmd = new ConfigCommand({log}, {getInstance, environment: 'testing'});
+
+            try {
+                await cmd.run({key: 'url', value: 'not-a-url'});
+                expect.fail('run should have errored');
+            } catch (error) {
+                expect(error).to.be.an.instanceof(errors.ConfigError);
+                expect(error.options.config).to.deep.equal({url: 'https://not-a-url'});
+                expect(error.options.environment).to.equal('testing');
+            }
+
+            expect(setStub.called).to.be.false;
+            expect(saveStub.called).to.be.false;
+            expect(log.called).to.be.false;
+        });
+
+        it('validates using the option matching the config path', async function () {
+            const ConfigCommand = fake();
+            const checkEnvironment = sinon.stub();
+            const config = new Config('config.json');
+            const getInstance = sinon.stub().returns({checkEnvironment, config});
+            const setStub = sinon.stub(config, 'set').returns(config);
+            const saveStub = sinon.stub(config, 'save');
+            const log = sinon.stub();
+
+            const cmd = new ConfigCommand({log}, {getInstance, environment: 'testing'});
+
+            try {
+                await cmd.run({key: 'database.client', value: 'postgres'});
+                expect.fail('run should have errored');
+            } catch (error) {
+                expect(error).to.be.an.instanceof(errors.ConfigError);
+                expect(error.options.message).to.equal('Invalid database type. Supported types are mysql and sqlite3');
+            }
+
+            expect(setStub.called).to.be.false;
+            expect(saveStub.called).to.be.false;
+        });
+
+        it('doesn\'t validate keys without a matching option', async function () {
+            const ConfigCommand = fake();
+            const checkEnvironment = sinon.stub();
+            const config = new Config('config.json');
+            const getInstance = sinon.stub().returns({checkEnvironment, config});
+            const setStub = sinon.stub(config, 'set').returns(config);
+            const saveStub = sinon.stub(config, 'save');
+            const log = sinon.stub();
+
+            const cmd = new ConfigCommand({log}, {getInstance});
+
+            await cmd.run({key: 'paths.contentPath', value: '/var/www/ghost/content'});
+            expect(setStub.args[0]).to.deep.equal(['paths.contentPath', '/var/www/ghost/content']);
+            expect(saveStub.calledOnce).to.be.true;
         });
 
         it('calls configure if key and value aren\'t provided', async function () {
