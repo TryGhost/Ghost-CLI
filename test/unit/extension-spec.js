@@ -65,7 +65,7 @@ describe('Unit: Extension', function () {
             expect(tmpdir.calledOnce).to.be.true;
             expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
             expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
-            expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
+            expect(sudo.calledOnceWithExactly(['mv', '/tmp/test/test.txt', '/etc/mysql/test.txt'])).to.be.true;
         });
 
         it('skips log if confirm returns false', async function () {
@@ -88,7 +88,7 @@ describe('Unit: Extension', function () {
             expect(tmpdir.calledOnce).to.be.true;
             expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
             expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
-            expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
+            expect(sudo.calledOnceWithExactly(['mv', '/tmp/test/test.txt', '/etc/mysql/test.txt'])).to.be.true;
         });
 
         it('logs contents if confirm returns true', async function () {
@@ -111,7 +111,7 @@ describe('Unit: Extension', function () {
             expect(tmpdir.calledOnce).to.be.true;
             expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
             expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
-            expect(sudo.calledOnceWithExactly('mv /tmp/test/test.txt /etc/mysql/test.txt')).to.be.true;
+            expect(sudo.calledOnceWithExactly(['mv', '/tmp/test/test.txt', '/etc/mysql/test.txt'])).to.be.true;
         });
     });
 

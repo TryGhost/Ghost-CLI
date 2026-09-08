@@ -523,22 +523,23 @@ describe('Unit: UI', function () {
             const promptStub = sinon.stub(ui, 'prompt').resolves({password: 'password'});
             const stderr = new EventEmitter();
 
-            // argv contains the test runner's own path, which isn't regex-safe and gets shell-quoted
-            const quotedArgv = process.argv.slice(0, 2).map(arg => `'${arg.replace(/'/g, '\'\\\'\'')}'`).join(' ');
-            const eCall = `sudo -S -p '#node-sudo-passwd#' -E -u ghost ${quotedArgv} -v`;
-
             const {stream: stdin, written} = streamTestUtils.captureFirstWrite();
             shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
 
-            ui.sudo('ghost -v', {cwd: '/var/foo', sudoArgs: ['-E -u ghost']});
+            ui.sudo(['ghost', '-v'], {cwd: '/var/foo', sudoArgs: ['-E', '-u', 'ghost']});
             stderr.emit('data', '#node-sudo-passwd#');
 
             expect(await written).to.equal('password\n');
             expect(logStub.calledOnce).to.be.true;
-            expect(logStub.calledWithExactly('+ sudo ghost -v', 'gray')).to.be.true;
+            expect(logStub.calledWithExactly(`+ sudo ${process.argv.slice(0, 2).join(' ')} -v`, 'gray')).to.be.true;
             expect(shellStub.calledOnce).to.be.true;
-            expect(shellStub.args[0][0]).to.contain(eCall);
-            expect(shellStub.args[0][1]).to.deep.equal({cwd: '/var/foo', shell: true});
+            expect(shellStub.args[0][0]).to.equal('sudo');
+            expect(shellStub.args[0][1]).to.deep.equal([
+                '-S', '-p', '#node-sudo-passwd#',
+                '-E', '-u', 'ghost',
+                ...process.argv.slice(0, 2), '-v'
+            ]);
+            expect(shellStub.args[0][2]).to.deep.equal({cwd: '/var/foo'});
             expect(promptStub.calledOnce).to.be.true;
         });
 
@@ -554,12 +555,52 @@ describe('Unit: UI', function () {
             const {stream: stdin, written} = streamTestUtils.captureFirstWrite();
             shellStub.returns(Object.assign(new Promise(() => {}), {stdin: stdin, stderr: stderr}));
 
-            ui.sudo('ghost -v', {sudoArgs: ['-E -u ghost']});
+            ui.sudo(['ghost', '-v'], {sudoArgs: ['-E', '-u', 'ghost']});
             // sudo-rs (default on Ubuntu 26+) wraps the `-p` value rather than replacing the prompt
             stderr.emit('data', '[sudo: #node-sudo-passwd#] Password: ');
 
             expect(await written).to.equal('password\n');
             expect(promptStub.calledOnce).to.be.true;
+        });
+
+        it('passes shell metacharacters through as literal arguments', function () {
+            const shell = Promise.resolve();
+            shell.stderr = {on: () => true};
+
+            const shellStub = sinon.stub().returns(shell);
+            const UI = setupUI(shellStub);
+            const ui = new UI();
+
+            sinon.stub(ui, 'log').returns(true);
+            sinon.stub(ui, 'prompt');
+
+            // A site url can contain characters a shell would treat as command substitution
+            const confFile = '/etc/nginx/sites-available/blog.example.com$(id).invalid.conf';
+
+            return ui.sudo(['rm', '-f', confFile]).then(() => {
+                expect(shellStub.args[0][1]).to.deep.equal([
+                    '-S', '-p', '#node-sudo-passwd#',
+                    'rm', '-f', confFile
+                ]);
+                expect(shellStub.args[0][2].shell).to.be.undefined;
+            });
+        });
+
+        it('rejects a string command', function () {
+            const UI = setupUI(sinon.stub());
+            const ui = new UI();
+
+            expect(() => ui.sudo('rm -rf /')).to.throw(/expects an array/);
+        });
+
+        it('rejects an attempt to run in a shell', function () {
+            const execaStub = sinon.stub();
+            const UI = setupUI(execaStub);
+            const ui = new UI();
+
+            // execa interprets metacharacters when `shell` is set, even for array arguments
+            expect(() => ui.sudo(['rm', '-f', '$(id)'], {shell: true})).to.throw(/cannot run in a shell/);
+            expect(execaStub.called).to.be.false;
         });
 
         it('can handle defaults', function () {
@@ -573,9 +614,10 @@ describe('Unit: UI', function () {
             sinon.stub(ui, 'log').returns(true);
             sinon.stub(ui, 'prompt');
 
-            return ui.sudo('echo').then(() => {
+            return ui.sudo(['echo']).then(() => {
                 expect(shellStub.calledOnce).to.be.true;
-                expect(shellStub.args[0][0]).to.match(/#'[ ]{2}echo/);
+                expect(shellStub.args[0][1]).to.deep.equal(['-S', '-p', '#node-sudo-passwd#', 'echo']);
+                expect(shellStub.args[0][2]).to.deep.equal({});
             });
         });
 
@@ -591,7 +633,7 @@ describe('Unit: UI', function () {
 
             sinon.stub(ui, 'log').returns(true);
 
-            const result = ui.sudo('echo');
+            const result = ui.sudo(['echo']);
             expect(result.pipe).to.be.undefined;
 
             return result.then((value) => {

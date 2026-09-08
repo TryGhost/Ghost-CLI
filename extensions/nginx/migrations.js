@@ -120,7 +120,7 @@ async function migrateActivityPubDns(ctx, migrateTask) {
             await write({file, contents: updated});
         }
 
-        await this.ui.sudo(`${nginxProgramName} -t`);
+        await this.ui.sudo([nginxProgramName, '-t']);
     } catch (error) {
         // Put the originals back so a partial or invalid rewrite can't take the site down
         for (const config of configs) {
@@ -155,7 +155,7 @@ async function migrateXForwardedFor(ctx, migrateTask) {
     }
 
     for (const file of confFiles) {
-        await this.ui.sudo(`sed -i 's|${OLD_XFF_HEADER}|${NEW_XFF_HEADER}|' ${file}`);
+        await this.ui.sudo(['sed', '-i', `s|${OLD_XFF_HEADER}|${NEW_XFF_HEADER}|`, file]);
     }
 
     await this.restartNginx();

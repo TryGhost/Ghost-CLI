@@ -46,9 +46,9 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Runs as sudo', function () {
             return ext.start().then(() => {
-                const expectedCmd = 'systemctl start ghost_ghost_org';
+                const expectedCmd = ['systemctl', 'start', 'ghost_ghost_org'];
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
@@ -94,9 +94,9 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Runs as sudo', function () {
             return ext.stop().then(() => {
-                const expectedCmd = 'systemctl stop ghost_ghost_org';
+                const expectedCmd = ['systemctl', 'stop', 'ghost_ghost_org'];
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
@@ -131,9 +131,9 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Runs as sudo', function () {
             return ext.restart().then(() => {
-                const expectedCmd = 'systemctl restart ghost_ghost_org';
+                const expectedCmd = ['systemctl', 'restart', 'ghost_ghost_org'];
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
@@ -163,51 +163,51 @@ describe('Unit: Systemd > Process Manager', function () {
     describe('isEnabled', function () {
         it('Returns true if process manager is enabled', function () {
             const ui = {sudo: sinon.stub().resolves()};
-            const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-enabled', 'ghost_ghost_org'];
             const ext = makeSystemd(null, ui);
 
             return ext.isEnabled().then((result) => {
                 expect(result).to.be.true;
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
         it('Passes bad errors through', function () {
             const ui = {sudo: sinon.stub().rejects(new Error('unknown'))};
             const ext = makeSystemd(null, ui);
-            const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-enabled', 'ghost_ghost_org'];
 
             return ext.isEnabled().then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(error.message).to.equal('unknown');
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
         it('Doesn\'t pass stopped errors through', function () {
             const ui = {sudo: sinon.stub().rejects(new Error('disabled'))};
             const ext = makeSystemd(null, ui);
-            const expectedCmd = 'systemctl is-enabled ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-enabled', 'ghost_ghost_org'];
 
             return ext.isEnabled().then((result) => {
                 expect(result).to.be.false;
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
     });
 
     describe('enable', function () {
         it('Calls systemd', function () {
-            const expectedCmd = 'systemctl enable ghost_ghost_org --quiet';
+            const expectedCmd = ['systemctl', 'enable', 'ghost_ghost_org', '--quiet'];
             const ui = {sudo: sinon.stub().resolves()};
             const ext = makeSystemd(null, ui);
             return ext.enable().then(() => {
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
@@ -226,12 +226,12 @@ describe('Unit: Systemd > Process Manager', function () {
 
     describe('disable', function () {
         it('Calls systemd', function () {
-            const expectedCmd = 'systemctl disable ghost_ghost_org --quiet';
+            const expectedCmd = ['systemctl', 'disable', 'ghost_ghost_org', '--quiet'];
             const ui = {sudo: sinon.stub().resolves()};
             const ext = makeSystemd(null, ui);
             return ext.disable().then(() => {
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
@@ -251,20 +251,20 @@ describe('Unit: Systemd > Process Manager', function () {
     describe('isRunning', function () {
         it('Returns true if process manager is running', function () {
             const ui = {sudo: sinon.stub().resolves()};
-            const expectedCmd = 'systemctl is-active ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
             const ext = makeSystemd(null, ui);
 
             return ext.isRunning().then((result) => {
                 expect(result).to.be.true;
                 expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.equal(expectedCmd);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
             });
         });
 
         it('Throws ProcessError for bad errors', function () {
             const sudo = sinon.stub().rejects(new Error('unknown'));
             const ext = makeSystemd(null, {sudo});
-            const expectedCmd = 'systemctl is-active ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
 
             return ext.isRunning().then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;
@@ -279,7 +279,7 @@ describe('Unit: Systemd > Process Manager', function () {
         it('Doesn\'t pass stopped errors through', function () {
             const sudo = sinon.stub().rejects(Object.assign(new Error(), {stdout: 'inactive'}));
             const ext = makeSystemd(null, {sudo});
-            const expectedCmd = 'systemctl is-active ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
 
             return ext.isRunning().then((result) => {
                 expect(result).to.be.false;
@@ -294,8 +294,8 @@ describe('Unit: Systemd > Process Manager', function () {
             sudo.onSecondCall().resolves();
 
             const ext = makeSystemd(null, {sudo});
-            const expectedCmd = 'systemctl is-active ghost_ghost_org';
-            const resetCmd = 'systemctl reset-failed ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
+            const resetCmd = ['systemctl', 'reset-failed', 'ghost_ghost_org'];
 
             return ext.isRunning().then((result) => {
                 expect(result).to.be.false;
@@ -311,8 +311,8 @@ describe('Unit: Systemd > Process Manager', function () {
             sudo.onSecondCall().rejects(new Error('uh oh'));
 
             const ext = makeSystemd(null, {sudo});
-            const expectedCmd = 'systemctl is-active ghost_ghost_org';
-            const resetCmd = 'systemctl reset-failed ghost_ghost_org';
+            const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
+            const resetCmd = ['systemctl', 'reset-failed', 'ghost_ghost_org'];
 
             return ext.isRunning().then(() => {
                 expect(false, 'An error should have been thrown').to.be.true;

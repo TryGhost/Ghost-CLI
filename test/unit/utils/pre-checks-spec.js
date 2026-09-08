@@ -148,7 +148,7 @@ describe('Unit: Utils > pre-checks', function () {
             expect(uid.calledOnce).to.be.true;
             expect(gid.called).to.be.false;
             expect(sudo.calledOnceWithExactly(
-                'chown -R ghostuser:ghostuser /home/ghost/.config'
+                ['chown', '-R', 'ghostuser:ghostuser', '/home/ghost/.config']
             )).to.be.true;
         });
 
@@ -167,7 +167,7 @@ describe('Unit: Utils > pre-checks', function () {
             expect(uid.calledOnce).to.be.true;
             expect(gid.calledOnce).to.be.true;
             expect(sudo.calledOnceWithExactly(
-                'chown -R ghostuser:ghostuser /home/ghost/.config'
+                ['chown', '-R', 'ghostuser:ghostuser', '/home/ghost/.config']
             )).to.be.true;
         });
     });

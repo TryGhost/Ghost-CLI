@@ -263,7 +263,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         it('Generates the proper config', async function () {
             const name = 'ghost.dev.conf';
-            const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
+            const expectedLn = ['ln', '-sf', `/etc/nginx/sites-available/${name}`, `/etc/nginx/sites-enabled/${name}`];
             const expectedConfig = {
                 url: 'ghost.dev',
                 webroot: `${dir}/system/nginx-root`,
@@ -289,7 +289,7 @@ describe('Unit: Extensions > Nginx', function () {
             expect(loadStub.calledOnce).to.be.true;
             expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
             expect(sudo.calledOnce).to.be.true;
-            expect(sudo.args[0][0]).to.match(lnExp);
+            expect(sudo.args[0][0]).to.deep.equal(expectedLn);
             expect(ext.restartNginx.calledOnce).to.be.true;
 
             // Testing handling of subdirectory installations
@@ -305,7 +305,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         it('passes the error if it\'s already a CliError', async function () {
             const name = 'ghost.dev.conf';
-            const lnExp = new RegExp(`(?=^ln -sf)(?=.*available/${name})(?=.*enabled/${name}$)`);
+            const expectedLn = ['ln', '-sf', `/etc/nginx/sites-available/${name}`, `/etc/nginx/sites-enabled/${name}`];
             const loadStub = sinon.stub().returns('nginx config file');
             const templateStub = sinon.stub().returns(loadStub);
             const ext = proxyNginx({
@@ -329,7 +329,7 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(templateStub.calledOnce).to.be.true;
                 expect(loadStub.calledOnce).to.be.true;
                 expect(sudo.calledOnce).to.be.true;
-                expect(sudo.args[0][0]).to.match(lnExp);
+                expect(sudo.args[0][0]).to.deep.equal(expectedLn);
                 expect(ext.restartNginx.calledOnce).to.be.true;
                 return;
             }
@@ -495,7 +495,10 @@ describe('Unit: Extensions > Nginx', function () {
 
                 return tasks[5].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.args[0][0]).to.match(/openssl dhparam/);
+                    expect(ext.ui.sudo.args[0][0]).to.deep.equal([
+                        'openssl', 'dhparam', '-dsaparam',
+                        '-out', '/etc/nginx/snippets/dhparam.pem', '2048'
+                    ]);
                 });
             });
 
@@ -525,12 +528,14 @@ describe('Unit: Extensions > Nginx', function () {
                 proxy['node:fs'].existsSync = () => true;
                 const ext = proxyNginx(proxy);
                 const tasks = getTasks(ext);
-                const expectedSudo = new RegExp(/(?=^mv)(?=.*snippets\/ssl-params\.conf)/);
-
                 expect(tasks[6].skip()).to.be.true;
                 return tasks[6].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
+                    const [command, source, destination] = ext.ui.sudo.args[0][0];
+                    expect(ext.ui.sudo.args[0][0]).to.have.lengthOf(3);
+                    expect(command).to.equal('mv');
+                    expect(source).to.match(/ssl-params\.conf$/);
+                    expect(destination).to.equal('/etc/nginx/snippets/ssl-params.conf');
                 });
             });
 
@@ -561,7 +566,11 @@ describe('Unit: Extensions > Nginx', function () {
                 port: 2368,
                 resolvers: '1.1.1.1 8.8.8.8'
             };
-            const expectedSudo = /(?=^ln -s)(?=.*sites-available)(?=.*sites-enabled)/;
+            const expectedSudo = [
+                'ln', '-sf',
+                '/etc/nginx/sites-available/ghost.dev-ssl.conf',
+                '/etc/nginx/sites-enabled/ghost.dev-ssl.conf'
+            ];
 
             beforeEach(function () {
                 stubs.templatify = sinon.stub().returns('nginx ssl config');
@@ -579,7 +588,7 @@ describe('Unit: Extensions > Nginx', function () {
                     expect(stubs.templatify.calledOnce).to.be.true;
                     expect(stubs.templatify.args[0][0]).to.deep.equal(expectedTemplate);
                     expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.args[0][0]).to.match(expectedSudo);
+                    expect(ext.ui.sudo.args[0][0]).to.deep.equal(expectedSudo);
                 });
             });
 
@@ -662,27 +671,33 @@ describe('Unit: Extensions > Nginx', function () {
         });
 
         it('Removes http config', function () {
-            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev\.conf/);
+            const expectedRm = [
+                ['rm', '-f', '/etc/nginx/sites-available/ghost.dev.conf'],
+                ['rm', '-f', '/etc/nginx/sites-enabled/ghost.dev.conf']
+            ];
             const {exists, inst, restartNginx, ui} = stub();
             exists.callsFake(val => !testEs(val));
 
             return inst.uninstall(instance).then(() => {
                 expect(ui.sudo.calledTwice).to.be.true;
-                expect(ui.sudo.args[0][0]).to.match(sudoExp);
-                expect(ui.sudo.args[1][0]).to.match(sudoExp);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedRm[0]);
+                expect(ui.sudo.args[1][0]).to.deep.equal(expectedRm[1]);
                 expect(restartNginx.calledOnce).to.be.true;
             });
         });
 
         it('Removes https config', function () {
-            const sudoExp = new RegExp(/(available|enabled)\/ghost\.dev-ssl\.conf/);
+            const expectedRm = [
+                ['rm', '-f', '/etc/nginx/sites-available/ghost.dev-ssl.conf'],
+                ['rm', '-f', '/etc/nginx/sites-enabled/ghost.dev-ssl.conf']
+            ];
             const {exists, inst, restartNginx, ui} = stub();
             exists.callsFake(testEs);
 
             return inst.uninstall(instance).then(() => {
                 expect(ui.sudo.calledTwice).to.be.true;
-                expect(ui.sudo.args[0][0]).to.match(sudoExp);
-                expect(ui.sudo.args[1][0]).to.match(sudoExp);
+                expect(ui.sudo.args[0][0]).to.deep.equal(expectedRm[0]);
+                expect(ui.sudo.args[1][0]).to.deep.equal(expectedRm[1]);
                 expect(restartNginx.calledOnce).to.be.true;
             });
         });
@@ -717,7 +732,7 @@ describe('Unit: Extensions > Nginx', function () {
 
             return inst.restartNginx().then(() => {
                 expect(sudo.calledOnce).to.be.true;
-                expect(sudo.calledWithExactly('nginx -s reload')).to.be.true;
+                expect(sudo.calledWithExactly(['nginx', '-s', 'reload'])).to.be.true;
             });
         });
 
@@ -729,7 +744,7 @@ describe('Unit: Extensions > Nginx', function () {
                 expect(false, 'An error should have been thrown').to.be.true;
             }).catch((error) => {
                 expect(sudo.calledOnce).to.be.true;
-                expect(sudo.calledWithExactly('nginx -s reload')).to.be.true;
+                expect(sudo.calledWithExactly(['nginx', '-s', 'reload'])).to.be.true;
                 expect(error).to.be.an.instanceof(errors.CliError);
                 expect(error.message).to.equal('Failed to restart Nginx.');
             });
