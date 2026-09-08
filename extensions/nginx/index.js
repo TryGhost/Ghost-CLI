@@ -138,7 +138,7 @@ class NginxExtension extends Extension {
         });
 
         await this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`);
-        await this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`);
+        await this.ui.sudo(['ln', '-sf', `${nginxConfigPath}/sites-available/${confFile}`, `${nginxConfigPath}/sites-enabled/${confFile}`]);
         await this.restartNginx();
     }
 
@@ -205,14 +205,14 @@ class NginxExtension extends Extension {
         }, {
             title: 'Generating Encryption Key (may take a few minutes)',
             skip: () => fs.existsSync(dhparamFile),
-            task: errorWrapper(() => this.ui.sudo(`openssl dhparam -dsaparam -out ${dhparamFile} 2048`))
+            task: errorWrapper(() => this.ui.sudo(['openssl', 'dhparam', '-dsaparam', '-out', dhparamFile, '2048']))
         }, {
             title: 'Generating SSL security headers',
             skip: () => fs.existsSync(sslParamsFile),
             task: errorWrapper(async () => {
                 const tmpfile = path.join(os.tmpdir(), 'ssl-params.conf');
                 await fsp.writeFile(tmpfile, sslParamsConf({dhparam: dhparamFile}), {encoding: 'utf8'});
-                await this.ui.sudo(`mv ${tmpfile} ${sslParamsFile}`);
+                await this.ui.sudo(['mv', tmpfile, sslParamsFile]);
             })
         }, {
             title: 'Generating SSL configuration',
@@ -231,7 +231,7 @@ class NginxExtension extends Extension {
                 });
 
                 await this.template(instance, generatedSslConfig, 'ssl config', confFile, `${nginxConfigPath}/sites-available`);
-                await this.ui.sudo(`ln -sf ${nginxConfigPath}/sites-available/${confFile} ${nginxConfigPath}/sites-enabled/${confFile}`);
+                await this.ui.sudo(['ln', '-sf', `${nginxConfigPath}/sites-available/${confFile}`, `${nginxConfigPath}/sites-enabled/${confFile}`]);
             })
         }, {
             title: 'Restarting Nginx',
@@ -257,8 +257,8 @@ class NginxExtension extends Extension {
 
             // Nginx config exists, remove it
             try {
-                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${confFile}`);
-                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${confFile}`);
+                await this.ui.sudo(['rm', '-f', `${nginxConfigPath}/sites-available/${confFile}`]);
+                await this.ui.sudo(['rm', '-f', `${nginxConfigPath}/sites-enabled/${confFile}`]);
             } catch (error) {
                 throw new CliError({
                     message: `Nginx config file link could not be removed, you will need to do this manually for ${nginxConfigPath}/sites-available/${confFile}.`,
@@ -273,8 +273,8 @@ class NginxExtension extends Extension {
 
             // SSL config exists, remove it
             try {
-                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-available/${sslConfFile}`);
-                await this.ui.sudo(`rm -f ${nginxConfigPath}/sites-enabled/${sslConfFile}`);
+                await this.ui.sudo(['rm', '-f', `${nginxConfigPath}/sites-available/${sslConfFile}`]);
+                await this.ui.sudo(['rm', '-f', `${nginxConfigPath}/sites-enabled/${sslConfFile}`]);
             } catch (error) {
                 throw new CliError({
                     message: `SSL config file link could not be removed, you will need to do this manually for ${nginxConfigPath}/sites-available/${sslConfFile}.`,
@@ -291,7 +291,7 @@ class NginxExtension extends Extension {
 
     async restartNginx() {
         try {
-            await this.ui.sudo(`${nginxProgramName} -s reload`);
+            await this.ui.sudo([nginxProgramName, '-s', 'reload']);
         } catch (error) {
             throw new CliError({
                 message: 'Failed to restart Nginx.',

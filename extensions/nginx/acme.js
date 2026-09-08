@@ -19,7 +19,7 @@ function isInstalled() {
 
 async function install(ui) {
     if (isInstalled()) {
-        await ui.sudo('/etc/letsencrypt/acme.sh --upgrade --home /etc/letsencrypt');
+        await ui.sudo(['/etc/letsencrypt/acme.sh', '--upgrade', '--home', '/etc/letsencrypt']);
         return;
     }
 
@@ -29,7 +29,7 @@ async function install(ui) {
 
     // acme.sh creates the directory without global read permissions, so we need to make
     // sure it has global read permissions first
-    await ui.sudo('mkdir -p /etc/letsencrypt');
+    await ui.sudo(['mkdir', '-p', '/etc/letsencrypt']);
     ui.logVerbose('ssl: downloading acme.sh to temporary directory', 'green');
 
     // We run acme.sh from this directory as root, so it must not be a predictable path -
@@ -68,33 +68,32 @@ async function install(ui) {
         ui.logVerbose('ssl: installing acme.sh components', 'green');
 
         // Installs acme.sh into /etc/letsencrypt
-        await ui.sudo('./acme.sh --install --home /etc/letsencrypt', {cwd: acmeTmpDir});
+        await ui.sudo(['./acme.sh', '--install', '--home', '/etc/letsencrypt'], {cwd: acmeTmpDir});
     } finally {
         await fsp.rm(acmeTmpDir, {recursive: true, force: true});
     }
 }
 
 async function generateCert(ui, domain, webroot, email, staging) {
-    const parts = [
+    const args = [
         '/etc/letsencrypt/acme.sh',
         '--issue',
-        '--home /etc/letsencrypt',
-        '--server letsencrypt',
-        `--domain ${domain}`,
-        `--webroot ${webroot}`,
-        `--reloadcmd "${nginxProgramName} -s reload"`,
-        `--accountemail ${email}`,
-        '--keylength 2048'
+        '--home', '/etc/letsencrypt',
+        '--server', 'letsencrypt',
+        '--domain', domain,
+        '--webroot', webroot,
+        // acme.sh runs this itself once the cert is issued, so it stays a command string
+        '--reloadcmd', `${nginxProgramName} -s reload`,
+        '--accountemail', email,
+        '--keylength', '2048'
     ];
 
     if (staging) {
-        parts.push('--staging');
+        args.push('--staging');
     }
 
-    const cmd = parts.join(' ');
-
     try {
-        await ui.sudo(cmd);
+        await ui.sudo(args);
     } catch (error) {
         if (error.exitCode === 2) {
             // error code 2 is given if a cert doesn't need to be renewed
@@ -114,10 +113,10 @@ async function generateCert(ui, domain, webroot, email, staging) {
 async function remove(domain, ui, acmeHome) {
     acmeHome = acmeHome || '/etc/letsencrypt';
 
-    const cmd = `${acmeHome}/acme.sh --remove --home ${acmeHome} --domain ${domain}`;
+    const args = [`${acmeHome}/acme.sh`, '--remove', '--home', acmeHome, '--domain', domain];
 
     try {
-        await ui.sudo(cmd);
+        await ui.sudo(args);
     } catch (error) {
         throw new ProcessError(error);
     }

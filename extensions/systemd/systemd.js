@@ -33,7 +33,7 @@ class SystemdProcessManager extends ProcessManager {
                 this.instance.config.set('bootstrap-socket', socketAddress);
                 return this.instance.config.save();
             })
-            .then(() => this.ui.sudo(`systemctl start ${this.systemdName}`))
+            .then(() => this.ui.sudo(['systemctl', 'start', this.systemdName]))
             .then(() => this.ensureStarted({logSuggestion, socketAddress}))
             .then(() => {
                 this.instance.config.set('bootstrap-socket', null);
@@ -51,7 +51,7 @@ class SystemdProcessManager extends ProcessManager {
     stop() {
         this._precheck();
 
-        return this.ui.sudo(`systemctl stop ${this.systemdName}`).catch((error) => {
+        return this.ui.sudo(['systemctl', 'stop', this.systemdName]).catch((error) => {
             throw new ProcessError(error);
         });
     }
@@ -72,7 +72,7 @@ class SystemdProcessManager extends ProcessManager {
                 this.instance.config.set('bootstrap-socket', socketAddress);
                 return this.instance.config.save();
             })
-            .then(() => this.ui.sudo(`systemctl restart ${this.systemdName}`))
+            .then(() => this.ui.sudo(['systemctl', 'restart', this.systemdName]))
             .then(() => this.ensureStarted({logSuggestion, socketAddress}))
             .then(() => {
                 this.instance.config.set('bootstrap-socket', null);
@@ -88,7 +88,7 @@ class SystemdProcessManager extends ProcessManager {
     }
 
     isEnabled() {
-        return this.ui.sudo(`systemctl is-enabled ${this.systemdName}`)
+        return this.ui.sudo(['systemctl', 'is-enabled', this.systemdName])
             .then(() => true)
             .catch((error) => {
                 // Systemd prints out "disabled" if service isn't enabled
@@ -102,19 +102,19 @@ class SystemdProcessManager extends ProcessManager {
     }
 
     enable() {
-        return this.ui.sudo(`systemctl enable ${this.systemdName} --quiet`).catch((error) => {
+        return this.ui.sudo(['systemctl', 'enable', this.systemdName, '--quiet']).catch((error) => {
             throw new ProcessError(error);
         });
     }
 
     disable() {
-        return this.ui.sudo(`systemctl disable ${this.systemdName} --quiet`).catch((error) => {
+        return this.ui.sudo(['systemctl', 'disable', this.systemdName, '--quiet']).catch((error) => {
             throw new ProcessError(error);
         });
     }
 
     isRunning() {
-        return this.ui.sudo(`systemctl is-active ${this.systemdName}`)
+        return this.ui.sudo(['systemctl', 'is-active', this.systemdName])
             .then(() => true)
             .catch((error) => {
                 // Systemd prints out "inactive" if service isn't running
@@ -127,7 +127,7 @@ class SystemdProcessManager extends ProcessManager {
                 // In this case, we should reset the failed state and return false, so that
                 // the user gets the chance to try starting again
                 if (error.stdout && error.stdout.match(/failed/)) {
-                    return this.ui.sudo(`systemctl reset-failed ${this.systemdName}`)
+                    return this.ui.sudo(['systemctl', 'reset-failed', this.systemdName])
                         .then(() => false)
                         .catch((err) => {
                             throw new ProcessError(err);

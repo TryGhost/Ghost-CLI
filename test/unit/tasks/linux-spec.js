@@ -31,7 +31,7 @@ describe('Unit: Tasks > linux', function () {
             expect(shellStub.calledOnce).to.be.true;
             expect(listrStub.calledOnce).to.be.true;
             expect(sudoStub.calledOnce).to.be.true;
-            expect(sudoStub.calledWithExactly('chown -R ghost:ghost /var/www/ghost/content')).to.be.true;
+            expect(sudoStub.calledWithExactly(['chown', '-R', 'ghost:ghost', '/var/www/ghost/content'])).to.be.true;
         });
     });
 
@@ -48,8 +48,8 @@ describe('Unit: Tasks > linux', function () {
             expect(shellStub.calledOnce).to.be.true;
             expect(listrStub.calledOnce).to.be.true;
             expect(sudoStub.calledTwice).to.be.true;
-            expect(sudoStub.args[0][0]).to.equal('useradd --system --user-group ghost');
-            expect(sudoStub.args[1][0]).to.equal('chown -R ghost:ghost /var/www/ghost/content');
+            expect(sudoStub.args[0][0]).to.deep.equal(['useradd', '--system', '--user-group', 'ghost']);
+            expect(sudoStub.args[1][0]).to.deep.equal(['chown', '-R', 'ghost:ghost', '/var/www/ghost/content']);
         });
     });
 });

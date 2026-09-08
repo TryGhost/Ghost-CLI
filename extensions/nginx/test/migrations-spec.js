@@ -247,7 +247,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             expect(ext.template.args[0][4]).to.equal('/etc/nginx/sites-available');
             expect(ext.template.args[1][3]).to.equal('ghost.org-ssl.conf');
 
-            expect(ext.ui.sudo.calledOnceWithExactly('nginx -t')).to.be.true;
+            expect(ext.ui.sudo.calledOnceWithExactly(['nginx', '-t'])).to.be.true;
             expect(ext.restartNginx.calledOnce).to.be.true;
         });
 
@@ -378,7 +378,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
 
             expect(skip.called).to.be.false;
             expect(sudo.calledOnce).to.be.true;
-            expect(sudo.calledWithExactly(`sed -i 's|${oldHeader}|${newHeader}|' ${confFile}`)).to.be.true;
+            expect(sudo.calledWithExactly(['sed', '-i', `s|${oldHeader}|${newHeader}|`, confFile])).to.be.true;
             expect(restartNginx.calledOnce).to.be.true;
         });
 
@@ -397,8 +397,8 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
 
             expect(skip.called).to.be.false;
             expect(sudo.calledTwice).to.be.true;
-            expect(sudo.calledWithExactly(`sed -i 's|${oldHeader}|${newHeader}|' ${confFile}`)).to.be.true;
-            expect(sudo.calledWithExactly(`sed -i 's|${oldHeader}|${newHeader}|' ${sslConfFile}`)).to.be.true;
+            expect(sudo.calledWithExactly(['sed', '-i', `s|${oldHeader}|${newHeader}|`, confFile])).to.be.true;
+            expect(sudo.calledWithExactly(['sed', '-i', `s|${oldHeader}|${newHeader}|`, sslConfFile])).to.be.true;
             expect(restartNginx.calledOnce).to.be.true;
         });
     });

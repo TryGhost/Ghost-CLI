@@ -65,7 +65,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.install({sudo}).then(() => {
                 expect(existsStub.calledOnce).to.be.true;
-                expect(sudo.calledOnceWithExactly('/etc/letsencrypt/acme.sh --upgrade --home /etc/letsencrypt')).to.be.true;
+                expect(sudo.calledOnceWithExactly(['/etc/letsencrypt/acme.sh', '--upgrade', '--home', '/etc/letsencrypt'])).to.be.true;
             });
         });
 
@@ -96,7 +96,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(extractStub.called).to.be.false;
                 // only the `mkdir -p` call, acme.sh is never installed
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.match(/mkdir -p/);
+                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
             });
         });
 
@@ -130,7 +130,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(extractStub.calledOnce).to.be.true;
                 // only the `mkdir -p` call, acme.sh is never installed
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.match(/mkdir -p/);
+                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
             });
         });
 
@@ -164,7 +164,7 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(error.message).to.equal('aborted mid-download');
                 // only the `mkdir -p` call, acme.sh is never installed
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.match(/mkdir -p/);
+                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
             });
         });
 
@@ -196,8 +196,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 expect(fetchStub.args[0][1].signal).to.be.an.instanceof(AbortSignal);
                 expect(extractStub.calledOnce).to.be.true;
                 expect(extractStub.args[0][0]).to.deep.equal({cwd: acmeTmpDir, strip: 1, strict: true});
-                expect(sudoStub.args[0][0]).to.match(/mkdir -p/);
-                expect(sudoStub.args[1][0]).to.match(/acme\.sh --install/);
+                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
+                expect(sudoStub.args[1][0]).to.deep.equal(['./acme.sh', '--install', '--home', '/etc/letsencrypt']);
                 expect(sudoStub.args[1][1]).to.deep.equal({cwd: acmeTmpDir});
                 // the staging dir is created fresh under tmp, then cleaned up
                 expect(mkdtempStub.calledOnce).to.be.true;
@@ -334,17 +334,26 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         const acme = require(modulePath);
 
         it('Gets an SSL certificate (prod & staging)', function () {
-            const expectedSudo = new RegExp('/etc/letsencrypt/acme.sh --issue');
             const sudoStub = sinon.stub().resolves();
 
             return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com').then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.match(expectedSudo);
+                expect(sudoStub.args[0][0]).to.deep.equal([
+                    '/etc/letsencrypt/acme.sh',
+                    '--issue',
+                    '--home', '/etc/letsencrypt',
+                    '--server', 'letsencrypt',
+                    '--domain', 'domain',
+                    '--webroot', 'root',
+                    '--reloadcmd', 'nginx -s reload',
+                    '--accountemail', 'test@example.com',
+                    '--keylength', '2048'
+                ]);
 
                 return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com', true);
             }).then(() => {
                 expect(sudoStub.calledTwice).to.be.true;
-                expect(sudoStub.args[1][0]).to.match(/--issue .{0,} --staging/);
+                expect(sudoStub.args[1][0]).to.include('--staging');
             });
         });
 
@@ -396,8 +405,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.remove('ghost.org', {sudo: sudoStub}).then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.equal(
-                    '/etc/letsencrypt/acme.sh --remove --home /etc/letsencrypt --domain ghost.org'
+                expect(sudoStub.args[0][0]).to.deep.equal(
+                    ['/etc/letsencrypt/acme.sh', '--remove', '--home', '/etc/letsencrypt', '--domain', 'ghost.org']
                 );
             });
         });
@@ -412,8 +421,8 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.remove('ghost.org', {sudo: sudoStub}, '/home/ghost/.acme.sh').then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.equal(
-                    '/home/ghost/.acme.sh/acme.sh --remove --home /home/ghost/.acme.sh --domain ghost.org'
+                expect(sudoStub.args[0][0]).to.deep.equal(
+                    ['/home/ghost/.acme.sh/acme.sh', '--remove', '--home', '/home/ghost/.acme.sh', '--domain', 'ghost.org']
                 );
             });
         });

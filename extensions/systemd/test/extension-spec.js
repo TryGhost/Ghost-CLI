@@ -109,7 +109,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(templateStub.calledOnce).to.be.true;
                 expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly('systemctl daemon-reload')).to.be.true;
+                expect(sudoStub.calledWithExactly(['systemctl', 'daemon-reload'])).to.be.true;
                 expect(logStub.called).to.be.false;
                 expect(skipStub.called).to.be.false;
                 expect(instance.config.set.calledOnceWithExactly('process', 'systemd')).to.be.true;
@@ -144,7 +144,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(templateStub.calledOnce).to.be.true;
                 expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly('systemctl daemon-reload')).to.be.true;
+                expect(sudoStub.calledWithExactly(['systemctl', 'daemon-reload'])).to.be.true;
                 expect(logStub.called).to.be.false;
                 expect(skipStub.called).to.be.false;
             });
@@ -171,7 +171,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(existsStub.calledOnce).to.be.true;
                 expect(existsStub.calledWithExactly('/lib/systemd/system/ghost_test.service')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly('rm /lib/systemd/system/ghost_test.service')).to.be.true;
+                expect(sudoStub.calledWithExactly(['rm', '/lib/systemd/system/ghost_test.service'])).to.be.true;
             });
         });
 
@@ -188,7 +188,7 @@ describe('Unit: Systemd > Extension', function () {
                 expect(existsStub.calledOnce).to.be.true;
                 expect(existsStub.calledWithExactly('/lib/systemd/system/ghost_test.service')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly('rm /lib/systemd/system/ghost_test.service')).to.be.true;
+                expect(sudoStub.calledWithExactly(['rm', '/lib/systemd/system/ghost_test.service'])).to.be.true;
             });
         });
 
