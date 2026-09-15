@@ -41,40 +41,16 @@ describe('Unit: Tasks > migration-export > config-to-env', function () {
         expect(result).to.deep.equal({
             privacy__useGravatar: 'false',
             imageOptimization__resize: 'true',
-            extra__list: '"[\\"a\\",\\"b\\"]"'
+            extra__list: '["a","b"]'
         });
     });
 
-    it('quotes values containing spaces, newlines or quotes', function () {
-        const result = configToEnv({
-            mail: {from: 'Ghost Blog <noreply@example.com>'},
-            other: {quoted: 'say "hi"', plain: 'plain'}
-        });
-
-        expect(result.mail__from).to.equal('"Ghost Blog <noreply@example.com>"');
-        expect(result.other__quoted).to.equal('"say \\"hi\\""');
-        expect(result.other__plain).to.equal('plain');
-    });
-
-    it('escapes backslashes inside quoted values', function () {
-        // A value ending in a backslash would otherwise escape its own closing quote
-        const result = configToEnv({
-            mail: {options: {auth: {pass: 'ends with\\'}}},
-            other: {mixed: 'pass\\word here', bare: 'pass\\word'}
-        });
-
-        expect(result.mail__options__auth__pass).to.equal('"ends with\\\\"');
-        expect(result.other__mixed).to.equal('"pass\\\\word here"');
-        // Unquoted values are passed through untouched, same as ghost-docker
-        expect(result.other__bare).to.equal('pass\\word');
-    });
-
-    it('round-trips an array containing a backslash', function () {
-        const {extra__list: encoded} = configToEnv({extra: {list: ['a\\b']}});
-
-        // Undo the env-file quoting, then the JSON encoding
-        const unquoted = encoded.slice(1, -1).replace(/\\(.)/g, '$1');
-        expect(JSON.parse(unquoted)).to.deep.equal(['a\\b']);
+    it('preserves raw special characters and JSON arrays', function () {
+        const values = [' spaces ', 'dollar $VAR ${VAR} $$', 'hash #', 'say "hi"', 'single\'quote', 'line1\nline2', 'tab\there', 'back\\slash', 'ends with\\', ''];
+        for (const value of values) {
+            expect(configToEnv({mail: {from: value}}).mail__from).to.equal(value);
+        }
+        expect(JSON.parse(configToEnv({extra: {list: values}}).extra__list)).to.deep.equal(values);
     });
 
     it('handles an empty/missing config', function () {

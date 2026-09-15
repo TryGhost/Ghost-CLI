@@ -1,0 +1,19 @@
+{
+  "bundleVersion": 1,
+  "bundleCreatedAt": "2026-09-14T12:00:00.000Z",
+  "sourceInstallType": "production",
+  "kind": "mysql-dump",
+  "ghost": {
+    "version": "6.2.0"
+  },
+  "url": "https://example.com",
+  "adminUrl": "https://admin.example.com",
+  "database": {
+    "path": "database.sql"
+  },
+  "content": "content/",
+  "config": {
+    "mail__from": "Ghost Blog <noreply@example.com>",
+    "mail__options__auth__pass": "pa$$word \\\" #\n"
+  }
+}
