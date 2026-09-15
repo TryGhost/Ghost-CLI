@@ -1,169 +1,183 @@
-# Migration bundle format
+# Migration bundle v1
 
-`ghost migrate-export` turns a Ghost-CLI install — local or production — into a
-portable **migration bundle**. Ghost-CLI owns the export; an importer (today
-[`TryGhost/ghost-docker`](https://github.com/TryGhost/ghost-docker)) owns the other
-half. The bundle described here is the entire contract between the two: Ghost-CLI
-knows nothing about the importer's layout, and the importer never needs to read the
-source install.
+`ghost migrate-export` exports a Ghost-CLI installation for a separate importer.
+The command is **in beta**: keep a backup, and confirm the warning (or explicitly
+use `--force`). Only Ghost **6.x** is supported. Bundle v1 is unpublished; there
+are no aliases or fallback decoding for earlier drafts.
 
-This command is **in beta**. It prints a warning and requires explicit confirmation
-before it does any work.
-
-It only supports **Ghost 6.x** installs. Older majors have different config and
-content layouts, so the command refuses rather than emitting a bundle the importer
-can't safely consume. Update the install to Ghost 6 first, then export.
-
-## Usage
+## Usage and source state
 
 ```bash
-ghost migrate-export [name] [--output <path>] [--archive tgz|zip] [--force]
+ghost migrate-export [name] --output /private/exports/rehearsal --archive tgz
+ghost migrate-export [name] --output /private/exports/final --archive tgz --leave-stopped
 ```
 
-- `name` — an instance from the global registry (`~/.ghost/config`, the same list
-  `ghost ls` prints). Omit it to use the install in the current directory, or use the
-  global `--dir`/`-d` flag to point at one directly.
-- `--output`/`-o` — where to write the bundle. Defaults to
-  `./ghost-migration-<instance-name>-<timestamp>` in the directory the command was
-  run from.
-- `--archive` — emit a single `.tgz` or `.zip` instead of a directory. Prefer `tgz`
-  for moving a bundle between hosts: `tar` is available everywhere, while `unzip`
-  frequently isn't installed on a minimal server image (ghost-docker's own
-  `migrate.sh` doesn't list it as a required command). Tarballs are also written with
-  node-tar's `portable` flag, so the source host's uid/gid and username don't travel.
-  The archive is transport only — the contents are identical either way, and an
-  importer is free to accept only the unpacked directory.
-- `--force`/`-f` — skip the beta confirmation. Required when running with the global
-  `--no-prompt`, which otherwise aborts rather than assuming consent.
+- Omit `name` to select the current install; global `--dir` also works.
+- `--output`/`-o` is relative to the directory where the command was invoked.
+  The default is `ghost-migration-<name>-<timestamp>` there. The parent must
+  already exist, and the destination must be outside both the installation and
+  its configured content directory. Symlink aliases are resolved for this check.
+  Existing files/directories, dangling links, and archive collisions are refused.
+  When invoked inside the installation, supply an external output destination.
+- `--archive tgz|zip` appends that extension to the output path. Both the working
+  directory and archive names must be unused. Prefer `tgz` for cross-host moves:
+  extract with `tar -xzf bundle.tgz -C /private/target`. Tar omits source ownership.
+- `--force`/`-f` skips only the beta confirmation; required with `--no-prompt`.
+- `--leave-stopped` selects a final export for cutover. Once source lifecycle
+  work begins, the command leaves Ghost stopped on success and attempts to stop
+  it on failure, including failure during the portable API export. It never
+  automatically restarts a final-export source. Preflight failures and declining
+  portable startup leave the original state unchanged.
 
-The export is non-destructive and re-runnable. Nothing in the source install is
-modified or deleted, so the rollback is "the original is still there". Ghost is
-stopped for the duration of the copy so the export is consistent, then restarted if
-it was running to begin with.
+Ordinary exports restore the original running state on success or failure.
+MySQL sources are stopped for copying and dumping, then restarted before
+compression if originally running. Portable sources need the API; the command
+offers to start a stopped source temporarily and stops it again afterward.
+An API failure before a running source was stopped leaves that source running.
+Failed stop/start operations are reported; check `ghost ls` before proceeding.
 
-## Layout
+**Recovery:** failed exports remove their partial directory/archive. Fix the
+reported error and retry with an unused output path. After a final export, run
+`ghost start` **in the source installation** to abandon cutover and resume it.
+If lifecycle recovery fails, use `ghost ls` and `ghost start` (ordinary recovery)
+or `ghost stop` (final cutover) there. An abrupt process kill or host failure can
+leave a private partial output; inspect the source state and remove that partial
+output before retrying. Files in the source installation are never deleted.
 
-```
-<bundle>/
-  manifest.json
-  database.sql          # `mysql-dump` bundles only
-  content/
-    data/               # redirects, plus the content/members exports for `portable` bundles
-    files/
-    images/
-    media/
-    settings/
-    themes/
-```
+For cutover, verify the bundle and the isolated destination before switching
+DNS/proxy ingress. Keep the source stopped and intact until the destination is
+accepted. Restarting the source permits new writes and invalidates the final
+snapshot. Docker import, destination verification and routing are S5 work;
+this command does not implement them.
 
-`content/` is laid out exactly as Ghost expects its content directory, so an importer
-can mount or copy it straight in. `content/logs/` and any SQLite database file are
-deliberately left behind.
+## Supported sources and consistency
 
-## `manifest.json`
+- `mysql` and `mysql2` produce **`mysql-dump`**. Ghost is stopped before assets
+  are copied and `mysqldump --no-tablespaces --single-transaction` runs. The dump
+  contains only the selected database's schema/data, no CREATE DATABASE, users
+  or grants. External database writers must also be quiescent.
+- **`portable`** supports only **local SQLite (`sqlite3`) development installs**.
+  Unknown/missing clients and production SQLite installations are rejected.
+  Content JSON, then members CSV, are downloaded using the existing
+  [`lib/tasks/import/`](../lib/tasks/import/) API implementation; Ghost is then
+  stopped and assets copied. Both API files must be present and nonempty.
+
+Portable captures are **sequential, not an atomic snapshot**. Avoid editing the
+site, changing members or uploading/deleting assets throughout export, including
+with `--leave-stopped`. No write freeze or Ghost changes are implemented. Final
+export stops subsequent writes once Ghost is down; it cannot retroactively make
+the earlier API snapshots simultaneous. This is a local development migration
+path, not a production SQLite cutover guarantee.
+
+## Manifest and layout
+
+The matching Docker contract is
+[`docs/bundle-v1.md`](https://github.com/TryGhost/ghost-docker/blob/next/docs/bundle-v1.md).
+Shared manifest fixtures live in `test/fixtures/migration-bundle-v1/`.
 
 ```json
 {
   "bundleVersion": 1,
-  "ghostVersion": "6.2.0",
-  "sourceEnvironment": "production",
+  "bundleCreatedAt": "2026-09-14T12:00:00.000Z",
+  "sourceInstallType": "production",
+  "kind": "mysql-dump",
+  "ghost": {"version": "6.2.0"},
   "url": "https://example.com",
   "adminUrl": "https://admin.example.com",
-  "database": { "kind": "mysql-dump", "path": "database.sql" },
+  "database": {"path": "database.sql"},
   "content": "content/",
-  "config": {
-    "mail__transport": "SMTP",
-    "mail__options__host": "smtp.example.com"
-  }
+  "config": {"mail__from": "Ghost Blog <noreply@example.com>"}
 }
 ```
 
-| Field | Notes |
+| Field | Contract |
 | --- | --- |
-| `bundleVersion` | Currently `1`. Bumped on any breaking change to this shape. |
-| `ghostVersion` | Version of Ghost the bundle was taken from. Always a 6.x version. |
-| `sourceEnvironment` | `production` or `development` — which config the export read. |
-| `url` | The site's `url` config value. |
-| `adminUrl` | Omitted entirely when the install has no separate admin URL. |
-| `database` | How the data travels. See below. |
-| `content` | Always `content/`. Relative to the bundle root. |
-| `config` | The install's Ghost config, flattened to env-var form. See below. |
+| `bundleVersion` | Required, `1`. |
+| `bundleCreatedAt` | Required UTC RFC 3339 timestamp of manifest creation; not an atomic snapshot time. |
+| `sourceInstallType` | Required `local` or `production`, from the actual instance's `isLocal` process classification, not NODE_ENV or database inference. |
+| `kind` | Required `mysql-dump` or `portable`. |
+| `ghost.version` | Exact source Ghost 6.x version, including prerelease suffix. Import at this version; upgrade separately. |
+| `url` / `adminUrl` | Public URL and optional separate admin URL, preserved without rewriting. |
+| `database.path` | Relative path to SQL or content JSON. |
+| `database.members` | Required only for portable; relative path to members CSV. |
+| `content` | `content/`, relative to bundle root. |
+| `config` | Flat map of raw string values. |
 
-### `database`
-
-`database.kind` is always explicit — an importer never has to guess.
-
-**`mysql-dump`** — the source was MySQL. Lossless, no API round-trip, no ID churn.
-
-```json
-{ "kind": "mysql-dump", "path": "database.sql" }
-```
-
-`path` is a `mysqldump --no-tablespaces --single-transaction` of the source database,
-relative to the bundle root. It contains schema and data for that database only; no
-`CREATE DATABASE`, no users, no grants.
-
-**`portable`** — the source was anything else (in practice SQLite, which is what
-`ghost install local` uses). Ghost 7 drops sqlite3 support, so a local install's data
-has to arrive in a form that can land in MySQL. This is Ghost's own JSON content
-export plus the members CSV, taken over the admin API. Database-agnostic but lossier,
-and it requires the instance to be running — the command offers to start it.
+For portable bundles, `database` instead contains:
 
 ```json
 {
-  "kind": "portable",
-  "path": "content/data/content-from-v6.2.0-on-2026-09-01-12-30-00.json",
-  "members": "content/data/members-from-v6.2.0-on-2026-09-01-12-30-00.csv"
+  "path": "content/data/content-from-v6.2.0-on-2026-09-14-12-00-00.json",
+  "members": "content/data/members-from-v6.2.0-on-2026-09-14-12-00-00.csv"
 }
 ```
 
-Both paths are relative to the bundle root, and both files also sit inside `content/`
-where Ghost's own importer expects to find them. Filenames carry a version/timestamp
-suffix, so read them from the manifest rather than globbing.
+Read paths from the manifest, not by globbing. There is no `ghostVersion`,
+`sourceEnvironment`, or `database.kind` draft alias.
 
-There is no SQLite→MySQL dump translation, and there never will be in this command.
+`content/files`, `images`, `media`, `settings`, and `themes` are copied in full,
+including hidden files and default themes. `content/data/redirects.json` and
+`redirects.yaml` also travel. Runtime logs, apps, SQLite files, and other data
+files do not. Links and special files inside copied content are explicitly
+rejected; replace them with regular files/directories first. Custom adapters,
+external object storage and assets outside these directories are not bundled.
 
-### `config`
+### Configuration values
 
-The install's Ghost config, flattened to Ghost's `section__key` env-var form. This
-matches ghost-docker's `scripts/config-to-env.js` byte for byte, so its output can be
-written straight into an env file:
+Objects flatten with `__`; numbers and booleans become strings; arrays are JSON
+serialized; null/undefined values are omitted. Values carry **no dotenv quoting
+or escaping**. A password `p$ssword` remains `p$ssword`, including the literal `$`.
+The importer owns Compose encoding into `ghost.env`. JSON's own string escaping
+is still required when writing `manifest.json`.
 
-- nested objects join with `__` (`mail.options.host` → `mail__options__host`)
-- arrays become JSON strings
-- booleans and numbers become strings
-- `null`/`undefined` values are dropped
-- values containing a space, newline, `"` or `'` are wrapped in double quotes, with
-  inner backslashes and double quotes backslash-escaped — **the quotes are part of the
-  value in the JSON**, they are not JSON quoting
+The exporter excludes `database`, `server`, `logging`, `process`, `paths`, and
+`url`. Public/admin URLs remain manifest metadata. The importer deliberately maps
+URLs into `.env` and omits container-owned keys from `ghost.env`, including the
+flattened `admin__url`. Configuration remains `.env` plus `ghost.env`.
 
-These top-level sections are excluded, because they describe how Ghost was run
-outside a container and are actively wrong inside one:
+## Portable fidelity and losses
 
-`database`, `server`, `logging`, `process`, `paths`, `url`
+The exporter preserves the API response bytes; it does not interpret, repair or
+expand them into a database backup. The API reference is `lib/tasks/import/`:
+`db/` for content and `members/upload/?limit=all` for all members. Auth requires
+a staff access token on supported Ghost 6 (prompt or `GHOST_CLI_STAFF_AUTH_TOKEN`);
+an unconfigured site cannot be exported.
 
-Excluding `database` also keeps the source database credentials out of the bundle.
+| Data | Portable contract and limitations |
+| --- | --- |
+| Posts/pages, tags, authors, supported settings and theme settings | Travel in Ghost's content JSON with its supported relationships. Import may remap IDs; this is not database identity preservation. |
+| Staff identity/authentication | Author/profile data can travel. Exports may include password hashes, but these are not a reusable authentication backup. Sessions, tokens and staff API credentials do not travel. Ghost’s default content importer locks imported users and assigns random passwords; owner role becomes Administrator. Set up the destination owner and re-establish staff access. |
+| Members | All CSV rows travel, including fields the source version emits (email/name/note, labels, timestamps, email subscription flag, complimentary status, tier/customer references). CSV is not the members database. |
+| Integrations | Integrations, API keys and webhooks are outside the default content export. Recreate them; raw config secrets do not replace database-stored integration credentials. |
+| Paid subscriptions and newsletters | Tier/product definitions and CSV references do not constitute full subscription relationships, billing history or per-newsletter membership. Stripe configuration must be reconnected and references reconciled against the same account by a supported importer; no automatic payment/subscription recovery is promised. |
+| Other history | Comments, revisions, email delivery/engagement history, member events and other tables outside the default export are not preserved. |
+| Assets | Supported on-disk files are copied byte-for-byte after API export; external storage and omitted runtime/custom directories require separate handling. |
 
-## Handling the bundle
+These boundaries were checked against Ghost **6.62.0**'s released exporter
+allowlist/blocklist and the existing CLI API implementation. Tests verify bundle
+schema, sequencing and response/file preservation. Full destination ID mapping,
+staff setup and subscription reconciliation require the S5 importer and its
+end-to-end fixtures; S3 does not claim that unimplemented path is qualified.
+MySQL dumps preserve database records/relationships without the portable API
+losses, but external services and storage still need separate configuration.
 
-Other config *can* legitimately carry secrets — `mail__options__auth__pass` being the
-obvious one, which has to travel for the migrated site to send email. The command
-lists any such keys when it finishes, and writes the bundle `0700`/`0600`. Treat a
-bundle as sensitive and delete it once the import is done.
+## Privacy and verification
 
-## Divergences from the original proposal
+Outputs can contain credentials and personal data. Directories are created
+`0700`, files and archives `0600` before writing data, including during
+compression and failure handling. Secret-like config key names are reported,
+never their values. Protect the destination parent against modification by
+untrusted users. Delete bundles securely according to the storage system after
+migration is accepted.
 
-- **`database.members`** was added for `portable` bundles. The proposed shape only had
-  `database.path`, which leaves no way to locate the members CSV.
-- **Themes are copied in full**, including `casper` and `source`. `ghost backup`
-  excludes the default themes; a migration that dropped the site's active theme would
-  break it, so fidelity wins here.
-- **Backslashes are escaped inside quoted config values.** ghost-docker's
-  `scripts/config-to-env.js` escapes `"` but not `\`, so a value like `pa$$\word here`
-  emits `"pa$$\word here"` — the backslash is then eaten by the consumer's escape
-  processing, and a value *ending* in `\` escapes its own closing quote and runs into
-  the next line. Ghost-CLI escapes `\` first. Output is identical for values without
-  backslashes, which is nearly all of them. Worth fixing upstream too.
-- **`--single-transaction`** is passed to `mysqldump` (ghost-docker's `migrate.sh`
-  does not). Ghost is already stopped by then, so it costs nothing and protects
-  anything else still writing.
+Run `pnpm test` (includes lint) and `pnpm lint`. To include the real Compose
+container round trip using ghost-docker's actual serializer:
+
+```bash
+GHOST_DOCKER_DIR=/path/to/ghost-docker pnpm test
+```
+
+This requires Docker, Compose, bash, jq, and the `alpine:3.20` probe image. The
+ordinary suite always tests real tgz creation/system-tar extraction, raw values,
+shared manifest fixtures, private permissions, collisions, quoted shell paths,
+lifecycle recovery, final exports and unsupported portable cases.
