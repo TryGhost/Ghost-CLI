@@ -17,6 +17,7 @@ ghost migrate-export [name] --output /private/exports/final --archive tgz --leav
   The default is `ghost-migration-<name>-<timestamp>` there. The parent must
   already exist, and the destination must be outside both the installation and
   its configured content directory. Symlink aliases are resolved for this check.
+  `--dir` selects the source but does not change where output paths resolve.
   Existing files/directories, dangling links, and archive collisions are refused.
   When invoked inside the installation, supply an external output destination.
 - `--archive tgz|zip` appends that extension to the output path. Both the working
@@ -56,6 +57,11 @@ this command does not implement them.
   are copied and `mysqldump --no-tablespaces --single-transaction` runs. The dump
   contains only the selected database's schema/data, no CREATE DATABASE, users
   or grants. External database writers must also be quiescent.
+  Configured `database.connection.ssl` (profiles, CA/client certificates or other
+  TLS options) is currently unsupported and rejected before creating output or
+  changing source state. Use a separately verified TLS-aware migration procedure
+  for those sources; do not remove TLS settings to bypass the check. Absent, null
+  or boolean-false `ssl` settings are accepted.
 - **`portable`** supports only **local SQLite (`sqlite3`) development installs**.
   Unknown/missing clients and production SQLite installations are rejected.
   Content JSON, then members CSV, are downloaded using the existing

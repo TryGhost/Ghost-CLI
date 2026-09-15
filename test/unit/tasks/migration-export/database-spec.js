@@ -37,6 +37,37 @@ describe('Unit: Tasks > migration-export > database', function () {
         });
     });
 
+    describe('TLS configuration', function () {
+        const cases = {
+            enabled: true,
+            profile: 'Amazon RDS',
+            defaults: {},
+            ca: {ca: 'inline certificate'},
+            clientIdentity: {cert: 'certificate', key: 'private key'},
+            unverified: {rejectUnauthorized: false}
+        };
+        for (const [name, ssl] of Object.entries(cases)) {
+            it(`rejects configured TLS: ${name}`, async function () {
+                const connection = {database: 'ghost_prod', ssl};
+                const execa = sinon.stub().resolves();
+                const which = sinon.stub().resolves();
+                const {dumpDatabase} = proxyquire(modulePath, {execa: {execa}, which});
+                expect(() => databaseKind(fakeInstance(connection))).to.throw(SystemError, /database.connection.ssl/);
+                expect(() => dumpArgs(connection)).to.throw(SystemError, /database.connection.ssl/);
+                await expect(dumpDatabase(fakeInstance(connection), '/tmp/out.sql')).rejects.toThrow(/database.connection.ssl/);
+                expect(which.called).to.be.false;
+                expect(execa.called).to.be.false;
+            });
+        }
+
+        it('accepts absent or explicitly disabled TLS configuration', function () {
+            for (const ssl of [undefined, null, false]) {
+                expect(databaseKind(fakeInstance({ssl}))).to.equal('mysql-dump');
+                expect(dumpArgs({database: 'ghost_prod', ssl})).to.contain('ghost_prod');
+            }
+        });
+    });
+
     describe('dumpArgs', function () {
         it('builds host/port args', function () {
             expect(dumpArgs({host: '127.0.0.1', port: 3307, user: 'ghost', database: 'ghost_prod'})).to.deep.equal([

@@ -596,4 +596,27 @@ describe('Unit: Tasks > migration-export', function () {
             }
         });
     }
+    for (const leaveStopped of [false, true]) {
+        it(`rejects TLS before output creation or source changes (leaveStopped=${leaveStopped})`, async function () {
+            const source = createSource();
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const instance = createInstance(source.dir, {running: true});
+            instance.config.values.database.connection.ssl = {key: 'sensitive-key-fixture', ca: 'sensitive-ca-fixture'};
+            const database = require('../../../../lib/tasks/migration-export/database');
+            const migrationExport = load({'./database': database});
+            try {
+                await migrationExport(createUi(), instance, {output, archive: 'tgz', leaveStopped});
+                expect.fail('expected TLS rejection');
+            } catch (error) {
+                expect(error.message).to.include('database.connection.ssl');
+                expect(error.message).not.to.include('sensitive-key-fixture');
+                expect(error.message).not.to.include('sensitive-ca-fixture');
+            }
+            expect(instance.isRunning.called).to.be.false;
+            expect(instance.start.called).to.be.false;
+            expect(instance.stop.called).to.be.false;
+            expect(fs.existsSync(output)).to.be.false;
+            expect(fs.existsSync(`${output}.tgz`)).to.be.false;
+        });
+    }
 });
