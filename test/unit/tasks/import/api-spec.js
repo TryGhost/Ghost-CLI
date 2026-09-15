@@ -4,7 +4,7 @@ const tmp = require('tmp');
 const fs = require('node:fs');
 
 const {SystemError} = require('../../../../lib/errors');
-const {getBaseUrl, isSetup, setup, runImport, downloadContentExport} = require('../../../../lib/tasks/import/api');
+const {getBaseUrl, isSetup, setup, runImport, downloadContentExport, downloadMembersExport} = require('../../../../lib/tasks/import/api');
 
 const testUrl = 'http://localhost:2368';
 
@@ -738,5 +738,21 @@ describe('Unit > Tasks > Import > setup', function () {
 
             expect.fail('runImport should have errored');
         });
+    });
+});
+
+describe('Unit > Tasks > Import > optional members export', function () {
+    it('still tolerates a missing endpoint for callers that do not require members', async function () {
+        const file = tmp.fileSync();
+        fs.writeFileSync(file.name, 'existing export');
+        const scope = nock(testUrl).get('/ghost/api/admin/members/upload/?limit=all').reply(404);
+        try {
+            await downloadMembersExport('6.2.0', testUrl, {token: `${'a'.repeat(24)}:${'b'.repeat(64)}`}, file.name);
+            expect(scope.isDone()).to.be.true;
+            expect(fs.readFileSync(file.name, 'utf8')).to.equal('existing export');
+        } finally {
+            nock.cleanAll();
+            file.removeCallback();
+        }
     });
 });

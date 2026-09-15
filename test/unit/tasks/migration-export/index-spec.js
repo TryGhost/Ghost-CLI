@@ -475,9 +475,12 @@ describe('Unit: Tasks > migration-export', function () {
         const instance = createInstance(source.dir, {client: 'sqlite3'});
         const migrationExport = load({
             './database': {databaseKind: () => 'portable'},
-            '../import': {exportTask: async (ui, inst, content) => fs.writeFileSync(content, '{}')}
+            '../import': {exportTask: async (ui, inst, content, members) => {
+                fs.writeFileSync(content, '{}');
+                fs.unlinkSync(members);
+            }}
         });
-        await expect(migrationExport(createUi(), instance, {output})).rejects.toThrow('Missing or empty portable export');
+        await expect(migrationExport(createUi(), instance, {output})).rejects.toThrow('ENOENT');
         expect(instance.start.calledOnce).to.be.true;
         expect(instance.stop.calledOnce).to.be.true;
         expect(fs.existsSync(output)).to.be.false;
@@ -560,4 +563,37 @@ describe('Unit: Tasks > migration-export', function () {
             expect(instance.stop.callCount).to.equal(running ? 1 : 0);
         }
     });
+    for (const status of [200, 404, 403]) {
+        it(`handles an empty members response with HTTP ${status}`, async function () {
+            const nock = require('nock');
+            const {exportTask} = require('../../../../lib/tasks/import');
+            const source = createSource();
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const instance = createInstance(source.dir, {client: 'sqlite3'});
+            const api = nock('https://example.com')
+                .get('/ghost/api/admin/authentication/setup/').reply(200, {setup: [{status: true}]})
+                .get('/ghost/api/admin/db/').reply(200, {db: [{meta: {version: '6.2.0'}, data: {posts: []}}]})
+                .get('/ghost/api/admin/members/upload/?limit=all').reply(status, '');
+            const ui = createUi();
+            ui.prompt = sinon.stub().resolves({token: `${'a'.repeat(24)}:${'b'.repeat(64)}`});
+            try {
+                const migrationExport = load({'../import': {exportTask}, './database': {databaseKind: () => 'portable'}});
+                const result = migrationExport(ui, instance, {output});
+                if (status === 200) {
+                    const {manifest} = await result;
+                    const membersFile = path.join(output, manifest.database.members);
+                    expect(fs.readFileSync(membersFile, 'utf8')).to.equal('');
+                    expect(fs.statSync(membersFile).mode & 0o777).to.equal(0o600);
+                } else {
+                    await expect(result).rejects.toThrow();
+                    expect(fs.existsSync(output)).to.be.false;
+                }
+                expect(api.isDone()).to.be.true;
+                expect(instance.start.calledOnce).to.be.true;
+                expect(instance.stop.calledOnce).to.be.true;
+            } finally {
+                nock.cleanAll();
+            }
+        });
+    }
 });
