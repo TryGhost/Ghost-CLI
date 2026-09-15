@@ -194,11 +194,11 @@ describe('Unit: Commands > migrate-export', function () {
             let current = caller;
             const cwd = sinon.stub(process, 'cwd').callsFake(() => current);
             const chdir = sinon.stub(process, 'chdir').callsFake((dir) => {
-                current = dir; 
+                current = dir;
             });
             const ui = createUi();
             ui.error = (error) => {
-                throw error; 
+                throw error;
             };
             const system = {setEnvironment: sinon.stub(), loadOsInfo: sinon.stub().resolves()};
             const baseCommand = proxyquire('../../../lib/command', {
