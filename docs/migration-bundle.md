@@ -127,9 +127,13 @@ Read paths from the manifest, not by globbing. There is no `ghostVersion`,
 `content/files`, `images`, `media`, `settings`, and `themes` are copied in full,
 including hidden files and default themes. `content/data/redirects.json` and
 `redirects.yaml` also travel. Runtime logs, apps, SQLite files, and other data
-files do not. Links and special files inside copied content are explicitly
-rejected; replace them with regular files/directories first. Custom adapters,
-external object storage and assets outside these directories are not bundled.
+files do not. Individual theme directory links under `content/themes/` (including
+CLI default themes linked through `current`, and external development themes)
+are resolved and copied as regular directories. The bundle contains their files,
+not links back to the source. Output must also be outside all resolved theme targets.
+Broken/cyclic theme links, links to non-directories, nested theme links, other
+content links and special files are rejected. Custom adapters and external object
+storage are not bundled.
 
 ### Configuration values
 

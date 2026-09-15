@@ -619,4 +619,77 @@ describe('Unit: Tasks > migration-export', function () {
             expect(fs.existsSync(`${output}.tgz`)).to.be.false;
         });
     }
+    for (const useSudo of [false, true]) {
+        it(`materializes a CLI-linked Casper theme into a real tgz (sudo=${useSudo})`, async function () {
+            const {execFileSync} = require('node:child_process');
+            const source = setupTestFolder({
+                dirs: ['content/themes'],
+                files: [
+                    {path: 'versions/6.2.0/content/themes/casper/package.json', content: '{"name":"casper"}'},
+                    {path: 'versions/6.2.0/content/themes/casper/.hidden', content: 'theme asset'}
+                ],
+                links: [['versions/6.2.0', 'current']]
+            });
+            const themeLink = path.join(source.dir, 'content/themes/casper');
+            const target = useSudo ? '../../current/content/themes/casper' : path.join(source.dir, 'current/content/themes/casper');
+            fs.symlinkSync(target, themeLink);
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const ui = createUi();
+            ui.sudo.callsFake(command => execFileSync('/bin/sh', ['-c', command]));
+            const migrationExport = load({'../../utils/use-ghost-user': {shouldUseGhostUser: () => useSudo}});
+            const result = await migrationExport(ui, createInstance(source.dir), {output, archive: 'tgz'});
+            const extracted = setupTestFolder().dir;
+            execFileSync('tar', ['-xzf', result.path, '-C', extracted]);
+            const theme = path.join(extracted, 'content/themes/casper');
+            expect(fs.lstatSync(theme).isSymbolicLink()).to.be.false;
+            expect(fs.statSync(theme).mode & 0o777).to.equal(0o700);
+            expect(fs.readFileSync(path.join(theme, 'package.json'), 'utf8')).to.equal('{"name":"casper"}');
+            expect(fs.readFileSync(path.join(theme, '.hidden'), 'utf8')).to.equal('theme asset');
+            expect(fs.statSync(path.join(theme, '.hidden')).mode & 0o777).to.equal(0o600);
+            expect(fs.lstatSync(themeLink).isSymbolicLink()).to.be.true;
+        });
+    }
+    for (const type of ['broken', 'cyclic', 'file']) {
+        it(`rejects a ${type} theme link before changing the source`, async function () {
+            const source = createSource();
+            const link = path.join(source.dir, 'content/themes/custom');
+            const target = type === 'cyclic' ? link : path.join(source.dir, type === 'file' ? 'content/themes/casper/package.json' : 'missing');
+            fs.symlinkSync(target, link);
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const instance = createInstance(source.dir, {running: true});
+            await expect(load()(createUi(), instance, {output})).rejects.toThrow(/linked theme|Linked theme/);
+            expect(instance.stop.called).to.be.false;
+            expect(instance.start.called).to.be.false;
+            expect(fs.existsSync(output)).to.be.false;
+        });
+    }
+
+    it('supports external development themes but refuses output inside their targets', async function () {
+        const source = createSource();
+        const theme = setupTestFolder({files: [{path: 'package.json', content: '{"name":"custom"}'}]});
+        fs.symlinkSync(theme.dir, path.join(source.dir, 'content/themes/custom'));
+        const instance = createInstance(source.dir, {running: true});
+        const unsafeOutput = path.join(theme.dir, 'bundle');
+        await expect(load()(createUi(), instance, {output: unsafeOutput})).rejects.toThrow('resolved theme targets');
+        expect(instance.stop.called).to.be.false;
+        expect(instance.start.called).to.be.false;
+        expect(fs.existsSync(unsafeOutput)).to.be.false;
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        await load()(createUi(), instance, {output});
+        expect(fs.readFileSync(path.join(output, 'content/themes/custom/package.json'), 'utf8')).to.equal('{"name":"custom"}');
+        expect(fs.lstatSync(path.join(output, 'content/themes/custom')).isDirectory()).to.be.true;
+    });
+
+    it('rejects nested links within a resolved theme and recovers the source', async function () {
+        const source = createSource();
+        const theme = setupTestFolder();
+        fs.symlinkSync('/etc/passwd', path.join(theme.dir, 'nested'));
+        fs.symlinkSync(theme.dir, path.join(source.dir, 'content/themes/custom'));
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {running: true});
+        await expect(load()(createUi(), instance, {output})).rejects.toThrow('Unsupported content link');
+        expect(instance.stop.calledOnce).to.be.true;
+        expect(instance.start.calledOnce).to.be.true;
+        expect(fs.existsSync(output)).to.be.false;
+    });
 });
