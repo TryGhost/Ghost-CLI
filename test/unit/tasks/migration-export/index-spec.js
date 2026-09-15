@@ -29,7 +29,8 @@ function createUi() {
         run: sinon.stub().callsFake(fn => fn()),
         listr: sinon.stub().callsFake(runTasks),
         sudo: sinon.stub().resolves(),
-        log: sinon.stub()
+        log: sinon.stub(),
+        confirm: sinon.stub().resolves(true)
     };
 }
 
@@ -44,6 +45,7 @@ function createInstance(dir, {client = 'mysql', running = false} = {}) {
 
     return {
         dir,
+        isLocal: client === 'sqlite3',
         name: 'example-com',
         version: '6.2.0',
         system: {environment: 'production'},
@@ -130,11 +132,13 @@ describe('Unit: Tasks > migration-export', function () {
         const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json'), 'utf8'));
         expect(manifest).to.deep.equal({
             bundleVersion: 1,
-            ghostVersion: '6.2.0',
-            sourceEnvironment: 'production',
+            bundleCreatedAt: manifest.bundleCreatedAt,
+            sourceInstallType: 'production',
+            kind: 'mysql-dump',
+            ghost: {version: '6.2.0'},
             url: 'https://example.com',
             adminUrl: 'https://admin.example.com',
-            database: {kind: 'mysql-dump', path: 'database.sql'},
+            database: {path: 'database.sql'},
             content: 'content/',
             config: {
                 admin__url: 'https://admin.example.com',
@@ -171,7 +175,7 @@ describe('Unit: Tasks > migration-export', function () {
         expect(exportTask.calledBefore(instance.stop)).to.be.true;
 
         const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json'), 'utf8'));
-        expect(manifest.database.kind).to.equal('portable');
+        expect(manifest.kind).to.equal('portable');
         expect(manifest.database.path).to.match(/^content\/data\/content-from-v6\.2\.0-on-[\d-]+\.json$/);
         expect(manifest.database.members).to.match(/^content\/data\/members-from-v6\.2\.0-on-[\d-]+\.csv$/);
         expect(fs.existsSync(path.join(output, manifest.database.path))).to.be.true;
@@ -257,7 +261,7 @@ describe('Unit: Tasks > migration-export', function () {
         const migrationExport = load();
 
         const ui = createUi();
-        const instance = createInstance('/does/not/exist');
+        const instance = createInstance(setupTestFolder().dir);
         instance.config.values.paths = {contentPath: path.join(source.dir, 'content')};
 
         await migrationExport(ui, instance, {output});
@@ -274,8 +278,8 @@ describe('Unit: Tasks > migration-export', function () {
         await migrationExport(ui, createInstance(source.dir), {output});
 
         const commands = ui.sudo.args.map(([command]) => command);
-        expect(commands.some(command => command.startsWith('cp -R') && command.includes('content/images'))).to.be.true;
-        expect(commands.some(command => command.startsWith('chown -R'))).to.be.true;
+        expect(commands.some(command => command.startsWith('cp ') && command.includes('content/images'))).to.be.true;
+        expect(commands.some(command => command.startsWith('chown '))).to.be.true;
     });
 
     it('zips the bundle when asked for --archive zip', async function () {
@@ -288,7 +292,7 @@ describe('Unit: Tasks > migration-export', function () {
         const result = await migrationExport(ui, createInstance(source.dir), {output, archive: 'zip'});
 
         expect(result.path).to.equal(`${output}.zip`);
-        expect(compress.calledOnceWithExactly(output, `${output}.zip`)).to.be.true;
+        expect(compress.calledOnceWithExactly(output, `${output}.zip`, {ignore: []})).to.be.true;
         expect(fs.existsSync(`${output}.zip`)).to.be.true;
         expect(fs.existsSync(output)).to.be.false;
     });
@@ -338,5 +342,222 @@ describe('Unit: Tasks > migration-export', function () {
         const result = await migrationExport(createUi(), createInstance(source.dir), {output: 'bundle', cwd});
 
         expect(result.path).to.equal(path.join(cwd, 'bundle'));
+    });
+    it('creates and extracts a real tgz with system tar, retaining hidden assets and private modes', async function () {
+        const {execFileSync} = require('node:child_process');
+        const source = createSource();
+        fs.writeFileSync(path.join(source.dir, 'content/themes/casper/.hidden'), 'secret');
+        const output = path.join(setupTestFolder().dir, 'bundle space \' $;name');
+        const result = await load()(createUi(), createInstance(source.dir), {output, archive: 'tgz'});
+        expect(fs.statSync(result.path).mode & 0o777).to.equal(0o600);
+        const extracted = setupTestFolder().dir;
+        execFileSync('tar', ['-xzf', result.path, '-C', extracted]);
+        expect(fs.readFileSync(path.join(extracted, 'content/themes/casper/.hidden'), 'utf8')).to.equal('secret');
+        for (const file of ['manifest.json', 'database.sql', 'content/themes/casper/.hidden']) {
+            expect(fs.statSync(path.join(extracted, file)).mode & 0o777).to.equal(0o600);
+        }
+        expect(JSON.parse(fs.readFileSync(path.join(extracted, 'manifest.json'))).kind).to.equal('mysql-dump');
+    });
+
+    for (const running of [true, false]) {
+        for (const leaveStopped of [true, false]) {
+            for (const fails of [true, false]) {
+                it(`restores portable state: running=${running}, leaveStopped=${leaveStopped}, fails=${fails}`, async function () {
+                    const source = createSource();
+                    const output = path.join(setupTestFolder().dir, 'bundle');
+                    const instance = createInstance(source.dir, {client: 'sqlite3', running});
+                    const exportTask = sinon.stub().callsFake(async (ui, inst, content, members) => {
+                        expect(fs.statSync(content).mode & 0o777).to.equal(0o600);
+                        expect(fs.statSync(members).mode & 0o777).to.equal(0o600);
+                        if (fails) {
+                            throw new Error('API failed');
+                        }
+                        fs.writeFileSync(content, '{}');
+                        fs.writeFileSync(members, 'email\n');
+                    });
+                    const migrationExport = load({
+                        '../import': {exportTask},
+                        './database': {databaseKind: () => 'portable'}
+                    });
+                    const promise = migrationExport(createUi(), instance, {output, leaveStopped});
+                    if (fails) {
+                        await expect(promise).rejects.toThrow('API failed');
+                        expect(fs.existsSync(output)).to.be.false;
+                    } else {
+                        const {manifest} = await promise;
+                        expect(manifest.sourceInstallType).to.equal('local');
+                        expect(manifest.ghost).to.deep.equal({version: '6.2.0'});
+                        expect(manifest.bundleCreatedAt).to.match(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/);
+                    }
+                    expect(instance.start.callCount).to.equal(running ? (leaveStopped || fails ? 0 : 1) : 1);
+                    expect(instance.stop.callCount).to.equal(fails && running && !leaveStopped ? 0 : 1);
+                });
+            }
+        }
+    }
+
+    it('cleans private partial archives and restores running MySQL after compression failure', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {running: true});
+        const c = sinon.stub().callsFake(async (options) => {
+            expect(fs.statSync(options.file).mode & 0o777).to.equal(0o600);
+            fs.writeFileSync(options.file, 'partial secret');
+            throw new Error('compression failed');
+        });
+        await expect(load({tar: {c}})(createUi(), instance, {output, archive: 'tgz'})).rejects.toThrow();
+        expect(fs.existsSync(output)).to.be.false;
+        expect(fs.existsSync(`${output}.tgz`)).to.be.false;
+        expect(instance.start.calledOnce).to.be.true;
+    });
+
+    it('never restarts a final MySQL export after a dump failure', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {running: true});
+        const migrationExport = load({'./database': {databaseKind: () => 'mysql-dump', dumpDatabase: sinon.stub().rejects(new Error('dump failed'))}});
+        await expect(migrationExport(createUi(), instance, {output, leaveStopped: true})).rejects.toThrow('dump failed');
+        expect(instance.stop.calledOnce).to.be.true;
+        expect(instance.start.called).to.be.false;
+        expect(fs.existsSync(output)).to.be.false;
+    });
+
+    it('refuses existing destinations, archive collisions, source overlap and symlink aliases before touching Ghost', async function () {
+        const source = createSource();
+        const parent = setupTestFolder().dir;
+        const existing = path.join(parent, 'existing');
+        fs.mkdirSync(existing);
+        fs.writeFileSync(path.join(existing, 'sentinel'), 'keep');
+        const archive = path.join(parent, 'collision');
+        fs.writeFileSync(`${archive}.tgz`, 'keep archive');
+        const alias = path.join(parent, 'alias');
+        fs.symlinkSync(source.dir, alias);
+        for (const [output, format] of [[existing], [archive, 'tgz'], [source.dir], [path.join(source.dir, 'bundle')], [path.join(alias, 'bundle')]]) {
+            const instance = createInstance(source.dir, {running: true});
+            await expect(load()(createUi(), instance, {output, archive: format})).rejects.toThrow();
+            expect(instance.start.called).to.be.false;
+            expect(instance.stop.called).to.be.false;
+        }
+        expect(fs.readFileSync(path.join(existing, 'sentinel'), 'utf8')).to.equal('keep');
+        expect(fs.readFileSync(`${archive}.tgz`, 'utf8')).to.equal('keep archive');
+        expect(fs.existsSync(archive)).to.be.false;
+    });
+
+    it('uses literal shell arguments for sudo copies with spaces and metacharacters', async function () {
+        const {execFileSync} = require('node:child_process');
+        const source = createSource();
+        const name = 'hidden \' $(touch INJECTED); $file';
+        fs.writeFileSync(path.join(source.dir, 'content/images', name), 'literal');
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const ui = createUi();
+        // Execute the exact shell commands as this user, without needing sudo.
+        ui.sudo.callsFake(command => execFileSync('/bin/sh', ['-c', command]));
+        const migrationExport = load({'../../utils/use-ghost-user': {shouldUseGhostUser: () => true}});
+        await migrationExport(ui, createInstance(source.dir), {output});
+        expect(fs.readFileSync(path.join(output, 'content/images', name), 'utf8')).to.equal('literal');
+        expect(fs.statSync(path.join(output, 'content/images', name)).mode & 0o777).to.equal(0o600);
+        expect(fs.existsSync('INJECTED')).to.be.false;
+    });
+
+    it('rejects links in content and cleans up after restoring the source', async function () {
+        const source = createSource();
+        fs.symlinkSync('/etc/passwd', path.join(source.dir, 'content/images/link'));
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {running: true});
+        await expect(load()(createUi(), instance, {output})).rejects.toThrow('Unsupported content link');
+        expect(instance.start.calledOnce).to.be.true;
+        expect(fs.existsSync(output)).to.be.false;
+    });
+
+    it('refuses an incomplete portable members export and restores an originally stopped source', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {client: 'sqlite3'});
+        const migrationExport = load({
+            './database': {databaseKind: () => 'portable'},
+            '../import': {exportTask: async (ui, inst, content) => fs.writeFileSync(content, '{}')}
+        });
+        await expect(migrationExport(createUi(), instance, {output})).rejects.toThrow('Missing or empty portable export');
+        expect(instance.start.calledOnce).to.be.true;
+        expect(instance.stop.calledOnce).to.be.true;
+        expect(fs.existsSync(output)).to.be.false;
+    });
+
+    for (const kind of ['mysql-dump', 'portable']) {
+        it(`matches the shared ${kind} v1 manifest fixture without draft aliases`, function () {
+            sinon.useFakeTimers(new Date('2026-09-14T12:00:00.000Z'));
+            const fixture = require(`../../../fixtures/migration-bundle-v1/${kind}.json`);
+            const instance = createInstance('/unused', {client: kind === 'portable' ? 'sqlite3' : 'mysql'});
+            const manifest = load().buildManifest(instance, {
+                kind,
+                config: fixture.config,
+                contentExportFile: 'content.json',
+                membersExportFile: 'members.csv'
+            });
+            expect(manifest).to.deep.equal(fixture);
+        });
+    }
+    it('runs the existing API exporter and preserves both responses before stopping Ghost', async function () {
+        const nock = require('nock');
+        const {exportTask} = require('../../../../lib/tasks/import');
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {client: 'sqlite3', running: true});
+        const content = JSON.stringify({db: [{meta: {version: '6.2.0'}, data: {posts: [{id: 'post1', title: 'Fixture'}], users: [{id: 'author1'}], posts_authors: [{post_id: 'post1', author_id: 'author1'}]}}]});
+        const members = 'id,email,name,stripe_customer_id,subscribed_to_emails\nmember1,fixture@example.com,"Name, with comma",cus_fixture,true\n';
+        const requests = [];
+        const api = nock('https://example.com')
+            .get('/ghost/api/admin/authentication/setup/').reply(200, {setup: [{status: true}]})
+            .get('/ghost/api/admin/db/').reply(() => {
+                requests.push('content');
+                expect(instance.stop.called).to.be.false;
+                return [200, content];
+            })
+            .get('/ghost/api/admin/members/upload/?limit=all').reply(() => {
+                requests.push('members');
+                expect(instance.stop.called).to.be.false;
+                return [200, members];
+            });
+        const ui = createUi();
+        ui.prompt = sinon.stub().resolves({token: `${'a'.repeat(24)}:${'b'.repeat(64)}`});
+        try {
+            const migrationExport = load({'../import': {exportTask}, './database': {databaseKind: () => 'portable'}});
+            const {manifest} = await migrationExport(ui, instance, {output});
+            expect(fs.readFileSync(path.join(output, manifest.database.path), 'utf8')).to.equal(content);
+            expect(fs.readFileSync(path.join(output, manifest.database.members), 'utf8')).to.equal(members);
+            expect(requests).to.deep.equal(['content', 'members']);
+            expect(api.isDone()).to.be.true;
+            expect(instance.stop.calledOnce).to.be.true;
+        } finally {
+            nock.cleanAll();
+        }
+    });
+
+    it('reports export and recovery failures together and removes partial output', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {running: true});
+        instance.start.rejects(new Error('restart failed'));
+        const migrationExport = load({'./database': {databaseKind: () => 'mysql-dump', dumpDatabase: sinon.stub().rejects(new Error('dump failed'))}});
+        const ui = createUi();
+        try {
+            await migrationExport(ui, instance, {output});
+            expect.fail('expected failure');
+        } catch (error) {
+            expect(error.errors.map(err => err.message)).to.deep.equal(['dump failed', 'restart failed']);
+        }
+        expect(ui.log.calledWithMatch(/Check ghost ls/)).to.be.true;
+        expect(fs.existsSync(output)).to.be.false;
+    });
+
+    it('leaves successful final MySQL exports stopped, whether originally running or stopped', async function () {
+        for (const running of [true, false]) {
+            const source = createSource();
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const instance = createInstance(source.dir, {running});
+            await load()(createUi(), instance, {output, leaveStopped: true});
+            expect(instance.start.called).to.be.false;
+            expect(instance.stop.callCount).to.equal(running ? 1 : 0);
+        }
     });
 });

@@ -28,7 +28,7 @@ function load({kind = 'mysql-dump', migrationExport, getInstance} = {}) {
     const stubs = {
         '../tasks/migration-export': migrationExport || sinon.stub().resolves({
             path: '/tmp/bundle',
-            manifest: {database: {kind}},
+            manifest: {kind},
             secrets: []
         }),
         '../tasks/migration-export/database': {databaseKind: () => kind},
@@ -68,7 +68,7 @@ describe('Unit: Commands > migrate-export', function () {
 
     it('exports a running mysql instance without starting anything', async function () {
         const instance = createInstance(true);
-        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {database: {kind: 'mysql-dump'}}, secrets: []});
+        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
         const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
         const ui = createUi();
         const cmd = new Command(ui, {});
@@ -80,7 +80,7 @@ describe('Unit: Commands > migrate-export', function () {
         expect(migrationExport.calledOnce).to.be.true;
         expect(migrationExport.args[0][0]).to.equal(ui);
         expect(migrationExport.args[0][1]).to.equal(instance);
-        expect(migrationExport.args[0][2]).to.deep.equal({output: '/tmp/bundle', archive: 'tgz', cwd: process.cwd()});
+        expect(migrationExport.args[0][2]).to.deep.equal({output: '/tmp/bundle', archive: 'tgz', leaveStopped: undefined, cwd: process.cwd()});
         expect(ui.log.args.pop()[0]).to.include('/tmp/bundle');
     });
 
@@ -99,41 +99,6 @@ describe('Unit: Commands > migrate-export', function () {
             command: 'migrate-export',
             recurse: true
         });
-    });
-
-    it('offers to start a stopped instance when the export needs the API', async function () {
-        const instance = createInstance(false);
-        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {database: {kind: 'portable'}}, secrets: []});
-        const {Command} = load({kind: 'portable', migrationExport, getInstance: sinon.stub().returns(instance)});
-        const ui = createUi();
-        const cmd = new Command(ui, {});
-
-        await cmd.run({force: true});
-
-        expect(ui.confirm.calledOnce).to.be.true;
-        expect(ui.confirm.args[0][0]).to.include('not currently running');
-        expect(instance.start.calledOnce).to.be.true;
-        expect(migrationExport.calledOnce).to.be.true;
-    });
-
-    it('errors if a portable export is declined the chance to start Ghost', async function () {
-        const instance = createInstance(false);
-        const migrationExport = sinon.stub().resolves();
-        const {Command} = load({kind: 'portable', migrationExport, getInstance: sinon.stub().returns(instance)});
-        const ui = createUi({confirm: sinon.stub().resolves(false)});
-        const cmd = new Command(ui, {});
-
-        try {
-            await cmd.run({force: true});
-        } catch (error) {
-            expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.include('not currently running');
-            expect(instance.start.called).to.be.false;
-            expect(migrationExport.called).to.be.false;
-            return;
-        }
-
-        expect.fail('run should have errored');
     });
 
     it('does not start a stopped instance for a mysql-dump export', async function () {
@@ -187,7 +152,7 @@ describe('Unit: Commands > migrate-export', function () {
 
     it('exports a Ghost 6.x prerelease', async function () {
         const instance = createInstance(true, '6.0.0-rc.1');
-        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {database: {kind: 'mysql-dump'}}, secrets: []});
+        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
         const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
         const cmd = new Command(createUi(), {});
 
@@ -199,7 +164,7 @@ describe('Unit: Commands > migrate-export', function () {
     it('warns when the bundle config holds secrets', async function () {
         const migrationExport = sinon.stub().resolves({
             path: '/tmp/bundle',
-            manifest: {database: {kind: 'mysql-dump'}},
+            manifest: {kind: 'mysql-dump'},
             secrets: ['mail__options__auth__pass']
         });
         const {Command} = load({migrationExport});
@@ -210,5 +175,12 @@ describe('Unit: Commands > migrate-export', function () {
 
         const messages = ui.log.args.map(([message]) => message);
         expect(messages.some(message => message.includes('mail__options__auth__pass'))).to.be.true;
+    });
+    it('passes the parsed --leave-stopped option to the exporter', async function () {
+        const yargs = require('yargs/yargs');
+        const {Command, stubs} = load();
+        const argv = yargs(['--leave-stopped', '--force']).options(Command.options).parse();
+        await new Command(createUi(), {}).run(argv);
+        expect(stubs['../tasks/migration-export'].args[0][2].leaveStopped).to.be.true;
     });
 });

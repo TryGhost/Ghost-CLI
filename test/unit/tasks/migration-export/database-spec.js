@@ -9,6 +9,7 @@ const {databaseKind, dumpArgs} = require(modulePath);
 function fakeInstance(connection, client = 'mysql') {
     const config = {database: {client, connection}};
     return {
+        isLocal: client === 'sqlite3',
         config: {
             get: (key, defaultValue) => {
                 const [section, sub] = key.split('.');
@@ -26,9 +27,13 @@ describe('Unit: Tasks > migration-export > database', function () {
             expect(databaseKind(fakeInstance({}, 'mysql2'))).to.equal('mysql-dump');
         });
 
-        it('returns portable for sqlite3 and anything unknown', function () {
+        it('returns portable only for local sqlite3', function () {
             expect(databaseKind(fakeInstance({}, 'sqlite3'))).to.equal('portable');
-            expect(databaseKind(fakeInstance({}, null))).to.equal('portable');
+            expect(() => databaseKind(fakeInstance({}, null))).to.throw(/Unsupported migration source/);
+            expect(() => databaseKind(fakeInstance({}, 'postgres'))).to.throw(/Unsupported migration source/);
+            const production = fakeInstance({}, 'sqlite3');
+            production.isLocal = false;
+            expect(() => databaseKind(production)).to.throw(/local SQLite/);
         });
     });
 
