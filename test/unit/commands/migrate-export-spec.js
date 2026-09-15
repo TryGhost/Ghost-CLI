@@ -24,7 +24,7 @@ function createInstance(running = true, version = '6.2.0') {
     };
 }
 
-function load({kind = 'mysql-dump', migrationExport, getInstance} = {}) {
+function load({kind = 'mysql-dump', migrationExport, getInstance, baseCommand} = {}) {
     const stubs = {
         '../tasks/migration-export': migrationExport || sinon.stub().resolves({
             path: '/tmp/bundle',
@@ -35,6 +35,9 @@ function load({kind = 'mysql-dump', migrationExport, getInstance} = {}) {
         '../utils/get-instance': getInstance || sinon.stub().returns(createInstance())
     };
 
+    if (baseCommand) {
+        stubs['../command'] = baseCommand;
+    }
     return {Command: proxyquire(modulePath, stubs), stubs};
 }
 
@@ -183,4 +186,39 @@ describe('Unit: Commands > migrate-export', function () {
         await new Command(createUi(), {}).run(argv);
         expect(stubs['../tasks/migration-export'].args[0][2].leaveStopped).to.be.true;
     });
+    for (const output of [undefined, 'bundle']) {
+        it(`preserves invocation cwd through --dir for ${output || 'default'} output`, async function () {
+            const path = require('node:path');
+            const caller = path.resolve('/caller');
+            const source = path.join(caller, 'source');
+            let current = caller;
+            const cwd = sinon.stub(process, 'cwd').callsFake(() => current);
+            const chdir = sinon.stub(process, 'chdir').callsFake((dir) => {
+                current = dir; 
+            });
+            const ui = createUi();
+            ui.error = (error) => {
+                throw error; 
+            };
+            const system = {setEnvironment: sinon.stub(), loadOsInfo: sinon.stub().resolves()};
+            const baseCommand = proxyquire('../../../lib/command', {
+                './ui': sinon.stub().returns(ui),
+                './system': sinon.stub().returns(system)
+            });
+            const getInstance = sinon.stub().callsFake(() => {
+                expect(process.cwd()).to.equal(source);
+                return createInstance();
+            });
+            const {Command, stubs} = load({baseCommand, getInstance});
+            Command.skipDeprecationCheck = true;
+            try {
+                await Command._run('migrate-export', {dir: 'source', output, force: true, allowRoot: true}, []);
+                expect(chdir.calledOnceWithExactly(source)).to.be.true;
+                expect(stubs['../tasks/migration-export'].args[0][2]).to.include({cwd: caller, output});
+            } finally {
+                cwd.restore();
+                chdir.restore();
+            }
+        });
+    }
 });
