@@ -60,7 +60,10 @@ this command does not implement them.
   Unknown/missing clients and production SQLite installations are rejected.
   Content JSON, then members CSV, are downloaded using the existing
   [`lib/tasks/import/`](../lib/tasks/import/) API implementation; Ghost is then
-  stopped and assets copied. Both API files must be present and nonempty.
+  stopped and assets copied. Both API requests must succeed and both files must
+  be present. Content JSON must be nonempty. A successful zero-byte members CSV
+  represents a site with no members; the importer should skip member import for
+  that file. Missing endpoints and failed downloads remain errors.
 
 Portable captures are **sequential, not an atomic snapshot**. Avoid editing the
 site, changing members or uploading/deleting assets throughout export, including
