@@ -69,7 +69,7 @@
     "tar": "7.5.22",
     "tough-cookie": "6.0.2",
     "which": "7.0.0",
-    "yargs": "18.1.0",
+    "yargs": "18.2.0",
     "yarn": "1.22.22"
   },
   "devDependencies": {
