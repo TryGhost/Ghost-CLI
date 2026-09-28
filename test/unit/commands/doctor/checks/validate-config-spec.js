@@ -36,38 +36,34 @@ describe('Unit: Doctor Checks > validateConfig', function () {
 
     it('rejects if environment is passed and no config exists for that environment', function () {
         const env = setupTestFolder();
-        const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {isRunning: runningStub}
+            instance: {isRunning: runningStub, dir: env.dir}
         }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
             expect(error.message).to.match(/Config file is not valid JSON/);
             expect(error.options.environment).to.equal('testing');
-            expect(cwdStub.calledOnce).to.be.true;
             expect(runningStub.calledOnce).to.be.true;
         });
     });
 
     it('rejects if environment is passed and the config file is not valid json', function () {
         const env = setupTestFolder({files: [{path: 'config.testing.json', content: 'not json'}]});
-        const cwdStub = sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {isRunning: runningStub}
+            instance: {isRunning: runningStub, dir: env.dir}
         }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
             expect(error).to.be.an.instanceof(errors.ConfigError);
             expect(error.message).to.match(/Config file is not valid JSON/);
             expect(error.options.environment).to.equal('testing');
-            expect(cwdStub.calledOnce).to.be.true;
             expect(runningStub.calledOnce).to.be.true;
         });
     });
@@ -77,12 +73,11 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         const env = setupTestFolder({files: [{path: 'config.testing.json', content: config, json: true}]});
         const urlStub = sinon.stub(advancedOpts.url, 'validate').returns('Invalid URL');
         const portStub = sinon.stub(advancedOpts.port, 'validate').returns('Port is in use');
-        sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {isRunning: runningStub}
+            instance: {isRunning: runningStub, dir: env.dir}
         }).then(() => {
             expect(false, 'error should have been thrown').to.be.true;
         }).catch((error) => {
@@ -91,7 +86,7 @@ describe('Unit: Doctor Checks > validateConfig', function () {
             expect(error.options.config).to.deep.equal({'server.port': 2368});
             expect(urlStub.called).to.be.false;
             expect(portStub.calledOnce).to.be.true;
-            expect(portStub.calledWithExactly(2368)).to.be.true;
+            expect(portStub.calledWithExactly(2368, env.dir)).to.be.true;
         });
     });
 
@@ -100,16 +95,15 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         const env = setupTestFolder({files: [{path: 'config.testing.json', content: config, json: true}]});
         const urlStub = sinon.stub(advancedOpts.url, 'validate').returns(true);
         const portStub = sinon.stub(advancedOpts.port, 'validate').returns(true);
-        sinon.stub(process, 'cwd').returns(env.dir);
         const runningStub = sinon.stub().resolves(false);
 
         return validateConfig({
             system: {environment: 'testing'},
-            instance: {isRunning: runningStub}
+            instance: {isRunning: runningStub, dir: env.dir}
         }).then(() => {
             expect(urlStub.called).to.be.false;
             expect(portStub.calledOnce).to.be.true;
-            expect(portStub.calledWithExactly(2368)).to.be.true;
+            expect(portStub.calledWithExactly(2368, env.dir)).to.be.true;
         });
     });
 });
