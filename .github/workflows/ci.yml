@@ -312,7 +312,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-26.04]
+        os: [ubuntu-24.04, ubuntu-26.04]
         password: [root]
         node: [22.x]
     steps:
