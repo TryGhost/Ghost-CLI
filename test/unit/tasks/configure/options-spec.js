@@ -4,6 +4,7 @@ const path = require('path');
 
 const options = require('../../../../lib/tasks/configure/options');
 const urlUtils = require('../../../../lib/utils/url');
+const {setupTestFolder, cleanupTestFolders} = require('../../../utils/test-folder');
 
 describe('Unit: Tasks: Configure > options', function () {
     it('url', function () {
@@ -74,10 +75,36 @@ describe('Unit: Tasks: Configure > options', function () {
         expect(options.mail.validate('SMS')).to.match(/Invalid mail transport/);
     });
 
-    it('mailservice', function () {
-        expect(options.mailservice).to.exist;
-        expect(options.mailservice.validate('Mailgun')).to.be.true;
-        expect(options.mailservice.validate('CaspersFriendlyEmailService')).to.match(/Invalid mail service/);
+    describe('mailservice', function () {
+        afterEach(function () {
+            cleanupTestFolders();
+        });
+
+        function setupNodemailer() {
+            return setupTestFolder({files: [{
+                path: 'current/node_modules/nodemailer/package.json',
+                content: {name: 'nodemailer', exports: {'./lib/well-known': './well-known.js'}},
+                json: true
+            }, {
+                path: 'current/node_modules/nodemailer/well-known.js',
+                content: 'module.exports = key => [\'mailgun\', \'mailtrap\'].includes(key.toLowerCase()) && {};'
+            }]});
+        }
+
+        it('validates against the nodemailer bundled with Ghost', function () {
+            const env = setupNodemailer();
+
+            expect(options.mailservice.validate('Mailgun', env.dir)).to.be.true;
+            expect(options.mailservice.validate('Mailtrap', env.dir)).to.be.true;
+            expect(options.mailservice.validate('CaspersFriendlyEmailService', env.dir)).to.match(/Invalid mail service/);
+        });
+
+        it('passes if nodemailer can\'t be found', function () {
+            const env = setupTestFolder();
+
+            expect(options.mailservice.validate('CaspersFriendlyEmailService', env.dir)).to.be.true;
+            expect(options.mailservice.validate('CaspersFriendlyEmailService')).to.be.true;
+        });
     });
 
     it('process', function () {

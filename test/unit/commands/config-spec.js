@@ -155,6 +155,22 @@ describe('Unit: Command > Config', function () {
             expect(saveStub.called).to.be.false;
         });
 
+        it('passes the instance directory to the validate function', async function () {
+            const ConfigCommand = fake();
+            const validate = sinon.stub(require('../../../lib/tasks/configure/options').mailservice, 'validate').returns(true);
+            const checkEnvironment = sinon.stub();
+            const config = new Config('config.json');
+            const getInstance = sinon.stub().returns({checkEnvironment, config, dir: '/var/www/ghost'});
+            sinon.stub(config, 'set').returns(config);
+            sinon.stub(config, 'save');
+
+            const cmd = new ConfigCommand({log: sinon.stub()}, {getInstance});
+
+            await cmd.run({key: 'mail.options.service', value: 'Mailtrap'});
+            expect(validate.calledOnceWithExactly('Mailtrap', '/var/www/ghost')).to.be.true;
+            validate.restore();
+        });
+
         it('doesn\'t validate keys without a matching option', async function () {
             const ConfigCommand = fake();
             const checkEnvironment = sinon.stub();
