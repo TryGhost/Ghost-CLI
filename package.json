@@ -38,7 +38,7 @@
   },
   "preferGlobal": true,
   "dependencies": {
-    "@tryghost/zip": "3.5.13",
+    "@tryghost/zip": "3.5.14",
     "abbrev": "5.0.0",
     "boxen": "9.0.0",
     "chalk": "6.0.1",
