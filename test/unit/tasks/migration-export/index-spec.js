@@ -852,6 +852,29 @@ describe('Unit: Tasks > migration-export', function () {
             expect(fs.lstatSync(themeLink).isSymbolicLink()).to.be.true;
         });
     }
+    for (const useSudo of [false, true]) {
+        it(`skips node_modules inside theme folders (sudo=${useSudo})`, async function () {
+            const {execFileSync} = require('node:child_process');
+            const source = createSource();
+            const theme = path.join(source.dir, 'content/themes/casper');
+            fs.mkdirSync(path.join(theme, 'node_modules/.bin'), {recursive: true});
+            fs.writeFileSync(path.join(theme, 'node_modules/dep.js'), 'dep');
+            fs.symlinkSync('../dep.js', path.join(theme, 'node_modules/.bin/dep'));
+            fs.mkdirSync(path.join(theme, 'assets'));
+            fs.writeFileSync(path.join(theme, 'assets/main.css'), 'css');
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const ui = createUi();
+            ui.sudo.callsFake(command => execFileSync('/bin/sh', ['-c', command]));
+            const migrationExport = load({'../../utils/use-ghost-user': {shouldUseGhostUser: () => useSudo}});
+            await migrationExport(ui, createInstance(source.dir), {output});
+
+            const copied = path.join(output, 'content/themes/casper');
+            expect(fs.existsSync(path.join(copied, 'node_modules'))).to.be.false;
+            expect(fs.readFileSync(path.join(copied, 'package.json'), 'utf8')).to.equal('{}');
+            expect(fs.readFileSync(path.join(copied, 'assets/main.css'), 'utf8')).to.equal('css');
+            expect(fs.existsSync(path.join(theme, 'node_modules/dep.js'))).to.be.true;
+        });
+    }
     for (const type of ['broken', 'cyclic', 'file']) {
         it(`rejects a ${type} theme link before changing the source`, async function () {
             const source = createSource();

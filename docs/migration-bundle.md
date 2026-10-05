@@ -133,7 +133,8 @@ Read paths from the manifest, not by globbing. There is no `ghostVersion`,
 `sourceEnvironment`, or `database.kind` draft alias.
 
 `content/files`, `images`, `media`, `settings`, and `themes` are copied in full,
-including hidden files and default themes. `content/data/redirects.json` and
+including hidden files and default themes, except each theme's top-level
+`node_modules`, which is always skipped. `content/data/redirects.json` and
 `redirects.yaml` also travel. Runtime logs, apps, SQLite files, and other data
 files do not. Individual theme directory links under `content/themes/` (including
 CLI default themes linked through `current`, and external development themes)
