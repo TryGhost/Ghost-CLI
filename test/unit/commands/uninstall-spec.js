@@ -9,11 +9,7 @@ const System = require('../../../lib/system');
 const modulePath = '../../../lib/commands/uninstall';
 const UninstallCommand = require(modulePath);
 
-const fileList = [
-    '.ghost-cli',
-    'config.production.json',
-    'config.development.json'
-];
+const fileList = ['.ghost-cli', 'config.production.json', 'config.development.json'];
 
 describe('Unit: Commands > Uninstall', function () {
     afterEach(() => {
@@ -46,7 +42,7 @@ describe('Unit: Commands > Uninstall', function () {
             expect(ui.listr.calledOnce).to.be.true;
         });
 
-        it('doesn\'t run if the user backs out', async function () {
+        it("doesn't run if the user backs out", async function () {
             const argv = {force: true};
             const {command, ui} = createInstance();
             ui.confirm.resolves(false);
@@ -107,7 +103,7 @@ describe('Unit: Commands > Uninstall', function () {
                 system.getInstance.returns({dir: '/var/www/ghost'});
                 ui.sudo.resolves();
 
-                const [,task] = await getSteps(command, ui);
+                const [, task] = await getSteps(command, ui);
 
                 expect(task.title).to.equal('Removing content folder');
                 expect(task.enabled()).to.be.false;
@@ -125,7 +121,7 @@ describe('Unit: Commands > Uninstall', function () {
                 system.getInstance.returns({instance: true, dir: '/var/www/ghost'});
                 system.hook.resolves();
 
-                const [,,task] = await getSteps(command, ui);
+                const [, , task] = await getSteps(command, ui);
 
                 expect(task.title).to.equal('Removing related configuration');
                 await task.task();
@@ -134,10 +130,7 @@ describe('Unit: Commands > Uninstall', function () {
                 expect(system.setEnvironment.calledOnce).to.be.true;
                 expect(system.setEnvironment.calledWithExactly(false)).to.be.true;
                 expect(system.hook.calledOnce).to.be.true;
-                expect(system.hook.calledWithExactly(
-                    'uninstall',
-                    {instance: true, dir: '/var/www/ghost'}
-                )).to.be.true;
+                expect(system.hook.calledWithExactly('uninstall', {instance: true, dir: '/var/www/ghost'})).to.be.true;
             });
 
             it('step 4 (removing ghost install)', async function () {
@@ -146,7 +139,7 @@ describe('Unit: Commands > Uninstall', function () {
                 const readdirStub = sinon.stub(fs, 'readdirSync').returns(fileList);
                 const removeStub = sinon.stub(fsp, 'rm').resolves();
 
-                const [,,,task] = await getSteps(command, ui);
+                const [, , , task] = await getSteps(command, ui);
 
                 expect(task.title).to.equal('Removing Ghost installation');
                 await task.task();
@@ -156,7 +149,7 @@ describe('Unit: Commands > Uninstall', function () {
                 expect(readdirStub.calledOnce).to.be.true;
                 expect(removeStub.callCount).to.equal(fileList.length);
 
-                fileList.forEach((f) => {
+                fileList.forEach(f => {
                     expect(removeStub.calledWithExactly(f, {recursive: true, force: true})).to.be.true;
                 });
             });

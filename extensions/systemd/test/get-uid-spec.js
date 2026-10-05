@@ -16,7 +16,7 @@ describe('Unit: Systemd > get-uid util', function () {
         expect(shellStub.calledOnce).to.be.true;
     });
 
-    it('returns null if ghost user doesn\'t exist', function () {
+    it("returns null if ghost user doesn't exist", function () {
         const shellStub = sinon.stub().throws(new Error('No such user'));
         const getUid = proxyquire(modulePath, {
             execa: {execaSync: shellStub}

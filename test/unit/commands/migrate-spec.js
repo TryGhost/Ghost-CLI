@@ -39,10 +39,12 @@ function build(migrations) {
 
 describe('Unit: Commands > Migrate', function () {
     it('runs needed migrations', function () {
-        const migrations = [{
-            title: 'Something',
-            task: () => {}
-        }];
+        const migrations = [
+            {
+                title: 'Something',
+                task: () => {}
+            }
+        ];
 
         const {cmd, instance, parse} = build(migrations);
 

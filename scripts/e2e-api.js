@@ -94,24 +94,26 @@ function assertPost(exportFile, title) {
 
 async function run([command, ...args]) {
     switch (command) {
-    case 'setup':
-        return setup(...args);
-    case 'token':
-        return token(...args);
-    case 'create-post':
-        return createPost(...args);
-    case 'assert-post':
-        return assertPost(...args);
-    default:
-        throw new Error(`Unknown command: ${command}`);
+        case 'setup':
+            return setup(...args);
+        case 'token':
+            return token(...args);
+        case 'create-post':
+            return createPost(...args);
+        case 'assert-post':
+            return assertPost(...args);
+        default:
+            throw new Error(`Unknown command: ${command}`);
     }
 }
 
-run(process.argv.slice(2)).then((output) => {
-    if (output) {
-        process.stdout.write(`${output}\n`);
-    }
-}).catch((error) => {
-    console.error(error.message);
-    process.exit(1);
-});
+run(process.argv.slice(2))
+    .then(output => {
+        if (output) {
+            process.stdout.write(`${output}\n`);
+        }
+    })
+    .catch(error => {
+        console.error(error.message);
+        process.exit(1);
+    });

@@ -21,9 +21,12 @@ function stubDownload(chunks = ['acme tarball']) {
         ok: true,
         body: ReadableStream.from(chunks)
     });
-    const extractStub = sinon.stub().callsFake(() => new Writable({
-        write: (chunk, encoding, cb) => cb()
-    }));
+    const extractStub = sinon.stub().callsFake(
+        () =>
+            new Writable({
+                write: (chunk, encoding, cb) => cb()
+            })
+    );
 
     return {fetchStub, extractStub};
 }
@@ -65,7 +68,9 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.install({sudo}).then(() => {
                 expect(existsStub.calledOnce).to.be.true;
-                expect(sudo.calledOnceWithExactly(['/etc/letsencrypt/acme.sh', '--upgrade', '--home', '/etc/letsencrypt'])).to.be.true;
+                expect(
+                    sudo.calledOnceWithExactly(['/etc/letsencrypt/acme.sh', '--upgrade', '--home', '/etc/letsencrypt'])
+                ).to.be.true;
             });
         });
 
@@ -88,16 +93,19 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
-            return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(cli.errors.CliError);
-                expect(error.message).to.equal('Unable to download acme.sh (503)');
-                expect(extractStub.called).to.be.false;
-                // only the `mkdir -p` call, acme.sh is never installed
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: logStub})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(cli.errors.CliError);
+                    expect(error.message).to.equal('Unable to download acme.sh (503)');
+                    expect(extractStub.called).to.be.false;
+                    // only the `mkdir -p` call, acme.sh is never installed
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
+                });
         });
 
         it('rejects without installing if extraction fails', function () {
@@ -111,9 +119,12 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const sudoStub = sinon.stub().resolves();
 
             // tar rejecting a bad entry surfaces as an error on the extract stream
-            extractStub.callsFake(() => new Writable({
-                write: (chunk, encoding, cb) => cb(new Error('TAR_ENTRY_INVALID'))
-            }));
+            extractStub.callsFake(
+                () =>
+                    new Writable({
+                        write: (chunk, encoding, cb) => cb(new Error('TAR_ENTRY_INVALID'))
+                    })
+            );
 
             const acme = proxyquire(modulePath, {
                 ky: {default: kyStub},
@@ -122,16 +133,19 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
-            return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('TAR_ENTRY_INVALID');
-                expect(fetchStub.calledOnce).to.be.true;
-                expect(extractStub.calledOnce).to.be.true;
-                // only the `mkdir -p` call, acme.sh is never installed
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: logStub})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('TAR_ENTRY_INVALID');
+                    expect(fetchStub.calledOnce).to.be.true;
+                    expect(extractStub.calledOnce).to.be.true;
+                    // only the `mkdir -p` call, acme.sh is never installed
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
+                });
         });
 
         it('rejects without installing if the download stream aborts', function () {
@@ -158,14 +172,17 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
-            return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('aborted mid-download');
-                // only the `mkdir -p` call, acme.sh is never installed
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: logStub})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('aborted mid-download');
+                    // only the `mkdir -p` call, acme.sh is never installed
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(sudoStub.args[0][0]).to.deep.equal(['mkdir', '-p', '/etc/letsencrypt']);
+                });
         });
 
         it('downloads acme.sh', function () {
@@ -223,11 +240,14 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const sudoStub = sinon.stub().resolves();
             sudoStub.onSecondCall().rejects(new Error('acme.sh blew up'));
 
-            return acme.install({sudo: sudoStub, logVerbose: sinon.stub()}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch(() => {
-                expect(emptyStub.calledOnceWithExactly(acmeTmpDir, {recursive: true, force: true})).to.be.true;
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: sinon.stub()})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(() => {
+                    expect(emptyStub.calledOnceWithExactly(acmeTmpDir, {recursive: true, force: true})).to.be.true;
+                });
         });
 
         it('Errors when github is down', function () {
@@ -250,19 +270,22 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
-            return acme.install({sudo: sudoStub, logVerbose: logStub}, {}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch((reject) => {
-                expect(reject).to.exist;
-                expect(reject.message).to.match(/fetch download URL/i);
-                expect(reject.err.message).to.match(/not found/i);
-                expect(logStub.calledTwice).to.be.true;
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(emptyStub.calledOnce).to.be.true;
-                expect(kyStub.calledOnce).to.be.true;
-                expect(fetchStub.called).to.be.false;
-                expect(extractStub.called).to.be.false;
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: logStub}, {})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(reject => {
+                    expect(reject).to.exist;
+                    expect(reject.message).to.match(/fetch download URL/i);
+                    expect(reject.err.message).to.match(/not found/i);
+                    expect(logStub.calledTwice).to.be.true;
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(emptyStub.calledOnce).to.be.true;
+                    expect(kyStub.calledOnce).to.be.true;
+                    expect(fetchStub.called).to.be.false;
+                    expect(extractStub.called).to.be.false;
+                });
         });
 
         it('Errors when bad data is passed', function () {
@@ -282,19 +305,22 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 'node:fs/promises': {rm: emptyStub, mkdtemp: mkdtempStub}
             });
 
-            return acme.install({sudo: sudoStub, logVerbose: logStub}, {}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch((reject) => {
-                expect(reject).to.exist;
-                expect(reject.message).to.match(/fetch download URL/i);
-                expect(reject.err.message).to.match(/unexpected token/i);
-                expect(logStub.calledTwice).to.be.true;
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(emptyStub.calledOnce).to.be.true;
-                expect(kyStub.calledOnce).to.be.true;
-                expect(fetchStub.called).to.be.false;
-                expect(extractStub.called).to.be.false;
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: logStub}, {})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(reject => {
+                    expect(reject).to.exist;
+                    expect(reject.message).to.match(/fetch download URL/i);
+                    expect(reject.err.message).to.match(/unexpected token/i);
+                    expect(logStub.calledTwice).to.be.true;
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(emptyStub.calledOnce).to.be.true;
+                    expect(kyStub.calledOnce).to.be.true;
+                    expect(fetchStub.called).to.be.false;
+                    expect(extractStub.called).to.be.false;
+                });
         });
 
         it('Rejects when acme.sh fails', function () {
@@ -315,18 +341,21 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             const sudoStub = sinon.stub().resolves();
             sudoStub.onSecondCall().rejects({stderr: 'CODE: ENOTFOUND', command: 'acme'});
 
-            return acme.install({sudo: sudoStub, logVerbose: logStub}).then(() => {
-                expect(false, 'Promise should have been rejected').to.be.true;
-            }).catch((reject) => {
-                expect(reject.message).to.equal('Error occurred running command: \'acme\'');
-                expect(reject.options.stderr).to.equal('CODE: ENOTFOUND');
-                expect(logStub.calledThrice).to.be.true;
-                expect(sudoStub.calledTwice).to.be.true;
-                expect(emptyStub.calledOnce).to.be.true;
-                expect(kyStub.calledOnce).to.be.true;
-                expect(fetchStub.calledOnce).to.be.true;
-                expect(extractStub.calledOnce).to.be.true;
-            });
+            return acme
+                .install({sudo: sudoStub, logVerbose: logStub})
+                .then(() => {
+                    expect(false, 'Promise should have been rejected').to.be.true;
+                })
+                .catch(reject => {
+                    expect(reject.message).to.equal("Error occurred running command: 'acme'");
+                    expect(reject.options.stderr).to.equal('CODE: ENOTFOUND');
+                    expect(logStub.calledThrice).to.be.true;
+                    expect(sudoStub.calledTwice).to.be.true;
+                    expect(emptyStub.calledOnce).to.be.true;
+                    expect(kyStub.calledOnce).to.be.true;
+                    expect(fetchStub.calledOnce).to.be.true;
+                    expect(extractStub.calledOnce).to.be.true;
+                });
         });
     });
 
@@ -336,25 +365,35 @@ describe('Unit: Extensions > Nginx > Acme', function () {
         it('Gets an SSL certificate (prod & staging)', function () {
             const sudoStub = sinon.stub().resolves();
 
-            return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com').then(() => {
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.deep.equal([
-                    '/etc/letsencrypt/acme.sh',
-                    '--issue',
-                    '--home', '/etc/letsencrypt',
-                    '--server', 'letsencrypt',
-                    '--domain', 'domain',
-                    '--webroot', 'root',
-                    '--reloadcmd', 'nginx -s reload',
-                    '--accountemail', 'test@example.com',
-                    '--keylength', '2048'
-                ]);
+            return acme
+                .generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com')
+                .then(() => {
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(sudoStub.args[0][0]).to.deep.equal([
+                        '/etc/letsencrypt/acme.sh',
+                        '--issue',
+                        '--home',
+                        '/etc/letsencrypt',
+                        '--server',
+                        'letsencrypt',
+                        '--domain',
+                        'domain',
+                        '--webroot',
+                        'root',
+                        '--reloadcmd',
+                        'nginx -s reload',
+                        '--accountemail',
+                        'test@example.com',
+                        '--keylength',
+                        '2048'
+                    ]);
 
-                return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com', true);
-            }).then(() => {
-                expect(sudoStub.calledTwice).to.be.true;
-                expect(sudoStub.args[1][0]).to.include('--staging');
-            });
+                    return acme.generate({sudo: sudoStub}, 'domain', 'root', 'test@example.com', true);
+                })
+                .then(() => {
+                    expect(sudoStub.calledTwice).to.be.true;
+                    expect(sudoStub.args[1][0]).to.include('--staging');
+                });
         });
 
         it('Knows when a certificate already exists', function () {
@@ -362,22 +401,25 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             acmeError.exitCode = 2;
             const sudoStub = sinon.stub().rejects(acmeError);
 
-            return acme.generate({sudo: sudoStub}).then((result) => {
+            return acme.generate({sudo: sudoStub}).then(result => {
                 expect(sudoStub.calledOnce).to.be.true;
                 expect(result).to.not.exist;
             });
         });
 
-        it('Knows when domain doesn\'t point to the right place', function () {
+        it("Knows when domain doesn't point to the right place", function () {
             const acmeError = {stderr: 'Verify error:Invalid Response'};
             const sudoStub = sinon.stub().rejects(acmeError);
 
-            return acme.generate({sudo: sudoStub}).then(() => {
-                expect(false, 'Promise should be rejected').to.be.true;
-            }).catch((err) => {
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(err).to.match(/correct IP address/i);
-            });
+            return acme
+                .generate({sudo: sudoStub})
+                .then(() => {
+                    expect(false, 'Promise should be rejected').to.be.true;
+                })
+                .catch(err => {
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(err).to.match(/correct IP address/i);
+                });
         });
 
         it('Gracefully rejects unknown errors', function () {
@@ -385,12 +427,15 @@ describe('Unit: Extensions > Nginx > Acme', function () {
             acmeError.stderr = 'Minions overworked';
             const sudoStub = sinon.stub().rejects(acmeError);
 
-            return acme.generate({sudo: sudoStub}).then(() => {
-                expect(false, 'Promise should be rejected').to.be.true;
-            }).catch((err) => {
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(err.message).to.equal('Minions overworked');
-            });
+            return acme
+                .generate({sudo: sudoStub})
+                .then(() => {
+                    expect(false, 'Promise should be rejected').to.be.true;
+                })
+                .catch(err => {
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(err.message).to.equal('Minions overworked');
+                });
         });
     });
 
@@ -405,9 +450,14 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.remove('ghost.org', {sudo: sudoStub}).then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.deep.equal(
-                    ['/etc/letsencrypt/acme.sh', '--remove', '--home', '/etc/letsencrypt', '--domain', 'ghost.org']
-                );
+                expect(sudoStub.args[0][0]).to.deep.equal([
+                    '/etc/letsencrypt/acme.sh',
+                    '--remove',
+                    '--home',
+                    '/etc/letsencrypt',
+                    '--domain',
+                    'ghost.org'
+                ]);
             });
         });
 
@@ -421,9 +471,14 @@ describe('Unit: Extensions > Nginx > Acme', function () {
 
             return acme.remove('ghost.org', {sudo: sudoStub}, '/home/ghost/.acme.sh').then(() => {
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.args[0][0]).to.deep.equal(
-                    ['/home/ghost/.acme.sh/acme.sh', '--remove', '--home', '/home/ghost/.acme.sh', '--domain', 'ghost.org']
-                );
+                expect(sudoStub.args[0][0]).to.deep.equal([
+                    '/home/ghost/.acme.sh/acme.sh',
+                    '--remove',
+                    '--home',
+                    '/home/ghost/.acme.sh',
+                    '--domain',
+                    'ghost.org'
+                ]);
             });
         });
 
@@ -435,13 +490,16 @@ describe('Unit: Extensions > Nginx > Acme', function () {
                 os: {homedir: homedirStub}
             });
 
-            return acme.remove('ghost.org', {sudo: sudoStub}).then(() => {
-                expect(false, 'Promise should be rejected').to.be.true;
-            }).catch((err) => {
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(err).to.be.an.instanceof(cli.errors.ProcessError);
-                expect(err.message).to.equal('oops i did it again');
-            });
+            return acme
+                .remove('ghost.org', {sudo: sudoStub})
+                .then(() => {
+                    expect(false, 'Promise should be rejected').to.be.true;
+                })
+                .catch(err => {
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(err).to.be.an.instanceof(cli.errors.ProcessError);
+                    expect(err.message).to.equal('oops i did it again');
+                });
         });
     });
 });

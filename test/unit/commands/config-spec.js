@@ -157,7 +157,9 @@ describe('Unit: Command > Config', function () {
 
         it('passes the instance directory to the validate function', async function () {
             const ConfigCommand = fake();
-            const validate = sinon.stub(require('../../../lib/tasks/configure/options').mailservice, 'validate').returns(true);
+            const validate = sinon
+                .stub(require('../../../lib/tasks/configure/options').mailservice, 'validate')
+                .returns(true);
             const checkEnvironment = sinon.stub();
             const config = new Config('config.json');
             const getInstance = sinon.stub().returns({checkEnvironment, config, dir: '/var/www/ghost'});
@@ -171,7 +173,7 @@ describe('Unit: Command > Config', function () {
             validate.restore();
         });
 
-        it('doesn\'t validate keys without a matching option', async function () {
+        it("doesn't validate keys without a matching option", async function () {
             const ConfigCommand = fake();
             const checkEnvironment = sinon.stub();
             const config = new Config('config.json');
@@ -187,7 +189,7 @@ describe('Unit: Command > Config', function () {
             expect(saveStub.calledOnce).to.be.true;
         });
 
-        it('calls configure if key and value aren\'t provided', async function () {
+        it("calls configure if key and value aren't provided", async function () {
             const configureStub = sinon.stub().resolves();
             const ConfigCommand = fake({
                 '../tasks/configure': configureStub

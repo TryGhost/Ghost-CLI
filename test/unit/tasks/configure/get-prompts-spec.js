@@ -5,10 +5,14 @@ const {validate: validateUrl, ensureProtocol} = require('../../../../lib/utils/u
 describe('Unit: Tasks: Configure > getPrompts', function () {
     it('returns no prompts if url is defined and db is sqlite3', function () {
         const config = new Config('config.json');
-        const prompts = getPrompts(config, {
-            url: 'someurl.com',
-            db: 'sqlite3'
-        }, 'development');
+        const prompts = getPrompts(
+            config,
+            {
+                url: 'someurl.com',
+                db: 'sqlite3'
+            },
+            'development'
+        );
 
         expect(prompts).to.deep.equal([]);
     });
@@ -72,9 +76,13 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         expect(nameprompt.validate('example!!!')).to.match(/consist of only alpha/);
     });
 
-    it('doesn\'t return dbhost prompt if dbhost provided', function () {
+    it("doesn't return dbhost prompt if dbhost provided", function () {
         const config = new Config('config.json');
-        const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbhost: 'localhost'}, 'development');
+        const prompts = getPrompts(
+            config,
+            {url: 'http://localhost.com', db: 'mysql', dbhost: 'localhost'},
+            'development'
+        );
 
         expect(prompts).to.have.length(3);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.not.be.ok;
@@ -83,7 +91,7 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
-    it('doesn\'t return dbuser prompt if dbuser provided', function () {
+    it("doesn't return dbuser prompt if dbuser provided", function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbuser: 'root'}, 'development');
 
@@ -94,9 +102,13 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
-    it('doesn\'t return dbpass prompt if dbpass provided', function () {
+    it("doesn't return dbpass prompt if dbpass provided", function () {
         const config = new Config('config.json');
-        const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbpass: 'password'}, 'development');
+        const prompts = getPrompts(
+            config,
+            {url: 'http://localhost.com', db: 'mysql', dbpass: 'password'},
+            'development'
+        );
 
         expect(prompts).to.have.length(3);
         expect(prompts.find(prompt => prompt.name === 'dbhost')).to.be.ok;
@@ -105,7 +117,7 @@ describe('Unit: Tasks: Configure > getPrompts', function () {
         expect(prompts.find(prompt => prompt.name === 'dbname')).to.be.ok;
     });
 
-    it('doesn\'t return dbname prompt if dbname provided', function () {
+    it("doesn't return dbname prompt if dbname provided", function () {
         const config = new Config('config.json');
         const prompts = getPrompts(config, {url: 'http://localhost.com', db: 'mysql', dbname: 'ghost'}, 'development');
 

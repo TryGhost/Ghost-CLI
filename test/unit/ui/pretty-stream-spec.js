@@ -38,11 +38,7 @@ describe('Unit: UI > PrettyStream', function () {
             stream.write(testObject, 'utf8', {callback: true});
 
             expect(writeStub.calledOnce).to.be.true;
-            expect(writeStub.calledWithExactly(
-                '{"foo":"bar","baz":"bat"}',
-                'utf8',
-                {callback: true}
-            )).to.be.true;
+            expect(writeStub.calledWithExactly('{"foo":"bar","baz":"bat"}', 'utf8', {callback: true})).to.be.true;
         });
 
         it('passes through buffer objects without stringifying', function () {
@@ -72,7 +68,7 @@ describe('Unit: UI > PrettyStream', function () {
 
     describe('_transform', function () {
         function test(verbose, data, expected) {
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const ghostPrettyStream = new PrettyStream({verbose: verbose});
                 const writeStream = new streams.Writable();
 
@@ -89,139 +85,170 @@ describe('Unit: UI > PrettyStream', function () {
 
         describe('non-verbose mode', function () {
             it('data.msg', function () {
-                return test(false, {
-                    time: '2016-07-01 00:00:00',
-                    level: 30,
-                    msg: 'Ghost starts now.'
-                }, '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m Ghost starts now.\n');
+                return test(
+                    false,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 30,
+                        msg: 'Ghost starts now.'
+                    },
+                    '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m Ghost starts now.\n'
+                );
             });
 
             it('data.err', function () {
-                return test(false, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    msg: 'message',
-                    err: {
-                        message: 'Hey Jude!',
-                        stack: 'stack',
-                        code: 'HEY_JUDE'
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
+                return test(
+                    false,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        msg: 'message',
+                        err: {
+                            message: 'Hey Jude!',
+                            stack: 'stack',
+                            code: 'HEY_JUDE'
+                        }
+                    },
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mCODE: HEY_JUDE\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
-\u001b[31m\u001b[39m\n`);
+\u001b[31m\u001b[39m\n`
+                );
             });
 
             it('data.req && data.res', function () {
-                return test(false, {
-                    time: '2016-07-01 00:00:00',
-                    level: 30,
-                    req: {
-                        originalUrl: '/test',
-                        method: 'GET',
-                        body: {
-                            a: 'b'
+                return test(
+                    false,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 30,
+                        req: {
+                            originalUrl: '/test',
+                            method: 'GET',
+                            body: {
+                                a: 'b'
+                            }
+                        },
+                        res: {
+                            statusCode: 200,
+                            responseTime: '39ms'
                         }
                     },
-                    res: {
-                        statusCode: 200,
-                        responseTime: '39ms'
-                    }
-                }, '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" \u001b[32m200\u001b[39m 39ms\n');
+                    '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" \u001b[32m200\u001b[39m 39ms\n'
+                );
             });
 
             it('data.req && data.res, edge cases', function () {
-                return test(false, {
-                    time: '2016-07-01 00:00:00',
-                    level: 30,
-                    req: {
-                        originalUrl: '/test',
-                        method: 'GET',
-                        body: {
-                            a: 'b'
-                        }
+                return test(
+                    false,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 30,
+                        req: {
+                            originalUrl: '/test',
+                            method: 'GET',
+                            body: {
+                                a: 'b'
+                            }
+                        },
+                        res: {
+                            statusCode: 100,
+                            responseTime: '39ms'
+                        },
+                        foo: '{"a": "b", "c": "d"}'
                     },
-                    res: {
-                        statusCode: 100,
-                        responseTime: '39ms'
-                    },
-                    foo: '{"a": "b", "c": "d"}'
-                }, '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" 100 39ms\n');
+                    '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" 100 39ms\n'
+                );
             });
 
             it('data.req && data.res && data.err', function () {
-                return test(false, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    req: {
-                        originalUrl: '/test',
-                        method: 'GET',
-                        body: {
-                            a: 'b'
+                return test(
+                    false,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        req: {
+                            originalUrl: '/test',
+                            method: 'GET',
+                            body: {
+                                a: 'b'
+                            }
+                        },
+                        res: {
+                            statusCode: 400,
+                            responseTime: '39ms'
+                        },
+                        err: {
+                            message: 'message',
+                            stack: 'stack'
                         }
                     },
-                    res: {
-                        statusCode: 400,
-                        responseTime: '39ms'
-                    },
-                    err: {
-                        message: 'message',
-                        stack: 'stack'
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m "GET /test" \u001b[33m400\u001b[39m 39ms
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m "GET /test" \u001b[33m400\u001b[39m 39ms
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: message\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
-\u001b[31m\u001b[39m\n`);
+\u001b[31m\u001b[39m\n`
+                );
             });
         });
 
         describe('verbose mode', function () {
             it('data.msg', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 30,
-                    msg: 'Ghost starts now.'
-                }, '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m Ghost starts now.\n');
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 30,
+                        msg: 'Ghost starts now.'
+                    },
+                    '[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m Ghost starts now.\n'
+                );
             });
 
             it('data.err', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    err: {
-                        message: 'Hey Jude!',
-                        stack: 'stack'
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        err: {
+                            message: 'Hey Jude!',
+                            stack: 'stack'
+                        }
+                    },
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
-\u001b[31m\u001b[39m\n\n`);
+\u001b[31m\u001b[39m\n\n`
+                );
             });
 
             it('data.req && data.res', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 30,
-                    req: {
-                        ip: '127.0.01',
-                        originalUrl: '/test',
-                        method: 'GET',
-                        body: {
-                            a: 'b'
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 30,
+                        req: {
+                            ip: '127.0.01',
+                            originalUrl: '/test',
+                            method: 'GET',
+                            body: {
+                                a: 'b'
+                            }
+                        },
+                        res: {
+                            statusCode: 300,
+                            responseTime: '39ms'
                         }
                     },
-                    res: {
-                        statusCode: 300,
-                        responseTime: '39ms'
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" \u001b[36m300\u001b[39m 39ms
+                    `[2016-07-01 00:00:00] \u001b[36mINFO\u001b[39m "GET /test" \u001b[36m300\u001b[39m 39ms
 \u001b[90m\u001b[39m
 \u001b[90m\u001b[33mREQ\u001b[39m\u001b[90m\u001b[39m
 \u001b[90m\u001b[32mip: \u001b[39m\u001b[90m         127.0.01\u001b[39m
@@ -232,29 +259,33 @@ describe('Unit: UI > PrettyStream', function () {
 \u001b[90m\u001b[39m
 \u001b[90m\u001b[33mRES\u001b[39m\u001b[90m\u001b[39m
 \u001b[90m\u001b[32mresponseTime: \u001b[39m\u001b[90m39ms\u001b[39m
-\u001b[90m\u001b[39m\n`);
+\u001b[90m\u001b[39m\n`
+                );
             });
 
             it('data.req && data.res && data.err', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    req: {
-                        originalUrl: '/test',
-                        method: 'GET',
-                        body: {
-                            a: 'b'
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        req: {
+                            originalUrl: '/test',
+                            method: 'GET',
+                            body: {
+                                a: 'b'
+                            }
+                        },
+                        res: {
+                            statusCode: 500,
+                            responseTime: '39ms'
+                        },
+                        err: {
+                            message: 'Hey Jude!',
+                            stack: 'stack'
                         }
                     },
-                    res: {
-                        statusCode: 500,
-                        responseTime: '39ms'
-                    },
-                    err: {
-                        message: 'Hey Jude!',
-                        stack: 'stack'
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m "GET /test" \u001b[31m500\u001b[39m 39ms
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m "GET /test" \u001b[31m500\u001b[39m 39ms
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
@@ -269,24 +300,30 @@ describe('Unit: UI > PrettyStream', function () {
 \u001b[90m\u001b[39m
 \u001b[90m\u001b[33mRES\u001b[39m\u001b[90m\u001b[39m
 \u001b[90m\u001b[32mresponseTime: \u001b[39m\u001b[90m39ms\u001b[39m
-\u001b[90m\u001b[39m\n`);
+\u001b[90m\u001b[39m\n`
+                );
             });
 
             it('data.err contains error details', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    err: {
-                        message: 'Hey Jude!',
-                        stack: 'stack',
-                        errorDetails: [{
-                            level: 'error',
-                            rule: 'Templates must contain valid Handlebars.',
-                            failures: [{ref: 'default.hbs', message: 'Missing helper: "image"'}],
-                            code: 'GS005-TPL-ERR'
-                        }]
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        err: {
+                            message: 'Hey Jude!',
+                            stack: 'stack',
+                            errorDetails: [
+                                {
+                                    level: 'error',
+                                    rule: 'Templates must contain valid Handlebars.',
+                                    failures: [{ref: 'default.hbs', message: 'Missing helper: "image"'}],
+                                    code: 'GS005-TPL-ERR'
+                                }
+                            ]
+                        }
+                    },
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
@@ -300,24 +337,28 @@ describe('Unit: UI > PrettyStream', function () {
 \u001b[31m\u001b[31m    code:     GS005-TPL-ERR\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
-\u001b[31m\u001b[39m\n\n`);
+\u001b[31m\u001b[39m\n\n`
+                );
             });
 
             it('data.err can render single error detail object', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    err: {
-                        message: 'Hey Jude!',
-                        stack: 'stack',
-                        errorDetails: {
-                            level: 'error',
-                            rule: 'Templates must contain valid Handlebars.',
-                            failures: [{ref: 'default.hbs', message: 'Missing helper: "image"'}],
-                            code: 'GS005-TPL-ERR'
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        err: {
+                            message: 'Hey Jude!',
+                            stack: 'stack',
+                            errorDetails: {
+                                level: 'error',
+                                rule: 'Templates must contain valid Handlebars.',
+                                failures: [{ref: 'default.hbs', message: 'Missing helper: "image"'}],
+                                code: 'GS005-TPL-ERR'
+                            }
                         }
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
+                    },
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: Hey Jude!\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
@@ -331,23 +372,27 @@ describe('Unit: UI > PrettyStream', function () {
 \u001b[31m\u001b[31m    code:     GS005-TPL-ERR\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[37mstack\u001b[39m\u001b[31m\u001b[39m
-\u001b[31m\u001b[39m\n\n`);
+\u001b[31m\u001b[39m\n\n`
+                );
             });
 
             it('verbose, edge cases', function () {
-                return test(true, {
-                    time: '2016-07-01 00:00:00',
-                    level: 50,
-                    err: {
-                        message: 'whoops',
-                        stack: 'some stack trace',
-                        hideStack: true,
-                        name: 'InternalServerError',
-                        level: 'error',
-                        context: 'Context is key',
-                        help: 'Go to docs'
-                    }
-                }, `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
+                return test(
+                    true,
+                    {
+                        time: '2016-07-01 00:00:00',
+                        level: 50,
+                        err: {
+                            message: 'whoops',
+                            stack: 'some stack trace',
+                            hideStack: true,
+                            name: 'InternalServerError',
+                            level: 'error',
+                            context: 'Context is key',
+                            help: 'Go to docs'
+                        }
+                    },
+                    `[2016-07-01 00:00:00] \u001b[31mERROR\u001b[39m
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[31mNAME: InternalServerError\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[31mMESSAGE: whoops\u001b[39m\u001b[31m\u001b[39m
@@ -356,7 +401,8 @@ describe('Unit: UI > PrettyStream', function () {
 \u001b[31m\u001b[39m
 \u001b[31m\u001b[37mContext is key\u001b[39m\u001b[31m\u001b[39m
 \u001b[31m\u001b[37mGo to docs\u001b[39m\u001b[31m\u001b[39m
-\u001b[31m\u001b[39m\n\n`);
+\u001b[31m\u001b[39m\n\n`
+                );
             });
         });
     });

@@ -11,32 +11,47 @@ describe('Unit: Doctor Checks > loggedInUser', function () {
     });
 
     it('enabled works', function () {
-        expect(loggedInUser.enabled({
-            local: true,
-            system: {platform: {linux: true}},
-            argv: {}
-        }), 'false if local is true').to.be.false;
-        expect(loggedInUser.enabled({
-            local: false,
-            instance: {process: {name: 'local'}},
-            system: {platform: {linux: false}}
-        }), 'false if local is false and process name is local').to.be.false;
-        expect(loggedInUser.enabled({
-            local: false,
-            instance: {process: {name: 'systemd'}},
-            system: {platform: {linux: false}}
-        }), 'false if local is false and process name is not local and platform is not linux').to.be.false;
-        expect(loggedInUser.enabled({
-            local: false,
-            instance: {process: {name: 'systemd'}},
-            system: {platform: {linux: true}}
-        }), 'true if local is false and process name is not local and platform is linux').to.be.true;
-        expect(loggedInUser.enabled({
-            local: false,
-            instance: {process: {name: 'systemd'}},
-            system: {platform: {linux: true}},
-            argv: {process: 'local'}
-        }), 'false if local is false and process name is not local and platform is linux, but argv local is given').to.be.false;
+        expect(
+            loggedInUser.enabled({
+                local: true,
+                system: {platform: {linux: true}},
+                argv: {}
+            }),
+            'false if local is true'
+        ).to.be.false;
+        expect(
+            loggedInUser.enabled({
+                local: false,
+                instance: {process: {name: 'local'}},
+                system: {platform: {linux: false}}
+            }),
+            'false if local is false and process name is local'
+        ).to.be.false;
+        expect(
+            loggedInUser.enabled({
+                local: false,
+                instance: {process: {name: 'systemd'}},
+                system: {platform: {linux: false}}
+            }),
+            'false if local is false and process name is not local and platform is not linux'
+        ).to.be.false;
+        expect(
+            loggedInUser.enabled({
+                local: false,
+                instance: {process: {name: 'systemd'}},
+                system: {platform: {linux: true}}
+            }),
+            'true if local is false and process name is not local and platform is linux'
+        ).to.be.true;
+        expect(
+            loggedInUser.enabled({
+                local: false,
+                instance: {process: {name: 'systemd'}},
+                system: {platform: {linux: true}},
+                argv: {process: 'local'}
+            }),
+            'false if local is false and process name is not local and platform is linux, but argv local is given'
+        ).to.be.false;
     });
 
     it('rejects if user name is ghost', function () {

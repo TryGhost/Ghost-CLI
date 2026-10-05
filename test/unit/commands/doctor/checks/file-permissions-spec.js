@@ -35,7 +35,8 @@ describe('Unit: Doctor Checks > Checking file permissions', function () {
         const filePermissions = setup(execaStub);
 
         expect(filePermissions).to.exist;
-        expect(filePermissions.enabled({instance: {process: {name: 'local'}}}), 'skips if no Ghost user should be used').to.be.false;
+        expect(filePermissions.enabled({instance: {process: {name: 'local'}}}), 'skips if no Ghost user should be used')
+            .to.be.false;
         expect(execaStub.called).to.be.false;
     });
 
@@ -43,31 +44,48 @@ describe('Unit: Doctor Checks > Checking file permissions', function () {
         const execaStub = sinon.stub().resolves({stdout: './content/images\n./system/apps\n./content/themes'});
         const filePermissions = setup(execaStub);
 
-        expect(filePermissions.enabled({instance: {process: {name: 'systemd'}}}), 'skips if no Ghost user should be used').to.be.true;
-        return filePermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your installation folder contains some directories or files with incorrect permissions:/);
-            expect(error.message).to.match(/- \.\/system\/apps/);
-            expect(error.message).to.match(/sudo find \.\/ ! -path "\.\/versions\/\*" ! -path "\.\/\.pnpm-store\/\*" -type f -exec chmod 664 \{\} \\;/);
-            expect(execaStub.called).to.be.true;
-        });
+        expect(
+            filePermissions.enabled({instance: {process: {name: 'systemd'}}}),
+            'skips if no Ghost user should be used'
+        ).to.be.true;
+        return filePermissions
+            .task({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(
+                    /Your installation folder contains some directories or files with incorrect permissions:/
+                );
+                expect(error.message).to.match(/- \.\/system\/apps/);
+                expect(error.message).to.match(
+                    /sudo find \.\/ ! -path "\.\/versions\/\*" ! -path "\.\/\.pnpm-store\/\*" -type f -exec chmod 664 \{\} \\;/
+                );
+                expect(execaStub.called).to.be.true;
+            });
     });
 
     it('rejects with error if files have incorrect permissions', function () {
         const execaStub = sinon.stub().resolves({stdout: './content/images/test.jpg'});
         const filePermissions = setup(execaStub);
 
-        return filePermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your installation folder contains a directory or file with incorrect permissions:/);
-            expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
-            expect(error.message).to.match(/sudo find \.\/ ! -path "\.\/versions\/\*" ! -path "\.\/\.pnpm-store\/\*" -type f -exec chmod 664 \{\} \\;/);
-            expect(execaStub.called).to.be.true;
-        });
+        return filePermissions
+            .task({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(
+                    /Your installation folder contains a directory or file with incorrect permissions:/
+                );
+                expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
+                expect(error.message).to.match(
+                    /sudo find \.\/ ! -path "\.\/versions\/\*" ! -path "\.\/\.pnpm-store\/\*" -type f -exec chmod 664 \{\} \\;/
+                );
+                expect(execaStub.called).to.be.true;
+            });
     });
 
     it('passes if all folders have the correct permissions', function () {
@@ -83,12 +101,15 @@ describe('Unit: Doctor Checks > Checking file permissions', function () {
         const execaStub = sinon.stub().rejects(new Error('oops, cmd could not be executed'));
         const filePermissions = setup(execaStub);
 
-        return filePermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ProcessError);
-            expect(error.message).to.match(/oops, cmd could not be executed/);
-            expect(execaStub.called).to.be.true;
-        });
+        return filePermissions
+            .task({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error.message).to.match(/oops, cmd could not be executed/);
+                expect(execaStub.called).to.be.true;
+            });
     });
 });

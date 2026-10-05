@@ -325,7 +325,7 @@ describe('Unit: System', function () {
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
 
-            return systemInstance.getAllInstances(true).then((result) => {
+            return systemInstance.getAllInstances(true).then(result => {
                 expect(result).to.deep.equal([instanceA]);
                 expect(fsStub.calledThrice).to.be.true;
                 expect(getInstanceStub.calledTwice).to.be.true;
@@ -363,7 +363,7 @@ describe('Unit: System', function () {
             getInstanceStub.withArgs('testa').returns(instanceA);
             getInstanceStub.withArgs('testb').returns(instanceB);
 
-            return systemInstance.getAllInstances(false).then((result) => {
+            return systemInstance.getAllInstances(false).then(result => {
                 expect(result).to.deep.equal([instanceA, instanceB]);
                 expect(fsStub.calledTwice).to.be.true;
                 expect(getInstanceStub.calledTwice).to.be.true;
@@ -389,7 +389,7 @@ describe('Unit: System', function () {
 
             const systemInstance = new System({}, extensions);
 
-            return systemInstance.hook('setup', {arg1: true}, {arg2: true}).then((results) => {
+            return systemInstance.hook('setup', {arg1: true}, {arg2: true}).then(results => {
                 expect(results).to.deep.equal(['a', 'b']);
                 expect(getInstanceStub.calledThrice).to.be.true;
                 expect(hook1.calledOnce).to.be.true;
@@ -429,10 +429,9 @@ describe('Unit: System', function () {
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
-            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
-                .returns({
-                    systemd: '../extensions/systemd/systemd.js'
-                });
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers').returns({
+                systemd: '../extensions/systemd/systemd.js'
+            });
 
             const processManager = systemInstance.getProcessManager('pm2');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
@@ -448,10 +447,9 @@ describe('Unit: System', function () {
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
-            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
-                .returns({
-                    test: '../test/fixtures/classes/test-invalid-process'
-                });
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers').returns({
+                test: '../test/fixtures/classes/test-invalid-process'
+            });
 
             const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
@@ -467,10 +465,9 @@ describe('Unit: System', function () {
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
-            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
-                .returns({
-                    test: '../test/fixtures/classes/test-process-missing-methods'
-                });
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers').returns({
+                test: '../test/fixtures/classes/test-process-missing-methods'
+            });
 
             const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
@@ -488,10 +485,9 @@ describe('Unit: System', function () {
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
-            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
-                .returns({
-                    test: '../test/fixtures/classes/test-process-wont-run'
-                });
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers').returns({
+                test: '../test/fixtures/classes/test-process-wont-run'
+            });
 
             const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.deep.equal({localProcessManager: true});
@@ -512,10 +508,9 @@ describe('Unit: System', function () {
             });
             const logStub = sinon.stub();
             const systemInstance = new System({log: logStub}, []);
-            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers')
-                .returns({
-                    test: '../test/fixtures/classes/test-valid-process'
-                });
+            const availableStub = sinon.stub(systemInstance, '_getAvailableProcessManagers').returns({
+                test: '../test/fixtures/classes/test-valid-process'
+            });
 
             const processManager = systemInstance.getProcessManager('test');
             expect(processManager.Class).to.equal(TestProcess);
@@ -538,10 +533,7 @@ describe('Unit: System', function () {
         existsSyncStub.withArgs('./bar').returns(false);
         existsSyncStub.withArgs('./systemd').returns(true);
 
-        const extensions = [
-            {processManagers: {foo: './foo', bar: './bar'}},
-            {processManagers: {systemd: './systemd'}}
-        ];
+        const extensions = [{processManagers: {foo: './foo', bar: './bar'}}, {processManagers: {systemd: './systemd'}}];
         const systemInstance = new System({}, extensions);
 
         expect(systemInstance._getAvailableProcessManagers()).to.deep.equal({

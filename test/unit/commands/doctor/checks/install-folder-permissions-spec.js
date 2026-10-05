@@ -16,14 +16,16 @@ describe('Unit: Doctor Checks > installFolderPermissions', function () {
         const accessStub = sinon.stub(fs, 'access').rejects();
         const installFolderPermissions = require(modulePath).task;
 
-        return installFolderPermissions({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/is not writable by your user/);
-            expect(accessStub.calledOnce).to.be.true;
-            expect(accessStub.calledWith(process.cwd())).to.be.true;
-        });
+        return installFolderPermissions({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(/is not writable by your user/);
+                expect(accessStub.calledOnce).to.be.true;
+                expect(accessStub.calledWith(process.cwd())).to.be.true;
+            });
     });
 
     it('skips checking parent folder permissions if ctx.local is set', function () {

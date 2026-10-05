@@ -38,7 +38,8 @@ const defaultSystem = {
 };
 
 describe('Unit: Commands > Log', function () {
-    let ext; let stubs;
+    let ext;
+    let stubs;
 
     beforeEach(function () {
         stubs = {
@@ -49,7 +50,7 @@ describe('Unit: Commands > Log', function () {
     });
 
     describe('run', function () {
-        it('Checks installation if name isn\'t provided', function () {
+        it("Checks installation if name isn't provided", function () {
             ext = proxyLog({'../utils/find-valid-install': stubs.cvi});
             try {
                 ext.run({});
@@ -60,19 +61,22 @@ describe('Unit: Commands > Log', function () {
             }
         });
 
-        it('Fails if instance doesn\'t exist', function () {
+        it("Fails if instance doesn't exist", function () {
             const ext = proxyLog();
             stubs.gi = sinon.stub().returns(false);
             ext.system = {getInstance: stubs.gi};
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error).to.be.instanceOf(Errors.SystemError);
-                expect(stubs.gi.calledOnce).to.be.true;
-                expect(stubs.gi.args[0][0]).to.equal('ghost_org');
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error).to.be.instanceOf(Errors.SystemError);
+                    expect(stubs.gi.calledOnce).to.be.true;
+                    expect(stubs.gi.args[0][0]).to.equal('ghost_org');
+                });
         });
 
         it('checks if instance is running', function () {
@@ -84,13 +88,16 @@ describe('Unit: Commands > Log', function () {
             stubs.gi = sinon.stub().returns(instance);
             ext.system = {getInstance: stubs.gi};
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('running');
-                expect(stubs.running.calledOnce).to.be.true;
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error.message).to.equal('running');
+                    expect(stubs.running.calledOnce).to.be.true;
+                });
         });
 
         it('Loads the proper environment (not running)', function () {
@@ -105,14 +112,17 @@ describe('Unit: Commands > Log', function () {
             stubs.gi = sinon.stub().returns(instance);
             ext.system = {getInstance: stubs.gi};
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('ce');
-                expect(stubs.running.calledOnce).to.be.true;
-                expect(stubs.ce.calledOnce).to.be.true;
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error.message).to.equal('ce');
+                    expect(stubs.running.calledOnce).to.be.true;
+                    expect(stubs.ce.calledOnce).to.be.true;
+                });
         });
 
         it('Rejects when logging to file is disabled', function () {
@@ -123,12 +133,15 @@ describe('Unit: Commands > Log', function () {
             };
             ext.system = {getInstance: () => instance};
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error).to.be.instanceOf(Errors.ConfigError);
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error).to.be.instanceOf(Errors.ConfigError);
+                });
         });
 
         it('Rejects without crashing when logging to file is disabled', function () {
@@ -139,12 +152,15 @@ describe('Unit: Commands > Log', function () {
             };
             ext.system = {getInstance: () => instance};
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error).to.be.instanceOf(Errors.ConfigError);
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error).to.be.instanceOf(Errors.ConfigError);
+                });
         });
 
         it('Reads error log when requested', function () {
@@ -152,20 +168,22 @@ describe('Unit: Commands > Log', function () {
             const ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
 
-            ext.run({name: 'ghost_org', error: true}).then(() => {
-                expect(false, 'existsSync should have thrown').to.be.true;
-            }).catch((error) => {
-                const fileName = 'https___dev_ghost_org_dev.error.log';
-                const expectedFilePath = `/var/www/ghost/content/logs/${fileName}`;
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('SHORT_CIRCUIT');
+            ext.run({name: 'ghost_org', error: true})
+                .then(() => {
+                    expect(false, 'existsSync should have thrown').to.be.true;
+                })
+                .catch(error => {
+                    const fileName = 'https___dev_ghost_org_dev.error.log';
+                    const expectedFilePath = `/var/www/ghost/content/logs/${fileName}`;
+                    expect(error).to.be.ok;
+                    expect(error.message).to.equal('SHORT_CIRCUIT');
 
-                expect(stubs.es.calledOnce).to.be.true;
-                expect(stubs.es.args[0][0]).to.equal(expectedFilePath);
-            });
+                    expect(stubs.es.calledOnce).to.be.true;
+                    expect(stubs.es.args[0][0]).to.equal(expectedFilePath);
+                });
         });
 
-        it('Resolves when log file doesn\'t exist', function () {
+        it("Resolves when log file doesn't exist", function () {
             stubs.es.returns(false);
             const ext = proxyLog({fs: {existsSync: stubs.es}});
             ext.system = defaultSystem;
@@ -201,12 +219,15 @@ describe('Unit: Commands > Log', function () {
             });
             ext.system = defaultSystem;
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('test error');
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error.message).to.equal('test error');
+                });
         });
 
         it('Ignores PrettyStream syntax errors', function () {
@@ -222,12 +243,15 @@ describe('Unit: Commands > Log', function () {
             });
             ext.system = defaultSystem;
 
-            return ext.run({name: 'ghost_org'}).then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(error.message).to.equal('break the code');
-            });
+            return ext
+                .run({name: 'ghost_org'})
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(error.message).to.equal('break the code');
+                });
         });
 
         it('Writes by line', function () {

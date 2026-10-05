@@ -64,8 +64,12 @@ describe('Unit: Tasks: Configure > options', function () {
     it('dbpath', function () {
         expect(options.dbpath).to.exist;
         expect(options.dbpath.defaultValue({get: () => 'mysql'})).to.be.null;
-        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'development')).to.equal(path.resolve('./content/data/ghost-dev.db'));
-        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'production')).to.equal(path.resolve('./content/data/ghost.db'));
+        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'development')).to.equal(
+            path.resolve('./content/data/ghost-dev.db')
+        );
+        expect(options.dbpath.defaultValue({get: () => 'sqlite3'}, 'production')).to.equal(
+            path.resolve('./content/data/ghost.db')
+        );
     });
 
     it('mail', function () {
@@ -81,14 +85,19 @@ describe('Unit: Tasks: Configure > options', function () {
         });
 
         function setupNodemailer() {
-            return setupTestFolder({files: [{
-                path: 'current/node_modules/nodemailer/package.json',
-                content: {name: 'nodemailer', exports: {'./lib/well-known': './well-known.js'}},
-                json: true
-            }, {
-                path: 'current/node_modules/nodemailer/well-known.js',
-                content: 'module.exports = key => [\'mailgun\', \'mailtrap\'].includes(key.toLowerCase()) && {};'
-            }]});
+            return setupTestFolder({
+                files: [
+                    {
+                        path: 'current/node_modules/nodemailer/package.json',
+                        content: {name: 'nodemailer', exports: {'./lib/well-known': './well-known.js'}},
+                        json: true
+                    },
+                    {
+                        path: 'current/node_modules/nodemailer/well-known.js',
+                        content: "module.exports = key => ['mailgun', 'mailtrap'].includes(key.toLowerCase()) && {};"
+                    }
+                ]
+            });
         }
 
         it('validates against the nodemailer bundled with Ghost', function () {
@@ -96,10 +105,12 @@ describe('Unit: Tasks: Configure > options', function () {
 
             expect(options.mailservice.validate('Mailgun', env.dir)).to.be.true;
             expect(options.mailservice.validate('Mailtrap', env.dir)).to.be.true;
-            expect(options.mailservice.validate('CaspersFriendlyEmailService', env.dir)).to.match(/Invalid mail service/);
+            expect(options.mailservice.validate('CaspersFriendlyEmailService', env.dir)).to.match(
+                /Invalid mail service/
+            );
         });
 
-        it('passes if nodemailer can\'t be found', function () {
+        it("passes if nodemailer can't be found", function () {
             const env = setupTestFolder();
 
             expect(options.mailservice.validate('CaspersFriendlyEmailService', env.dir)).to.be.true;

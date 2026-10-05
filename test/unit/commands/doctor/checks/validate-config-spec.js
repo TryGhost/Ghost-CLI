@@ -41,14 +41,16 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         return validateConfig({
             system: {environment: 'testing'},
             instance: {isRunning: runningStub, dir: env.dir}
-        }).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ConfigError);
-            expect(error.message).to.match(/Config file is not valid JSON/);
-            expect(error.options.environment).to.equal('testing');
-            expect(runningStub.calledOnce).to.be.true;
-        });
+        })
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.ConfigError);
+                expect(error.message).to.match(/Config file is not valid JSON/);
+                expect(error.options.environment).to.equal('testing');
+                expect(runningStub.calledOnce).to.be.true;
+            });
     });
 
     it('rejects if environment is passed and the config file is not valid json', function () {
@@ -58,14 +60,16 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         return validateConfig({
             system: {environment: 'testing'},
             instance: {isRunning: runningStub, dir: env.dir}
-        }).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ConfigError);
-            expect(error.message).to.match(/Config file is not valid JSON/);
-            expect(error.options.environment).to.equal('testing');
-            expect(runningStub.calledOnce).to.be.true;
-        });
+        })
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.ConfigError);
+                expect(error.message).to.match(/Config file is not valid JSON/);
+                expect(error.options.environment).to.equal('testing');
+                expect(runningStub.calledOnce).to.be.true;
+            });
     });
 
     it('rejects with error if config values does not pass', function () {
@@ -78,16 +82,18 @@ describe('Unit: Doctor Checks > validateConfig', function () {
         return validateConfig({
             system: {environment: 'testing'},
             instance: {isRunning: runningStub, dir: env.dir}
-        }).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ConfigError);
-            expect(error.message).to.equal('Port is in use');
-            expect(error.options.config).to.deep.equal({'server.port': 2368});
-            expect(urlStub.called).to.be.false;
-            expect(portStub.calledOnce).to.be.true;
-            expect(portStub.calledWithExactly(2368, env.dir)).to.be.true;
-        });
+        })
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.ConfigError);
+                expect(error.message).to.equal('Port is in use');
+                expect(error.options.config).to.deep.equal({'server.port': 2368});
+                expect(urlStub.called).to.be.false;
+                expect(portStub.calledOnce).to.be.true;
+                expect(portStub.calledWithExactly(2368, env.dir)).to.be.true;
+            });
     });
 
     it('passes if all validate functions return true', function () {

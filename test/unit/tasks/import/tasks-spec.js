@@ -15,7 +15,9 @@ describe('Unit: Tasks > Import > Tasks', function () {
 
     describe('importTask', function () {
         it('works with already set up blog', async function () {
-            const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
+            const parseExport = sinon
+                .stub()
+                .returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
             const isSetup = sinon.stub().resolves(true);
             const setup = sinon.stub().resolves();
             const runImport = sinon.stub().resolves();
@@ -26,13 +28,15 @@ describe('Unit: Tasks > Import > Tasks', function () {
             });
 
             const prompt = sinon.stub().resolves({username: 'setup@example.com', password: '1234567890'});
-            const listr = sinon.stub().callsFake(tasks => each(tasks, async (t) => {
-                if (t.enabled && !t.enabled()) {
-                    return;
-                }
+            const listr = sinon.stub().callsFake(tasks =>
+                each(tasks, async t => {
+                    if (t.enabled && !t.enabled()) {
+                        return;
+                    }
 
-                await t.task();
-            }));
+                    await t.task();
+                })
+            );
             const config = createConfigStub();
             config.get.withArgs('url').returns('http://localhost:2368');
 
@@ -55,14 +59,23 @@ describe('Unit: Tasks > Import > Tasks', function () {
 
             expect(listr.calledOnce).to.be.true;
             expect(setup.called).to.be.false;
-            expect(runImport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                username: 'setup@example.com',
-                password: '1234567890'
-            }, 'test-export.json')).to.be.true;
+            expect(
+                runImport.calledOnceWithExactly(
+                    '1.0.0',
+                    'http://localhost:2368',
+                    {
+                        username: 'setup@example.com',
+                        password: '1234567890'
+                    },
+                    'test-export.json'
+                )
+            ).to.be.true;
         });
 
         it('works with not setup blog', async function () {
-            const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
+            const parseExport = sinon
+                .stub()
+                .returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
             const isSetup = sinon.stub().resolves(false);
             const setup = sinon.stub().resolves();
             const runImport = sinon.stub().resolves();
@@ -73,13 +86,15 @@ describe('Unit: Tasks > Import > Tasks', function () {
             });
 
             const prompt = sinon.stub().resolves({password: '1234567890'});
-            const listr = sinon.stub().callsFake(tasks => each(tasks, async (t) => {
-                if (t.enabled && !t.enabled()) {
-                    return;
-                }
+            const listr = sinon.stub().callsFake(tasks =>
+                each(tasks, async t => {
+                    if (t.enabled && !t.enabled()) {
+                        return;
+                    }
 
-                await t.task();
-            }));
+                    await t.task();
+                })
+            );
             const config = createConfigStub();
             config.get.withArgs('url').returns('http://localhost:2368');
 
@@ -90,20 +105,31 @@ describe('Unit: Tasks > Import > Tasks', function () {
             expect(prompt.calledOnce).to.be.true;
             expect(prompt.args[0][0]).to.have.length(1);
             expect(listr.calledOnce).to.be.true;
-            expect(setup.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                name: 'test',
-                email: 'test@example.com',
-                blogTitle: 'test',
-                password: '1234567890'
-            })).to.be.true;
-            expect(runImport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: '1234567890'
-            }, 'test-export.json')).to.be.true;
+            expect(
+                setup.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
+                    name: 'test',
+                    email: 'test@example.com',
+                    blogTitle: 'test',
+                    password: '1234567890'
+                })
+            ).to.be.true;
+            expect(
+                runImport.calledOnceWithExactly(
+                    '1.0.0',
+                    'http://localhost:2368',
+                    {
+                        username: 'test@example.com',
+                        password: '1234567890'
+                    },
+                    'test-export.json'
+                )
+            ).to.be.true;
         });
 
         it(`prompts for a staff auth token on a set up blog >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
-            const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
+            const parseExport = sinon
+                .stub()
+                .returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
             const isSetup = sinon.stub().resolves(true);
             const setup = sinon.stub().resolves();
             const runImport = sinon.stub().resolves();
@@ -123,13 +149,20 @@ describe('Unit: Tasks > Import > Tasks', function () {
             expect(prompt.calledOnce).to.be.true;
             expect(prompt.args[0][0].map(p => p.name)).to.deep.equal(['token']);
             expect(setup.called).to.be.false;
-            expect(runImport.calledOnceWithExactly(
-                TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368', {token: 'abcd'}, 'test-export.json'
-            )).to.be.true;
+            expect(
+                runImport.calledOnceWithExactly(
+                    TOKEN_AUTH_MIN_VERSION,
+                    'http://localhost:2368',
+                    {token: 'abcd'},
+                    'test-export.json'
+                )
+            ).to.be.true;
         });
 
         it(`uses defined GHOST_CLI_STAFF_AUTH_TOKEN env var >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
-            const parseExport = sinon.stub().returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
+            const parseExport = sinon
+                .stub()
+                .returns({data: {name: 'test', email: 'test@example.com', blogTitle: 'test'}});
             const isSetup = sinon.stub().resolves(true);
             const setup = sinon.stub().resolves();
             const runImport = sinon.stub().resolves();
@@ -151,9 +184,14 @@ describe('Unit: Tasks > Import > Tasks', function () {
 
             expect(prompt.called).to.be.false;
             expect(setup.called).to.be.false;
-            expect(runImport.calledOnceWithExactly(
-                TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368', {token}, 'test-export.json'
-            )).to.be.true;
+            expect(
+                runImport.calledOnceWithExactly(
+                    TOKEN_AUTH_MIN_VERSION,
+                    'http://localhost:2368',
+                    {token},
+                    'test-export.json'
+                )
+            ).to.be.true;
         });
     });
 
@@ -196,9 +234,17 @@ describe('Unit: Tasks > Import > Tasks', function () {
             expect(isSetup.calledOnceWithExactly('1.0.0', 'http://localhost:2368')).to.be.true;
             expect(prompt.calledOnce).to.be.true;
             expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['username', 'password']);
-            expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                username: 'username', password: 'password'
-            }, 'test-export.json'));
+            expect(
+                downloadContentExport.calledOnceWithExactly(
+                    '1.0.0',
+                    'http://localhost:2368',
+                    {
+                        username: 'username',
+                        password: 'password'
+                    },
+                    'test-export.json'
+                )
+            );
         });
 
         it(`errors from >=v5.118.0 to <${TOKEN_AUTH_MIN_VERSION} when device verification is enabled`, async function () {
@@ -247,9 +293,17 @@ describe('Unit: Tasks > Import > Tasks', function () {
                     expect(isSetup.calledOnceWithExactly(version, 'http://localhost:2368')).to.be.true;
                     expect(prompt.calledOnce).to.be.true;
                     expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['username', 'password']);
-                    expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                        username: 'username', password: 'password'
-                    }, 'test-export.json'));
+                    expect(
+                        downloadContentExport.calledOnceWithExactly(
+                            '1.0.0',
+                            'http://localhost:2368',
+                            {
+                                username: 'username',
+                                password: 'password'
+                            },
+                            'test-export.json'
+                        )
+                    );
                 }
             }
         });
@@ -271,9 +325,16 @@ describe('Unit: Tasks > Import > Tasks', function () {
             expect(prompt.calledOnce).to.be.true;
             expect(prompt.args[0][0].map(prompt => prompt.name)).to.deep.equal(['token']);
             expect(prompt.args[0][0][0].type).to.equal('input');
-            expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                token: 'abcd'
-            }, 'test-export.json'));
+            expect(
+                downloadContentExport.calledOnceWithExactly(
+                    '1.0.0',
+                    'http://localhost:2368',
+                    {
+                        token: 'abcd'
+                    },
+                    'test-export.json'
+                )
+            );
         });
 
         it(`uses defined GHOST_CLI_STAFF_AUTH_TOKEN env var >=${TOKEN_AUTH_MIN_VERSION}`, async function () {
@@ -294,9 +355,16 @@ describe('Unit: Tasks > Import > Tasks', function () {
             await exportTask({prompt}, {config, version: TOKEN_AUTH_MIN_VERSION}, 'test-export.json');
             expect(isSetup.calledOnceWithExactly(TOKEN_AUTH_MIN_VERSION, 'http://localhost:2368')).to.be.true;
             expect(prompt.called).to.be.false;
-            expect(downloadContentExport.calledOnceWithExactly('1.0.0', 'http://localhost:2368', {
-                token
-            }, 'test-export.json'));
+            expect(
+                downloadContentExport.calledOnceWithExactly(
+                    '1.0.0',
+                    'http://localhost:2368',
+                    {
+                        token
+                    },
+                    'test-export.json'
+                )
+            );
         });
 
         it(`throws error on invalid GHOST_CLI_STAFF_AUTH_TOKEN env var >=${TOKEN_AUTH_MIN_VERSION}`, async function () {

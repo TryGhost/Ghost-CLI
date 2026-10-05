@@ -34,7 +34,7 @@ describe('Unit: Doctor Checks > Memory', function () {
         const memStub = sinon.stub(sysinfo, 'mem').rejects(new Error('systeminformation'));
         const memCheck = require(modulePath);
 
-        return memCheck.task().catch((error) => {
+        return memCheck.task().catch(error => {
             expect(error).to.be.an('error');
             expect(error.message).to.equal('systeminformation');
             expect(memStub.calledOnce).to.be.true;
@@ -45,7 +45,7 @@ describe('Unit: Doctor Checks > Memory', function () {
         const memStub = sinon.stub(sysinfo, 'mem').resolves({available: 10, swapfree: 0});
         const memCheck = require(modulePath);
 
-        return memCheck.task().catch((error) => {
+        return memCheck.task().catch(error => {
             expect(error).to.be.an.instanceof(errors.SystemError);
             expect(error.message).to.match(/MB of memory available for smooth operation/);
             expect(memStub.calledOnce).to.be.true;

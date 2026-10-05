@@ -48,7 +48,7 @@ describe('Unit: Utils > local-process', function () {
     });
 
     describe('isRunning', function () {
-        it('returns false if pidfile doesn\'t exist', async function () {
+        it("returns false if pidfile doesn't exist", async function () {
             const existsStub = sinon.stub(fs, 'existsSync').returns(false);
             const LocalProcess = require(modulePath);
             const instance = new LocalProcess({}, {}, {});
@@ -277,9 +277,13 @@ describe('Unit: Utils > local-process', function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
             readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
             const removeStub = sinon.stub(fs, 'rmSync');
-            const instance = new LocalProcess({}, {
-                platform: {macos: true, windows: false}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {macos: true, windows: false}
+                },
+                {}
+            );
             const ghostProcessStub = sinon.stub(instance, '_isGhostProcess').resolves(false);
 
             await instance.stop('/var/www/ghost');
@@ -302,9 +306,13 @@ describe('Unit: Utils > local-process', function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
             readFileStub.withArgs('/var/www/ghost/.ghostpid').returns(child.pid.toString());
             const removeStub = sinon.stub(fs, 'rmSync');
-            const instance = new LocalProcess({}, {
-                platform: {windows: true}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {windows: true}
+                },
+                {}
+            );
             sinon.stub(instance, '_isGhostProcess').resolves(true);
 
             expect(isChildRunning).to.be.true;
@@ -316,7 +324,7 @@ describe('Unit: Utils > local-process', function () {
             expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
         });
 
-        it('resolves if process didn\'t exist', function () {
+        it("resolves if process didn't exist", function () {
             const fkillStub = sinon.stub().rejects(new Error('No such process: 42'));
 
             const LocalProcess = proxyquire(modulePath, {
@@ -325,15 +333,20 @@ describe('Unit: Utils > local-process', function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
             readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
             const removeStub = sinon.stub(fs, 'rmSync');
-            const instance = new LocalProcess({}, {
-                platform: {macos: true, windows: false}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {macos: true, windows: false}
+                },
+                {}
+            );
             sinon.stub(instance, '_isGhostProcess').resolves(true);
 
             return instance.stop('/var/www/ghost').then(() => {
                 expect(readFileStub.calledWithExactly('/var/www/ghost/.ghostpid')).to.be.true;
                 expect(fkillStub.calledWithExactly(42, sinon.match({force: false}))).to.be.true;
-                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be.true;
+                expect(removeStub.calledWithExactly('/var/www/ghost/.ghostpid', {recursive: true, force: true})).to.be
+                    .true;
             });
         });
 
@@ -346,9 +359,13 @@ describe('Unit: Utils > local-process', function () {
             const readFileStub = sinon.stub(fs, 'readFileSync').callThrough();
             readFileStub.withArgs('/var/www/ghost/.ghostpid').returns('42');
             const removeStub = sinon.stub(fs, 'rmSync');
-            const instance = new LocalProcess({}, {
-                platform: {macos: true, windows: false}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {macos: true, windows: false}
+                },
+                {}
+            );
             sinon.stub(instance, '_isGhostProcess').resolves(true);
 
             const error = await instance.stop('/var/www/ghost').catch(e => e);
@@ -371,7 +388,9 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('returns false if no process matches the pid', async function () {
-            const processesStub = sinon.stub().resolves({list: [{pid: 99, command: 'node', params: '/usr/lib/ghost-cli/bin/ghost run'}]});
+            const processesStub = sinon
+                .stub()
+                .resolves({list: [{pid: 99, command: 'node', params: '/usr/lib/ghost-cli/bin/ghost run'}]});
             const LocalProcess = proxyquire(modulePath, {
                 systeminformation: {processes: processesStub}
             });
@@ -392,7 +411,9 @@ describe('Unit: Utils > local-process', function () {
         });
 
         it('returns true if the process command line contains "ghost run"', async function () {
-            const processesStub = sinon.stub().resolves({list: [{pid: 42, command: 'node', params: '/usr/lib/ghost-cli/bin/ghost run'}]});
+            const processesStub = sinon
+                .stub()
+                .resolves({list: [{pid: 42, command: 'node', params: '/usr/lib/ghost-cli/bin/ghost run'}]});
             const LocalProcess = proxyquire(modulePath, {
                 systeminformation: {processes: processesStub}
             });
@@ -411,9 +432,13 @@ describe('Unit: Utils > local-process', function () {
 
         it('skips if windows', function () {
             const statStub = sinon.stub(fs, 'lstatSync');
-            const instance = new LocalProcess({}, {
-                platform: {windows: true}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {windows: true}
+                },
+                {}
+            );
 
             const result = instance._checkContentFolder('/var/www/ghost');
 
@@ -425,9 +450,13 @@ describe('Unit: Utils > local-process', function () {
             const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 1, mode: 0o750});
             const uidStub = sinon.stub(process, 'getuid').returns(1);
 
-            const instance = new LocalProcess({}, {
-                platform: {linux: true}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {linux: true}
+                },
+                {}
+            );
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.true;
@@ -436,13 +465,17 @@ describe('Unit: Utils > local-process', function () {
             expect(uidStub.calledOnce).to.be.true;
         });
 
-        it('returns true if getuid and lstatSync don\'t match, but current user has read&write permissions', function () {
+        it("returns true if getuid and lstatSync don't match, but current user has read&write permissions", function () {
             const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2, mode: 0o757});
             const uidStub = sinon.stub(process, 'getuid').returns(1);
 
-            const instance = new LocalProcess({}, {
-                platform: {linux: true}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {linux: true}
+                },
+                {}
+            );
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.true;
@@ -451,13 +484,17 @@ describe('Unit: Utils > local-process', function () {
             expect(uidStub.calledOnce).to.be.true;
         });
 
-        it('returns false if getuid and lstatSync don\'t match, and current user doesn\'t have read&write permissions', function () {
+        it("returns false if getuid and lstatSync don't match, and current user doesn't have read&write permissions", function () {
             const statStub = sinon.stub(fs, 'lstatSync').returns({uid: 2, mode: 0o755});
             const uidStub = sinon.stub(process, 'getuid').returns(1);
 
-            const instance = new LocalProcess({}, {
-                platform: {linux: true}
-            }, {});
+            const instance = new LocalProcess(
+                {},
+                {
+                    platform: {linux: true}
+                },
+                {}
+            );
             const result = instance._checkContentFolder('/var/www/ghost');
 
             expect(result).to.be.false;

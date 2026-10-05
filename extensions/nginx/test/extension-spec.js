@@ -102,7 +102,7 @@ describe('Unit: Extensions > Nginx', function () {
     it('migrations hook (x-forwarded-for)', function () {
         const inst = new Nginx({}, {}, {}, '/some/dir');
         const migrateStub = sinon.stub(migrations, 'migrateXForwardedFor');
-        const [,, task] = inst.migrations();
+        const [, , task] = inst.migrations();
 
         expect(task.before).to.equal('1.31.0');
         expect(task.title).to.equal('Updating X-Forwarded-For header in nginx config');
@@ -242,7 +242,9 @@ describe('Unit: Extensions > Nginx', function () {
             const argv = {prompt: true, sslemail: 'test@ghost.org'};
 
             exists.resetHistory();
-            expect(task.skip(Object.assign({argv, single: true}, context))).to.contain('Nginx config file does not exist');
+            expect(task.skip(Object.assign({argv, single: true}, context))).to.contain(
+                'Nginx config file does not exist'
+            );
             expect(exists.calledTwice).to.be.true;
 
             exists.resetHistory();
@@ -303,7 +305,7 @@ describe('Unit: Extensions > Nginx', function () {
             expect(loadStub.args[0][0]).to.deep.equal(expectedConfig);
         });
 
-        it('passes the error if it\'s already a CliError', async function () {
+        it("passes the error if it's already a CliError", async function () {
             const name = 'ghost.dev.conf';
             const expectedLn = ['ln', '-sf', `/etc/nginx/sites-available/${name}`, `/etc/nginx/sites-enabled/${name}`];
             const loadStub = sinon.stub().returns('nginx config file');
@@ -354,7 +356,7 @@ describe('Unit: Extensions > Nginx', function () {
 
         beforeEach(function () {
             stubs = {
-                es: sinon.stub().callsFake(value => !(fsExp).test(value))
+                es: sinon.stub().callsFake(value => !fsExp.test(value))
             };
             ctx = {
                 instance: {
@@ -377,9 +379,11 @@ describe('Unit: Extensions > Nginx', function () {
 
             beforeEach(function () {
                 DNS = new Error('DNS_ERROR');
-                proxy.dns = {lookup: () => {
-                    throw DNS;
-                }};
+                proxy.dns = {
+                    lookup: () => {
+                        throw DNS;
+                    }
+                };
             });
 
             it('Breaks if DNS fails (Not found & unknown)', function () {
@@ -390,25 +394,30 @@ describe('Unit: Extensions > Nginx', function () {
                 const log = ext.ui.log;
                 let firstSet = false;
 
-                return tasks[0].task().then(() => {
-                    expect(true, 'task should have errored').to.be.false;
-                }).catch((error) => {
-                    expect(error).to.be.an.instanceof(errors.CliError);
-                    expect(error.message).to.contain('your domain isn\'t set up correctly');
+                return tasks[0]
+                    .task()
+                    .then(() => {
+                        expect(true, 'task should have errored').to.be.false;
+                    })
+                    .catch(error => {
+                        expect(error).to.be.an.instanceof(errors.CliError);
+                        expect(error.message).to.contain("your domain isn't set up correctly");
 
-                    DNS.code = 'PEACHESARETASTY';
-                    firstSet = true;
-                    return tasks[0].task(ctx);
-                }).then(() => {
-                    expect(false, 'Promise should have rejected').to.be.true;
-                }).catch((err) => {
-                    expect(firstSet, `ENOTFOUND Failed: ${err}`).to.be.true;
-                    expect(err).to.exist;
-                    expect(err.options.message).to.match(/Error trying to lookup DNS for 'ghost.dev'/);
-                    expect(err.options.err.code).to.equal(DNS.code);
-                    expect(log.called).to.be.false;
-                    expect(ctx.dnsfail).to.not.exist;
-                });
+                        DNS.code = 'PEACHESARETASTY';
+                        firstSet = true;
+                        return tasks[0].task(ctx);
+                    })
+                    .then(() => {
+                        expect(false, 'Promise should have rejected').to.be.true;
+                    })
+                    .catch(err => {
+                        expect(firstSet, `ENOTFOUND Failed: ${err}`).to.be.true;
+                        expect(err).to.exist;
+                        expect(err.options.message).to.match(/Error trying to lookup DNS for 'ghost.dev'/);
+                        expect(err.options.err.code).to.equal(DNS.code);
+                        expect(log.called).to.be.false;
+                        expect(ctx.dnsfail).to.not.exist;
+                    });
             });
         });
 
@@ -418,33 +427,38 @@ describe('Unit: Extensions > Nginx', function () {
                 let tasks = getTasks(ext, {sslemail: 'ghost.is@pretty.great'});
                 const args = {};
 
-                return tasks[1].task().then(() => {
-                    expect(ext.ui.prompt.called, '4').to.be.false;
+                return tasks[1]
+                    .task()
+                    .then(() => {
+                        expect(ext.ui.prompt.called, '4').to.be.false;
 
-                    ext.ui.prompt.callsFake((opts) => {
-                        const email = 'ghost.is@pretty.great';
-                        const fail = opts.validate('');
-                        const pass = opts.validate(email);
-                        expect(fail).to.match(/supply an email/);
-                        expect(pass).to.be.true;
-                        return Promise.resolve({email});
+                        ext.ui.prompt.callsFake(opts => {
+                            const email = 'ghost.is@pretty.great';
+                            const fail = opts.validate('');
+                            const pass = opts.validate(email);
+                            expect(fail).to.match(/supply an email/);
+                            expect(pass).to.be.true;
+                            return Promise.resolve({email});
+                        });
+                        ext.ui.listr.reset();
+                        tasks = getTasks(ext, args);
+                        return tasks[1].task();
+                    })
+                    .then(() => {
+                        expect(ext.ui.prompt.called).to.be.true;
+                        expect(args.sslemail).to.equal('ghost.is@pretty.great');
                     });
-                    ext.ui.listr.reset();
-                    tasks = getTasks(ext, args);
-                    return tasks[1].task();
-                }).then(() => {
-                    expect(ext.ui.prompt.called).to.be.true;
-                    expect(args.sslemail).to.equal('ghost.is@pretty.great');
-                });
             });
         });
 
         describe('acme', function () {
             it('runs acme install task', function () {
                 const installStub = sinon.stub().resolves();
-                const ext = proxyNginx(Object.assign(proxy, {
-                    './acme': {install: installStub}
-                }));
+                const ext = proxyNginx(
+                    Object.assign(proxy, {
+                        './acme': {install: installStub}
+                    })
+                );
                 const tasks = getTasks(ext, {});
 
                 return tasks[2].task(null).then(() => {
@@ -467,20 +481,24 @@ describe('Unit: Extensions > Nginx', function () {
 
             it('runs acme generate task', function () {
                 const generateStub = sinon.stub().resolves();
-                const ext = proxyNginx(Object.assign(proxy, {
-                    './acme': {generate: generateStub}
-                }));
+                const ext = proxyNginx(
+                    Object.assign(proxy, {
+                        './acme': {generate: generateStub}
+                    })
+                );
                 const tasks = getTasks(ext, {sslemail: 'test@example.com', sslstaging: true});
 
                 return tasks[4].task().then(() => {
                     expect(generateStub.calledOnce).to.be.true;
-                    expect(generateStub.calledWithExactly(
-                        ext.ui,
-                        'ghost.dev',
-                        '/var/www/ghost/system/nginx-root',
-                        'test@example.com',
-                        true
-                    )).to.be.true;
+                    expect(
+                        generateStub.calledWithExactly(
+                            ext.ui,
+                            'ghost.dev',
+                            '/var/www/ghost/system/nginx-root',
+                            'test@example.com',
+                            true
+                        )
+                    ).to.be.true;
                 });
             });
         });
@@ -496,8 +514,12 @@ describe('Unit: Extensions > Nginx', function () {
                 return tasks[5].task().then(() => {
                     expect(ext.ui.sudo.calledOnce).to.be.true;
                     expect(ext.ui.sudo.args[0][0]).to.deep.equal([
-                        'openssl', 'dhparam', '-dsaparam',
-                        '-out', '/etc/nginx/snippets/dhparam.pem', '2048'
+                        'openssl',
+                        'dhparam',
+                        '-dsaparam',
+                        '-out',
+                        '/etc/nginx/snippets/dhparam.pem',
+                        '2048'
                     ]);
                 });
             });
@@ -509,12 +531,15 @@ describe('Unit: Extensions > Nginx', function () {
                 const tasks = getTasks(ext);
 
                 expect(tasks[5].skip()).to.be.false;
-                return tasks[5].task().then(() => {
-                    expect(false, 'Promise should have rejected').to.be.true;
-                }).catch((err) => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(err.message).to.equal('Go ask George');
-                });
+                return tasks[5]
+                    .task()
+                    .then(() => {
+                        expect(false, 'Promise should have rejected').to.be.true;
+                    })
+                    .catch(err => {
+                        expect(ext.ui.sudo.calledOnce).to.be.true;
+                        expect(err.message).to.equal('Go ask George');
+                    });
             });
         });
 
@@ -546,12 +571,15 @@ describe('Unit: Extensions > Nginx', function () {
                 const tasks = getTasks(ext);
 
                 expect(tasks[6].skip()).to.be.false;
-                return tasks[6].task().then(() => {
-                    expect(false, 'Promise should have been rejected').to.be.true;
-                }).catch((err) => {
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(err.message).to.equal('Potato');
-                });
+                return tasks[6]
+                    .task()
+                    .then(() => {
+                        expect(false, 'Promise should have been rejected').to.be.true;
+                    })
+                    .catch(err => {
+                        expect(ext.ui.sudo.calledOnce).to.be.true;
+                        expect(err.message).to.equal('Potato');
+                    });
             });
         });
 
@@ -567,7 +595,8 @@ describe('Unit: Extensions > Nginx', function () {
                 resolvers: '1.1.1.1 8.8.8.8'
             };
             const expectedSudo = [
-                'ln', '-sf',
+                'ln',
+                '-sf',
                 '/etc/nginx/sites-available/ghost.dev-ssl.conf',
                 '/etc/nginx/sites-enabled/ghost.dev-ssl.conf'
             ];
@@ -593,7 +622,7 @@ describe('Unit: Extensions > Nginx', function () {
             });
 
             it('Templates subdirectories properly', function () {
-                ctx.instance.config.get = (key) => {
+                ctx.instance.config.get = key => {
                     return key === 'url' ? 'http://ghost.dev/blog' : 2368;
                 };
                 const ext = proxyNginx(proxy);
@@ -615,14 +644,17 @@ describe('Unit: Extensions > Nginx', function () {
                 ext.template = sinon.stub().resolves();
                 ext.ui.sudo = sudo;
 
-                return tasks[7].task(ctx).then(() => {
-                    expect(false, 'Promise should have been rejected').to.be.true;
-                }).catch((err) => {
-                    expect(stubs.template.calledTwice).to.be.true;
-                    expect(stubs.templatify.calledOnce).to.be.true;
-                    expect(ext.ui.sudo.calledOnce).to.be.true;
-                    expect(err.options.stderr).to.equal('oh no!');
-                });
+                return tasks[7]
+                    .task(ctx)
+                    .then(() => {
+                        expect(false, 'Promise should have been rejected').to.be.true;
+                    })
+                    .catch(err => {
+                        expect(stubs.template.calledTwice).to.be.true;
+                        expect(stubs.templatify.calledOnce).to.be.true;
+                        expect(ext.ui.sudo.calledOnce).to.be.true;
+                        expect(err.options.stderr).to.equal('oh no!');
+                    });
             });
         });
         describe('Restart', function () {
@@ -639,7 +671,7 @@ describe('Unit: Extensions > Nginx', function () {
 
     describe('uninstall hook', function () {
         const instance = {config: {get: () => 'http://ghost.dev'}};
-        const testEs = val => (new RegExp(/-ssl/)).test(val);
+        const testEs = val => new RegExp(/-ssl/).test(val);
 
         function stub() {
             const ui = {sudo: sinon.stub(), log: sinon.stub()};
@@ -740,14 +772,17 @@ describe('Unit: Extensions > Nginx', function () {
             const err = new Error('ssl error');
             sudo.rejects(err);
 
-            return inst.restartNginx().then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(sudo.calledOnce).to.be.true;
-                expect(sudo.calledWithExactly(['nginx', '-s', 'reload'])).to.be.true;
-                expect(error).to.be.an.instanceof(errors.CliError);
-                expect(error.message).to.equal('Failed to restart Nginx.');
-            });
+            return inst
+                .restartNginx()
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(sudo.calledOnce).to.be.true;
+                    expect(sudo.calledWithExactly(['nginx', '-s', 'reload'])).to.be.true;
+                    expect(error).to.be.an.instanceof(errors.CliError);
+                    expect(error.message).to.equal('Failed to restart Nginx.');
+                });
         });
     });
 

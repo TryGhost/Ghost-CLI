@@ -25,7 +25,9 @@ function getStubs(dir, environment = undefined, isLocal = false) {
     system.environment = environment;
 
     return {
-        ui, system, instance
+        ui,
+        system,
+        instance
     };
 }
 
@@ -145,7 +147,7 @@ describe('Unit: Commands > Start', function () {
             expect(instance.config.get.calledTwice).to.be.true;
         });
 
-        it('doesn\'t log if quiet is set to true', async function () {
+        it("doesn't log if quiet is set to true", async function () {
             const {ui, system, instance} = getStubs('/var/www/ghost');
             returnedInstance = instance;
             const isRunning = sinon.stub(instance, 'isRunning').resolves(false);
@@ -214,9 +216,12 @@ describe('Unit: Commands > Start', function () {
         const StartCommand = proxyquire(modulePath, {
             './doctor': {configureOptions: doctorStub}
         });
-        const extensions = [{
-            config: {options: {start: {test: true}}}
-        }, {}];
+        const extensions = [
+            {
+                config: {options: {start: {test: true}}}
+            },
+            {}
+        ];
 
         const yargs = {option: sinon.stub(), epilogue: () => true, usage: () => true};
         yargs.option.returns(yargs);

@@ -27,14 +27,15 @@ describe('Unit: Migrations', function () {
                 expect(ghostUserStub.calledOnce).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly(
-                    ['mkdir', '-p', '/var/www/ghost/content/settings'],
-                    {sudoArgs: ['-E', '-u', 'ghost']}
-                )).to.be.true;
+                expect(
+                    sudoStub.calledWithExactly(['mkdir', '-p', '/var/www/ghost/content/settings'], {
+                        sudoArgs: ['-E', '-u', 'ghost']
+                    })
+                ).to.be.true;
             });
         });
 
-        it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
+        it("if ghost user doesn't own directory, runs basic mkdir", function () {
             const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(false);
             const fsStub = sinon.stub(fs, 'mkdir').resolves();
             const config = createConfig();
@@ -59,7 +60,9 @@ describe('Unit: Migrations', function () {
         };
 
         configs.development.get.withArgs('database.connection.filename', null).returns('./content/data/ghost.db');
-        configs.staging.get.withArgs('database.connection.filename', null).returns('/absolute/path/content/data/ghost.db');
+        configs.staging.get
+            .withArgs('database.connection.filename', null)
+            .returns('/absolute/path/content/data/ghost.db');
         configs.production.get.withArgs('database.connection.filename', null).returns(null);
 
         const instance = {
@@ -71,7 +74,12 @@ describe('Unit: Migrations', function () {
 
         expect(instance.getAvailableConfigs.calledOnce).to.be.true;
         expect(configs.development.get.calledOnce).to.be.true;
-        expect(configs.development.set.calledWithExactly('database.connection.filename', '/test/instance/dir/content/data/ghost.db')).to.be.true;
+        expect(
+            configs.development.set.calledWithExactly(
+                'database.connection.filename',
+                '/test/instance/dir/content/data/ghost.db'
+            )
+        ).to.be.true;
         expect(configs.development.save.calledOnce).to.be.true;
         expect(configs.staging.get.calledOnce).to.be.true;
         expect(configs.staging.set.called).to.be.false;
@@ -97,22 +105,25 @@ describe('Unit: Migrations', function () {
                 expect(ghostUserStub.calledThrice).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(sudoStub.calledThrice).to.be.true;
-                expect(sudoStub.firstCall.calledWithExactly(
-                    ['mkdir', '-p', '/var/www/ghost/content/media'],
-                    {sudoArgs: ['-E', '-u', 'ghost']}
-                )).to.be.true;
-                expect(sudoStub.secondCall.calledWithExactly(
-                    ['mkdir', '-p', '/var/www/ghost/content/files'],
-                    {sudoArgs: ['-E', '-u', 'ghost']}
-                )).to.be.true;
-                expect(sudoStub.thirdCall.calledWithExactly(
-                    ['mkdir', '-p', '/var/www/ghost/content/public'],
-                    {sudoArgs: ['-E', '-u', 'ghost']}
-                )).to.be.true;
+                expect(
+                    sudoStub.firstCall.calledWithExactly(['mkdir', '-p', '/var/www/ghost/content/media'], {
+                        sudoArgs: ['-E', '-u', 'ghost']
+                    })
+                ).to.be.true;
+                expect(
+                    sudoStub.secondCall.calledWithExactly(['mkdir', '-p', '/var/www/ghost/content/files'], {
+                        sudoArgs: ['-E', '-u', 'ghost']
+                    })
+                ).to.be.true;
+                expect(
+                    sudoStub.thirdCall.calledWithExactly(['mkdir', '-p', '/var/www/ghost/content/public'], {
+                        sudoArgs: ['-E', '-u', 'ghost']
+                    })
+                ).to.be.true;
             });
         });
 
-        it('if ghost user doesn\'t own directory, runs basic mkdir', function () {
+        it("if ghost user doesn't own directory, runs basic mkdir", function () {
             const ghostUserStub = sinon.stub(ghostUser, 'shouldUseGhostUser').returns(false);
             const fsStub = sinon.stub(fs, 'mkdir').resolves();
             const config = createConfig();
@@ -124,9 +135,12 @@ describe('Unit: Migrations', function () {
                 expect(ghostUserStub.calledThrice).to.be.true;
                 expect(ghostUserStub.calledWithExactly('/var/www/ghost/content')).to.be.true;
                 expect(fsStub.calledThrice).to.be.true;
-                expect(fsStub.firstCall.calledWithExactly('/var/www/ghost/content/media', {recursive: true})).to.be.true;
-                expect(fsStub.secondCall.calledWithExactly('/var/www/ghost/content/files', {recursive: true})).to.be.true;
-                expect(fsStub.thirdCall.calledWithExactly('/var/www/ghost/content/public', {recursive: true})).to.be.true;
+                expect(fsStub.firstCall.calledWithExactly('/var/www/ghost/content/media', {recursive: true})).to.be
+                    .true;
+                expect(fsStub.secondCall.calledWithExactly('/var/www/ghost/content/files', {recursive: true})).to.be
+                    .true;
+                expect(fsStub.thirdCall.calledWithExactly('/var/www/ghost/content/public', {recursive: true})).to.be
+                    .true;
             });
         });
     });

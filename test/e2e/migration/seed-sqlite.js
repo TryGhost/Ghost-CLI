@@ -30,22 +30,37 @@ db.prepare(`INSERT INTO posts (id, uuid, title, slug, html, lexical, plaintext, 
     '2026-01-02T03:04:05.123Z',
     '2026-01-02 03:04:05'
 );
-db.prepare('INSERT INTO posts_authors (id, post_id, author_id, sort_order) VALUES (?, ?, ?, 0)')
-    .run('aaaaaaaaaaaaaaaaaaaaaaa2', 'aaaaaaaaaaaaaaaaaaaaaaa1', owner.id);
+db.prepare('INSERT INTO posts_authors (id, post_id, author_id, sort_order) VALUES (?, ?, ?, 0)').run(
+    'aaaaaaaaaaaaaaaaaaaaaaa2',
+    'aaaaaaaaaaaaaaaaaaaaaaa1',
+    owner.id
+);
 
 const member = db.prepare(`INSERT INTO members (id, uuid, transient_id, email, name, note, status, created_at)
     VALUES (?, ?, ?, ?, ?, ?, 'free', ?)`);
 const login = db.prepare('INSERT INTO members_login_events (id, member_id, created_at) VALUES (?, ?, ?)');
 [
-    ['Zoë 🎉 O\'Brien\\', 'tabs\tand\r\nnewlines', '2026-01-02T03:04:05.000Z'],
+    ["Zoë 🎉 O'Brien\\", 'tabs\tand\r\nnewlines', '2026-01-02T03:04:05.000Z'],
     ['Null\0Byte', null, 1767323045000]
 ].forEach(([name, note, createdAt], i) => {
     const id = `bbbbbbbbbbbbbbbbbbbbbbb${i}`;
-    member.run(id, `bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb${i}`, `transient-${i}`, `member${i}@example.com`, name, note, createdAt);
+    member.run(
+        id,
+        `bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb${i}`,
+        `transient-${i}`,
+        `member${i}@example.com`,
+        name,
+        note,
+        createdAt
+    );
     login.run(`ccccccccccccccccccccccc${i}`, id, createdAt);
 });
 
-db.prepare('INSERT INTO brute (key, firstRequest, lastRequest, lifetime, count) VALUES (?, ?, ?, ?, 1)')
-    .run('mysql-data-round-trip', 9007199254740993n, 9007199254740993n, 9007199254740993n);
+db.prepare('INSERT INTO brute (key, firstRequest, lastRequest, lifetime, count) VALUES (?, ?, ?, ?, 1)').run(
+    'mysql-data-round-trip',
+    9007199254740993n,
+    9007199254740993n,
+    9007199254740993n
+);
 db.exec('COMMIT');
 db.close();

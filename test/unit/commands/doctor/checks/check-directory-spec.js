@@ -26,29 +26,25 @@ describe('Unit: Doctor Checks > checkDirectoryAndAbove', function () {
         const lstatStub = sinon.stub(fs, 'lstat').resolves(READABLE);
 
         return checkDirectoryAndAbove('/some/dir').then(() => {
-            expect(lstatStub.args).to.deep.equal([
-                ['/some/dir'],
-                ['/some/']
-            ]);
+            expect(lstatStub.args).to.deep.equal([['/some/dir'], ['/some/']]);
         });
     });
 
-    it('throws error if a directory isn\'t readable by others', function () {
+    it("throws error if a directory isn't readable by others", function () {
         const lstatStub = sinon.stub(fs, 'lstat');
 
         lstatStub.onFirstCall().resolves(READABLE);
         lstatStub.onSecondCall().resolves(UNREADABLE);
 
-        return checkDirectoryAndAbove('/root/ghost').then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/directory \/root\/ is not readable/);
+        return checkDirectoryAndAbove('/root/ghost')
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(/directory \/root\/ is not readable/);
 
-            expect(lstatStub.args).to.deep.equal([
-                ['/root/ghost'],
-                ['/root/']
-            ]);
-        });
+                expect(lstatStub.args).to.deep.equal([['/root/ghost'], ['/root/']]);
+            });
     });
 });

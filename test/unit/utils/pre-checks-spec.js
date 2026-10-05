@@ -56,7 +56,7 @@ describe('Unit: Utils > pre-checks', function () {
             expect(packageJson.calledWithExactly('ghost')).to.be.true;
         });
 
-        it('doesn\'t do anything if there are no updates', async function () {
+        it("doesn't do anything if there are no updates", async function () {
             const pkg = {name: 'ghost', version: '1.0.0'};
             const packageJson = sinon.stub().resolves({version: '1.0.0'});
 
@@ -117,7 +117,7 @@ describe('Unit: Utils > pre-checks', function () {
             expect(lstat.calledWithExactly('/home/ghost/.config')).to.be.true;
         });
 
-        it('doesn\'t do anything if directory ownership if fine', async function () {
+        it("doesn't do anything if directory ownership if fine", async function () {
             sinon.stub(os, 'homedir').returns('/home/ghost');
             sinon.stub(fsp, 'lstat').resolves({uid: 1, gid: 1});
             const uid = sinon.stub(process, 'getuid').returns(1);
@@ -147,9 +147,8 @@ describe('Unit: Utils > pre-checks', function () {
             await checkConfigPerms({ui});
             expect(uid.calledOnce).to.be.true;
             expect(gid.called).to.be.false;
-            expect(sudo.calledOnceWithExactly(
-                ['chown', '-R', 'ghostuser:ghostuser', '/home/ghost/.config']
-            )).to.be.true;
+            expect(sudo.calledOnceWithExactly(['chown', '-R', 'ghostuser:ghostuser', '/home/ghost/.config'])).to.be
+                .true;
         });
 
         it('calls chown if directory group is not correct', async function () {
@@ -166,9 +165,8 @@ describe('Unit: Utils > pre-checks', function () {
             await checkConfigPerms({ui});
             expect(uid.calledOnce).to.be.true;
             expect(gid.calledOnce).to.be.true;
-            expect(sudo.calledOnceWithExactly(
-                ['chown', '-R', 'ghostuser:ghostuser', '/home/ghost/.config']
-            )).to.be.true;
+            expect(sudo.calledOnceWithExactly(['chown', '-R', 'ghostuser:ghostuser', '/home/ghost/.config'])).to.be
+                .true;
         });
     });
 });

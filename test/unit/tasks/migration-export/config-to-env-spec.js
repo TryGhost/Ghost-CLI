@@ -16,7 +16,7 @@ describe('Unit: Tasks > migration-export > config-to-env', function () {
         });
     });
 
-    it('excludes the sections that don\'t belong in a container', function () {
+    it("excludes the sections that don't belong in a container", function () {
         const result = configToEnv({
             url: 'https://example.com',
             database: {client: 'mysql', connection: {password: 'hunter2'}},
@@ -46,7 +46,18 @@ describe('Unit: Tasks > migration-export > config-to-env', function () {
     });
 
     it('preserves raw special characters and JSON arrays', function () {
-        const values = [' spaces ', 'dollar $VAR ${VAR} $$', 'hash #', 'say "hi"', 'single\'quote', 'line1\nline2', 'tab\there', 'back\\slash', 'ends with\\', ''];
+        const values = [
+            ' spaces ',
+            'dollar $VAR ${VAR} $$',
+            'hash #',
+            'say "hi"',
+            "single'quote",
+            'line1\nline2',
+            'tab\there',
+            'back\\slash',
+            'ends with\\',
+            ''
+        ];
         for (const value of values) {
             expect(configToEnv({mail: {from: value}}).mail__from).to.equal(value);
         }

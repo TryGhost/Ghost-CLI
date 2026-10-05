@@ -19,7 +19,7 @@ describe('Unit: Command', function () {
     describe('configure', function () {
         const Command = require(modulePath);
 
-        it('throws if command class doesn\'t have a description', function () {
+        it("throws if command class doesn't have a description", function () {
             const TestCommand = class extends Command {};
 
             try {
@@ -111,7 +111,7 @@ describe('Unit: Command', function () {
             expect(usageStub.args[0][0]).to.equal('a long description here');
         });
 
-        it('doesn\'t add options if no options defined', function () {
+        it("doesn't add options if no options defined", function () {
             const TestCommand = class extends Command {};
             const optionStub = sinon.stub();
             const epilogueStub = sinon.stub();
@@ -215,7 +215,7 @@ describe('Unit: Command', function () {
             }
         });
 
-        it('doesn\'t check for root when command allows root', async function () {
+        it("doesn't check for root when command allows root", async function () {
             const checkRootUserStub = sinon.stub().throws('let them be freeee');
             class ShortCircuit {
                 constructor() {
@@ -240,7 +240,7 @@ describe('Unit: Command', function () {
             }
         });
 
-        it('doesn\'t check for root when --allow-root is passed', async function () {
+        it("doesn't check for root when --allow-root is passed", async function () {
             const checkRootUserStub = sinon.stub().throws('let them be freeee');
             class ShortCircuit {
                 constructor() {
@@ -373,19 +373,25 @@ describe('Unit: Command', function () {
 
             const runStub = sinon.stub(TestCommand.prototype, 'run');
 
-            await TestCommand._run('test', {
-                verbose: true,
-                prompt: true,
-                development: true,
-                auto: false
-            }, [{extensiona: true}]);
+            await TestCommand._run(
+                'test',
+                {
+                    verbose: true,
+                    prompt: true,
+                    development: true,
+                    auto: false
+                },
+                [{extensiona: true}]
+            );
             expect(uiStub.calledOnce).to.be.true;
-            expect(uiStub.calledWithExactly({
-                verbose: true,
-                allowPrompt: true,
-                auto: false,
-                json: undefined
-            })).to.be.true;
+            expect(
+                uiStub.calledWithExactly({
+                    verbose: true,
+                    allowPrompt: true,
+                    auto: false,
+                    json: undefined
+                })
+            ).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
@@ -417,21 +423,27 @@ describe('Unit: Command', function () {
 
             sinon.stub(TestCommand.prototype, 'run');
 
-            await TestCommand._run('test', {
-                verbose: false,
-                prompt: true,
-                development: false,
-                auto: false,
-                json: true
-            }, []);
+            await TestCommand._run(
+                'test',
+                {
+                    verbose: false,
+                    prompt: true,
+                    development: false,
+                    auto: false,
+                    json: true
+                },
+                []
+            );
 
             expect(uiStub.calledOnce).to.be.true;
-            expect(uiStub.calledWithExactly({
-                verbose: false,
-                allowPrompt: true,
-                auto: false,
-                json: true
-            })).to.be.true;
+            expect(
+                uiStub.calledWithExactly({
+                    verbose: false,
+                    allowPrompt: true,
+                    auto: false,
+                    json: true
+                })
+            ).to.be.true;
         });
 
         it('binds cleanup handler if cleanup method is defined', async function () {
@@ -459,19 +471,25 @@ describe('Unit: Command', function () {
             const onStub = sinon.stub(process, 'on').returnsThis();
             process.env.NODE_ENV = 'development';
 
-            await TestCommand._run('test', {
-                verbose: false,
-                prompt: false,
-                development: false,
-                auto: true
-            }, [{extensiona: true}]);
+            await TestCommand._run(
+                'test',
+                {
+                    verbose: false,
+                    prompt: false,
+                    development: false,
+                    auto: true
+                },
+                [{extensiona: true}]
+            );
             expect(uiStub.calledOnce).to.be.true;
-            expect(uiStub.calledWithExactly({
-                verbose: false,
-                allowPrompt: false,
-                auto: true,
-                json: undefined
-            })).to.be.true;
+            expect(
+                uiStub.calledWithExactly({
+                    verbose: false,
+                    allowPrompt: false,
+                    auto: true,
+                    json: undefined
+                })
+            ).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
@@ -480,7 +498,8 @@ describe('Unit: Command', function () {
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.called).to.be.false;
             expect(runStub.calledOnce).to.be.true;
-            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be.true;
+            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: true})).to.be
+                .true;
             expect(onStub.calledThrice).to.be.true;
             expect(onStub.calledWith('SIGINT')).to.be.true;
             expect(onStub.calledWith('SIGTERM')).to.be.true;
@@ -511,19 +530,25 @@ describe('Unit: Command', function () {
             const runStub = sinon.stub(TestCommand.prototype, 'run');
             process.env.NODE_ENV = 'development';
 
-            await TestCommand._run('test', {
-                verbose: false,
-                prompt: false,
-                development: false,
-                auto: false
-            }, [{extensiona: true}]);
+            await TestCommand._run(
+                'test',
+                {
+                    verbose: false,
+                    prompt: false,
+                    development: false,
+                    auto: false
+                },
+                [{extensiona: true}]
+            );
             expect(uiStub.calledOnce).to.be.true;
-            expect(uiStub.calledWithExactly({
-                verbose: false,
-                allowPrompt: false,
-                auto: false,
-                json: undefined
-            })).to.be.true;
+            expect(
+                uiStub.calledWithExactly({
+                    verbose: false,
+                    allowPrompt: false,
+                    auto: false,
+                    json: undefined
+                })
+            ).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
@@ -532,9 +557,12 @@ describe('Unit: Command', function () {
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.calledOnce).to.be.true;
             expect(preChecksStub.calledOnce).to.be.true;
-            expect(preChecksStub.calledWithExactly({ui: true, run, log}, {setEnvironment: setEnvironmentStub, loadOsInfo})).to.be.true;
+            expect(
+                preChecksStub.calledWithExactly({ui: true, run, log}, {setEnvironment: setEnvironmentStub, loadOsInfo})
+            ).to.be.true;
             expect(runStub.calledOnce).to.be.true;
-            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
+            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be
+                .true;
         });
 
         it('catches errors, passes them to ui error method, then exits', async function () {
@@ -564,19 +592,25 @@ describe('Unit: Command', function () {
             process.env.NODE_ENV = 'production';
             const exitStub = sinon.stub(process, 'exit');
 
-            await TestCommand._run('test', {
-                verbose: false,
-                prompt: false,
-                development: false,
-                auto: false
-            }, [{extensiona: true}]);
+            await TestCommand._run(
+                'test',
+                {
+                    verbose: false,
+                    prompt: false,
+                    development: false,
+                    auto: false
+                },
+                [{extensiona: true}]
+            );
             expect(uiStub.calledOnce).to.be.true;
-            expect(uiStub.calledWithExactly({
-                verbose: false,
-                allowPrompt: false,
-                auto: false,
-                json: undefined
-            })).to.be.true;
+            expect(
+                uiStub.calledWithExactly({
+                    verbose: false,
+                    allowPrompt: false,
+                    auto: false,
+                    json: undefined
+                })
+            ).to.be.true;
             expect(setEnvironmentStub.calledOnce).to.be.true;
             expect(setEnvironmentStub.calledWithExactly(false, true)).to.be.true;
             expect(systemStub.calledOnce).to.be.true;
@@ -585,7 +619,8 @@ describe('Unit: Command', function () {
             expect(loadOsInfo.calledOnce).to.be.true;
             expect(deprecationChecks.calledOnce).to.be.true;
             expect(runStub.calledOnce).to.be.true;
-            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be.true;
+            expect(runStub.calledWithExactly({verbose: false, prompt: false, development: false, auto: false})).to.be
+                .true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
         });

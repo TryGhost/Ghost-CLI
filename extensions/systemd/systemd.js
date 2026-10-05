@@ -27,8 +27,9 @@ class SystemdProcessManager extends ProcessManager {
             host: 'localhost'
         };
 
-        return portfinder.getPortPromise()
-            .then((port) => {
+        return portfinder
+            .getPortPromise()
+            .then(port => {
                 socketAddress.port = port;
                 this.instance.config.set('bootstrap-socket', socketAddress);
                 return this.instance.config.save();
@@ -39,7 +40,7 @@ class SystemdProcessManager extends ProcessManager {
                 this.instance.config.set('bootstrap-socket', null);
                 return this.instance.config.save();
             })
-            .catch((error) => {
+            .catch(error => {
                 if (error instanceof CliError) {
                     throw error;
                 }
@@ -51,7 +52,7 @@ class SystemdProcessManager extends ProcessManager {
     stop() {
         this._precheck();
 
-        return this.ui.sudo(['systemctl', 'stop', this.systemdName]).catch((error) => {
+        return this.ui.sudo(['systemctl', 'stop', this.systemdName]).catch(error => {
             throw new ProcessError(error);
         });
     }
@@ -66,8 +67,9 @@ class SystemdProcessManager extends ProcessManager {
             host: 'localhost'
         };
 
-        return portfinder.getPortPromise()
-            .then((port) => {
+        return portfinder
+            .getPortPromise()
+            .then(port => {
                 socketAddress.port = port;
                 this.instance.config.set('bootstrap-socket', socketAddress);
                 return this.instance.config.save();
@@ -78,7 +80,7 @@ class SystemdProcessManager extends ProcessManager {
                 this.instance.config.set('bootstrap-socket', null);
                 return this.instance.config.save();
             })
-            .catch((error) => {
+            .catch(error => {
                 if (error instanceof CliError) {
                     throw error;
                 }
@@ -88,9 +90,10 @@ class SystemdProcessManager extends ProcessManager {
     }
 
     isEnabled() {
-        return this.ui.sudo(['systemctl', 'is-enabled', this.systemdName])
+        return this.ui
+            .sudo(['systemctl', 'is-enabled', this.systemdName])
             .then(() => true)
-            .catch((error) => {
+            .catch(error => {
                 // Systemd prints out "disabled" if service isn't enabled
                 // or "failed to get unit file state" if something else goes wrong
                 if (!error.message.match(/disabled|Failed to get unit file state/)) {
@@ -102,21 +105,22 @@ class SystemdProcessManager extends ProcessManager {
     }
 
     enable() {
-        return this.ui.sudo(['systemctl', 'enable', this.systemdName, '--quiet']).catch((error) => {
+        return this.ui.sudo(['systemctl', 'enable', this.systemdName, '--quiet']).catch(error => {
             throw new ProcessError(error);
         });
     }
 
     disable() {
-        return this.ui.sudo(['systemctl', 'disable', this.systemdName, '--quiet']).catch((error) => {
+        return this.ui.sudo(['systemctl', 'disable', this.systemdName, '--quiet']).catch(error => {
             throw new ProcessError(error);
         });
     }
 
     isRunning() {
-        return this.ui.sudo(['systemctl', 'is-active', this.systemdName])
+        return this.ui
+            .sudo(['systemctl', 'is-active', this.systemdName])
             .then(() => true)
-            .catch((error) => {
+            .catch(error => {
                 // Systemd prints out "inactive" if service isn't running
                 // or "activating" if service hasn't completely started yet
                 if (error.stdout && error.stdout.match(/inactive|activating/)) {
@@ -127,9 +131,10 @@ class SystemdProcessManager extends ProcessManager {
                 // In this case, we should reset the failed state and return false, so that
                 // the user gets the chance to try starting again
                 if (error.stdout && error.stdout.match(/failed/)) {
-                    return this.ui.sudo(['systemctl', 'reset-failed', this.systemdName])
+                    return this.ui
+                        .sudo(['systemctl', 'reset-failed', this.systemdName])
                         .then(() => false)
-                        .catch((err) => {
+                        .catch(err => {
                             throw new ProcessError(err);
                         });
                 }

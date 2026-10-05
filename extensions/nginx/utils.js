@@ -29,7 +29,8 @@ function errorWrapper(fn) {
  * @returns {string} Space separated list of resolver addresses
  */
 function parseResolvers(contents) {
-    const nameservers = (contents || '').split('\n')
+    const nameservers = (contents || '')
+        .split('\n')
         .map(line => line.trim().match(/^nameserver\s+(\S+)/))
         .filter(Boolean)
         .map(([, address]) => address)

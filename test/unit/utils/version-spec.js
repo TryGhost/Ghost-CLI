@@ -7,9 +7,7 @@ const {CliError, SystemError} = require('../../../lib/errors');
 const modulePath = '../../../lib/utils/version';
 const versionUtils = require(modulePath);
 
-const {
-    checkCustomVersion, checkActiveVersion, resolveVersion, versionFromArchive
-} = versionUtils;
+const {checkCustomVersion, checkActiveVersion, resolveVersion, versionFromArchive} = versionUtils;
 
 describe('Unit: Utils: version', function () {
     describe('loadVersions', function () {
@@ -45,7 +43,20 @@ describe('Unit: Utils: version', function () {
 
         it('returns correct all versions/latest versions, sorted desc', async function () {
             const loadVersions = stub(
-                ['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0', '3.1.0', '4.0.0-rc.1'],
+                [
+                    '0.11.0',
+                    '1.0.0',
+                    '1.0.1',
+                    '1.0.2',
+                    '1.0.3',
+                    '1.0.4',
+                    '2.0.0',
+                    '2.1.0',
+                    '2.22.0',
+                    '3.0.0',
+                    '3.1.0',
+                    '4.0.0-rc.1'
+                ],
                 ['1.0.4', '2.22.0', '3.1.0']
             );
             const result = await loadVersions();
@@ -68,7 +79,20 @@ describe('Unit: Utils: version', function () {
 
         it('includes prereleases if requested', async function () {
             const loadVersions = stub(
-                ['0.11.0', '1.0.0', '1.0.1', '1.0.2', '1.0.3', '1.0.4', '2.0.0', '2.1.0', '2.22.0', '3.0.0', '3.1.0', '4.0.0-rc.1'],
+                [
+                    '0.11.0',
+                    '1.0.0',
+                    '1.0.1',
+                    '1.0.2',
+                    '1.0.3',
+                    '1.0.4',
+                    '2.0.0',
+                    '2.1.0',
+                    '2.22.0',
+                    '3.0.0',
+                    '3.1.0',
+                    '4.0.0-rc.1'
+                ],
                 ['1.0.4', '2.22.0', '3.1.0']
             );
             const result = await loadVersions(true);
@@ -81,7 +105,19 @@ describe('Unit: Utils: version', function () {
                     v3: '3.0.0',
                     v4: '4.0.0-rc.1'
                 },
-                all: ['4.0.0-rc.1', '3.1.0', '3.0.0', '2.22.0', '2.1.0', '2.0.0', '1.0.4', '1.0.3', '1.0.2', '1.0.1', '1.0.0'],
+                all: [
+                    '4.0.0-rc.1',
+                    '3.1.0',
+                    '3.0.0',
+                    '2.22.0',
+                    '2.1.0',
+                    '2.0.0',
+                    '1.0.4',
+                    '1.0.3',
+                    '1.0.2',
+                    '1.0.1',
+                    '1.0.0'
+                ],
                 deprecations: {
                     '1.0.4': 'test deprecation notice',
                     '2.22.0': 'test deprecation notice',
@@ -92,7 +128,7 @@ describe('Unit: Utils: version', function () {
     });
 
     describe('checkCustomVersion', function () {
-        it('throws if custom version can\'t be coerced', function () {
+        it("throws if custom version can't be coerced", function () {
             try {
                 checkCustomVersion('not a version');
             } catch (error) {
@@ -128,7 +164,7 @@ describe('Unit: Utils: version', function () {
             expect.fail('expected an error to be thrown');
         });
 
-        it('does not throw if version doesn\'t exist, but zip is true', function () {
+        it("does not throw if version doesn't exist, but zip is true", function () {
             const result = checkCustomVersion('3.0.0', ['1.0.0', '2.0.0', '2.1.0'], null, {zip: true});
             expect(result).to.equal('3.0.0');
         });
@@ -397,7 +433,7 @@ describe('Unit: Utils: version', function () {
             });
         });
 
-        it('rejects if archive file doesn\'t exist', async function () {
+        it("rejects if archive file doesn't exist", async function () {
             const existsStub = sinon.stub().returns(false);
             const proxied = proxyquire(modulePath, {
                 fs: {existsSync: existsStub}
@@ -414,7 +450,7 @@ describe('Unit: Utils: version', function () {
             }
         });
 
-        it('rejects if archive file doesn\'t have a supported extension', async function () {
+        it("rejects if archive file doesn't have a supported extension", async function () {
             const existsStub = sinon.stub().returns(true);
             const proxied = proxyquire(modulePath, {
                 fs: {existsSync: existsStub}
@@ -461,17 +497,19 @@ describe('Unit: Utils: version', function () {
             }
         });
 
-        it('rejects if node version isn\'t compatible with ghost node version range and GHOST_NODE_VERSION_CHECK isn\'t set', async function () {
+        it("rejects if node version isn't compatible with ghost node version range and GHOST_NODE_VERSION_CHECK isn't set", async function () {
             try {
                 await versionFromArchive(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip'));
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
-                expect(error.message).to.equal('Archive file contains a Ghost version incompatible with the current Node version.');
+                expect(error.message).to.equal(
+                    'Archive file contains a Ghost version incompatible with the current Node version.'
+                );
             }
         });
 
-        it('resolves if node version isn\'t compatible with ghost node version range and GHOST_NODE_VERSION_CHECK is set', async function () {
+        it("resolves if node version isn't compatible with ghost node version range and GHOST_NODE_VERSION_CHECK is set", async function () {
             const packageJson = sinon.stub().resolves({
                 name: 'ghost',
                 versions: {
@@ -484,7 +522,9 @@ describe('Unit: Utils: version', function () {
 
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
-            const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghost-invalid-node.zip'));
+            const version = await proxied.versionFromArchive(
+                path.join(__dirname, '../../fixtures/ghost-invalid-node.zip')
+            );
             expect(version).to.equal('1.0.0');
         });
 
@@ -494,7 +534,9 @@ describe('Unit: Utils: version', function () {
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
-                expect(error.message).to.equal('Archive file contains a Ghost version incompatible with this version of the CLI.');
+                expect(error.message).to.equal(
+                    'Archive file contains a Ghost version incompatible with this version of the CLI.'
+                );
                 expect(error.options.help).to.match(/Required: v\^0\.0\.1, current: v/);
                 expect(error.options.suggestion).to.equal('npm install -g ghost-cli@latest');
             }
@@ -516,8 +558,9 @@ describe('Unit: Utils: version', function () {
                 expect(false, 'error should have been thrown').to.be.true;
             } catch (error) {
                 expect(error).to.be.an.instanceof(CliError);
-                expect(error.message)
-                    .to.equal('Version in archive file: 1.0.0, is less than the current active version: 1.5.0');
+                expect(error.message).to.equal(
+                    'Version in archive file: 1.0.0, is less than the current active version: 1.5.0'
+                );
             }
         });
 
@@ -532,7 +575,11 @@ describe('Unit: Utils: version', function () {
                 'package-json': {default: packageJson}
             });
 
-            const version = await proxied.versionFromArchive(path.join(__dirname, '../../fixtures/ghostold.zip'), '1.5.0', {force: true});
+            const version = await proxied.versionFromArchive(
+                path.join(__dirname, '../../fixtures/ghostold.zip'),
+                '1.5.0',
+                {force: true}
+            );
             expect(version).to.equal('1.0.0');
         });
 

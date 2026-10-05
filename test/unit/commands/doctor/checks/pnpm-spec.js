@@ -10,7 +10,9 @@ function setup(execa) {
 }
 
 function versionOf(command, versions) {
-    return versions[command] ? Promise.resolve({stdout: `${versions[command]}\n`}) : Promise.reject(new Error(`${command} not found`));
+    return versions[command]
+        ? Promise.resolve({stdout: `${versions[command]}\n`})
+        : Promise.reject(new Error(`${command} not found`));
 }
 
 describe('Unit: Doctor Checks > pnpm', function () {
@@ -42,7 +44,12 @@ describe('Unit: Doctor Checks > pnpm', function () {
         it('errors when pnpm is too old to install the pnpm version Ghost pins', async function () {
             const execa = sinon.stub().callsFake(cmd => versionOf(cmd, {pnpm: '10.33.0'}));
 
-            const error = await setup(execa).task({version: '6.62.0'}, {}).then(() => null, err => err);
+            const error = await setup(execa)
+                .task({version: '6.62.0'}, {})
+                .then(
+                    () => null,
+                    err => err
+                );
 
             expect(error).to.be.an.instanceOf(SystemError);
             expect(error.message).to.contain('pnpm v10.33.0 is too old');
@@ -76,7 +83,12 @@ describe('Unit: Doctor Checks > pnpm', function () {
         it('errors when neither pnpm nor corepack is available', async function () {
             const execa = sinon.stub().callsFake(cmd => versionOf(cmd, {}));
 
-            const error = await setup(execa).task({version: '6.62.0'}, {}).then(() => null, err => err);
+            const error = await setup(execa)
+                .task({version: '6.62.0'}, {})
+                .then(
+                    () => null,
+                    err => err
+                );
 
             expect(error).to.be.an.instanceOf(SystemError);
             expect(error.message).to.contain('pnpm is not installed');

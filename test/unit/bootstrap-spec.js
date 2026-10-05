@@ -6,8 +6,9 @@ const proxyquire = require('proxyquire');
 
 const yargs = require('yargs')();
 // yargs instance methods live on the prototype, not as own properties
-const yargsMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(yargs))
-    .filter(key => key !== 'constructor' && typeof yargs[key] === 'function');
+const yargsMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(yargs)).filter(
+    key => key !== 'constructor' && typeof yargs[key] === 'function'
+);
 
 const modulePath = '../../lib/bootstrap';
 
@@ -31,16 +32,20 @@ describe('Unit: Bootstrap', function () {
             let commands = {};
             const testEnv = setupTestFolder({
                 dirs: ['commands/test3'],
-                files: [{
-                    path: 'commands/test.js',
-                    content: ''
-                }, {
-                    path: 'commands/test2.js',
-                    content: ''
-                }, {
-                    path: 'commands/test3/index.js',
-                    content: ''
-                }]
+                files: [
+                    {
+                        path: 'commands/test.js',
+                        content: ''
+                    },
+                    {
+                        path: 'commands/test2.js',
+                        content: ''
+                    },
+                    {
+                        path: 'commands/test3/index.js',
+                        content: ''
+                    }
+                ]
             });
             const dir = testEnv.dir;
 
@@ -68,20 +73,25 @@ describe('Unit: Bootstrap', function () {
         it('ignores non-js files or folders without an index.js', function () {
             const testEnv = setupTestFolder({
                 dirs: ['commands/test2', 'commands/test3'],
-                files: [{
-                    path: 'commands/test.js',
-                    content: ''
-                }, {
-                    path: 'commands/test2/index.js',
-                    content: ''
-                }, {
-                    path: 'commands/test3/not-an-index.js',
-                    content: ''
-                }, {
-                    path: 'commands/test4.json',
-                    content: {},
-                    json: true
-                }]
+                files: [
+                    {
+                        path: 'commands/test.js',
+                        content: ''
+                    },
+                    {
+                        path: 'commands/test2/index.js',
+                        content: ''
+                    },
+                    {
+                        path: 'commands/test3/not-an-index.js',
+                        content: ''
+                    },
+                    {
+                        path: 'commands/test4.json',
+                        content: {},
+                        json: true
+                    }
+                ]
             });
 
             const dir = testEnv.dir;
@@ -97,19 +107,26 @@ describe('Unit: Bootstrap', function () {
         it('namespaces a command with the extension name if another command exists with the same basename', function () {
             const testEnv = setupTestFolder({
                 dirs: ['commands/test2'],
-                files: [{
-                    path: 'commands/test.js',
-                    content: ''
-                }, {
-                    path: 'commands/test2/index.js',
-                    content: ''
-                }]
+                files: [
+                    {
+                        path: 'commands/test.js',
+                        content: ''
+                    },
+                    {
+                        path: 'commands/test2/index.js',
+                        content: ''
+                    }
+                ]
             });
 
             const dir = testEnv.dir;
-            const commands = bootstrap.discoverCommands({
-                test: '/some/test/dir/test'
-            }, dir, 'foo');
+            const commands = bootstrap.discoverCommands(
+                {
+                    test: '/some/test/dir/test'
+                },
+                dir,
+                'foo'
+            );
 
             expect(commands).to.deep.equal({
                 test: '/some/test/dir/test',
@@ -122,8 +139,8 @@ describe('Unit: Bootstrap', function () {
     describe('process rejection handler', function () {
         require(modulePath);
 
-        const rejectionHandler = () => process.listeners('unhandledRejection')
-            .find(listener => !preexistingRejectionListeners.includes(listener));
+        const rejectionHandler = () =>
+            process.listeners('unhandledRejection').find(listener => !preexistingRejectionListeners.includes(listener));
 
         let consoleStub;
 
@@ -141,7 +158,7 @@ describe('Unit: Bootstrap', function () {
 
             try {
                 handler(testError);
-                throw new Error('Proper error wasn\'t thrown');
+                throw new Error("Proper error wasn't thrown");
             } catch (e) {
                 expect(e, 'thrown error').to.equal(testError);
                 expect(consoleStub.args[0][0]).to.match(/^A promise was rejected/);
@@ -149,12 +166,12 @@ describe('Unit: Bootstrap', function () {
             }
         });
 
-        it('logs reason if reason isn\'t an error', function () {
+        it("logs reason if reason isn't an error", function () {
             const handler = rejectionHandler();
 
             try {
                 handler('some problem');
-                throw new Error('Proper error wasn\'t thrown');
+                throw new Error("Proper error wasn't thrown");
             } catch (e) {
                 expect(e).to.equal('some problem');
                 expect(consoleStub.args[0][0]).to.match(/^A promise was rejected/);
@@ -164,7 +181,7 @@ describe('Unit: Bootstrap', function () {
 
         it('logs promise if no reason given', function () {
             const handler = rejectionHandler();
-            const p = new Promise((resolve) => {
+            const p = new Promise(resolve => {
                 resolve();
             });
 
@@ -182,7 +199,7 @@ describe('Unit: Bootstrap', function () {
     describe('loadCommand', function () {
         const bootstrap = require(modulePath);
 
-        it('throws an error and returns if the command doesn\'t inherit the base command', function () {
+        it("throws an error and returns if the command doesn't inherit the base command", function () {
             const errorStub = sinon.stub(console, 'error');
             const commandPath = path.join(__dirname, '../fixtures/classes/test-invalid-command');
             const TestInvalidCommand = require(commandPath);
@@ -208,12 +225,7 @@ describe('Unit: Bootstrap', function () {
             bootstrap.loadCommand('valid', commandPath, yargs, aliases, extensions);
             expect(errorStub.called).to.be.false;
             expect(configureStub.calledOnce).to.be.true;
-            expect(configureStub.calledWithExactly(
-                'valid',
-                aliases,
-                yargs,
-                extensions
-            )).to.be.true;
+            expect(configureStub.calledWithExactly('valid', aliases, yargs, extensions)).to.be.true;
         });
     });
 
@@ -234,7 +246,7 @@ describe('Unit: Bootstrap', function () {
 
             yargsStubs = {};
 
-            yargsMethods.forEach((key) => {
+            yargsMethods.forEach(key => {
                 yargsStubs[key] = sinon.stub(yargs, key).returns(yargs);
             });
         });
@@ -251,9 +263,9 @@ describe('Unit: Bootstrap', function () {
 
             try {
                 bootstrap.run(['notls']);
-                throw new Error('Exit wasn\'t called');
+                throw new Error("Exit wasn't called");
             } catch (e) {
-                expect(e.message).to.not.equal('Exit wasn\'t called');
+                expect(e.message).to.not.equal("Exit wasn't called");
                 expect(error.args[0][0]).to.match(/^Unrecognized command/);
                 expect(exit.args[0][0]).to.equal(1);
             }
@@ -266,12 +278,14 @@ describe('Unit: Bootstrap', function () {
                 log: path.resolve(__dirname, '../../lib/commands/log'),
                 buster: path.resolve(__dirname, '../../lib/commands/buster')
             });
-            findExtensionsStub.returns([{
-                dir: './extensions',
-                pkg: {
-                    name: 'testing'
+            findExtensionsStub.returns([
+                {
+                    dir: './extensions',
+                    pkg: {
+                        name: 'testing'
+                    }
                 }
-            }]);
+            ]);
 
             const argv = ['help'];
             bootstrap.run(argv, yargs);

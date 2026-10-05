@@ -48,11 +48,13 @@ describe('Unit: Commands > Version', function () {
 
         instance.run({json: true});
         expect(logStub.called).to.be.false;
-        expect(outputStub.calledOnceWithExactly({
-            cliVersion: '1.0.0',
-            ghostVersion: null,
-            dir: null
-        })).to.be.true;
+        expect(
+            outputStub.calledOnceWithExactly({
+                cliVersion: '1.0.0',
+                ghostVersion: null,
+                dir: null
+            })
+        ).to.be.true;
     });
 
     it('outputs json when the json flag is passed in a ghost folder', function () {
@@ -67,10 +69,12 @@ describe('Unit: Commands > Version', function () {
 
         instance.run({json: true});
         expect(logStub.called).to.be.false;
-        expect(outputStub.calledOnceWithExactly({
-            cliVersion: '1.0.0',
-            ghostVersion: '1.5.0',
-            dir: '/var/www/ghost'
-        })).to.be.true;
+        expect(
+            outputStub.calledOnceWithExactly({
+                cliVersion: '1.0.0',
+                ghostVersion: '1.5.0',
+                dir: '/var/www/ghost'
+            })
+        ).to.be.true;
     });
 });

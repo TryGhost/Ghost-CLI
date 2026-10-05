@@ -31,11 +31,17 @@ describe('Unit: Tasks > migration-export > database', function () {
             expect(databaseKind(fakeInstance({}, 'sqlite3'))).to.equal('mysql-data');
             expect(databaseKind(fakeInstance({}, 'sqlite3'), 'mysql-data')).to.equal('mysql-data');
             expect(databaseKind(fakeInstance({}, 'sqlite3'), 'portable')).to.equal('portable');
-            expect(() => databaseKind(fakeInstance({}, 'sqlite3'), 'json')).to.throw(SystemError, /Unsupported SQLite format/);
+            expect(() => databaseKind(fakeInstance({}, 'sqlite3'), 'json')).to.throw(
+                SystemError,
+                /Unsupported SQLite format/
+            );
         });
 
         it('rejects a sqlite format for mysql sources', function () {
-            expect(() => databaseKind(fakeInstance({}, 'mysql'), 'portable')).to.throw(SystemError, /only applies to SQLite/);
+            expect(() => databaseKind(fakeInstance({}, 'mysql'), 'portable')).to.throw(
+                SystemError,
+                /only applies to SQLite/
+            );
         });
 
         it('supports only local sqlite3 installs', function () {
@@ -64,7 +70,9 @@ describe('Unit: Tasks > migration-export > database', function () {
                 const {dumpDatabase} = proxyquire(modulePath, {execa: {execa}, which});
                 expect(() => databaseKind(fakeInstance(connection))).to.throw(SystemError, /database.connection.ssl/);
                 expect(() => dumpArgs(connection)).to.throw(SystemError, /database.connection.ssl/);
-                await expect(dumpDatabase(fakeInstance(connection), '/tmp/out.sql')).rejects.toThrow(/database.connection.ssl/);
+                await expect(dumpDatabase(fakeInstance(connection), '/tmp/out.sql')).rejects.toThrow(
+                    /database.connection.ssl/
+                );
                 expect(which.called).to.be.false;
                 expect(execa.called).to.be.false;
             });
@@ -100,7 +108,9 @@ describe('Unit: Tasks > migration-export > database', function () {
         });
 
         it('prefers a socket when one is configured', function () {
-            expect(dumpArgs({socketPath: '/tmp/mysql.sock', host: 'nope', user: 'ghost', database: 'ghost_prod'})).to.deep.equal([
+            expect(
+                dumpArgs({socketPath: '/tmp/mysql.sock', host: 'nope', user: 'ghost', database: 'ghost_prod'})
+            ).to.deep.equal([
                 '--no-tablespaces',
                 '--single-transaction',
                 '--socket=/tmp/mysql.sock',
@@ -116,7 +126,10 @@ describe('Unit: Tasks > migration-export > database', function () {
             const which = sinon.stub().resolves('/usr/bin/mysqldump');
             const {dumpDatabase} = proxyquire(modulePath, {execa: {execa}, which});
 
-            await dumpDatabase(fakeInstance({host: 'db', user: 'ghost', password: 'hunter2', database: 'ghost_prod'}), '/tmp/out.sql');
+            await dumpDatabase(
+                fakeInstance({host: 'db', user: 'ghost', password: 'hunter2', database: 'ghost_prod'}),
+                '/tmp/out.sql'
+            );
 
             expect(which.calledOnceWithExactly('mysqldump')).to.be.true;
             expect(execa.calledOnce).to.be.true;
@@ -144,7 +157,7 @@ describe('Unit: Tasks > migration-export > database', function () {
             expect.fail('dumpDatabase should have errored');
         });
 
-        it('throws if mysqldump isn\'t installed', async function () {
+        it("throws if mysqldump isn't installed", async function () {
             const execa = sinon.stub().resolves();
             const which = sinon.stub().rejects(new Error('not found'));
             const {dumpDatabase} = proxyquire(modulePath, {execa: {execa}, which});

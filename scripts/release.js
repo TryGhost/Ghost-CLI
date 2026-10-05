@@ -137,7 +137,8 @@ function main() {
 
     logStep('Detecting bump type');
     const commits = run(`git log --first-parent --no-merges --pretty=tformat:'%s' ${baseTag}..HEAD`)
-        .split('\n').filter(Boolean);
+        .split('\n')
+        .filter(Boolean);
 
     if (!commits.length) {
         throw new Error(`No commits since ${baseTag} — nothing to release`);

@@ -1,7 +1,5 @@
 'use strict';
 
-class TestInvalidCommand {
-
-}
+class TestInvalidCommand {}
 
 module.exports = TestInvalidCommand;

@@ -12,14 +12,20 @@ describe('Unit: Doctor Checks > systemStack', function () {
 
     it('enabled works', function () {
         expect(systemStack.enabled({local: true}), 'false if local is true').to.be.false;
-        expect(systemStack.enabled({
-            local: false,
-            instance: {process: {name: 'local'}}
-        }), 'false if local is false and process name is local').to.be.false;
-        expect(systemStack.enabled({
-            local: false,
-            instance: {process: {name: 'systemd'}}
-        }), 'true if local is false and process name is not local').to.be.true;
+        expect(
+            systemStack.enabled({
+                local: false,
+                instance: {process: {name: 'local'}}
+            }),
+            'false if local is false and process name is local'
+        ).to.be.false;
+        expect(
+            systemStack.enabled({
+                local: false,
+                instance: {process: {name: 'systemd'}}
+            }),
+            'true if local is false and process name is not local'
+        ).to.be.true;
     });
 
     it('skip works', function () {
@@ -41,7 +47,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Operating system is not Linux\'');
+            expect(error.message).to.equal("System stack checks failed with message: 'Operating system is not Linux'");
             expect(osInfo.called).to.be.false;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -87,7 +93,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, 24, or 26\'');
+            expect(error.message).to.equal(
+                "System stack checks failed with message: 'Linux version is not Ubuntu 16, 18, 20, 22, 24, or 26'"
+            );
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -113,7 +121,9 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Linux version is not Ubuntu 16, 18, 20, 22, 24, or 26\'');
+            expect(error.message).to.equal(
+                "System stack checks failed with message: 'Linux version is not Ubuntu 16, 18, 20, 22, 24, or 26'"
+            );
             expect(osInfo.calledOnce).to.be.true;
             expect(logStub.calledOnce).to.be.true;
             expect(logStub.args[0][0]).to.match(/failed with message/);
@@ -210,7 +220,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): systemd\'');
+            expect(error.message).to.equal("System stack checks failed with message: 'Missing package(s): systemd'");
             expect(osInfo.calledOnce).to.be.true;
             expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
@@ -242,7 +252,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): systemd\'');
+            expect(error.message).to.equal("System stack checks failed with message: 'Missing package(s): systemd'");
             expect(osInfo.calledOnce).to.be.true;
             expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
@@ -274,7 +284,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): nginx\'');
+            expect(error.message).to.equal("System stack checks failed with message: 'Missing package(s): nginx'");
             expect(osInfo.calledOnce).to.be.true;
             expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;
@@ -306,7 +316,7 @@ describe('Unit: Doctor Checks > systemStack', function () {
             await systemStack.task(ctx);
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.equal('System stack checks failed with message: \'Missing package(s): nginx\'');
+            expect(error.message).to.equal("System stack checks failed with message: 'Missing package(s): nginx'");
             expect(osInfo.calledOnce).to.be.true;
             expect(services.calledTwice).to.be.true;
             expect(logStub.calledOnce).to.be.true;

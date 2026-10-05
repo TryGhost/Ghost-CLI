@@ -4,7 +4,10 @@ const proxyquire = require('proxyquire');
 const {CliError} = require('../../../../lib/errors');
 
 describe('Unit: Tasks > Major Update > Data', function () {
-    let knexMock; let gscanMock; let data; let connection;
+    let knexMock;
+    let gscanMock;
+    let data;
+    let connection;
 
     beforeEach(function () {
         connection = sinon.stub();
@@ -51,7 +54,9 @@ describe('Unit: Tasks > Major Update > Data', function () {
     });
 
     it('sqlite3: success', async function () {
-        connection.raw.withArgs('SELECT value FROM settings WHERE `key` = "active_theme";').resolves([{value: 'casper'}]);
+        connection.raw
+            .withArgs('SELECT value FROM settings WHERE `key` = "active_theme";')
+            .resolves([{value: 'casper'}]);
         connection.raw.withArgs('SELECT uuid FROM posts WHERE `slug` = "v2-demo-post";').resolves([{uuid: 'uuid'}]);
 
         gscanMock.check.resolves({unformatted: true});
@@ -73,17 +78,20 @@ describe('Unit: Tasks > Major Update > Data', function () {
         expect(connection.raw.calledTwice).to.be.true;
 
         expect(gscanMock.check.calledOnce).to.be.true;
-        expect(gscanMock.check.calledWithExactly(
-            '/var/www/ghost/versions/2.0.0/content/themes/casper',
-            {checkVersion: 'v2'}
-        )).to.be.true;
+        expect(
+            gscanMock.check.calledWithExactly('/var/www/ghost/versions/2.0.0/content/themes/casper', {
+                checkVersion: 'v2'
+            })
+        ).to.be.true;
         expect(gscanMock.format.calledOnce).to.be.true;
 
         expect(knexMock.calledOnce).to.be.true;
     });
 
     it('mysql: success', async function () {
-        connection.raw.withArgs('SELECT value FROM settings WHERE `key` = "active_theme";').resolves([[{value: 'not-casper'}]]);
+        connection.raw
+            .withArgs('SELECT value FROM settings WHERE `key` = "active_theme";')
+            .resolves([[{value: 'not-casper'}]]);
         connection.raw.withArgs('SELECT uuid FROM posts WHERE `slug` = "v2-demo-post";').resolves([[{uuid: 'uuid'}]]);
 
         gscanMock.check.resolves({unformatted: true});
@@ -105,17 +113,17 @@ describe('Unit: Tasks > Major Update > Data', function () {
         expect(connection.raw.calledTwice).to.be.true;
 
         expect(gscanMock.check.calledOnce).to.be.true;
-        expect(gscanMock.check.calledWithExactly(
-            '/var/www/ghost/content/themes/not-casper',
-            {checkVersion: 'v2'}
-        )).to.be.true;
+        expect(gscanMock.check.calledWithExactly('/var/www/ghost/content/themes/not-casper', {checkVersion: 'v2'})).to
+            .be.true;
         expect(gscanMock.format.calledOnce).to.be.true;
 
         expect(knexMock.calledOnce).to.be.true;
     });
 
     it('fails', async function () {
-        connection.raw.withArgs('SELECT value FROM settings WHERE `key` = "active_theme";').resolves([[{value: 'casper'}]]);
+        connection.raw
+            .withArgs('SELECT value FROM settings WHERE `key` = "active_theme";')
+            .resolves([[{value: 'casper'}]]);
         connection.raw.withArgs('SELECT uuid FROM posts WHERE `slug` = "v2-demo-post";').resolves([[{uuid: 'uuid'}]]);
 
         gscanMock.check.rejects(new Error('oops'));
@@ -135,10 +143,11 @@ describe('Unit: Tasks > Major Update > Data', function () {
             expect(connection.raw.calledOnce).to.be.true;
 
             expect(gscanMock.check.calledOnce).to.be.true;
-            expect(gscanMock.check.calledWithExactly(
-                '/var/www/ghost/versions/3.0.0/content/themes/casper',
-                {checkVersion: 'v3'}
-            )).to.be.true;
+            expect(
+                gscanMock.check.calledWithExactly('/var/www/ghost/versions/3.0.0/content/themes/casper', {
+                    checkVersion: 'v3'
+                })
+            ).to.be.true;
             expect(gscanMock.format.called).to.be.false;
 
             expect(knexMock.calledOnce).to.be.true;

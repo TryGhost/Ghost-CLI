@@ -35,18 +35,20 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
             '../../../../package': cliPackage
         }).task;
 
-        return nodeVersion({}, {}).then(() => {
-            expect(false, 'error should be thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            const message = stripAnsi(error.message);
+        return nodeVersion({}, {})
+            .then(() => {
+                expect(false, 'error should be thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                const message = stripAnsi(error.message);
 
-            expect(message).to.match(/Supported: 0.10.0/);
-            expect(message).to.match(new RegExp(`Installed: ${process.versions.node}`));
-        });
+                expect(message).to.match(/Supported: 0.10.0/);
+                expect(message).to.match(new RegExp(`Installed: ${process.versions.node}`));
+            });
     });
 
-    it('doesn\'t reject if bin is the local ghost bin file from the install (and local is true)', function () {
+    it("doesn't reject if bin is the local ghost bin file from the install (and local is true)", function () {
         const cliPackage = {
             engines: {
                 node: process.versions.node // this future-proofs the test
@@ -65,7 +67,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
         });
     });
 
-    it('doesn\'t do anything if GHOST_NODE_VERSION_CHECK is false and local is true', function () {
+    it("doesn't do anything if GHOST_NODE_VERSION_CHECK is false and local is true", function () {
         const cliPackage = {
             engines: {
                 node: '0.10.0'
@@ -84,7 +86,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
         });
     });
 
-    it('doesn\'t do anything if GHOST_NODE_VERSION_CHECK is false and local is true', function () {
+    it("doesn't do anything if GHOST_NODE_VERSION_CHECK is false and local is true", function () {
         const cliPackage = {
             engines: {
                 node: '0.10.0'
@@ -103,7 +105,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
         });
     });
 
-    it('doesn\'t do anything if node version is in range and local is true', function () {
+    it("doesn't do anything if node version is in range and local is true", function () {
         const cliPackage = {
             engines: {
                 node: process.versions.node // this future-proofs the test
@@ -121,7 +123,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
         });
     });
 
-    it('doesn\'t call checkDirectoryAndAbove if os is not linux', function () {
+    it("doesn't call checkDirectoryAndAbove if os is not linux", function () {
         const cliPackage = {
             engines: {
                 node: process.versions.node // this future-proofs the test
@@ -140,7 +142,7 @@ describe('Unit: Doctor Checks > nodeVersion', function () {
         });
     });
 
-    it('doesn\'t call checkDirectoryAndAbove if no-setup-linux-user is passed', function () {
+    it("doesn't call checkDirectoryAndAbove if no-setup-linux-user is passed", function () {
         const cliPackage = {
             engines: {
                 node: process.versions.node // this future-proofs the test

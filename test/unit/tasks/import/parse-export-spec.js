@@ -28,7 +28,7 @@ describe('Unit > Tasks > Import > parse-export', function () {
         expect.fail('parseImport should have errored');
     });
 
-    it('throws error if version can\'t be determined', function () {
+    it("throws error if version can't be determined", function () {
         const stub = sinon.stub(fs, 'readFileSync').returns('{}');
 
         try {
@@ -45,9 +45,11 @@ describe('Unit > Tasks > Import > parse-export', function () {
     });
 
     it('throws error if unrecognized version', function () {
-        const stub = sinon.stub(fs, 'readFileSync').returns(JSON.stringify({
-            meta: {version: 'this isnt semver'}
-        }));
+        const stub = sinon.stub(fs, 'readFileSync').returns(
+            JSON.stringify({
+                meta: {version: 'this isnt semver'}
+            })
+        );
 
         try {
             parseExport('unrecognized.json');

@@ -14,7 +14,7 @@ describe('Unit: Utils > portPolling', function () {
             .then(() => {
                 throw new Error('Expected error');
             })
-            .catch((err) => {
+            .catch(err => {
                 expect(err.message).to.eql('Port is required.');
             });
     });
@@ -37,11 +37,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake((fn) => {
+            sinon.stub(net, 'createServer').callsFake(fn => {
                 setTimeout(() => {
                     fn(socketStub);
                 }, 100);
@@ -52,17 +52,19 @@ describe('Unit: Utils > portPolling', function () {
             return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true
-            }).then(() => {
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.callCount).to.eql(1);
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.callCount).to.eql(1);
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(1);
-                expect(socketStub.on.callCount).to.eql(1);
-            }).catch((err) => {
-                throw err;
-            });
+                    expect(socketStub.destroy.callCount).to.eql(1);
+                    expect(socketStub.on.callCount).to.eql(1);
+                })
+                .catch(err => {
+                    throw err;
+                });
         });
 
         it('Ghost does start, v4', function () {
@@ -83,11 +85,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake((fn) => {
+            sinon.stub(net, 'createServer').callsFake(fn => {
                 setTimeout(() => {
                     fn(socketStub);
                 }, 100);
@@ -99,20 +101,22 @@ describe('Unit: Utils > portPolling', function () {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true,
                 useV4Boot: true
-            }).then(() => {
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.callCount).to.eql(1);
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.callCount).to.eql(1);
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(2);
-                expect(socketStub.on.callCount).to.eql(1);
-            }).catch((err) => {
-                throw err;
-            });
+                    expect(socketStub.destroy.callCount).to.eql(2);
+                    expect(socketStub.on.callCount).to.eql(1);
+                })
+                .catch(err => {
+                    throw err;
+                });
         });
 
-        it('Ghost didn\'t start', function () {
+        it("Ghost didn't start", function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
             const ui = {
@@ -129,11 +133,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake((fn) => {
+            sinon.stub(net, 'createServer').callsFake(fn => {
                 setTimeout(() => {
                     fn(socketStub);
                 }, 100);
@@ -144,21 +148,23 @@ describe('Unit: Utils > portPolling', function () {
             return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true
-            }).then(() => {
-                expect('1').to.equal(1, 'Ghost should not start.');
-            }).catch((err) => {
-                expect(err.message).to.eql('Syntax Error');
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.calledOnce).to.be.true;
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect('1').to.equal(1, 'Ghost should not start.');
+                })
+                .catch(err => {
+                    expect(err.message).to.eql('Syntax Error');
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.calledOnce).to.be.true;
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(1);
-                expect(socketStub.on.callCount).to.eql(1);
-            });
+                    expect(socketStub.destroy.callCount).to.eql(1);
+                    expect(socketStub.on.callCount).to.eql(1);
+                });
         });
 
-        it('Ghost didn\'t start, v4', function () {
+        it("Ghost didn't start, v4", function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
             const ui = {
@@ -176,11 +182,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake((fn) => {
+            sinon.stub(net, 'createServer').callsFake(fn => {
                 setTimeout(() => {
                     fn(socketStub);
                 }, 100);
@@ -192,21 +198,23 @@ describe('Unit: Utils > portPolling', function () {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true,
                 useV4Boot: true
-            }).then(() => {
-                expect('1').to.equal(1, 'Ghost should not start.');
-            }).catch((err) => {
-                expect(err.message).to.eql('Ghost was able to start, but errored during boot with: Syntax Error');
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.calledOnce).to.be.true;
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect('1').to.equal(1, 'Ghost should not start.');
+                })
+                .catch(err => {
+                    expect(err.message).to.eql('Ghost was able to start, but errored during boot with: Syntax Error');
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.calledOnce).to.be.true;
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(2);
-                expect(socketStub.on.callCount).to.eql(1);
-            });
+                    expect(socketStub.destroy.callCount).to.eql(2);
+                    expect(socketStub.on.callCount).to.eql(1);
+                });
         });
 
-        it('Ghost didn\'t start, invalid json', function () {
+        it("Ghost didn't start, invalid json", function () {
             const netStub = sinon.stub();
             const socketStub = sinon.stub();
             const ui = {
@@ -222,11 +230,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake((fn) => {
+            sinon.stub(net, 'createServer').callsFake(fn => {
                 setTimeout(() => {
                     fn(socketStub);
                 }, 100);
@@ -237,18 +245,20 @@ describe('Unit: Utils > portPolling', function () {
             return portPolling(ui, {
                 netServerTimeoutInMS: 1000,
                 useNetServer: true
-            }).then(() => {
-                expect('1').to.equal(1, 'Ghost should not start.');
-            }).catch((err) => {
-                expect(err.message).to.match(/Unexpected token/);
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.calledOnce).to.be.true;
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect('1').to.equal(1, 'Ghost should not start.');
+                })
+                .catch(err => {
+                    expect(err.message).to.match(/Unexpected token/);
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.calledOnce).to.be.true;
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(1);
-                expect(socketStub.on.callCount).to.eql(1);
-            });
+                    expect(socketStub.destroy.callCount).to.eql(1);
+                    expect(socketStub.on.callCount).to.eql(1);
+                });
         });
 
         it('Ghost does not communicate, expect timeout', function () {
@@ -263,7 +273,7 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
@@ -272,18 +282,20 @@ describe('Unit: Utils > portPolling', function () {
             return portPolling(ui, {
                 netServerTimeoutInMS: 500,
                 useNetServer: true
-            }).then(() => {
-                expect('1').to.equal(1, 'Ghost should not start.');
-            }).catch((err) => {
-                expect(err.message).to.eql('Could not communicate with Ghost');
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.calledOnce).to.be.true;
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect('1').to.equal(1, 'Ghost should not start.');
+                })
+                .catch(err => {
+                    expect(err.message).to.eql('Could not communicate with Ghost');
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.calledOnce).to.be.true;
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(0);
-                expect(socketStub.on.callCount).to.eql(0);
-            });
+                    expect(socketStub.destroy.callCount).to.eql(0);
+                    expect(socketStub.on.callCount).to.eql(0);
+                });
         });
 
         it('Ghost does not answer, expect timeout', function () {
@@ -298,11 +310,11 @@ describe('Unit: Utils > portPolling', function () {
             socketStub.destroy = sinon.stub();
 
             netStub.listen = sinon.stub();
-            netStub.close = sinon.stub().callsFake((cb) => {
+            netStub.close = sinon.stub().callsFake(cb => {
                 cb();
             });
 
-            sinon.stub(net, 'createServer').callsFake((fn) => {
+            sinon.stub(net, 'createServer').callsFake(fn => {
                 setTimeout(() => {
                     fn(socketStub);
                 }, 100);
@@ -313,18 +325,20 @@ describe('Unit: Utils > portPolling', function () {
             return portPolling(ui, {
                 netServerTimeoutInMS: 500,
                 useNetServer: true
-            }).then(() => {
-                expect('1').to.equal(1, 'Ghost should not start.');
-            }).catch((err) => {
-                expect(err.message).to.eql('Could not communicate with Ghost');
-                expect(net.createServer.calledOnce).to.be.true;
-                expect(netStub.listen.calledOnce).to.be.true;
-                expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
-                expect(netStub.close.callCount).to.eql(1);
+            })
+                .then(() => {
+                    expect('1').to.equal(1, 'Ghost should not start.');
+                })
+                .catch(err => {
+                    expect(err.message).to.eql('Could not communicate with Ghost');
+                    expect(net.createServer.calledOnce).to.be.true;
+                    expect(netStub.listen.calledOnce).to.be.true;
+                    expect(netStub.listen.calledWithExactly({host: 'localhost', port: 1212})).to.be.true;
+                    expect(netStub.close.callCount).to.eql(1);
 
-                expect(socketStub.destroy.callCount).to.eql(1);
-                expect(socketStub.on.callCount).to.eql(1);
-            });
+                    expect(socketStub.destroy.callCount).to.eql(1);
+                    expect(socketStub.on.callCount).to.eql(1);
+                });
         });
     });
 
@@ -350,7 +364,7 @@ describe('Unit: Utils > portPolling', function () {
                 .then(() => {
                     throw new Error('Expected error');
                 })
-                .catch((err) => {
+                .catch(err => {
                     expect(err.options.suggestion).to.exist;
                     expect(err.message).to.eql('Ghost did not start.');
                     expect(err.err.message).to.eql('whoops');
@@ -385,16 +399,23 @@ describe('Unit: Utils > portPolling', function () {
 
             const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '0.0.0.0'})
+            return portPolling(ui, {
+                port: 1111,
+                maxTries: 3,
+                retryTimeoutInMS: 100,
+                delayOnConnectInMS: 150,
+                host: '0.0.0.0'
+            })
                 .then(() => {
                     throw new Error('Expected error');
                 })
-                .catch((err) => {
+                .catch(err => {
                     expect(err.options.suggestion).to.exist;
                     expect(err.message).to.eql('Ghost did not start.');
                     expect(err.err.message).to.eql('Ghost died.');
                     expect(connectStub.calledTwice).to.be.true;
-                    expect(connectStub.calledWithExactly(1111, 'localhost'), 'uses localhost if host is 0.0.0.0').to.be.true;
+                    expect(connectStub.calledWithExactly(1111, 'localhost'), 'uses localhost if host is 0.0.0.0').to.be
+                        .true;
                     expect(netStub.destroy.callCount).to.eql(2);
                 });
         });
@@ -424,13 +445,19 @@ describe('Unit: Utils > portPolling', function () {
 
             const connectStub = sinon.stub(net, 'connect').returns(netStub);
 
-            return portPolling(ui, {port: 1111, maxTries: 3, retryTimeoutInMS: 100, delayOnConnectInMS: 150, host: '10.0.1.0'})
+            return portPolling(ui, {
+                port: 1111,
+                maxTries: 3,
+                retryTimeoutInMS: 100,
+                delayOnConnectInMS: 150,
+                host: '10.0.1.0'
+            })
                 .then(() => {
                     expect(connectStub.calledTwice).to.be.true;
                     expect(connectStub.calledWithExactly(1111, '10.0.1.0'), 'uses custom host').to.be.true;
                     expect(netStub.destroy.callCount).to.eql(2);
                 })
-                .catch((err) => {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -459,7 +486,7 @@ describe('Unit: Utils > portPolling', function () {
                 .then(() => {
                     expect(netStub.destroy.callCount).to.eql(1);
                 })
-                .catch((err) => {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -486,7 +513,7 @@ describe('Unit: Utils > portPolling', function () {
                 .then(() => {
                     throw new Error('Expected error');
                 })
-                .catch((err) => {
+                .catch(err => {
                     expect(err.options.suggestion).to.exist;
                     expect(err.message).to.eql('Ghost did not start.');
                     expect(err.err.message).to.eql('Socket timed out.');
@@ -523,7 +550,7 @@ describe('Unit: Utils > portPolling', function () {
                 .then(() => {
                     throw new Error('Expected error');
                 })
-                .catch((err) => {
+                .catch(err => {
                     expect(err.options.suggestion).to.exist;
                     expect(err.message).to.eql('Ghost did not start.');
                     expect(err.err.message).to.eql('Socket timed out.');

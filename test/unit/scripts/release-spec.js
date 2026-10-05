@@ -10,17 +10,21 @@ describe('Unit: Scripts > release', function () {
         });
 
         it('detects features from emoji commits', function () {
-            expect(detectBumpType([
-                'Update pnpm to v11.20.0 (#2266)',
-                '✨ Added support for Ubuntu 26.04 LTS (#2271)'
-            ], 'auto')).to.equal('minor');
+            expect(
+                detectBumpType(
+                    ['Update pnpm to v11.20.0 (#2266)', '✨ Added support for Ubuntu 26.04 LTS (#2271)'],
+                    'auto'
+                )
+            ).to.equal('minor');
         });
 
         it('defaults to patch without feature commits', function () {
-            expect(detectBumpType([
-                '🐛 Fixed X-Forwarded-For header in nginx config (#2254)',
-                'Update pnpm to v11.20.0 (#2266)'
-            ], 'auto')).to.equal('patch');
+            expect(
+                detectBumpType(
+                    ['🐛 Fixed X-Forwarded-For header in nginx config (#2254)', 'Update pnpm to v11.20.0 (#2266)'],
+                    'auto'
+                )
+            ).to.equal('patch');
         });
     });
 });

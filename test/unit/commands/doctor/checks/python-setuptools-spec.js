@@ -131,7 +131,9 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
     });
 
     describe('task', function () {
-        let ctx; let task; let pythonSetuptools;
+        let ctx;
+        let task;
+        let pythonSetuptools;
 
         beforeEach(function () {
             ctx = {};
@@ -164,7 +166,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                 const execaStub = sinon.stub();
                 execaStub.withArgs('python3', ['--version']).resolves({stdout: 'Python 3.12.0'});
                 execaStub.withArgs('python3', ['-c', 'import setuptools']).resolves();
-                
+
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
                     execa: {execa: execaStub}
                 });
@@ -177,7 +179,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
             it('updates task title for Python < 3.12 (no setuptools check)', async function () {
                 const execaStub = sinon.stub();
                 execaStub.withArgs('python3', ['--version']).resolves({stdout: 'Python 3.11.0'});
-                
+
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
                     execa: {execa: execaStub}
                 });
@@ -192,7 +194,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                     const execaStub = sinon.stub();
                     execaStub.withArgs('python3', ['--version']).resolves({stdout: 'Python 3.12.0'});
                     execaStub.withArgs('python3', ['-c', 'import setuptools']).rejects(new Error('Module not found'));
-                    
+
                     pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
                         execa: {execa: execaStub}
                     });
@@ -204,7 +206,9 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                         expect.fail('Should have thrown an error');
                     } catch (error) {
                         expect(error).to.be.instanceof(errors.SystemError);
-                        expect(error.message).to.equal('Python setuptools is required for SQLite3 when using Python 3.12+');
+                        expect(error.message).to.equal(
+                            'Python setuptools is required for SQLite3 when using Python 3.12+'
+                        );
                     }
                 });
             });
@@ -214,7 +218,7 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
                     const execaStub = sinon.stub();
                     execaStub.withArgs('python3', ['--version']).resolves({stdout: 'Python 3.12.0'});
                     execaStub.withArgs('python3', ['-c', 'import setuptools']).resolves();
-                    
+
                     pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
                         execa: {execa: execaStub}
                     });
@@ -247,8 +251,10 @@ describe('Unit: Doctor Checks > pythonSetuptools', function () {
             it('handles timeout for setuptools import', async function () {
                 const execaStub = sinon.stub();
                 execaStub.withArgs('python3', ['--version']).resolves({stdout: 'Python 3.12.0'});
-                execaStub.withArgs('python3', ['-c', 'import setuptools'], {timeout: 5000}).rejects(new Error('Timeout'));
-                
+                execaStub
+                    .withArgs('python3', ['-c', 'import setuptools'], {timeout: 5000})
+                    .rejects(new Error('Timeout'));
+
                 pythonSetuptools = proxyquire('../../../../../lib/commands/doctor/checks/python-setuptools', {
                     execa: {execa: execaStub}
                 });

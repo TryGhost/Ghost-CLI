@@ -10,8 +10,7 @@ const {errors} = require('../../lib');
 
 const {SystemError} = errors;
 
-const systemdEnabled =
-    ({instance}) => instance.config.get('process', 'local') === 'systemd';
+const systemdEnabled = ({instance}) => instance.config.get('process', 'local') === 'systemd';
 
 const unitCheckTitle = 'Checking systemd unit file';
 const nodeCheckTitle = 'Checking systemd node version';
@@ -61,7 +60,7 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
     if (!semver.eq(version, process.versions.node)) {
         ui.log(
             `Warning: Ghost is running with node v${version}.\n` +
-            `Your current node version is v${process.versions.node}.`,
+                `Your current node version is v${process.versions.node}.`,
             'yellow'
         );
     }
@@ -88,17 +87,20 @@ async function checkNodeVersion({instance, systemd, ui}, task) {
     }
 }
 
-module.exports = [{
-    title: unitCheckTitle,
-    task: checkUnitFile,
-    enabled: systemdEnabled,
-    category: ['start']
-}, {
-    title: nodeCheckTitle,
-    task: checkNodeVersion,
-    enabled: systemdEnabled,
-    category: ['start']
-}];
+module.exports = [
+    {
+        title: unitCheckTitle,
+        task: checkUnitFile,
+        enabled: systemdEnabled,
+        category: ['start']
+    },
+    {
+        title: nodeCheckTitle,
+        task: checkNodeVersion,
+        enabled: systemdEnabled,
+        category: ['start']
+    }
+];
 
 // exports for unit testing
 module.exports.checkUnitFile = checkUnitFile;

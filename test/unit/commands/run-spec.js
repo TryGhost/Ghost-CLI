@@ -101,16 +101,12 @@ describe('Unit: Commands > Run', function () {
         expect(logStub.calledOnce).to.be.true;
         expect(logStub.args[0][0]).to.match(/^\+ sudo/);
         expect(spawnStub.calledOnce).to.be.true;
-        expect(spawnStub.calledWithExactly('sudo', [
-            '-E',
-            '-u',
-            'ghost',
-            process.execPath,
-            'current/index.js'
-        ], {
-            cwd: '/var/www/ghost',
-            stdio: 'inherit'
-        })).to.be.true;
+        expect(
+            spawnStub.calledWithExactly('sudo', ['-E', '-u', 'ghost', process.execPath, 'current/index.js'], {
+                cwd: '/var/www/ghost',
+                stdio: 'inherit'
+            })
+        ).to.be.true;
         expect(instance.child).to.equal(childStub);
 
         // Check error handler with EPERM code
@@ -156,13 +152,18 @@ describe('Unit: Commands > Run', function () {
         const errorStub = sinon.stub();
         const exitStub = sinon.stub(process, 'exit');
 
-        instance.useDirect({dir: '/var/www/ghost', version: '3.0.0', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
+        instance.useDirect(
+            {dir: '/var/www/ghost', version: '3.0.0', process: {success: successStub, error: errorStub}},
+            {delayErrorChaining: false}
+        );
 
         expect(spawnStub.calledOnce).to.be.true;
-        expect(spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
-            cwd: '/var/www/ghost',
-            stdio: [0, 1, 'pipe', 'ipc']
-        })).to.be.true;
+        expect(
+            spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
+                cwd: '/var/www/ghost',
+                stdio: [0, 1, 'pipe', 'ipc']
+            })
+        ).to.be.true;
         expect(instance.child).to.equal(childStub);
 
         // Check error handler
@@ -187,7 +188,7 @@ describe('Unit: Commands > Run', function () {
         // check message handler with error
         childStub.emit('message', {error: 'oops I did it again'});
 
-        await new Promise((resolve) => {
+        await new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
 
@@ -208,20 +209,25 @@ describe('Unit: Commands > Run', function () {
         const successStub = sinon.stub();
         const errorStub = sinon.stub();
 
-        instance.useDirect({dir: '/var/www/ghost', version: '4.0.0', process: {success: successStub, error: errorStub}}, {delayErrorChaining: false});
+        instance.useDirect(
+            {dir: '/var/www/ghost', version: '4.0.0', process: {success: successStub, error: errorStub}},
+            {delayErrorChaining: false}
+        );
 
         expect(spawnStub.calledOnce).to.be.true;
-        expect(spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
-            cwd: '/var/www/ghost',
-            stdio: [0, 1, 'pipe', 'ipc']
-        })).to.be.true;
+        expect(
+            spawnStub.calledWithExactly(process.execPath, ['current/index.js'], {
+                cwd: '/var/www/ghost',
+                stdio: [0, 1, 'pipe', 'ipc']
+            })
+        ).to.be.true;
         expect(instance.child).to.equal(childStub);
 
         // Check error prior to started
         expect(successStub.called).to.be.false;
         expect(errorStub.called).to.be.false;
         childStub.emit('message', {error: {message: 'test error'}});
-        await new Promise((resolve) => {
+        await new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
         expect(successStub.called).to.be.false;
@@ -236,11 +242,15 @@ describe('Unit: Commands > Run', function () {
 
         // check error after started
         childStub.emit('message', {error: {message: 'test error'}});
-        await new Promise((resolve) => {
+        await new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
         expect(successStub.called).to.be.false;
-        expect(errorStub.calledOnceWithExactly({message: 'Ghost was able to start, but errored during boot with: test error'}));
+        expect(
+            errorStub.calledOnceWithExactly({
+                message: 'Ghost was able to start, but errored during boot with: test error'
+            })
+        );
 
         errorStub.reset();
 
@@ -253,14 +263,14 @@ describe('Unit: Commands > Run', function () {
     describe('cleanup handler', function () {
         const RunCommand = require(modulePath);
 
-        it('doesn\'t do anything if child process has not been set', function () {
+        it("doesn't do anything if child process has not been set", function () {
             const instance = new RunCommand({}, {});
             expect(instance.child).to.not.exist;
 
             instance.cleanup(); // If no error is thrown then it was successful
         });
 
-        it('attempts to kill child process, and doesn\'t throw if error is EPERM and sudo is true', function () {
+        it("attempts to kill child process, and doesn't throw if error is EPERM and sudo is true", function () {
             const instance = new RunCommand({}, {});
             const err = new Error();
             err.code = 'EPERM';

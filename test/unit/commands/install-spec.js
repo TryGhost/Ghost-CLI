@@ -49,13 +49,16 @@ describe('Unit: Commands > Install', function () {
             });
             const testInstance = new InstallCommand({}, {});
 
-            return testInstance.run({version: '1.0.0', 'check-empty': true}).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/Current directory is not empty/);
-                expect(dirEmptyStub.calledOnce).to.be.true;
-            });
+            return testInstance
+                .run({version: '1.0.0', 'check-empty': true})
+                .then(() => {
+                    expect(false, 'error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.SystemError);
+                    expect(error.message).to.match(/Current directory is not empty/);
+                    expect(dirEmptyStub.calledOnce).to.be.true;
+                });
         });
 
         it('calls install checks first', function () {
@@ -68,22 +71,27 @@ describe('Unit: Commands > Install', function () {
             });
             const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {});
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
-            return testInstance.run({argv: true}).then(() => {
-                expect(false, 'run should have rejected').to.be.true;
-            }).catch(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledWithExactly(
-                    {doctorCommand: true},
-                    {categories: ['install'], skipInstanceCheck: true, quiet: true, argv: true, local: false},
-                    {version: '1.0.0'}
-                )).to.be.true;
-                expect(listrStub.calledOnce).to.be.true;
-            });
+            return testInstance
+                .run({argv: true})
+                .then(() => {
+                    expect(false, 'run should have rejected').to.be.true;
+                })
+                .catch(() => {
+                    expect(dirEmptyStub.calledOnce).to.be.true;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(
+                        runCommandStub.calledWithExactly(
+                            {doctorCommand: true},
+                            {categories: ['install'], skipInstanceCheck: true, quiet: true, argv: true, local: false},
+                            {version: '1.0.0'}
+                        )
+                    ).to.be.true;
+                    expect(listrStub.calledOnce).to.be.true;
+                });
         });
 
         it('runs local install when command is `ghost install local`', function () {
@@ -96,26 +104,32 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 '../utils/dir-is-empty': dirEmptyStub
             });
-            const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand(
+                {listr: listrStub, run: uiRunStub},
+                {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub}
+            );
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
-            return testInstance.run({version: 'local', zip: '', v1: true, 'check-empty': true}).then(() => {
-                expect(false, 'run should have rejected').to.be.true;
-            }).catch(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(listrStub.calledOnce).to.be.true;
-                expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: null, zip: '', v1: true, 'check-empty': true},
-                    cliVersion: '1.0.0',
-                    version: '1.0.0'
+            return testInstance
+                .run({version: 'local', zip: '', v1: true, 'check-empty': true})
+                .then(() => {
+                    expect(false, 'run should have rejected').to.be.true;
+                })
+                .catch(() => {
+                    expect(dirEmptyStub.calledOnce).to.be.true;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(listrStub.calledOnce).to.be.true;
+                    expect(listrStub.args[0][1]).to.deep.equal({
+                        argv: {version: null, zip: '', v1: true, 'check-empty': true},
+                        cliVersion: '1.0.0',
+                        version: '1.0.0'
+                    });
+                    expect(setEnvironmentStub.calledOnce).to.be.true;
+                    expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 });
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-            });
         });
 
         it('runs local install when command is `ghost install <version> --local`', function () {
@@ -128,26 +142,32 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 '../utils/dir-is-empty': dirEmptyStub
             });
-            const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand(
+                {listr: listrStub, run: uiRunStub},
+                {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub}
+            );
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
-            return testInstance.run({version: '1.5.0', local: true, zip: '', v1: false, 'check-empty': true}).then(() => {
-                expect(false, 'run should have rejected').to.be.true;
-            }).catch(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(listrStub.calledOnce).to.be.true;
-                expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: '1.5.0', zip: '', v1: false, local: true, 'check-empty': true},
-                    cliVersion: '1.0.0',
-                    version: '1.0.0'
+            return testInstance
+                .run({version: '1.5.0', local: true, zip: '', v1: false, 'check-empty': true})
+                .then(() => {
+                    expect(false, 'run should have rejected').to.be.true;
+                })
+                .catch(() => {
+                    expect(dirEmptyStub.calledOnce).to.be.true;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(listrStub.calledOnce).to.be.true;
+                    expect(listrStub.args[0][1]).to.deep.equal({
+                        argv: {version: '1.5.0', zip: '', v1: false, local: true, 'check-empty': true},
+                        cliVersion: '1.0.0',
+                        version: '1.0.0'
+                    });
+                    expect(setEnvironmentStub.calledOnce).to.be.true;
+                    expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 });
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-            });
         });
 
         it('runs local install when command is `ghost install <version> local`', function () {
@@ -160,26 +180,32 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 '../utils/dir-is-empty': dirEmptyStub
             });
-            const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand(
+                {listr: listrStub, run: uiRunStub},
+                {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub}
+            );
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
-            return testInstance.run({version: '1.5.0', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true}).then(() => {
-                expect(false, 'run should have rejected').to.be.true;
-            }).catch(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(listrStub.calledOnce).to.be.true;
-                expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: '1.5.0', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true},
-                    cliVersion: '1.0.0',
-                    version: '1.0.0'
+            return testInstance
+                .run({version: '1.5.0', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true})
+                .then(() => {
+                    expect(false, 'run should have rejected').to.be.true;
+                })
+                .catch(() => {
+                    expect(dirEmptyStub.calledOnce).to.be.true;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(listrStub.calledOnce).to.be.true;
+                    expect(listrStub.args[0][1]).to.deep.equal({
+                        argv: {version: '1.5.0', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true},
+                        cliVersion: '1.0.0',
+                        version: '1.0.0'
+                    });
+                    expect(setEnvironmentStub.calledOnce).to.be.true;
+                    expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 });
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-            });
         });
 
         it('normalizes version to a string', function () {
@@ -192,26 +218,32 @@ describe('Unit: Commands > Install', function () {
             const InstallCommand = proxyquire(modulePath, {
                 '../utils/dir-is-empty': dirEmptyStub
             });
-            const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand(
+                {listr: listrStub, run: uiRunStub},
+                {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub}
+            );
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
-            return testInstance.run({version: 2, zip: '', v1: false, _: ['install', 'local'], 'check-empty': true}).then(() => {
-                expect(false, 'run should have rejected').to.be.true;
-            }).catch(() => {
-                expect(dirEmptyStub.calledOnce).to.be.true;
-                expect(runCommandStub.calledOnce).to.be.true;
-                expect(listrStub.calledOnce).to.be.true;
-                expect(listrStub.args[0][1]).to.deep.equal({
-                    argv: {version: '2', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true},
-                    cliVersion: '1.0.0',
-                    version: '1.0.0'
+            return testInstance
+                .run({version: 2, zip: '', v1: false, _: ['install', 'local'], 'check-empty': true})
+                .then(() => {
+                    expect(false, 'run should have rejected').to.be.true;
+                })
+                .catch(() => {
+                    expect(dirEmptyStub.calledOnce).to.be.true;
+                    expect(runCommandStub.calledOnce).to.be.true;
+                    expect(listrStub.calledOnce).to.be.true;
+                    expect(listrStub.args[0][1]).to.deep.equal({
+                        argv: {version: '2', zip: '', v1: false, _: ['install', 'local'], 'check-empty': true},
+                        cliVersion: '1.0.0',
+                        version: '1.0.0'
+                    });
+                    expect(setEnvironmentStub.calledOnce).to.be.true;
+                    expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
                 });
-                expect(setEnvironmentStub.calledOnce).to.be.true;
-                expect(setEnvironmentStub.calledWithExactly(true, true)).to.be.true;
-            });
         });
 
         it('calls all tasks and returns after tasks run if --no-setup is passed', function () {
@@ -252,9 +284,12 @@ describe('Unit: Commands > Install', function () {
                 '../utils/dir-is-empty': dirEmptyStub,
                 './setup': {SetupCommand: true}
             });
-            const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand(
+                {listr: listrStub, run: uiRunStub},
+                {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub}
+            );
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
@@ -264,10 +299,12 @@ describe('Unit: Commands > Install', function () {
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true));
                 expect(runCommandStub.calledTwice).to.be.true;
-                expect(runCommandStub.calledWithExactly(
-                    {SetupCommand: true},
-                    {version: 'local', local: true, zip: '', 'check-empty': true}
-                ));
+                expect(
+                    runCommandStub.calledWithExactly(
+                        {SetupCommand: true},
+                        {version: 'local', local: true, zip: '', 'check-empty': true}
+                    )
+                );
             });
         });
 
@@ -280,9 +317,12 @@ describe('Unit: Commands > Install', function () {
                 '../utils/dir-is-empty': dirEmptyStub,
                 './setup': {SetupCommand: true}
             });
-            const testInstance = new InstallCommand({listr: listrStub, run: uiRunStub}, {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub});
+            const testInstance = new InstallCommand(
+                {listr: listrStub, run: uiRunStub},
+                {cliVersion: '1.0.0', setEnvironment: setEnvironmentStub}
+            );
             const runCommandStub = sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
 
@@ -292,10 +332,12 @@ describe('Unit: Commands > Install', function () {
                 expect(setEnvironmentStub.calledOnce).to.be.true;
                 expect(setEnvironmentStub.calledWithExactly(true, true));
                 expect(runCommandStub.calledTwice).to.be.true;
-                expect(runCommandStub.calledWithExactly(
-                    {SetupCommand: true},
-                    {version: 'local', local: true, zip: '', 'check-empty': false}
-                ));
+                expect(
+                    runCommandStub.calledWithExactly(
+                        {SetupCommand: true},
+                        {version: 'local', local: true, zip: '', 'check-empty': false}
+                    )
+                );
             });
         });
     });
@@ -312,7 +354,8 @@ describe('Unit: Commands > Install', function () {
 
             await testInstance.version(context);
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false, channel: 'stable'})).to.be.true;
+            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false, channel: 'stable'})).to.be
+                .true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
         });
@@ -328,7 +371,8 @@ describe('Unit: Commands > Install', function () {
 
             await testInstance.version(context);
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false, channel: 'next'})).to.be.true;
+            expect(resolveVersion.calledWithExactly('1.0.0', null, {v1: false, force: false, channel: 'next'})).to.be
+                .true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
         });
@@ -386,7 +430,9 @@ describe('Unit: Commands > Install', function () {
             const context = {argv: {version: '2.0.0', fromExport: 'test-export.json'}};
 
             await testInstance.version(context);
-            expect(resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined, force: undefined, channel: undefined})).to.be.true;
+            expect(
+                resolveVersion.calledOnceWithExactly('v1', null, {v1: undefined, force: undefined, channel: undefined})
+            ).to.be.true;
             expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
             expect(context.version).to.equal('1.5.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/1.5.0'));
@@ -406,7 +452,13 @@ describe('Unit: Commands > Install', function () {
             const context = {argv: {fromExport: 'test-export.json'}};
 
             await testInstance.version(context);
-            expect(resolveVersion.calledOnceWithExactly('2.0.0', null, {v1: undefined, force: undefined, channel: undefined})).to.be.true;
+            expect(
+                resolveVersion.calledOnceWithExactly('2.0.0', null, {
+                    v1: undefined,
+                    force: undefined,
+                    channel: undefined
+                })
+            ).to.be.true;
             expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
             expect(context.version).to.equal('2.0.0');
             expect(context.installPath).to.equal(path.join(process.cwd(), 'versions/2.0.0'));
@@ -430,7 +482,13 @@ describe('Unit: Commands > Install', function () {
             } catch (error) {
                 expect(error).to.be.an.instanceof(errors.SystemError);
                 expect(error.message).to.include('v3.0.0 into v2.0.0');
-                expect(resolveVersion.calledOnceWithExactly('v2', null, {v1: undefined, force: undefined, channel: undefined})).to.be.true;
+                expect(
+                    resolveVersion.calledOnceWithExactly('v2', null, {
+                        v1: undefined,
+                        force: undefined,
+                        channel: undefined
+                    })
+                ).to.be.true;
                 expect(parseExport.calledOnceWithExactly('test-export.json')).to.be.true;
                 expect(log.called).to.be.false;
                 return;
@@ -456,14 +514,18 @@ describe('Unit: Commands > Install', function () {
             const context = {version: '5.67.0'};
             testInstance.defaultThemes(context);
             expect(symlinkSyncStub.callCount).to.equal(2);
-            expect(symlinkSyncStub.calledWithExactly(
-                path.join(process.cwd(), 'current', 'content', 'themes', 'casper'),
-                path.join(process.cwd(), 'content', 'themes', 'casper')
-            ));
-            expect(symlinkSyncStub.calledWithExactly(
-                path.join(process.cwd(), 'current', 'content', 'themes', 'source'),
-                path.join(process.cwd(), 'content', 'themes', 'source')
-            ));
+            expect(
+                symlinkSyncStub.calledWithExactly(
+                    path.join(process.cwd(), 'current', 'content', 'themes', 'casper'),
+                    path.join(process.cwd(), 'content', 'themes', 'casper')
+                )
+            );
+            expect(
+                symlinkSyncStub.calledWithExactly(
+                    path.join(process.cwd(), 'current', 'content', 'themes', 'source'),
+                    path.join(process.cwd(), 'content', 'themes', 'source')
+                )
+            );
         });
     });
 
@@ -529,7 +591,7 @@ describe('Unit: Commands > Install', function () {
             const runStub = sinon.stub().callsFake(task => task());
             const testInstance = new InstallCommand({listr: listrStub, run: runStub, log: logStub}, {});
             sinon.stub(testInstance, 'runCommand').resolves();
-            sinon.stub(testInstance, 'version').callsFake(async (ctx) => {
+            sinon.stub(testInstance, 'version').callsFake(async ctx => {
                 ctx.version = '1.0.0';
             });
             sinon.stub(testInstance, 'cleanInstallDirectory').rejects(new Error('cleanup blew up'));
@@ -554,7 +616,7 @@ describe('Unit: Commands > Install', function () {
 
             expect(readdirSyncStub.calledOnceWithExactly(process.cwd())).to.be.true;
             expect(rmStub.callCount).to.equal(3);
-            ['.ghost-cli', 'versions', 'content'].forEach((file) => {
+            ['.ghost-cli', 'versions', 'content'].forEach(file => {
                 expect(rmStub.calledWithExactly(file, {recursive: true, force: true})).to.be.true;
             });
         });

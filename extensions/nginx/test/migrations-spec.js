@@ -57,7 +57,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             expect(skip.calledOnce).to.be.true;
         });
 
-        it('skips if ssl conf isn\'t using an LE cert', function () {
+        it("skips if ssl conf isn't using an LE cert", function () {
             const skip = sinon.stub();
             const existsSync = sinon.stub();
             const readFileSync = sinon.stub();
@@ -83,7 +83,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             expect(skip.calledOnce).to.be.true;
         });
 
-        it('throws an error if it can\'t parse the letsencrypt account email', function () {
+        it("throws an error if it can't parse the letsencrypt account email", function () {
             const existsSync = sinon.stub().returns(true);
             const readFileSync = sinon.stub();
 
@@ -103,7 +103,8 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
                 expect(e.message).to.equal('Unable to parse letsencrypt account email');
 
                 expect(readFileSync.calledTwice).to.be.true;
-                expect(readFileSync.calledWithExactly('/home/ghost/.acme.sh/account.conf', {encoding: 'utf8'})).to.be.true;
+                expect(readFileSync.calledWithExactly('/home/ghost/.acme.sh/account.conf', {encoding: 'utf8'})).to.be
+                    .true;
             }
         });
 
@@ -112,7 +113,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const readFileSync = sinon.stub();
 
             readFileSync.onFirstCall().returns(oldSslWithLe);
-            readFileSync.onSecondCall().returns('ACCOUNT_EMAIL=\'test@example.com\'\n');
+            readFileSync.onSecondCall().returns("ACCOUNT_EMAIL='test@example.com'\n");
             readFileSync.onThirdCall().returns(oldSslWithLe);
 
             const restartStub = sinon.stub().resolves();
@@ -144,39 +145,47 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             const tasks = ui.listr.args[0][0];
             expect(tasks).to.have.length(5);
 
-            return tasks[0].task(null).then(() => {
-                expect(acme.install.calledOnce).to.be.true;
+            return tasks[0]
+                .task(null)
+                .then(() => {
+                    expect(acme.install.calledOnce).to.be.true;
 
-                return tasks[1].task();
-            }).then(() => {
-                expect(acme.generate.calledOnce).to.be.true;
-                expect(acme.generate.calledWithExactly(
-                    ui,
-                    'ghost.org',
-                    '/var/www/ghost/system/nginx-root',
-                    'test@example.com',
-                    false
-                )).to.be.true;
+                    return tasks[1].task();
+                })
+                .then(() => {
+                    expect(acme.generate.calledOnce).to.be.true;
+                    expect(
+                        acme.generate.calledWithExactly(
+                            ui,
+                            'ghost.org',
+                            '/var/www/ghost/system/nginx-root',
+                            'test@example.com',
+                            false
+                        )
+                    ).to.be.true;
 
-                return tasks[2].task();
-            }).then(() => {
-                expect(writeFileSync.calledOnce).to.be.true;
+                    return tasks[2].task();
+                })
+                .then(() => {
+                    expect(writeFileSync.calledOnce).to.be.true;
 
-                const [file, contents] = writeFileSync.args[0];
-                expect(file).to.equal('/var/www/ghost/system/files/ghost.org-ssl.conf');
-                expect(contents).to.contain('ssl_certificate /etc/letsencrypt/ghost.org/fullchain.cer;');
-                expect(contents).to.contain('ssl_certificate_key /etc/letsencrypt/ghost.org/ghost.org.key;');
-                expect(contents).to.not.contain('/home/ghost/.acme.sh/ghost.org/');
+                    const [file, contents] = writeFileSync.args[0];
+                    expect(file).to.equal('/var/www/ghost/system/files/ghost.org-ssl.conf');
+                    expect(contents).to.contain('ssl_certificate /etc/letsencrypt/ghost.org/fullchain.cer;');
+                    expect(contents).to.contain('ssl_certificate_key /etc/letsencrypt/ghost.org/ghost.org.key;');
+                    expect(contents).to.not.contain('/home/ghost/.acme.sh/ghost.org/');
 
-                return tasks[3].task();
-            }).then(() => {
-                expect(restartStub.calledOnce).to.be.true;
+                    return tasks[3].task();
+                })
+                .then(() => {
+                    expect(restartStub.calledOnce).to.be.true;
 
-                return tasks[4].task();
-            }).then(() => {
-                expect(acme.remove.calledOnce).to.be.true;
-                expect(acme.remove.calledWithExactly('ghost.org', ui, '/home/ghost/.acme.sh')).to.be.true;
-            });
+                    return tasks[4].task();
+                })
+                .then(() => {
+                    expect(acme.remove.calledOnce).to.be.true;
+                    expect(acme.remove.calledWithExactly('ghost.org', ui, '/home/ghost/.acme.sh')).to.be.true;
+                });
         });
     });
 
@@ -307,7 +316,13 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
 
             // both configs get rolled back, even though only the first one was written
             expect(ext.template.callCount).to.equal(4);
-            expect(ext.template.args[2]).to.deep.equal([context.instance, legacyConf, 'nginx config', 'ghost.org.conf', '/etc/nginx/sites-available']);
+            expect(ext.template.args[2]).to.deep.equal([
+                context.instance,
+                legacyConf,
+                'nginx config',
+                'ghost.org.conf',
+                '/etc/nginx/sites-available'
+            ]);
             expect(ext.template.args[3][1]).to.equal(legacyConf);
             expect(ext.ui.sudo.called).to.be.false;
             expect(ext.restartNginx.called).to.be.false;

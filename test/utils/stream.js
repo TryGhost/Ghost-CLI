@@ -44,8 +44,13 @@ const streamUtils = {
      * Matches the check Listr uses to decide whether a task returned a stream
      */
     isReadable: function isReadable(obj) {
-        return Boolean(obj) && typeof obj === 'object' && obj.readable === true &&
-            typeof obj.read === 'function' && typeof obj.on === 'function';
+        return (
+            Boolean(obj) &&
+            typeof obj === 'object' &&
+            obj.readable === true &&
+            typeof obj.read === 'function' &&
+            typeof obj.on === 'function'
+        );
     },
 
     /**
@@ -81,12 +86,16 @@ const streamUtils = {
      */
     fakeSubprocess: function fakeSubprocess(streams) {
         const ended = Object.values(streams).map(
-            stream => new Promise((resolve) => {
-                stream.on('end', resolve);
-            })
+            stream =>
+                new Promise(resolve => {
+                    stream.on('end', resolve);
+                })
         );
 
-        return Object.assign(Promise.all(ended).then(() => {}), streams);
+        return Object.assign(
+            Promise.all(ended).then(() => {}),
+            streams
+        );
     },
 
     /**
