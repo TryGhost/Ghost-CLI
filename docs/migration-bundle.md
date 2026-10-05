@@ -234,7 +234,17 @@ container round trip using ghost-docker's actual serializer:
 GHOST_DOCKER_DIR=/path/to/ghost-docker pnpm test
 ```
 
-This requires Docker, Compose, bash, jq, and the `alpine:3.20` probe image. The
+This requires Docker, Compose, bash, jq, and the `alpine:3.20` probe image.
+
+The `mysql-data` path has its own end-to-end check, run in CI against the latest
+`ghost:6-alpine` image and `mysql:8.0`. It installs that image's Ghost version
+locally with this CLI, seeds edge-case rows, runs `ghost migrate-export`, loads
+the dump into MySQL initialised by the image, compares every value with the
+SQLite source and boots Ghost on the result. It needs Docker, Node.js and curl:
+
+```bash
+./test/e2e/migration/mysql-data.sh
+``` The
 ordinary suite always tests real tgz creation/system-tar extraction, raw values,
 shared manifest fixtures, private permissions, collisions, quoted shell paths,
 lifecycle recovery, final exports and unsupported portable cases.
