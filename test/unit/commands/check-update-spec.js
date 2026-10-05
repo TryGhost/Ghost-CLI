@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire');
 const modulePath = '../../../lib/commands/check-update';
 
 describe('Unit: Commands > check-update', function () {
-    it('doesn\'t output anything if instance doesn\'t exist', async function () {
+    it("doesn't output anything if instance doesn't exist", async function () {
         const CheckUpdateCommand = require(modulePath);
         const log = sinon.stub();
         const getInstance = sinon.stub().returns({version: null});
@@ -53,7 +53,9 @@ describe('Unit: Commands > check-update', function () {
     });
 
     it('logs out available new minor and major version if available', async function () {
-        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0'}});
+        const loadVersions = sinon
+            .stub()
+            .resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0'}});
         const CheckUpdateCommand = proxyquire(modulePath, {
             '../utils/version': {loadVersions}
         });
@@ -71,7 +73,9 @@ describe('Unit: Commands > check-update', function () {
     });
 
     it('logs out available new major version when on latest minor', async function () {
-        const loadVersions = sinon.stub().resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0', v4: '4.1.0'}});
+        const loadVersions = sinon
+            .stub()
+            .resolves({latest: '4.1.0', latestMajor: {v1: '1.0.0', v2: '2.0.0', v3: '3.42.0', v4: '4.1.0'}});
         const CheckUpdateCommand = proxyquire(modulePath, {
             '../utils/version': {loadVersions}
         });
@@ -102,13 +106,15 @@ describe('Unit: Commands > check-update', function () {
         await cmd.run({json: true});
 
         expect(log.called).to.be.false;
-        expect(output.calledOnceWithExactly({
-            currentVersion: '3.1.0',
-            latestVersion: '4.1.0',
-            latestMinorVersion: '3.42.0',
-            updateAvailable: true,
-            updateType: 'major'
-        })).to.be.true;
+        expect(
+            output.calledOnceWithExactly({
+                currentVersion: '3.1.0',
+                latestVersion: '4.1.0',
+                latestMinorVersion: '3.42.0',
+                updateAvailable: true,
+                updateType: 'major'
+            })
+        ).to.be.true;
     });
 
     it('outputs json when the json flag is passed and no update is available', async function () {
@@ -125,12 +131,14 @@ describe('Unit: Commands > check-update', function () {
         await cmd.run({json: true});
 
         expect(log.called).to.be.false;
-        expect(output.calledOnceWithExactly({
-            currentVersion: '2.0.0',
-            latestVersion: '2.0.0',
-            latestMinorVersion: '2.0.0',
-            updateAvailable: false,
-            updateType: null
-        })).to.be.true;
+        expect(
+            output.calledOnceWithExactly({
+                currentVersion: '2.0.0',
+                latestVersion: '2.0.0',
+                latestMinorVersion: '2.0.0',
+                updateAvailable: false,
+                updateType: null
+            })
+        ).to.be.true;
     });
 });

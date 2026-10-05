@@ -14,24 +14,27 @@ class SystemdExtension extends Extension {
     }
 
     setup() {
-        return [{
-            id: 'systemd',
-            name: 'Systemd',
-            enabled: ({instance, argv}) => !argv.local &&
-                 (instance.config.get('process') === 'systemd' || (argv.stages && argv.stages.includes('systemd'))),
-            task: (...args) => this._setup(...args),
-            skip: ({instance}) => {
-                if (fs.existsSync(`/lib/systemd/system/ghost_${instance.name}.service`)) {
-                    return 'Systemd service has already been set up. Skipping Systemd setup';
-                }
+        return [
+            {
+                id: 'systemd',
+                name: 'Systemd',
+                enabled: ({instance, argv}) =>
+                    !argv.local &&
+                    (instance.config.get('process') === 'systemd' || (argv.stages && argv.stages.includes('systemd'))),
+                task: (...args) => this._setup(...args),
+                skip: ({instance}) => {
+                    if (fs.existsSync(`/lib/systemd/system/ghost_${instance.name}.service`)) {
+                        return 'Systemd service has already been set up. Skipping Systemd setup';
+                    }
 
-                return false;
-            },
-            onUserSkip: ({instance, ui}) => {
-                ui.log('Systemd setup skipped, reverting to local process manager', 'yellow');
-                instance.config.set('process', 'local').save();
+                    return false;
+                },
+                onUserSkip: ({instance, ui}) => {
+                    ui.log('Systemd setup skipped, reverting to local process manager', 'yellow');
+                    instance.config.set('process', 'local').save();
+                }
             }
-        }];
+        ];
     }
 
     _setup({instance, ui}, task) {
@@ -55,14 +58,14 @@ class SystemdExtension extends Extension {
             dir: process.cwd(),
             user: uid,
             environment: this.system.environment,
-            ghost_exec_path: process.argv.slice(0,2).join(' ')
+            ghost_exec_path: process.argv.slice(0, 2).join(' ')
         });
 
-        return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system').then(
-            () => this.ui.sudo(['systemctl', 'daemon-reload'])
-        ).catch((error) => {
-            throw new ProcessError(error);
-        });
+        return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system')
+            .then(() => this.ui.sudo(['systemctl', 'daemon-reload']))
+            .catch(error => {
+                throw new ProcessError(error);
+            });
     }
 
     uninstall(instance) {
@@ -70,7 +73,9 @@ class SystemdExtension extends Extension {
 
         if (fs.existsSync(serviceFilename)) {
             return this.ui.sudo(['rm', serviceFilename]).catch(() => {
-                throw new SystemError('Systemd service file link could not be removed, you will need to do this manually.');
+                throw new SystemError(
+                    'Systemd service file link could not be removed, you will need to do this manually.'
+                );
             });
         }
 

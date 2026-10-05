@@ -34,10 +34,10 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -68,10 +68,10 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -132,13 +132,16 @@ describe('Unit: Tasks > install-dependencies', function () {
         return installDependencies({listr: listrStub}, 'test.zip').then(() => {
             const tasks = listrStub.args[0][0];
 
-            return tasks[0].task(ctx).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('bad archive');
-                expect(extractStub.calledOnce).to.be.true;
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-            });
+            return tasks[0]
+                .task(ctx)
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('bad archive');
+                    expect(extractStub.calledOnce).to.be.true;
+                    expect(fs.existsSync(ctx.installPath)).to.be.false;
+                });
         });
     });
 
@@ -151,14 +154,19 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'node:fs': {existsSync: existsSyncStub, rmSync: sinon.stub(), mkdtempSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {
+                existsSync: existsSyncStub,
+                rmSync: sinon.stub(),
+                mkdtempSync: sinon.stub(),
+                '@noCallThru': true
+            }
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -173,7 +181,12 @@ describe('Unit: Tasks > install-dependencies', function () {
             expect(downloadTaskStub.calledOnce).to.be.true;
             expect(pnpmStub.calledOnce).to.be.true;
             expect(yarnStub.called).to.be.false;
-            expect(pnpmStub.args[0][0]).to.deep.equal(['install', '--prod', '--store-dir=/var/www/ghost/.pnpm-store', '--reporter=append-only']);
+            expect(pnpmStub.args[0][0]).to.deep.equal([
+                'install',
+                '--prod',
+                '--store-dir=/var/www/ghost/.pnpm-store',
+                '--reporter=append-only'
+            ]);
             expect(pnpmStub.args[0][1]).to.deep.equal({
                 cwd: '/var/www/ghost/versions/1.5.0',
                 env: {NODE_ENV: 'production', COREPACK_DEFAULT_TO_LATEST: '0'},
@@ -191,14 +204,19 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'node:fs': {existsSync: existsSyncStub, rmSync: sinon.stub(), mkdtempSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {
+                existsSync: existsSyncStub,
+                rmSync: sinon.stub(),
+                mkdtempSync: sinon.stub(),
+                '@noCallThru': true
+            }
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -226,14 +244,19 @@ describe('Unit: Tasks > install-dependencies', function () {
         const installDependencies = proxyquire(modulePath, {
             '../utils/yarn': yarnStub,
             '../utils/pnpm': pnpmStub,
-            'node:fs': {existsSync: existsSyncStub, rmSync: sinon.stub(), mkdtempSync: sinon.stub(), '@noCallThru': true}
+            'node:fs': {
+                existsSync: existsSyncStub,
+                rmSync: sinon.stub(),
+                mkdtempSync: sinon.stub(),
+                '@noCallThru': true
+            }
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -260,10 +283,10 @@ describe('Unit: Tasks > install-dependencies', function () {
         });
         const subTasks = installDependencies.subTasks;
         const ctx = {installPath: '/var/www/ghost/versions/1.5.0'};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -272,13 +295,16 @@ describe('Unit: Tasks > install-dependencies', function () {
         sinon.stub(subTasks, 'compatibility').resolves();
         sinon.stub(subTasks, 'download');
 
-        return installDependencies({listr: listrStub}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error.message).to.equal('pnpm failed');
-            expect(pnpmStub.calledOnce).to.be.true;
-            expect(rmSyncStub.calledWith('/var/www/ghost/versions/1.5.0', {recursive: true, force: true})).to.be.true;
-        });
+        return installDependencies({listr: listrStub})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error.message).to.equal('pnpm failed');
+                expect(pnpmStub.calledOnce).to.be.true;
+                expect(rmSyncStub.calledWith('/var/www/ghost/versions/1.5.0', {recursive: true, force: true})).to.be
+                    .true;
+            });
     });
 
     it('catches errors from yarn and cleans up install folder', function () {
@@ -289,10 +315,10 @@ describe('Unit: Tasks > install-dependencies', function () {
         const subTasks = installDependencies.subTasks;
         const env = setupTestFolder();
         const ctx = {installPath: env.dir};
-        const listrStub = sinon.stub().callsFake((tasks) => {
+        const listrStub = sinon.stub().callsFake(tasks => {
             expect(tasks).to.have.length(3);
 
-            return each(tasks, (task) => {
+            return each(tasks, task => {
                 const result = task.task(ctx);
                 return isReadable(result) ? collect(result) : result;
             });
@@ -301,27 +327,29 @@ describe('Unit: Tasks > install-dependencies', function () {
         const compatTaskStub = sinon.stub(subTasks, 'compatibility').resolves();
         const downloadTaskStub = sinon.stub(subTasks, 'download');
 
-        return installDependencies({listr: listrStub, verbose: true}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error.message).to.equal('an error occurred');
-            expect(listrStub.calledOnce).to.be.true;
-            expect(compatTaskStub.calledOnce).to.be.true;
-            expect(downloadTaskStub.calledOnce).to.be.true;
-            expect(yarnStub.calledOnce).to.be.true;
-            expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
-            expect(yarnStub.args[0][1]).to.deep.equal({
-                cwd: env.dir,
-                env: {NODE_ENV: 'production', YARN_IGNORE_PATH: 'true'},
-                observe: true,
-                verbose: true
+        return installDependencies({listr: listrStub, verbose: true})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error.message).to.equal('an error occurred');
+                expect(listrStub.calledOnce).to.be.true;
+                expect(compatTaskStub.calledOnce).to.be.true;
+                expect(downloadTaskStub.calledOnce).to.be.true;
+                expect(yarnStub.calledOnce).to.be.true;
+                expect(yarnStub.args[0][0]).to.deep.equal(['install', '--no-emoji', '--no-progress']);
+                expect(yarnStub.args[0][1]).to.deep.equal({
+                    cwd: env.dir,
+                    env: {NODE_ENV: 'production', YARN_IGNORE_PATH: 'true'},
+                    observe: true,
+                    verbose: true
+                });
+                expect(fs.existsSync(env.dir)).to.be.false;
             });
-            expect(fs.existsSync(env.dir)).to.be.false;
-        });
     });
 
     describe('compatibility subtask', function () {
-        it('rejects if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is not set', function () {
+        it("rejects if Ghost version isn't compatible with the current Node version and GHOST_NODE_VERISON_CHECK is not set", function () {
             const data = {engines: {node: '^0.10.0'}};
             const infoStub = sinon.stub().resolves(data);
             const compatibility = proxyquire(modulePath, {
@@ -329,17 +357,21 @@ describe('Unit: Tasks > install-dependencies', function () {
             }).subTasks.compatibility;
             const ctx = {version: '1.5.0'};
 
-            return compatibility(ctx).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.equal(`Ghost v1.5.0 is not compatible with the current Node version. Your node version is ${process.versions.node}, but Ghost v1.5.0 requires ^0.10.0`);
-                expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
-            });
+            return compatibility(ctx)
+                .then(() => {
+                    expect(false, 'error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.SystemError);
+                    expect(error.message).to.equal(
+                        `Ghost v1.5.0 is not compatible with the current Node version. Your node version is ${process.versions.node}, but Ghost v1.5.0 requires ^0.10.0`
+                    );
+                    expect(infoStub.calledOnce).to.be.true;
+                    expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                });
         });
 
-        it('resolves if Ghost version isn\'t compatible with the current Node version and GHOST_NODE_VERISON_CHECK is set', function () {
+        it("resolves if Ghost version isn't compatible with the current Node version and GHOST_NODE_VERISON_CHECK is set", function () {
             const data = {engines: {node: '^0.10.0'}};
             const infoStub = sinon.stub().resolves(data);
             const compatibility = proxyquire(modulePath, {
@@ -348,17 +380,19 @@ describe('Unit: Tasks > install-dependencies', function () {
             const ctx = {version: '1.5.0'};
             process.env.GHOST_NODE_VERSION_CHECK = 'false';
 
-            return compatibility(ctx).then(() => {
-                delete process.env.GHOST_NODE_VERSION_CHECK;
-                expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
-            }).catch((error) => {
-                delete process.env.GHOST_NODE_VERSION_CHECK;
-                return Promise.reject(error);
-            });
+            return compatibility(ctx)
+                .then(() => {
+                    delete process.env.GHOST_NODE_VERSION_CHECK;
+                    expect(infoStub.calledOnce).to.be.true;
+                    expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                })
+                .catch(error => {
+                    delete process.env.GHOST_NODE_VERSION_CHECK;
+                    return Promise.reject(error);
+                });
         });
 
-        it('rejects if Ghost version isn\'t compatible with the current CLI version', function () {
+        it("rejects if Ghost version isn't compatible with the current CLI version", function () {
             const data = {engines: {node: process.versions.node, cli: '^0.0.1'}};
             const infoStub = sinon.stub().resolves(data);
             const compatibility = proxyquire(modulePath, {
@@ -367,17 +401,21 @@ describe('Unit: Tasks > install-dependencies', function () {
             }).subTasks.compatibility;
             const ctx = {version: '1.5.0'};
 
-            return compatibility(ctx).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.equal(`Ghost v1.5.0 is not compatible with this version of the CLI. Your CLI version is 1.0.0, but Ghost v1.5.0 requires ^0.0.1`);
-                expect(infoStub.calledOnce).to.be.true;
-                expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
-            });
+            return compatibility(ctx)
+                .then(() => {
+                    expect(false, 'error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.SystemError);
+                    expect(error.message).to.equal(
+                        `Ghost v1.5.0 is not compatible with this version of the CLI. Your CLI version is 1.0.0, but Ghost v1.5.0 requires ^0.0.1`
+                    );
+                    expect(infoStub.calledOnce).to.be.true;
+                    expect(infoStub.calledWithExactly('ghost', {version: '1.5.0'})).to.be.true;
+                });
         });
 
-        it('resolves if Ghost version isn\'t compatible with CLI version, but CLI is a prerelease version', function () {
+        it("resolves if Ghost version isn't compatible with CLI version, but CLI is a prerelease version", function () {
             const data = {engines: {node: process.versions.node, cli: '^1.9.0'}};
             const infoStub = sinon.stub().resolves(data);
             const compatibility = proxyquire(modulePath, {
@@ -433,10 +471,7 @@ describe('Unit: Tasks > install-dependencies', function () {
                 expect(fs.existsSync(tmpDir)).to.be.false;
 
                 expect(extractStub.calledOnce).to.be.true;
-                expect(extractStub.calledWithExactly(
-                    path.join(tmpDir, 'ghost-1.0.0.tgz'),
-                    ctx.installPath
-                )).to.be.true;
+                expect(extractStub.calledWithExactly(path.join(tmpDir, 'ghost-1.0.0.tgz'), ctx.installPath)).to.be.true;
             });
         });
 
@@ -453,20 +488,24 @@ describe('Unit: Tasks > install-dependencies', function () {
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
-            return downloadTask(ctx).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(execaStub.calledOnce).to.be.true;
-                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
-                expect(extractStub.called).to.be.false;
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-            });
+            return downloadTask(ctx)
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(execaStub.calledOnce).to.be.true;
+                    expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                    expect(extractStub.called).to.be.false;
+                    expect(fs.existsSync(ctx.installPath)).to.be.false;
+                });
         });
 
         it('extracts the tarball when npm pack returns the npm >=12 object format', function () {
             const env = setupTestFolder();
-            const execaStub = sinon.stub().resolves({stdout: JSON.stringify({ghost: {filename: 'ghost-1.0.0.tgz'}}), stderr: ''});
+            const execaStub = sinon
+                .stub()
+                .resolves({stdout: JSON.stringify({ghost: {filename: 'ghost-1.0.0.tgz'}}), stderr: ''});
             const extractStub = sinon.stub().resolves();
             const downloadTask = proxyquire(modulePath, {
                 execa: {execa: execaStub},
@@ -480,10 +519,7 @@ describe('Unit: Tasks > install-dependencies', function () {
             return downloadTask(ctx).then(() => {
                 const tmpDir = execaStub.args[0][2].cwd;
                 expect(extractStub.calledOnce).to.be.true;
-                expect(extractStub.calledWithExactly(
-                    path.join(tmpDir, 'ghost-1.0.0.tgz'),
-                    ctx.installPath
-                )).to.be.true;
+                expect(extractStub.calledWithExactly(path.join(tmpDir, 'ghost-1.0.0.tgz'), ctx.installPath)).to.be.true;
             });
         });
 
@@ -500,17 +536,19 @@ describe('Unit: Tasks > install-dependencies', function () {
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
-            return downloadTask(ctx).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(error.message).to.contain('Could not parse');
-                expect(error.options.stdout).to.equal('npm notice not json');
-                expect(error.options.stderr).to.equal('boom');
-                expect(extractStub.called).to.be.false;
-                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-            });
+            return downloadTask(ctx)
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(error.message).to.contain('Could not parse');
+                    expect(error.options.stdout).to.equal('npm notice not json');
+                    expect(error.options.stderr).to.equal('boom');
+                    expect(extractStub.called).to.be.false;
+                    expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                    expect(fs.existsSync(ctx.installPath)).to.be.false;
+                });
         });
 
         it('throws a ProcessError when npm pack returns no tarball', function () {
@@ -526,16 +564,18 @@ describe('Unit: Tasks > install-dependencies', function () {
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
-            return downloadTask(ctx).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(error.message).to.contain('did not return a tarball');
-                expect(error.options.stdout).to.equal(JSON.stringify({error: {code: 'E404'}}));
-                expect(extractStub.called).to.be.false;
-                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-            });
+            return downloadTask(ctx)
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(error.message).to.contain('did not return a tarball');
+                    expect(error.options.stdout).to.equal(JSON.stringify({error: {code: 'E404'}}));
+                    expect(extractStub.called).to.be.false;
+                    expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                    expect(fs.existsSync(ctx.installPath)).to.be.false;
+                });
         });
 
         it('throws a ProcessError when npm pack returns a non-string filename', function () {
@@ -551,15 +591,17 @@ describe('Unit: Tasks > install-dependencies', function () {
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
-            return downloadTask(ctx).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(error.message).to.contain('did not return a tarball');
-                expect(extractStub.called).to.be.false;
-                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-            });
+            return downloadTask(ctx)
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(error.message).to.contain('did not return a tarball');
+                    expect(extractStub.called).to.be.false;
+                    expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                    expect(fs.existsSync(ctx.installPath)).to.be.false;
+                });
         });
 
         it('catches extraction errors and cleans up the install folder', function () {
@@ -575,15 +617,17 @@ describe('Unit: Tasks > install-dependencies', function () {
                 installPath: path.join(env.dir, 'versions/1.0.0')
             };
 
-            return downloadTask(ctx).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('an error occurred');
-                expect(execaStub.calledOnce).to.be.true;
-                expect(extractStub.calledOnce).to.be.true;
-                expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
-                expect(fs.existsSync(ctx.installPath)).to.be.false;
-            });
+            return downloadTask(ctx)
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('an error occurred');
+                    expect(execaStub.calledOnce).to.be.true;
+                    expect(extractStub.calledOnce).to.be.true;
+                    expect(fs.existsSync(execaStub.args[0][2].cwd)).to.be.false;
+                    expect(fs.existsSync(ctx.installPath)).to.be.false;
+                });
         });
     });
 });

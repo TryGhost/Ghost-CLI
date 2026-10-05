@@ -65,14 +65,19 @@ describe('Unit: Process Manager', function () {
             return instance.ensureStarted({logSuggestion: 'test'}).then(() => {
                 expect(portPollingStub.calledOnce).to.be.true;
                 expect(config.get.calledTwice).to.be.true;
-                expect(portPollingStub.calledWithExactly({}, {
-                    logSuggestion: 'test',
-                    stopOnError: true,
-                    port: 2368,
-                    host: '10.0.1.0',
-                    useNetServer: false,
-                    useV4Boot: false
-                })).to.be.true;
+                expect(
+                    portPollingStub.calledWithExactly(
+                        {},
+                        {
+                            logSuggestion: 'test',
+                            stopOnError: true,
+                            port: 2368,
+                            host: '10.0.1.0',
+                            useNetServer: false,
+                            useV4Boot: false
+                        }
+                    )
+                ).to.be.true;
                 expect(stopStub.called).to.be.false;
             });
         });
@@ -87,20 +92,28 @@ describe('Unit: Process Manager', function () {
             const instance = new ProcessManager({}, {}, {config, version: '1.25.0'});
             const stopStub = sinon.stub(instance, 'stop').resolves();
 
-            return instance.ensureStarted({stopOnError: false}).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((err) => {
-                expect(err.message).to.equal('test error');
-                expect(portPollingStub.calledOnce).to.be.true;
-                expect(portPollingStub.calledWithExactly({}, {
-                    stopOnError: false,
-                    port: 2368,
-                    host: 'localhost',
-                    useNetServer: false,
-                    useV4Boot: false
-                })).to.be.true;
-                expect(stopStub.called).to.be.false;
-            });
+            return instance
+                .ensureStarted({stopOnError: false})
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(err => {
+                    expect(err.message).to.equal('test error');
+                    expect(portPollingStub.calledOnce).to.be.true;
+                    expect(
+                        portPollingStub.calledWithExactly(
+                            {},
+                            {
+                                stopOnError: false,
+                                port: 2368,
+                                host: 'localhost',
+                                useNetServer: false,
+                                useV4Boot: false
+                            }
+                        )
+                    ).to.be.true;
+                    expect(stopStub.called).to.be.false;
+                });
         });
 
         it('throws error and calls stop if stopOnError is true', function () {
@@ -113,21 +126,29 @@ describe('Unit: Process Manager', function () {
             const instance = new ProcessManager({}, {}, {config, version: '1.25.0'});
             const stopStub = sinon.stub(instance, 'stop').resolves();
 
-            return instance.ensureStarted({}).then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((err) => {
-                expect(err.message).to.equal('test error');
-                expect(config.get.calledTwice).to.be.true;
-                expect(portPollingStub.calledOnce).to.be.true;
-                expect(portPollingStub.calledWithExactly({}, {
-                    stopOnError: true,
-                    port: 2368,
-                    host: 'localhost',
-                    useNetServer: false,
-                    useV4Boot: false
-                })).to.be.true;
-                expect(stopStub.calledOnce).to.be.true;
-            });
+            return instance
+                .ensureStarted({})
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(err => {
+                    expect(err.message).to.equal('test error');
+                    expect(config.get.calledTwice).to.be.true;
+                    expect(portPollingStub.calledOnce).to.be.true;
+                    expect(
+                        portPollingStub.calledWithExactly(
+                            {},
+                            {
+                                stopOnError: true,
+                                port: 2368,
+                                host: 'localhost',
+                                useNetServer: false,
+                                useV4Boot: false
+                            }
+                        )
+                    ).to.be.true;
+                    expect(stopStub.calledOnce).to.be.true;
+                });
         });
 
         it('throws error and calls stop (swallows stop error) if stopOnError is true', function () {
@@ -140,21 +161,29 @@ describe('Unit: Process Manager', function () {
             const instance = new ProcessManager({}, {}, {config, version: '1.25.0'});
             const stopStub = sinon.stub(instance, 'stop').rejects(new Error('test error 2'));
 
-            return instance.ensureStarted().then(() => {
-                expect(false, 'Error should have been thrown').to.be.true;
-            }).catch((err) => {
-                expect(err.message).to.equal('test error');
-                expect(config.get.calledTwice).to.be.true;
-                expect(portPollingStub.calledOnce).to.be.true;
-                expect(portPollingStub.calledWithExactly({}, {
-                    stopOnError: true,
-                    port: 2368,
-                    host: 'localhost',
-                    useNetServer: false,
-                    useV4Boot: false
-                })).to.be.true;
-                expect(stopStub.calledOnce).to.be.true;
-            });
+            return instance
+                .ensureStarted()
+                .then(() => {
+                    expect(false, 'Error should have been thrown').to.be.true;
+                })
+                .catch(err => {
+                    expect(err.message).to.equal('test error');
+                    expect(config.get.calledTwice).to.be.true;
+                    expect(portPollingStub.calledOnce).to.be.true;
+                    expect(
+                        portPollingStub.calledWithExactly(
+                            {},
+                            {
+                                stopOnError: true,
+                                port: 2368,
+                                host: 'localhost',
+                                useNetServer: false,
+                                useV4Boot: false
+                            }
+                        )
+                    ).to.be.true;
+                    expect(stopStub.calledOnce).to.be.true;
+                });
         });
     });
 
@@ -193,7 +222,7 @@ describe('Unit: Process Manager', function () {
         const ProcessManager = require(modulePath);
         const instance = new ProcessManager({}, {}, {});
 
-        return instance.isRunning().then((result) => {
+        return instance.isRunning().then(result => {
             expect(result).to.be.false;
         });
     });

@@ -81,8 +81,9 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
-            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link']
-                .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link'].forEach(prop =>
+                sinon.stub(cmdInstance, prop).resolves()
+            );
 
             await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false});
 
@@ -92,7 +93,7 @@ describe('Unit: Commands > Update', function () {
             expect(ctx).to.be.an('object');
             let ranRestart = false;
 
-            tasks.forEach((task) => {
+            tasks.forEach(task => {
                 if (task.title.toLowerCase().indexOf('restarting') >= 0) {
                     ranRestart = true;
                     expect(task.enabled(ctx)).to.be.true;
@@ -124,8 +125,9 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
-            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link']
-                .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link'].forEach(prop =>
+                sinon.stub(cmdInstance, prop).resolves()
+            );
 
             await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false});
             expect(ui.listr.calledOnce).to.be.true;
@@ -134,7 +136,7 @@ describe('Unit: Commands > Update', function () {
             expect(ctx).to.be.an('object');
             let ranRestart = false;
 
-            tasks.forEach((task) => {
+            tasks.forEach(task => {
                 if (task.title.toLowerCase().indexOf('restarting') >= 0) {
                     ranRestart = true;
                     expect(task.enabled(ctx)).to.be.undefined;
@@ -166,8 +168,9 @@ describe('Unit: Commands > Update', function () {
             const cmdInstance = new UpdateCommand(ui, system);
 
             sinon.stub(cmdInstance, 'version').resolves(true);
-            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link']
-                .forEach(prop => sinon.stub(cmdInstance, prop).resolves());
+            ['runCommand', 'downloadAndUpdate', 'removeOldVersions', 'link'].forEach(prop =>
+                sinon.stub(cmdInstance, prop).resolves()
+            );
 
             await cmdInstance.run({version: '2.0.1', force: false, zip: '', v1: false, restart: true});
             expect(ui.listr.calledOnce).to.be.true;
@@ -176,7 +179,7 @@ describe('Unit: Commands > Update', function () {
             expect(ctx).to.be.an('object');
             let ranRestart = false;
 
-            tasks.forEach((task) => {
+            tasks.forEach(task => {
                 if (task.title.toLowerCase().indexOf('restarting') >= 0) {
                     ranRestart = true;
                     expect(task.enabled(ctx)).to.be.true;
@@ -187,7 +190,7 @@ describe('Unit: Commands > Update', function () {
             expect(fakeInstance.isRunning.calledOnce).to.be.true;
         });
 
-        it('doesn\'t run database migrations if active blog version is ^2.0.0', async function () {
+        it("doesn't run database migrations if active blog version is ^2.0.0", async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -211,13 +214,15 @@ describe('Unit: Commands > Update', function () {
             const system = {getInstance: sinon.stub()};
 
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
-                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                    return;
-                }
+            ui.listr.callsFake((tasks, ctx) =>
+                each(tasks, task => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
 
-                return task.task(ctx);
-            }));
+                    return task.task(ctx);
+                })
+            );
 
             const TestInstance = createTestInstance('2.0.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
@@ -263,7 +268,7 @@ describe('Unit: Commands > Update', function () {
             expect(majorUpdateStub.called).to.be.false;
         });
 
-        it('doesn\'t run database migrations if version to migrate to is ^2.0.0', async function () {
+        it("doesn't run database migrations if version to migrate to is ^2.0.0", async function () {
             const migratorStub = {
                 migrate: sinon.stub().resolves(),
                 rollback: sinon.stub().resolves()
@@ -288,13 +293,15 @@ describe('Unit: Commands > Update', function () {
             const system = {getInstance: sinon.stub()};
 
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
-                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                    return;
-                }
+            ui.listr.callsFake((tasks, ctx) =>
+                each(tasks, task => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
 
-                return task.task(ctx);
-            }));
+                    return task.task(ctx);
+                })
+            );
 
             const TestInstance = createTestInstance('1.25.0', '1.8.0', null, ghostConfig);
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
@@ -338,7 +345,7 @@ describe('Unit: Commands > Update', function () {
             expect(majorUpdateStub.called).to.be.true;
         });
 
-        it('doesn\'t run tasks if no new versions are available', async function () {
+        it("doesn't run tasks if no new versions are available", async function () {
             const UpdateCommand = require(modulePath);
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
@@ -460,13 +467,15 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
-                if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
-                    return;
-                }
+            ui.listr.callsFake((tasks, ctx) =>
+                each(tasks, task => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
 
-                return task.task(ctx);
-            }));
+                    return task.task(ctx);
+                })
+            );
 
             const TestInstance = createTestInstance('1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
@@ -522,13 +531,15 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
-                if (task.skip && task.skip(ctx) || (task.enabled && !task.enabled(ctx))) {
-                    return;
-                }
+            ui.listr.callsFake((tasks, ctx) =>
+                each(tasks, task => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
 
-                return task.task(ctx);
-            }));
+                    return task.task(ctx);
+                })
+            );
 
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
@@ -589,13 +600,15 @@ describe('Unit: Commands > Update', function () {
             const ui = {log: sinon.stub(), listr: sinon.stub(), run: sinon.stub()};
             const system = {getInstance: sinon.stub()};
             ui.run.callsFake(fn => fn());
-            ui.listr.callsFake((tasks, ctx) => each(tasks, (task) => {
-                if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
-                    return;
-                }
+            ui.listr.callsFake((tasks, ctx) =>
+                each(tasks, task => {
+                    if ((task.skip && task.skip(ctx)) || (task.enabled && !task.enabled(ctx))) {
+                        return;
+                    }
 
-                return task.task(ctx);
-            }));
+                    return task.task(ctx);
+                })
+            );
 
             const TestInstance = createTestInstance('1.1.0', '1.0.0', '1.0.0');
             const fakeInstance = sinon.stub(new TestInstance(ui, system, '/var/www/ghost'));
@@ -653,9 +666,9 @@ describe('Unit: Commands > Update', function () {
             fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
-            const rollback = cmdInstance.rollbackFromFail = sinon.stub().rejects(new Error('rollback_successful'));
+            const rollback = (cmdInstance.rollbackFromFail = sinon.stub().rejects(new Error('rollback_successful')));
             cmdInstance.runCommand = sinon.stub().resolves(true);
-            cmdInstance.version = sinon.stub().callsFake((context) => {
+            cmdInstance.version = sinon.stub().callsFake(context => {
                 context.version = '1.1.1';
                 return true;
             });
@@ -688,9 +701,9 @@ describe('Unit: Commands > Update', function () {
             fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
-            const rollback = cmdInstance.rollbackFromFail = sinon.stub();
+            const rollback = (cmdInstance.rollbackFromFail = sinon.stub());
             cmdInstance.runCommand = sinon.stub().resolves(true);
-            cmdInstance.version = sinon.stub().callsFake((context) => {
+            cmdInstance.version = sinon.stub().callsFake(context => {
                 context.version = '1.1.1';
                 return true;
             });
@@ -722,9 +735,9 @@ describe('Unit: Commands > Update', function () {
             fakeInstance.isRunning.resolves(false);
 
             const cmdInstance = new UpdateCommand(ui, system);
-            const rollback = cmdInstance.rollbackFromFail = sinon.stub();
+            const rollback = (cmdInstance.rollbackFromFail = sinon.stub());
             cmdInstance.runCommand = sinon.stub().resolves(true);
-            cmdInstance.version = sinon.stub().callsFake((context) => {
+            cmdInstance.version = sinon.stub().callsFake(context => {
                 context.version = '1.1.1';
                 return true;
             });
@@ -858,10 +871,7 @@ describe('Unit: Commands > Update', function () {
 
     describe('removeOldVersions', function () {
         it('skips if there are 2 or fewer versions installed', async function () {
-            const dirs = [
-                'versions/1.5.1',
-                'versions/1.5.2'
-            ];
+            const dirs = ['versions/1.5.1', 'versions/1.5.2'];
             const env = setupTestFolder({dirs: dirs});
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
@@ -870,7 +880,7 @@ describe('Unit: Commands > Update', function () {
             await instance.removeOldVersions({instance: {dir: env.dir}}, {skip: skipStub});
             expect(skipStub.calledOnce).to.be.true;
 
-            dirs.forEach((version) => {
+            dirs.forEach(version => {
                 expect(fs.existsSync(path.join(env.dir, version))).to.be.true;
             });
         });
@@ -893,26 +903,15 @@ describe('Unit: Commands > Update', function () {
             const UpdateCommand = require(modulePath);
             const instance = new UpdateCommand({}, {});
             sinon.stub(process, 'cwd').returns(env.dir);
-            const keptVersions = [
-                '1.4.0',
-                '1.5.0'
-            ];
-            const removedVersions = [
-                '1.0.0-beta.2',
-                '1.0.0-RC.1',
-                '1.0.0',
-                '1.0.2',
-                '1.1.0',
-                '1.2.0',
-                '1.3.0'
-            ];
+            const keptVersions = ['1.4.0', '1.5.0'];
+            const removedVersions = ['1.0.0-beta.2', '1.0.0-RC.1', '1.0.0', '1.0.2', '1.1.0', '1.2.0', '1.3.0'];
 
             await instance.removeOldVersions({instance: {dir: env.dir}});
-            keptVersions.forEach((version) => {
+            keptVersions.forEach(version => {
                 expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.true;
             });
 
-            removedVersions.forEach((version) => {
+            removedVersions.forEach(version => {
                 expect(fs.existsSync(path.join(env.dir, 'versions', version))).to.be.false;
             });
         });
@@ -946,7 +945,8 @@ describe('Unit: Commands > Update', function () {
             const result = await instance.version(context);
             expect(result).to.be.true;
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: true, force: false, channel: 'stable'})).to.be.true;
+            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: true, force: false, channel: 'stable'})).to.be
+                .true;
             expect(context.version).to.equal('1.0.1');
             expect(context.installPath).to.equal('/var/www/ghost/versions/1.0.1');
         });
@@ -995,7 +995,8 @@ describe('Unit: Commands > Update', function () {
             const result = await instance.version(context);
             expect(result).to.be.false;
             expect(resolveVersion.calledOnce).to.be.true;
-            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: false, force: true, channel: 'stable'})).to.be.true;
+            expect(resolveVersion.calledWithExactly(null, '1.0.0', {v1: false, force: true, channel: 'stable'})).to.be
+                .true;
         });
     });
 
@@ -1020,7 +1021,8 @@ describe('Unit: Commands > Update', function () {
 
         it('Asks to rollback by default', async function () {
             const UpdateCommand = require(modulePath);
-            const expectedQuestion = 'Unable to upgrade Ghost from v1.0.0 to v1.1.1. Would you like to revert back to v1.0.0?';
+            const expectedQuestion =
+                'Unable to upgrade Ghost from v1.0.0 to v1.1.1. Would you like to revert back to v1.0.0?';
             const update = new UpdateCommand(ui, system, '/var/www/ghost');
             ui.confirm.resolves(true);
             update.run = sinon.stub().resolves();
@@ -1138,7 +1140,13 @@ describe('Unit: Commands > Update', function () {
         it('links all default themes bundled with Ghost', function () {
             const command = new UpdateCommand({}, {});
             const envCfg = {
-                dirs: ['versions/5.62.0', 'versions/5.67.0', 'versions/5.67.0/content/themes/source', 'versions/5.67.0/content/themes/casper', 'content/themes'],
+                dirs: [
+                    'versions/5.62.0',
+                    'versions/5.67.0',
+                    'versions/5.67.0/content/themes/source',
+                    'versions/5.67.0/content/themes/casper',
+                    'content/themes'
+                ],
                 links: [['versions/5.62.0', 'current']]
             };
             const env = setupTestFolder(envCfg);
@@ -1158,14 +1166,25 @@ describe('Unit: Commands > Update', function () {
 
             command.link(context);
             command.linkDefaultThemes(context);
-            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'source'))).to.equal(path.join(env.dir, 'current', 'content', 'themes', 'source'));
-            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'casper'))).to.equal(path.join(env.dir, 'current', 'content', 'themes', 'casper'));
+            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'source'))).to.equal(
+                path.join(env.dir, 'current', 'content', 'themes', 'source')
+            );
+            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'casper'))).to.equal(
+                path.join(env.dir, 'current', 'content', 'themes', 'casper')
+            );
         });
 
         it('removes invalid symlinks when rolling back', function () {
             const command = new UpdateCommand({}, {});
             const envCfg = {
-                dirs: ['versions/5.62.0', 'versions/5.67.0', 'versions/5.62.0/content/themes/casper', 'versions/5.67.0/content/themes/source', 'versions/5.67.0/content/themes/casper', 'content/themes'],
+                dirs: [
+                    'versions/5.62.0',
+                    'versions/5.67.0',
+                    'versions/5.62.0/content/themes/casper',
+                    'versions/5.67.0/content/themes/source',
+                    'versions/5.67.0/content/themes/casper',
+                    'content/themes'
+                ],
                 links: [['versions/5.67.0', 'current']]
             };
             const env = setupTestFolder(envCfg);
@@ -1186,7 +1205,9 @@ describe('Unit: Commands > Update', function () {
             command.link(context);
             command.linkDefaultThemes(context);
             expect(fs.existsSync(path.join(env.dir, 'content', 'themes', 'source'))).to.equal(false);
-            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'casper'))).to.equal(path.join(env.dir, 'current', 'content', 'themes', 'casper'));
+            expect(fs.readlinkSync(path.join(env.dir, 'content', 'themes', 'casper'))).to.equal(
+                path.join(env.dir, 'current', 'content', 'themes', 'casper')
+            );
         });
     });
 });

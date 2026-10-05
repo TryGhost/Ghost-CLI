@@ -54,7 +54,7 @@ describe('Unit: Commands > Setup', function () {
         it('returns default tasks correctly', function () {
             const {tasks} = getTasks();
             expect(tasks).to.have.length(6);
-            tasks.forEach((task) => {
+            tasks.forEach(task => {
                 expect(task).to.include.all.keys('id', 'task', 'enabled', 'title');
             });
         });
@@ -63,18 +63,25 @@ describe('Unit: Commands > Setup', function () {
             const task1stub = sinon.stub().resolves();
             const task2stub = sinon.stub().resolves();
             const steps = [
-                [{
-                    id: 'testing',
-                    name: 'Testing',
-                    task: task1stub
-                }, {
-                    id: 'testing-2',
-                    title: 'Custom Title',
-                    enabled: () => false,
-                    task: task2stub
-                }], null, [{
-                    notarealtask: true
-                }]
+                [
+                    {
+                        id: 'testing',
+                        name: 'Testing',
+                        task: task1stub
+                    },
+                    {
+                        id: 'testing-2',
+                        title: 'Custom Title',
+                        enabled: () => false,
+                        task: task2stub
+                    }
+                ],
+                null,
+                [
+                    {
+                        notarealtask: true
+                    }
+                ]
             ];
             const {tasks, ui} = getTasks({}, steps);
 
@@ -91,23 +98,33 @@ describe('Unit: Commands > Setup', function () {
             expect(task2.id).to.equal('testing-2');
             expect(task2.title).to.equal('Custom Title');
 
-            expect(task1.enabled({
-                argv: {stages: ['testing']}
-            })).to.be.true;
-            expect(task1.enabled({
-                argv: {'setup-testing': false, stages: []}
-            })).to.be.false;
+            expect(
+                task1.enabled({
+                    argv: {stages: ['testing']}
+                })
+            ).to.be.true;
+            expect(
+                task1.enabled({
+                    argv: {'setup-testing': false, stages: []}
+                })
+            ).to.be.false;
             expect(task1.enabled({argv: {stages: []}}));
 
-            expect(task2.enabled({
-                argv: {stages: ['testing-2']}
-            })).to.be.false;
-            expect(task2.enabled({
-                argv: {'setup-testing-2': false, stages: []}
-            })).to.be.false;
-            expect(task2.enabled({
-                argv: {stages: []}
-            })).to.be.false;
+            expect(
+                task2.enabled({
+                    argv: {stages: ['testing-2']}
+                })
+            ).to.be.false;
+            expect(
+                task2.enabled({
+                    argv: {'setup-testing-2': false, stages: []}
+                })
+            ).to.be.false;
+            expect(
+                task2.enabled({
+                    argv: {stages: []}
+                })
+            ).to.be.false;
 
             const skip = sinon.stub().resolves();
 
@@ -170,20 +187,14 @@ describe('Unit: Commands > Setup', function () {
 
                 system.environment = 'testing';
                 configTask.task({instance, argv: {thisisargs: true}, single: false});
-                expect(stub.calledOnceWithExactly(
-                    ui,
-                    {config: true},
-                    {thisisargs: true},
-                    'testing',
-                    true
-                )).to.be.true;
+                expect(stub.calledOnceWithExactly(ui, {config: true}, {thisisargs: true}, 'testing', true)).to.be.true;
             });
 
             it('instance', function () {
                 const config = configStub();
                 const instance = {config, dir: '/var/www/ghosttest'};
                 const {tasks, system} = getTasks();
-                const [,instanceTask] = tasks;
+                const [, instanceTask] = tasks;
 
                 expect(instanceTask.id).to.equal('instance');
                 expect(instanceTask.title).to.equal('Setting up instance');
@@ -224,7 +235,7 @@ describe('Unit: Commands > Setup', function () {
             it('linux-user', function () {
                 const stub = sinon.stub();
                 const {tasks, system} = getTasks({'../tasks/linux': stub});
-                const [,,linuxTask] = tasks;
+                const [, , linuxTask] = tasks;
 
                 expect(linuxTask.id).to.equal('linux-user');
                 expect(linuxTask.name).to.equal('"ghost" system user');
@@ -244,7 +255,7 @@ describe('Unit: Commands > Setup', function () {
             it('migrate', function () {
                 const migrate = sinon.stub();
                 const {tasks} = getTasks({'../tasks/migrator': {migrate}});
-                const [,,,migrateTask] = tasks;
+                const [, , , migrateTask] = tasks;
 
                 expect(migrateTask.id).to.equal('migrate');
                 expect(migrateTask.title).to.equal('Running database migrations');
@@ -262,7 +273,7 @@ describe('Unit: Commands > Setup', function () {
             it('import', function () {
                 const importTaskStub = sinon.stub();
                 const {tasks} = getTasks({'../tasks/import': {importTask: importTaskStub}});
-                const [,,,,,importTask] = tasks;
+                const [, , , , , importTask] = tasks;
 
                 expect(importTask.id).to.equal('import');
                 expect(importTask.title).to.equal('Importing content');
@@ -331,9 +342,14 @@ describe('Unit: Commands > Setup', function () {
 
     describe('run', function () {
         it('Handles local setup properly', async function () {
-            const setup = new SetupCommand({}, {setEnvironment: () => {
-                throw new Error('Take a break');
-            }});
+            const setup = new SetupCommand(
+                {},
+                {
+                    setEnvironment: () => {
+                        throw new Error('Take a break');
+                    }
+                }
+            );
 
             const localArgs = sinon.stub(setup, 'localArgs');
 
@@ -355,7 +371,10 @@ describe('Unit: Commands > Setup', function () {
             const run = sinon.stub().resolves([]);
             const checkEnvironment = sinon.stub();
             const instance = {checkEnvironment};
-            const tasks = [{id: 'test', task1: true}, {id: 'test2', task2: true}];
+            const tasks = [
+                {id: 'test', task1: true},
+                {id: 'test2', task2: true}
+            ];
             const taskStub = sinon.stub(setup, 'tasks').returns(tasks);
             const listr = {tasks, run};
 
@@ -368,18 +387,20 @@ describe('Unit: Commands > Setup', function () {
             expect(checkEnvironment.calledOnce).to.be.true;
             expect(system.hook.calledOnceWithExactly('setup')).to.be.true;
             expect(taskStub.calledOnce).to.be.true;
-            expect(taskStub.args[0]).to.deep.equal([
-                [{step1: true}, {step2: true}]
-            ]);
+            expect(taskStub.args[0]).to.deep.equal([[{step1: true}, {step2: true}]]);
             expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.listr.args[0]).to.deep.equal([
-                tasks,
-                false,
-                {exitOnError: false}
-            ]);
+            expect(ui.listr.args[0]).to.deep.equal([tasks, false, {exitOnError: false}]);
             expect(run.calledOnce).to.be.true;
             const [[runArgs]] = run.args;
-            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(Object.keys(runArgs)).to.deep.equal([
+                'ui',
+                'system',
+                'instance',
+                'tasks',
+                'listr',
+                'argv',
+                'single'
+            ]);
             expect(runArgs.ui).to.equal(ui);
             expect(runArgs.system).to.equal(system);
             expect(runArgs.instance).to.equal(instance);
@@ -418,14 +439,18 @@ describe('Unit: Commands > Setup', function () {
             expect(taskStub.calledOnce).to.be.true;
             expect(taskStub.args[0]).to.deep.equal([[]]);
             expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.listr.args[0]).to.deep.equal([
-                [],
-                false,
-                {exitOnError: false}
-            ]);
+            expect(ui.listr.args[0]).to.deep.equal([[], false, {exitOnError: false}]);
             expect(run.calledOnce).to.be.true;
             const [[runArgs]] = run.args;
-            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(Object.keys(runArgs)).to.deep.equal([
+                'ui',
+                'system',
+                'instance',
+                'tasks',
+                'listr',
+                'argv',
+                'single'
+            ]);
             expect(runArgs.ui).to.equal(ui);
             expect(runArgs.system).to.equal(system);
             expect(runArgs.instance).to.equal(instance);
@@ -462,14 +487,18 @@ describe('Unit: Commands > Setup', function () {
             expect(taskStub.calledOnce).to.be.true;
             expect(taskStub.args[0]).to.deep.equal([[]]);
             expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.listr.args[0]).to.deep.equal([
-                [],
-                false,
-                {exitOnError: false}
-            ]);
+            expect(ui.listr.args[0]).to.deep.equal([[], false, {exitOnError: false}]);
             expect(run.calledOnce).to.be.true;
             const [[runArgs]] = run.args;
-            expect(Object.keys(runArgs)).to.deep.equal(['ui', 'system', 'instance', 'tasks', 'listr', 'argv', 'single']);
+            expect(Object.keys(runArgs)).to.deep.equal([
+                'ui',
+                'system',
+                'instance',
+                'tasks',
+                'listr',
+                'argv',
+                'single'
+            ]);
             expect(runArgs.ui).to.equal(ui);
             expect(runArgs.system).to.equal(system);
             expect(runArgs.instance).to.equal(instance);
@@ -483,9 +512,12 @@ describe('Unit: Commands > Setup', function () {
 
     // @todo: Add more tests if necessary
     it('configureOptions loops over extensions', function () {
-        const extensions = [{
-            config: {options: {setup: {test: true}}}
-        }, {}];
+        const extensions = [
+            {
+                config: {options: {setup: {test: true}}}
+            },
+            {}
+        ];
 
         const yargs = {option: sinon.stub(), epilogue: () => true, usage: () => true};
         yargs.option.returns(yargs);

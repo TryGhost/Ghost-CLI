@@ -1,8 +1,9 @@
 const proxyquire = require('proxyquire');
 
-const proxy = files => proxyquire('../../../lib/utils/dir-is-empty', {
-    fs: {readdirSync: () => files}
-});
+const proxy = files =>
+    proxyquire('../../../lib/utils/dir-is-empty', {
+        fs: {readdirSync: () => files}
+    });
 
 describe('Unit: Utils > dirIsEmpty', function () {
     it('returns true if directory is empty', function () {

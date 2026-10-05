@@ -48,15 +48,20 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
 
         shouldUseGhostUserStub.returns(true);
 
-        return contentFolderPermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your installation folder contains some directories or files with incorrect permissions:/);
-            expect(error.message).to.match(/- \.\/content\/images/);
-            expect(error.message).to.match(/sudo chown -R ghost:ghost \.\/content/);
-            expect(execaStub.called).to.be.true;
-        });
+        return contentFolderPermissions
+            .task({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(
+                    /Your installation folder contains some directories or files with incorrect permissions:/
+                );
+                expect(error.message).to.match(/- \.\/content\/images/);
+                expect(error.message).to.match(/sudo chown -R ghost:ghost \.\/content/);
+                expect(execaStub.called).to.be.true;
+            });
     });
 
     it('rejects with error if files have incorrect permissions', function () {
@@ -65,15 +70,20 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
 
         shouldUseGhostUserStub.returns(true);
 
-        return contentFolderPermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.SystemError);
-            expect(error.message).to.match(/Your installation folder contains a directory or file with incorrect permissions:/);
-            expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
-            expect(error.message).to.match(/sudo chown -R ghost:ghost \.\/content/);
-            expect(execaStub.called).to.be.true;
-        });
+        return contentFolderPermissions
+            .task({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.SystemError);
+                expect(error.message).to.match(
+                    /Your installation folder contains a directory or file with incorrect permissions:/
+                );
+                expect(error.message).to.match(/- .\/content\/images\/test.jpg/);
+                expect(error.message).to.match(/sudo chown -R ghost:ghost \.\/content/);
+                expect(execaStub.called).to.be.true;
+            });
     });
 
     it('passes if all folders have the correct permissions', function () {
@@ -93,12 +103,15 @@ describe('Unit: Doctor Checks > Checking content folder ownership', function () 
 
         shouldUseGhostUserStub.returns(true);
 
-        return contentFolderPermissions.task({}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(errors.ProcessError);
-            expect(error.message).to.match(/oops, cmd could not be executed/);
-            expect(execaStub.called).to.be.true;
-        });
+        return contentFolderPermissions
+            .task({})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(errors.ProcessError);
+                expect(error.message).to.match(/oops, cmd could not be executed/);
+                expect(execaStub.called).to.be.true;
+            });
     });
 });

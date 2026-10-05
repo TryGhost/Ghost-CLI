@@ -92,18 +92,20 @@ describe('Unit: Tasks: Configure > parseOptions', function () {
         });
     });
 
-    it('throws config error if validate function is defined and doesn\'t return true', function () {
+    it("throws config error if validate function is defined and doesn't return true", function () {
         const validate = sinon.stub().returns('invalid url');
         const parseOptions = fake({url: {validate}});
         const config = new Config('/var/www/ghost/config.json');
 
-        return parseOptions(config, 'development', {url: 'http://localhost:2368'}).then(() => {
-            expect(false, 'error should have been thrown').to.be.true;
-        }).catch((error) => {
-            expect(error).to.be.an.instanceof(ConfigError);
-            expect(error.options.config).to.deep.equal({url: 'http://localhost:2368'});
-            expect(validate.calledOnceWithExactly('http://localhost:2368', '/var/www/ghost')).to.be.true;
-        });
+        return parseOptions(config, 'development', {url: 'http://localhost:2368'})
+            .then(() => {
+                expect(false, 'error should have been thrown').to.be.true;
+            })
+            .catch(error => {
+                expect(error).to.be.an.instanceof(ConfigError);
+                expect(error.options.config).to.deep.equal({url: 'http://localhost:2368'});
+                expect(validate.calledOnceWithExactly('http://localhost:2368', '/var/www/ghost')).to.be.true;
+            });
     });
 
     it('handles non-string arg values correctly', function () {

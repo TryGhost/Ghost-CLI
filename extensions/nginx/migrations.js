@@ -52,37 +52,50 @@ function migrateSSL(ctx, migrateTask) {
         throw new cli.errors.SystemError('Unable to parse letsencrypt account email');
     }
 
-    return this.ui.listr([{
-        // 2. install acme.sh in /etc/letsencrypt if that hasn't been done already
-        title: 'Installing acme.sh in new location',
-        task: (_ctx, task) => acme.install(this.ui, task)
-    }, {
-        // 3. run install cert for new acme.sh instance
-        title: 'Regenerating SSL certificate in new location',
-        task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, parsed[1], false)
-    }, {
-        // 4. Update cert locations in nginx-ssl.conf
-        title: 'Updating nginx config',
-        task: () => {
-            const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
-            const keyCheck = new RegExp(`ssl_certificate_key ${originalCertFolder}/${parsedUrl.hostname}.key;`);
+    return this.ui.listr(
+        [
+            {
+                // 2. install acme.sh in /etc/letsencrypt if that hasn't been done already
+                title: 'Installing acme.sh in new location',
+                task: (_ctx, task) => acme.install(this.ui, task)
+            },
+            {
+                // 3. run install cert for new acme.sh instance
+                title: 'Regenerating SSL certificate in new location',
+                task: () => acme.generate(this.ui, parsedUrl.hostname, rootPath, parsed[1], false)
+            },
+            {
+                // 4. Update cert locations in nginx-ssl.conf
+                title: 'Updating nginx config',
+                task: () => {
+                    const acmeFolder = path.join('/etc/letsencrypt', parsedUrl.hostname);
+                    const keyCheck = new RegExp(`ssl_certificate_key ${originalCertFolder}/${parsedUrl.hostname}.key;`);
 
-            // Ensure here that we ONLY replace instances of the LetsEncrypt cert in the file,
-            // that way we don't overwrite the cert config of other certs.
-            const updated = fs.readFileSync(confFile, {encoding: 'utf8'})
-                .replace(certCheck, `ssl_certificate ${path.join(acmeFolder, 'fullchain.cer')};`)
-                .replace(keyCheck, `ssl_certificate_key ${path.join(acmeFolder, `${parsedUrl.hostname}.key`)};`);
+                    // Ensure here that we ONLY replace instances of the LetsEncrypt cert in the file,
+                    // that way we don't overwrite the cert config of other certs.
+                    const updated = fs
+                        .readFileSync(confFile, {encoding: 'utf8'})
+                        .replace(certCheck, `ssl_certificate ${path.join(acmeFolder, 'fullchain.cer')};`)
+                        .replace(
+                            keyCheck,
+                            `ssl_certificate_key ${path.join(acmeFolder, `${parsedUrl.hostname}.key`)};`
+                        );
 
-            fs.writeFileSync(confFile, updated);
-        }
-    }, {
-        title: 'Restarting Nginx',
-        task: () => this.restartNginx()
-    }, {
-        // 5. run acme.sh --remove -d domain in old acme.sh directory to remove the old cert from renewal
-        title: 'Disabling renewal for old certificate',
-        task: () => acme.remove(parsedUrl.hostname, this.ui, originalAcmePath)
-    }], false);
+                    fs.writeFileSync(confFile, updated);
+                }
+            },
+            {
+                title: 'Restarting Nginx',
+                task: () => this.restartNginx()
+            },
+            {
+                // 5. run acme.sh --remove -d domain in old acme.sh directory to remove the old cert from renewal
+                title: 'Disabling renewal for old certificate',
+                task: () => acme.remove(parsedUrl.hostname, this.ui, originalAcmePath)
+            }
+        ],
+        false
+    );
 }
 
 /**
@@ -109,13 +122,15 @@ async function migrateActivityPubDns(ctx, migrateTask) {
 
     try {
         for (const {file, contents} of configs) {
-            const updated = contents.replace(literalApProxyPass, (match, indent) => [
-                `${indent}# Resolved per-request so nginx can still start when DNS is briefly unavailable (Ghost-CLI#2044)`,
-                `${indent}resolver ${resolvers} valid=300s;`,
-                `${indent}resolver_timeout 5s;`,
-                `${indent}set $activitypub_upstream https://ap.ghost.org;`,
-                `${indent}proxy_pass $activitypub_upstream;`
-            ].join('\n'));
+            const updated = contents.replace(literalApProxyPass, (match, indent) =>
+                [
+                    `${indent}# Resolved per-request so nginx can still start when DNS is briefly unavailable (Ghost-CLI#2044)`,
+                    `${indent}resolver ${resolvers} valid=300s;`,
+                    `${indent}resolver_timeout 5s;`,
+                    `${indent}set $activitypub_upstream https://ap.ghost.org;`,
+                    `${indent}proxy_pass $activitypub_upstream;`
+                ].join('\n')
+            );
 
             await write({file, contents: updated});
         }

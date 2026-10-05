@@ -10,11 +10,11 @@ const modulePath = '../../../../lib/tasks/migration-export';
 // Stands in for ui.listr: runs the tasks in order, honouring `enabled`/`skip`
 async function runTasks(tasks, context = {}) {
     for (const task of tasks) {
-        if (task.enabled && !await task.enabled(context)) {
+        if (task.enabled && !(await task.enabled(context))) {
             continue;
         }
 
-        if (task.skip && await task.skip(context)) {
+        if (task.skip && (await task.skip(context))) {
             continue;
         }
 
@@ -52,7 +52,9 @@ function createInstance(dir, {client = 'mysql', running = false} = {}) {
         config: {
             values,
             get: (key, defaultValue) => {
-                const value = key.split('.').reduce((acc, part) => (acc === undefined || acc === null ? acc : acc[part]), values);
+                const value = key
+                    .split('.')
+                    .reduce((acc, part) => (acc === undefined || acc === null ? acc : acc[part]), values);
                 return value === undefined ? defaultValue : value;
             }
         },
@@ -154,10 +156,11 @@ describe('Unit: Tasks > migration-export', function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
         const dumpDatabase = sinon.stub().resolves();
-        const exportTask = sinon.stub().callsFake((ui, instance, contentFile, membersFile) => Promise.all([
-            fs.promises.writeFile(contentFile, '{}'),
-            fs.promises.writeFile(membersFile, 'email\n')
-        ]));
+        const exportTask = sinon
+            .stub()
+            .callsFake((ui, instance, contentFile, membersFile) =>
+                Promise.all([fs.promises.writeFile(contentFile, '{}'), fs.promises.writeFile(membersFile, 'email\n')])
+            );
 
         const migrationExport = load({
             '../import': {exportTask},
@@ -239,7 +242,7 @@ describe('Unit: Tasks > migration-export', function () {
         expect.fail('migrationExport should have errored');
     });
 
-    it('omits adminUrl when there isn\'t a separate admin domain, and flags secrets', async function () {
+    it("omits adminUrl when there isn't a separate admin domain, and flags secrets", async function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
         const migrationExport = load();
@@ -334,7 +337,7 @@ describe('Unit: Tasks > migration-export', function () {
         expect(path.basename(result.path)).to.match(/^ghost-migration-example-com-[\d-]+$/);
     });
 
-    it('resolves a relative output path against the caller\'s cwd', async function () {
+    it("resolves a relative output path against the caller's cwd", async function () {
         const source = createSource();
         const cwd = setupTestFolder().dir;
         sinon.stub(process, 'cwd').returns(source.dir);
@@ -348,7 +351,7 @@ describe('Unit: Tasks > migration-export', function () {
         const {execFileSync} = require('node:child_process');
         const source = createSource();
         fs.writeFileSync(path.join(source.dir, 'content/themes/casper/.hidden'), 'secret');
-        const output = path.join(setupTestFolder().dir, 'bundle space \' $;name');
+        const output = path.join(setupTestFolder().dir, "bundle space ' $;name");
         const result = await load()(createUi(), createInstance(source.dir), {output, archive: 'tgz'});
         expect(fs.statSync(result.path).mode & 0o777).to.equal(0o600);
         const extracted = setupTestFolder().dir;
@@ -401,7 +404,7 @@ describe('Unit: Tasks > migration-export', function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
         const instance = createInstance(source.dir, {running: true});
-        const c = sinon.stub().callsFake(async (options) => {
+        const c = sinon.stub().callsFake(async options => {
             expect(fs.statSync(options.file).mode & 0o777).to.equal(0o600);
             fs.writeFileSync(options.file, 'partial secret');
             throw new Error('compression failed');
@@ -416,8 +419,15 @@ describe('Unit: Tasks > migration-export', function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
         const instance = createInstance(source.dir, {running: true});
-        const migrationExport = load({'./database': {databaseKind: () => 'mysql-dump', dumpDatabase: sinon.stub().rejects(new Error('dump failed'))}});
-        await expect(migrationExport(createUi(), instance, {output, leaveStopped: true})).rejects.toThrow('dump failed');
+        const migrationExport = load({
+            './database': {
+                databaseKind: () => 'mysql-dump',
+                dumpDatabase: sinon.stub().rejects(new Error('dump failed'))
+            }
+        });
+        await expect(migrationExport(createUi(), instance, {output, leaveStopped: true})).rejects.toThrow(
+            'dump failed'
+        );
         expect(instance.stop.calledOnce).to.be.true;
         expect(instance.start.called).to.be.false;
         expect(fs.existsSync(output)).to.be.false;
@@ -433,7 +443,13 @@ describe('Unit: Tasks > migration-export', function () {
         fs.writeFileSync(`${archive}.tgz`, 'keep archive');
         const alias = path.join(parent, 'alias');
         fs.symlinkSync(source.dir, alias);
-        for (const [output, format] of [[existing], [archive, 'tgz'], [source.dir], [path.join(source.dir, 'bundle')], [path.join(alias, 'bundle')]]) {
+        for (const [output, format] of [
+            [existing],
+            [archive, 'tgz'],
+            [source.dir],
+            [path.join(source.dir, 'bundle')],
+            [path.join(alias, 'bundle')]
+        ]) {
             const instance = createInstance(source.dir, {running: true});
             await expect(load()(createUi(), instance, {output, archive: format})).rejects.toThrow();
             expect(instance.start.called).to.be.false;
@@ -447,7 +463,7 @@ describe('Unit: Tasks > migration-export', function () {
     it('uses literal shell arguments for sudo copies with spaces and metacharacters', async function () {
         const {execFileSync} = require('node:child_process');
         const source = createSource();
-        const name = 'hidden \' $(touch INJECTED); $file';
+        const name = "hidden ' $(touch INJECTED); $file";
         fs.writeFileSync(path.join(source.dir, 'content/images', name), 'literal');
         const output = path.join(setupTestFolder().dir, 'bundle');
         const ui = createUi();
@@ -476,10 +492,12 @@ describe('Unit: Tasks > migration-export', function () {
         const instance = createInstance(source.dir, {client: 'sqlite3'});
         const migrationExport = load({
             './database': {databaseKind: () => 'portable'},
-            '../import': {exportTask: async (ui, inst, content, members) => {
-                fs.writeFileSync(content, '{}');
-                fs.unlinkSync(members);
-            }}
+            '../import': {
+                exportTask: async (ui, inst, content, members) => {
+                    fs.writeFileSync(content, '{}');
+                    fs.unlinkSync(members);
+                }
+            }
         });
         await expect(migrationExport(createUi(), instance, {output})).rejects.toThrow('ENOENT');
         expect(instance.start.calledOnce).to.be.true;
@@ -502,7 +520,7 @@ describe('Unit: Tasks > migration-export', function () {
             expect(manifest).to.deep.equal(fixture);
         });
     }
-    it('reads only the running environment\'s config when both configs exist', async function () {
+    it("reads only the running environment's config when both configs exist", async function () {
         const production = createSource();
         const development = createSource();
         fs.writeFileSync(path.join(production.dir, 'content/images/production-only.jpg'), 'production');
@@ -553,7 +571,10 @@ describe('Unit: Tasks > migration-export', function () {
 
         const migrationExport = load({
             '../import': {exportTask},
-            './database': {databaseKind: (instance, format) => format || 'mysql-data', dumpDatabase: sinon.stub().rejects()},
+            './database': {
+                databaseKind: (instance, format) => format || 'mysql-data',
+                dumpDatabase: sinon.stub().rejects()
+            },
             './sqlite': {databaseFile: () => path.join(source.dir, 'content/data/ghost-local.db'), dumpSqliteData}
         });
 
@@ -578,7 +599,7 @@ describe('Unit: Tasks > migration-export', function () {
         expect(result.manifest.database).to.deep.equal({path: 'database.sql', rows: {migrations: 354, posts: 3}});
     });
 
-    it('reads the SQLite filename from the running environment\'s config', async function () {
+    it("reads the SQLite filename from the running environment's config", async function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
         const instance = createInstance(source.dir, {client: 'sqlite3'});
@@ -638,10 +659,15 @@ describe('Unit: Tasks > migration-export', function () {
 
         const migrationExport = load({
             './database': {databaseKind},
-            './sqlite': {databaseFile: () => '/source.db', dumpSqliteData: sinon.stub().rejects(new Error('values MySQL would reject'))}
+            './sqlite': {
+                databaseFile: () => '/source.db',
+                dumpSqliteData: sinon.stub().rejects(new Error('values MySQL would reject'))
+            }
         });
 
-        await expect(migrationExport(createUi(), instance, {output, sqliteFormat: 'mysql-data'})).rejects.toThrow(/MySQL would reject/);
+        await expect(migrationExport(createUi(), instance, {output, sqliteFormat: 'mysql-data'})).rejects.toThrow(
+            /MySQL would reject/
+        );
         expect(databaseKind.args[0][1]).to.equal('mysql-data');
         expect(instance.stop.calledOnce).to.be.true;
         expect(instance.start.calledOnce).to.be.true;
@@ -654,17 +680,32 @@ describe('Unit: Tasks > migration-export', function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
         const instance = createInstance(source.dir, {client: 'sqlite3', running: true});
-        const content = JSON.stringify({db: [{meta: {version: '6.2.0'}, data: {posts: [{id: 'post1', title: 'Fixture'}], users: [{id: 'author1'}], posts_authors: [{post_id: 'post1', author_id: 'author1'}]}}]});
-        const members = 'id,email,name,stripe_customer_id,subscribed_to_emails\nmember1,fixture@example.com,"Name, with comma",cus_fixture,true\n';
+        const content = JSON.stringify({
+            db: [
+                {
+                    meta: {version: '6.2.0'},
+                    data: {
+                        posts: [{id: 'post1', title: 'Fixture'}],
+                        users: [{id: 'author1'}],
+                        posts_authors: [{post_id: 'post1', author_id: 'author1'}]
+                    }
+                }
+            ]
+        });
+        const members =
+            'id,email,name,stripe_customer_id,subscribed_to_emails\nmember1,fixture@example.com,"Name, with comma",cus_fixture,true\n';
         const requests = [];
         const api = nock('https://example.com')
-            .get('/ghost/api/admin/authentication/setup/').reply(200, {setup: [{status: true}]})
-            .get('/ghost/api/admin/db/').reply(() => {
+            .get('/ghost/api/admin/authentication/setup/')
+            .reply(200, {setup: [{status: true}]})
+            .get('/ghost/api/admin/db/')
+            .reply(() => {
                 requests.push('content');
                 expect(instance.stop.called).to.be.false;
                 return [200, content];
             })
-            .get('/ghost/api/admin/members/upload/?limit=all').reply(() => {
+            .get('/ghost/api/admin/members/upload/?limit=all')
+            .reply(() => {
                 requests.push('members');
                 expect(instance.stop.called).to.be.false;
                 return [200, members];
@@ -689,7 +730,12 @@ describe('Unit: Tasks > migration-export', function () {
         const output = path.join(setupTestFolder().dir, 'bundle');
         const instance = createInstance(source.dir, {running: true});
         instance.start.rejects(new Error('restart failed'));
-        const migrationExport = load({'./database': {databaseKind: () => 'mysql-dump', dumpDatabase: sinon.stub().rejects(new Error('dump failed'))}});
+        const migrationExport = load({
+            './database': {
+                databaseKind: () => 'mysql-dump',
+                dumpDatabase: sinon.stub().rejects(new Error('dump failed'))
+            }
+        });
         const ui = createUi();
         try {
             await migrationExport(ui, instance, {output});
@@ -719,13 +765,19 @@ describe('Unit: Tasks > migration-export', function () {
             const output = path.join(setupTestFolder().dir, 'bundle');
             const instance = createInstance(source.dir, {client: 'sqlite3'});
             const api = nock('https://example.com')
-                .get('/ghost/api/admin/authentication/setup/').reply(200, {setup: [{status: true}]})
-                .get('/ghost/api/admin/db/').reply(200, {db: [{meta: {version: '6.2.0'}, data: {posts: []}}]})
-                .get('/ghost/api/admin/members/upload/?limit=all').reply(status, '');
+                .get('/ghost/api/admin/authentication/setup/')
+                .reply(200, {setup: [{status: true}]})
+                .get('/ghost/api/admin/db/')
+                .reply(200, {db: [{meta: {version: '6.2.0'}, data: {posts: []}}]})
+                .get('/ghost/api/admin/members/upload/?limit=all')
+                .reply(status, '');
             const ui = createUi();
             ui.prompt = sinon.stub().resolves({token: `${'a'.repeat(24)}:${'b'.repeat(64)}`});
             try {
-                const migrationExport = load({'../import': {exportTask}, './database': {databaseKind: () => 'portable'}});
+                const migrationExport = load({
+                    '../import': {exportTask},
+                    './database': {databaseKind: () => 'portable'}
+                });
                 const result = migrationExport(ui, instance, {output});
                 if (status === 200) {
                     const {manifest} = await result;
@@ -780,7 +832,9 @@ describe('Unit: Tasks > migration-export', function () {
                 links: [['versions/6.2.0', 'current']]
             });
             const themeLink = path.join(source.dir, 'content/themes/casper');
-            const target = useSudo ? '../../current/content/themes/casper' : path.join(source.dir, 'current/content/themes/casper');
+            const target = useSudo
+                ? '../../current/content/themes/casper'
+                : path.join(source.dir, 'current/content/themes/casper');
             fs.symlinkSync(target, themeLink);
             const output = path.join(setupTestFolder().dir, 'bundle');
             const ui = createUi();
@@ -802,7 +856,10 @@ describe('Unit: Tasks > migration-export', function () {
         it(`rejects a ${type} theme link before changing the source`, async function () {
             const source = createSource();
             const link = path.join(source.dir, 'content/themes/custom');
-            const target = type === 'cyclic' ? link : path.join(source.dir, type === 'file' ? 'content/themes/casper/package.json' : 'missing');
+            const target =
+                type === 'cyclic'
+                    ? link
+                    : path.join(source.dir, type === 'file' ? 'content/themes/casper/package.json' : 'missing');
             fs.symlinkSync(target, link);
             const output = path.join(setupTestFolder().dir, 'bundle');
             const instance = createInstance(source.dir, {running: true});
@@ -825,7 +882,9 @@ describe('Unit: Tasks > migration-export', function () {
         expect(fs.existsSync(unsafeOutput)).to.be.false;
         const output = path.join(setupTestFolder().dir, 'bundle');
         await load()(createUi(), instance, {output});
-        expect(fs.readFileSync(path.join(output, 'content/themes/custom/package.json'), 'utf8')).to.equal('{"name":"custom"}');
+        expect(fs.readFileSync(path.join(output, 'content/themes/custom/package.json'), 'utf8')).to.equal(
+            '{"name":"custom"}'
+        );
         expect(fs.lstatSync(path.join(output, 'content/themes/custom')).isDirectory()).to.be.true;
     });
 

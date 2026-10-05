@@ -47,43 +47,56 @@ function isUnsupportedMySQL(version) {
 
 class MySQLExtension extends Extension {
     setup() {
-        return [{
-            id: 'mysql',
-            name: '"ghost" mysql user',
-            task: (...args) => this.setupMySQL(...args),
-            // Case 1: ghost install local OR ghost setup --local
-            // Case 2: ghost install --db sqlite3
-            // Skip in both cases
-            enabled: ({argv}) => !(argv.local || argv.db === 'sqlite3'),
-            skip: ({instance}) => instance.config.get('database.connection.user') !== 'root'
-        }];
+        return [
+            {
+                id: 'mysql',
+                name: '"ghost" mysql user',
+                task: (...args) => this.setupMySQL(...args),
+                // Case 1: ghost install local OR ghost setup --local
+                // Case 2: ghost install --db sqlite3
+                // Skip in both cases
+                enabled: ({argv}) => !(argv.local || argv.db === 'sqlite3'),
+                skip: ({instance}) => instance.config.get('database.connection.user') !== 'root'
+            }
+        ];
     }
 
     setupMySQL(ctx) {
         const dbconfig = ctx.instance.config.get('database.connection');
 
-        return this.ui.listr([{
-            title: 'Connecting to database',
-            task: () => this.canConnect(ctx, dbconfig)
-        }, {
-            title: 'Creating new MySQL user',
-            task: () => this.createUser(ctx, dbconfig)
-        }, {
-            title: 'Granting new user permissions',
-            task: () => this.grantPermissions(ctx, dbconfig)
-        }, {
-            title: 'Setting up database (MySQL 8)',
-            task: () => this.createMySQL8Database(dbconfig),
-            enabled: ({mysql: mysqlCtx}) => mysqlCtx && isMySQL8(mysqlCtx.version)
-        }, {
-            title: 'Saving new config',
-            task: () => {
-                ctx.instance.config.set('database.connection.user', ctx.mysql.username)
-                    .set('database.connection.password', ctx.mysql.password).save();
+        return this.ui.listr(
+            [
+                {
+                    title: 'Connecting to database',
+                    task: () => this.canConnect(ctx, dbconfig)
+                },
+                {
+                    title: 'Creating new MySQL user',
+                    task: () => this.createUser(ctx, dbconfig)
+                },
+                {
+                    title: 'Granting new user permissions',
+                    task: () => this.grantPermissions(ctx, dbconfig)
+                },
+                {
+                    title: 'Setting up database (MySQL 8)',
+                    task: () => this.createMySQL8Database(dbconfig),
+                    enabled: ({mysql: mysqlCtx}) => mysqlCtx && isMySQL8(mysqlCtx.version)
+                },
+                {
+                    title: 'Saving new config',
+                    task: () => {
+                        ctx.instance.config
+                            .set('database.connection.user', ctx.mysql.username)
+                            .set('database.connection.password', ctx.mysql.password)
+                            .save();
 
-                this.connection.end();
-            }
-        }], false);
+                        this.connection.end();
+                    }
+                }
+            ],
+            false
+        );
     }
 
     async isDeprecated(dbconfig) {
@@ -198,9 +211,7 @@ class MySQLExtension extends Extension {
     async createMySQL8User(host) {
         const username = this.randomUsername();
 
-        const result = await this._query(
-            `CREATE USER '${username}'@'${host}' IDENTIFIED BY RANDOM PASSWORD`
-        );
+        const result = await this._query(`CREATE USER '${username}'@'${host}' IDENTIFIED BY RANDOM PASSWORD`);
 
         if (!result || !result[0] || !result[0]['generated password']) {
             throw new Error('MySQL user creation did not return a generated password');
@@ -251,7 +262,9 @@ class MySQLExtension extends Extension {
 
     async grantPermissions(ctx, dbconfig) {
         try {
-            await this._query(`GRANT ALL PRIVILEGES ON \`${dbconfig.database}\`.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`);
+            await this._query(
+                `GRANT ALL PRIVILEGES ON \`${dbconfig.database}\`.* TO '${ctx.mysql.username}'@'${ctx.mysql.host}';`
+            );
             this.ui.logVerbose(`MySQL: Successfully granted privileges for user "${ctx.mysql.username}"`, 'green');
 
             await this._query('FLUSH PRIVILEGES;');
@@ -272,7 +285,9 @@ class MySQLExtension extends Extension {
         }
 
         try {
-            await this._query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`);
+            await this._query(
+                `CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`
+            );
             this.ui.logVerbose(`MySQL: created database ${database}`, 'green');
         } catch (error) {
             this.ui.logVerbose(`MySQL: failed to create database ${database}`, 'red');

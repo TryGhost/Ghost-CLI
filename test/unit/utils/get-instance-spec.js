@@ -4,12 +4,14 @@ const {SystemError} = require('../../../lib/errors');
 const modulePath = '../../../lib/utils/get-instance';
 
 describe('Unit: Utils > getInstance', function () {
-    let getInstance; let stubs; let system;
+    let getInstance;
+    let stubs;
+    let system;
     beforeEach(function () {
         stubs = {
             findValidInstallation: sinon.stub().callsFake(a => a),
             chdir: sinon.stub(process, 'chdir'),
-            getInstance: sinon.stub().returns('It\'s-a Me, Mario!')
+            getInstance: sinon.stub().returns("It's-a Me, Mario!")
         };
 
         system = {getInstance: stubs.getInstance};
@@ -22,10 +24,10 @@ describe('Unit: Utils > getInstance', function () {
         sinon.restore();
     });
 
-    it('Doesn\'t change directory by default', function () {
+    it("Doesn't change directory by default", function () {
         const result = getInstance({name: undefined, system, command: 'test', recurse: false});
 
-        expect(result).to.equal('It\'s-a Me, Mario!');
+        expect(result).to.equal("It's-a Me, Mario!");
         expect(stubs.getInstance.calledOnce).to.be.true;
         expect(stubs.chdir.called).to.be.false;
         expect(stubs.findValidInstallation.calledOnce).to.be.true;
@@ -40,7 +42,7 @@ describe('Unit: Utils > getInstance', function () {
             expect(false, 'Promise should have rejected').to.be.true;
         } catch (error) {
             expect(error).to.be.instanceof(SystemError);
-            expect(error.message).to.equal('Ghost instance \'ghosted\' does not exist');
+            expect(error.message).to.equal("Ghost instance 'ghosted' does not exist");
         }
     });
 

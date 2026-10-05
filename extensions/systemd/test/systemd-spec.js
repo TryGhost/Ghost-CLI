@@ -27,12 +27,12 @@ describe('Unit: Systemd > Process Manager', function () {
     });
 
     describe('Start Hook', function () {
-        let ext; let ui;
+        let ext;
+        let ui;
 
         beforeEach(function () {
             instance.config = configStub();
-            ui = {sudo: sinon.stub().resolves()},
-            ext = new Systemd(ui, null, instance);
+            ((ui = {sudo: sinon.stub().resolves()}), (ext = new Systemd(ui, null, instance)));
             ext.ensureStarted = sinon.stub().resolves();
             ext._precheck = () => true;
         });
@@ -54,33 +54,39 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Errors when sudo does', function () {
             ui.sudo = sinon.stub().rejects();
-            return ext.start().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(error).to.be.instanceOf(errors.ProcessError);
-            });
+            return ext
+                .start()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(ui.sudo.calledOnce).to.be.true;
+                    expect(error).to.be.instanceOf(errors.ProcessError);
+                });
         });
 
         it('Errors when starting failed', function () {
-            ext.ensureStarted = sinon.stub().rejects(new errors.CliError('Wasn\'t started'));
-            return ext.start().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(ext.ensureStarted.calledOnce).to.be.true;
-                expect(error).to.be.instanceOf(errors.CliError);
-            });
+            ext.ensureStarted = sinon.stub().rejects(new errors.CliError("Wasn't started"));
+            return ext
+                .start()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(ext.ensureStarted.calledOnce).to.be.true;
+                    expect(error).to.be.instanceOf(errors.CliError);
+                });
         });
     });
 
     describe('Stop Hook', function () {
-        let ext; let ui;
+        let ext;
+        let ui;
 
         beforeEach(function () {
-            ui = {sudo: sinon.stub().resolves()},
-            ext = new Systemd(ui, null, instance);
+            ((ui = {sudo: sinon.stub().resolves()}), (ext = new Systemd(ui, null, instance)));
             ext.ensureStarted = sinon.stub().resolves();
             ext._precheck = () => true;
         });
@@ -102,22 +108,25 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Errors when sudo does', function () {
             ui.sudo = sinon.stub().rejects();
-            return ext.stop().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(error).to.be.instanceOf(errors.ProcessError);
-            });
+            return ext
+                .stop()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(ui.sudo.calledOnce).to.be.true;
+                    expect(error).to.be.instanceOf(errors.ProcessError);
+                });
         });
     });
 
     describe('Restart Hook', function () {
-        let ext; let ui;
+        let ext;
+        let ui;
 
         beforeEach(function () {
-            ui = {sudo: sinon.stub().resolves()},
-            ext = new Systemd(ui, null, instance);
+            ((ui = {sudo: sinon.stub().resolves()}), (ext = new Systemd(ui, null, instance)));
             ext.ensureStarted = sinon.stub().resolves();
             ext._precheck = () => true;
         });
@@ -139,24 +148,30 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Errors when sudo does', function () {
             ui.sudo = sinon.stub().rejects();
-            return ext.restart().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(error).to.be.instanceOf(errors.ProcessError);
-            });
+            return ext
+                .restart()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(ui.sudo.calledOnce).to.be.true;
+                    expect(error).to.be.instanceOf(errors.ProcessError);
+                });
         });
 
         it('Errors when starting failed', function () {
-            ext.ensureStarted = sinon.stub().rejects(new errors.CliError('Wasn\'t started'));
-            return ext.restart().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.ok;
-                expect(ext.ensureStarted.calledOnce).to.be.true;
-                expect(error).to.be.instanceOf(errors.CliError);
-            });
+            ext.ensureStarted = sinon.stub().rejects(new errors.CliError("Wasn't started"));
+            return ext
+                .restart()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.ok;
+                    expect(ext.ensureStarted.calledOnce).to.be.true;
+                    expect(error).to.be.instanceOf(errors.CliError);
+                });
         });
     });
 
@@ -166,7 +181,7 @@ describe('Unit: Systemd > Process Manager', function () {
             const expectedCmd = ['systemctl', 'is-enabled', 'ghost_ghost_org'];
             const ext = makeSystemd(null, ui);
 
-            return ext.isEnabled().then((result) => {
+            return ext.isEnabled().then(result => {
                 expect(result).to.be.true;
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
@@ -178,21 +193,24 @@ describe('Unit: Systemd > Process Manager', function () {
             const ext = makeSystemd(null, ui);
             const expectedCmd = ['systemctl', 'is-enabled', 'ghost_ghost_org'];
 
-            return ext.isEnabled().then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('unknown');
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
-            });
+            return ext
+                .isEnabled()
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('unknown');
+                    expect(ui.sudo.calledOnce).to.be.true;
+                    expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
+                });
         });
 
-        it('Doesn\'t pass stopped errors through', function () {
+        it("Doesn't pass stopped errors through", function () {
             const ui = {sudo: sinon.stub().rejects(new Error('disabled'))};
             const ext = makeSystemd(null, ui);
             const expectedCmd = ['systemctl', 'is-enabled', 'ghost_ghost_org'];
 
-            return ext.isEnabled().then((result) => {
+            return ext.isEnabled().then(result => {
                 expect(result).to.be.false;
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
@@ -214,13 +232,16 @@ describe('Unit: Systemd > Process Manager', function () {
         it('Passes errors through', function () {
             const ui = {sudo: sinon.stub().rejects(new Error('red'))};
             const ext = makeSystemd(null, ui);
-            return ext.enable().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(error).to.be.ok;
-                expect(error).to.be.instanceOf(errors.ProcessError);
-            });
+            return ext
+                .enable()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(ui.sudo.calledOnce).to.be.true;
+                    expect(error).to.be.ok;
+                    expect(error).to.be.instanceOf(errors.ProcessError);
+                });
         });
     });
 
@@ -238,13 +259,16 @@ describe('Unit: Systemd > Process Manager', function () {
         it('Passes errors through', function () {
             const ui = {sudo: sinon.stub().rejects(new Error('green'))};
             const ext = makeSystemd(null, ui);
-            return ext.disable().then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(ui.sudo.calledOnce).to.be.true;
-                expect(error).to.be.ok;
-                expect(error).to.be.instanceOf(errors.ProcessError);
-            });
+            return ext
+                .disable()
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(ui.sudo.calledOnce).to.be.true;
+                    expect(error).to.be.ok;
+                    expect(error).to.be.instanceOf(errors.ProcessError);
+                });
         });
     });
 
@@ -254,7 +278,7 @@ describe('Unit: Systemd > Process Manager', function () {
             const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
             const ext = makeSystemd(null, ui);
 
-            return ext.isRunning().then((result) => {
+            return ext.isRunning().then(result => {
                 expect(result).to.be.true;
                 expect(ui.sudo.calledOnce).to.be.true;
                 expect(ui.sudo.args[0][0]).to.deep.equal(expectedCmd);
@@ -266,22 +290,25 @@ describe('Unit: Systemd > Process Manager', function () {
             const ext = makeSystemd(null, {sudo});
             const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
 
-            return ext.isRunning().then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('unknown');
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(sudo.calledOnce).to.be.true;
-                expect(sudo.calledWithExactly(expectedCmd)).to.be.true;
-            });
+            return ext
+                .isRunning()
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('unknown');
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(sudo.calledOnce).to.be.true;
+                    expect(sudo.calledWithExactly(expectedCmd)).to.be.true;
+                });
         });
 
-        it('Doesn\'t pass stopped errors through', function () {
+        it("Doesn't pass stopped errors through", function () {
             const sudo = sinon.stub().rejects(Object.assign(new Error(), {stdout: 'inactive'}));
             const ext = makeSystemd(null, {sudo});
             const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
 
-            return ext.isRunning().then((result) => {
+            return ext.isRunning().then(result => {
                 expect(result).to.be.false;
                 expect(sudo.calledOnce).to.be.true;
                 expect(sudo.calledWithExactly(expectedCmd)).to.be.true;
@@ -297,7 +324,7 @@ describe('Unit: Systemd > Process Manager', function () {
             const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
             const resetCmd = ['systemctl', 'reset-failed', 'ghost_ghost_org'];
 
-            return ext.isRunning().then((result) => {
+            return ext.isRunning().then(result => {
                 expect(result).to.be.false;
                 expect(sudo.calledTwice).to.be.true;
                 expect(sudo.firstCall.calledWithExactly(expectedCmd));
@@ -314,15 +341,18 @@ describe('Unit: Systemd > Process Manager', function () {
             const expectedCmd = ['systemctl', 'is-active', 'ghost_ghost_org'];
             const resetCmd = ['systemctl', 'reset-failed', 'ghost_ghost_org'];
 
-            return ext.isRunning().then(() => {
-                expect(false, 'An error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error.message).to.equal('uh oh');
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(sudo.calledTwice).to.be.true;
-                expect(sudo.firstCall.calledWithExactly(expectedCmd)).to.be.true;
-                expect(sudo.secondCall.calledWithExactly(resetCmd)).to.be.true;
-            });
+            return ext
+                .isRunning()
+                .then(() => {
+                    expect(false, 'An error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error.message).to.equal('uh oh');
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(sudo.calledTwice).to.be.true;
+                    expect(sudo.firstCall.calledWithExactly(expectedCmd)).to.be.true;
+                    expect(sudo.secondCall.calledWithExactly(resetCmd)).to.be.true;
+                });
         });
     });
 
@@ -333,7 +363,7 @@ describe('Unit: Systemd > Process Manager', function () {
             proxyOpts = {'./get-uid': sinon.stub().returns(true)};
         });
 
-        it('Errors if uid hasn\'t been set', function () {
+        it("Errors if uid hasn't been set", function () {
             proxyOpts['./get-uid'] = sinon.stub().returns(null);
             const ext = makeSystemd(proxyOpts);
             try {
@@ -359,7 +389,7 @@ describe('Unit: Systemd > Process Manager', function () {
             expect(fsStub.args[0][0]).to.equal(expectedFile);
         });
 
-        it('Errors if unit file doesn\'t exist', function () {
+        it("Errors if unit file doesn't exist", function () {
             const fsStub = sinon.stub().returns(false);
             proxyOpts.fs = {existsSync: fsStub};
             const ext = makeSystemd(proxyOpts);
@@ -385,8 +415,7 @@ describe('Unit: Systemd > Process Manager', function () {
         });
 
         it('Calls execa', function () {
-            const Systemd = proxyquire(modulePath,
-                {execa: {execaSync: execaStub}});
+            const Systemd = proxyquire(modulePath, {execa: {execaSync: execaStub}});
 
             expect(Systemd.willRun()).to.be.true;
             expect(execaStub.calledOnce).to.be.true;
@@ -396,8 +425,7 @@ describe('Unit: Systemd > Process Manager', function () {
 
         it('Always fails', function () {
             execaStub = sinon.stub().throws(new Error());
-            const Systemd = proxyquire(modulePath,
-                {execa: {execaSync: execaStub}});
+            const Systemd = proxyquire(modulePath, {execa: {execaSync: execaStub}});
 
             expect(Systemd.willRun()).to.be.false;
             expect(execaStub.calledOnce).to.be.true;

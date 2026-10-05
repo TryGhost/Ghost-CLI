@@ -5,24 +5,24 @@ const proxyquire = require('proxyquire').noCallThru();
 
 const modulePath = '../../../lib/utils/find-extensions';
 
-const localExtensions = [
-    'mysql',
-    'nginx',
-    'systemd'
-];
+const localExtensions = ['mysql', 'nginx', 'systemd'];
 
 describe('Unit: Utils > find-extensions', function () {
-    let findExtensions; let findStub; let existsStub;
+    let findExtensions;
+    let findStub;
+    let existsStub;
 
     beforeEach(() => {
         findStub = sinon.stub().returns([
             {
                 pkg: {name: 'test'}
-            }, {
+            },
+            {
                 pkg: {
                     'ghost-cli': {name: 'rest'}
                 }
-            }, {
+            },
+            {
                 pkg: {}
             }
         ]);
@@ -56,7 +56,7 @@ describe('Unit: Utils > find-extensions', function () {
         expect(args).to.deep.equal(expected);
     });
 
-    it('uses process.cwd() when global modules dir doesn\'t exist', function () {
+    it("uses process.cwd() when global modules dir doesn't exist", function () {
         existsStub.returns(false);
         findExtensions();
         expect(findStub.calledOnce).to.be.true;

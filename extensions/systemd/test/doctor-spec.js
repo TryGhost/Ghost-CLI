@@ -170,12 +170,14 @@ Test=Value
             expect(log.called).to.be.false;
         });
 
-        it('rejects if node version isn\'t compatible with Ghost' , async function () {
+        it("rejects if node version isn't compatible with Ghost", async function () {
             const execaStub = sinon.stub().resolves({stdout: process.versions.node});
             const {checkNodeVersion} = setup(execaStub);
-            const readJson = sinon.stub(fs, 'readFile').resolves(JSON.stringify({
-                engines: {node: '< 1.0.0'}
-            }));
+            const readJson = sinon.stub(fs, 'readFile').resolves(
+                JSON.stringify({
+                    engines: {node: '< 1.0.0'}
+                })
+            );
             const log = sinon.stub();
 
             const ctx = {

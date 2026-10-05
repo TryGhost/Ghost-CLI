@@ -61,7 +61,7 @@ describe('Unit: UI > Renderer', function () {
             expect(ctx.subscribeToEvents.calledOnce).to.be.true;
             expect(ctx.id).to.exist;
             // Give frame time to be called
-            await new Promise((resolve) => {
+            await new Promise(resolve => {
                 setTimeout(resolve, 10);
             });
             expect(ctx.frame.called).to.be.true;
@@ -70,9 +70,10 @@ describe('Unit: UI > Renderer', function () {
     });
 
     describe('#subscribeToEvents', function () {
-        const flush = () => new Promise((resolve) => {
-            queueMicrotask(resolve);
-        });
+        const flush = () =>
+            new Promise(resolve => {
+                queueMicrotask(resolve);
+            });
 
         const makeTask = (state = {}) => ({
             on: sinon.stub(),
@@ -184,7 +185,7 @@ describe('Unit: UI > Renderer', function () {
             expect(log.calledWithExactly('test output', 'yellow')).to.be.true;
         });
 
-        it('doesn\'t log the skip message when it\'s just the task title', async function () {
+        it("doesn't log the skip message when it's just the task title", async function () {
             const log = sinon.stub();
             const task = makeTask({isSkipped: () => true, message: {skip: 'Test task'}});
             const renderer = new Renderer({log}, [task]);
@@ -255,12 +256,14 @@ describe('Unit: UI > Renderer', function () {
             expect(buildText.called).to.be.false;
         });
 
-        it('spinner does nothing when text doesn\'t change', function () {
-            const tasks = [{
-                isPending: sinon.stub().returns(true),
-                name: 'a',
-                isEnabled
-            }];
+        it("spinner does nothing when text doesn't change", function () {
+            const tasks = [
+                {
+                    isPending: sinon.stub().returns(true),
+                    name: 'a',
+                    isEnabled
+                }
+            ];
             const renderer = new Renderer({}, tasks);
             const spin = sinon.stub();
             const buildText = sinon.stub(renderer, 'buildText').callsFake(({name}) => name);
@@ -275,11 +278,13 @@ describe('Unit: UI > Renderer', function () {
         });
 
         it('spinner does nothing when paused', function () {
-            const tasks = [{
-                isPending: sinon.stub().returns(true),
-                name: 'b',
-                isEnabled
-            }];
+            const tasks = [
+                {
+                    isPending: sinon.stub().returns(true),
+                    name: 'b',
+                    isEnabled
+                }
+            ];
             const renderer = new Renderer({}, tasks);
             const spin = sinon.stub();
             const buildText = sinon.stub(renderer, 'buildText').callsFake(({name}) => name);
@@ -325,15 +330,18 @@ describe('Unit: UI > Renderer', function () {
         it('handles subtasks', function () {
             const task = {
                 hasSubtasks: sinon.stub().returns(true),
-                subtasks: [{
-                    isPending: sinon.stub().returns(true),
-                    hasSubtasks: sinon.stub().returns(false),
-                    title: 'Pig'
-                }, {
-                    isPending: sinon.stub().returns(false),
-                    hasSubtasks: sinon.stub().returns(false),
-                    title: 'Cow'
-                }],
+                subtasks: [
+                    {
+                        isPending: sinon.stub().returns(true),
+                        hasSubtasks: sinon.stub().returns(false),
+                        title: 'Pig'
+                    },
+                    {
+                        isPending: sinon.stub().returns(false),
+                        hasSubtasks: sinon.stub().returns(false),
+                        title: 'Cow'
+                    }
+                ],
                 title: 'Animal'
             };
 
@@ -365,7 +373,7 @@ describe('Unit: UI > Renderer', function () {
             expect(clrStub.firstCall.args[0]).to.equal(100);
         });
 
-        it('doesn\'t clear nonexistant ids', function () {
+        it("doesn't clear nonexistant ids", function () {
             const renderer = new Renderer();
             const clrStub = sinon.stub(global, 'clearInterval');
 

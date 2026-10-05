@@ -25,14 +25,19 @@ describe('Unit: Extension', function () {
 
         it('returns process managers mapped by name to filepath', function () {
             const Extension = require(modulePath);
-            const extensionInstance = new Extension({}, {}, {
-                'ghost-cli': {
-                    'process-managers': {
-                        testa: './testa',
-                        testb: './testb'
+            const extensionInstance = new Extension(
+                {},
+                {},
+                {
+                    'ghost-cli': {
+                        'process-managers': {
+                            testa: './testa',
+                            testb: './testb'
+                        }
                     }
-                }
-            }, '/some/extension/dir');
+                },
+                '/some/extension/dir'
+            );
 
             expect(extensionInstance.processManagers).to.deep.equal({
                 testa: '/some/extension/dir/testa',
@@ -80,10 +85,7 @@ describe('Unit: Extension', function () {
             const instance = {name: 'test'};
 
             await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
-            expect(confirm.calledOnceWithExactly(
-                'Would you like to view the test file file?',
-                false
-            )).to.be.true;
+            expect(confirm.calledOnceWithExactly('Would you like to view the test file file?', false)).to.be.true;
             expect(log.called).to.be.false;
             expect(tmpdir.calledOnce).to.be.true;
             expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
@@ -103,10 +105,7 @@ describe('Unit: Extension', function () {
             const instance = {name: 'test'};
 
             await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
-            expect(confirm.calledOnceWithExactly(
-                'Would you like to view the test file file?',
-                false
-            )).to.be.true;
+            expect(confirm.calledOnceWithExactly('Would you like to view the test file file?', false)).to.be.true;
             expect(log.calledOnceWithExactly('test file contents')).to.be.true;
             expect(tmpdir.calledOnce).to.be.true;
             expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
@@ -119,12 +118,16 @@ describe('Unit: Extension', function () {
         it('returns instance of base class if no main class is defined', function () {
             const Extension = require(modulePath);
 
-            const extensionInstance = Extension.getInstance({uiInstance: true}, {systemInstance: true}, {
-                pkg: {
-                    name: 'ghost-cli-test-extension'
-                },
-                dir: '/some/dir'
-            });
+            const extensionInstance = Extension.getInstance(
+                {uiInstance: true},
+                {systemInstance: true},
+                {
+                    pkg: {
+                        name: 'ghost-cli-test-extension'
+                    },
+                    dir: '/some/dir'
+                }
+            );
 
             expect(extensionInstance).to.be.an.instanceof(Extension);
             expect(extensionInstance.ui).to.deep.equal({uiInstance: true});
@@ -142,13 +145,17 @@ describe('Unit: Extension', function () {
             });
             const logStub = sinon.stub();
 
-            const extensionInstance = Extension.getInstance({log: logStub}, {}, {
-                pkg: {
-                    name: 'ghost-cli-test-extension',
-                    main: 'index.js'
-                },
-                dir: '/some/dir'
-            });
+            const extensionInstance = Extension.getInstance(
+                {log: logStub},
+                {},
+                {
+                    pkg: {
+                        name: 'ghost-cli-test-extension',
+                        main: 'index.js'
+                    },
+                    dir: '/some/dir'
+                }
+            );
 
             expect(extensionInstance).to.not.be.ok;
             expect(existsSyncStub.calledOnce).to.be.true;
@@ -165,13 +172,17 @@ describe('Unit: Extension', function () {
             });
             const logStub = sinon.stub();
 
-            const extensionInstance = Extension.getInstance({log: logStub}, {}, {
-                pkg: {
-                    name: 'ghost-cli-test-extension',
-                    main: 'index.js'
-                },
-                dir: '/some/dir'
-            });
+            const extensionInstance = Extension.getInstance(
+                {log: logStub},
+                {},
+                {
+                    pkg: {
+                        name: 'ghost-cli-test-extension',
+                        main: 'index.js'
+                    },
+                    dir: '/some/dir'
+                }
+            );
 
             expect(extensionInstance).to.not.be.ok;
             expect(existsSyncStub.calledOnce).to.be.true;
@@ -188,13 +199,17 @@ describe('Unit: Extension', function () {
             });
             const logStub = sinon.stub();
 
-            const extensionInstance = Extension.getInstance({log: logStub}, {}, {
-                pkg: {
-                    name: 'ghost-cli-test-extension',
-                    main: 'index.js'
-                },
-                dir: '/some/dir'
-            });
+            const extensionInstance = Extension.getInstance(
+                {log: logStub},
+                {},
+                {
+                    pkg: {
+                        name: 'ghost-cli-test-extension',
+                        main: 'index.js'
+                    },
+                    dir: '/some/dir'
+                }
+            );
 
             expect(extensionInstance).to.not.be.ok;
             expect(existsSyncStub.calledOnce).to.be.true;
@@ -208,13 +223,17 @@ describe('Unit: Extension', function () {
             const testExtPath = '../fixtures/TestExtension';
             const TestExt = require(testExtPath);
 
-            const extensionInstance = Extension.getInstance({}, {}, {
-                pkg: {
-                    name: 'ghost-cli-test-extension',
-                    main: 'index.js'
-                },
-                dir: path.resolve(__dirname, testExtPath)
-            });
+            const extensionInstance = Extension.getInstance(
+                {},
+                {},
+                {
+                    pkg: {
+                        name: 'ghost-cli-test-extension',
+                        main: 'index.js'
+                    },
+                    dir: path.resolve(__dirname, testExtPath)
+                }
+            );
 
             expect(extensionInstance).to.be.ok;
             expect(extensionInstance instanceof TestExt).to.be.true;

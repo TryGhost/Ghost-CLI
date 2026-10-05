@@ -20,7 +20,7 @@ describe('Unit: Doctor Checks > Free Space', function () {
         const stub = sinon.stub(sysinfo, 'fsSize').rejects(new Error('test-error'));
         const cwdStub = sinon.stub(process, 'cwd').returns('/test/directory');
 
-        return check.task({}).catch((error) => {
+        return check.task({}).catch(error => {
             expect(error).to.be.an('error');
             expect(error.message).to.equal('test-error');
             expect(stub.calledOnce).to.be.true;
@@ -32,7 +32,7 @@ describe('Unit: Doctor Checks > Free Space', function () {
         const stub = sinon.stub(sysinfo, 'fsSize').rejects(new Error('test-error'));
         const cwdStub = sinon.stub(process, 'cwd').returns('/test/directory');
 
-        return check.task({}).catch((error) => {
+        return check.task({}).catch(error => {
             expect(error).to.be.an('error');
             expect(error.message).to.equal('test-error');
             expect(stub.calledOnce).to.be.true;
@@ -41,11 +41,13 @@ describe('Unit: Doctor Checks > Free Space', function () {
     });
 
     it('does nothing if no matching mount points found', async function () {
-        const stub = sinon.stub(sysinfo, 'fsSize').resolves([{
-            mount: '/not/matching/dir',
-            size: 0,
-            used: 0
-        }]);
+        const stub = sinon.stub(sysinfo, 'fsSize').resolves([
+            {
+                mount: '/not/matching/dir',
+                size: 0,
+                used: 0
+            }
+        ]);
         const cwdStub = sinon.stub(process, 'cwd').returns('/not/matching/dir');
 
         await check.task({instance: {dir: '/test/dir'}});
@@ -54,18 +56,21 @@ describe('Unit: Doctor Checks > Free Space', function () {
     });
 
     it('errors if not enough space available', function () {
-        const stub = sinon.stub(sysinfo, 'fsSize').resolves([{
-            mount: '/',
-            size: 1000000000000,
-            used: 1000000000
-        }, {
-            mount: '/test/dir',
-            size: 0,
-            used: 0
-        }]);
+        const stub = sinon.stub(sysinfo, 'fsSize').resolves([
+            {
+                mount: '/',
+                size: 1000000000000,
+                used: 1000000000
+            },
+            {
+                mount: '/test/dir',
+                size: 0,
+                used: 0
+            }
+        ]);
         const cwdStub = sinon.stub(process, 'cwd').returns('/test/dir');
 
-        return check.task({}).catch((error) => {
+        return check.task({}).catch(error => {
             expect(error).to.be.an.instanceOf(SystemError);
             expect(stub.calledOnce).to.be.true;
             expect(cwdStub.calledOnce).to.be.true;
@@ -73,15 +78,18 @@ describe('Unit: Doctor Checks > Free Space', function () {
     });
 
     it('succeeds if enough space available', async function () {
-        const stub = sinon.stub(sysinfo, 'fsSize').resolves([{
-            mount: '/',
-            size: 1000000000000,
-            used: 1000000000
-        }, {
-            mount: '/test/dir',
-            size: 0,
-            used: 0
-        }]);
+        const stub = sinon.stub(sysinfo, 'fsSize').resolves([
+            {
+                mount: '/',
+                size: 1000000000000,
+                used: 1000000000
+            },
+            {
+                mount: '/test/dir',
+                size: 0,
+                used: 0
+            }
+        ]);
         const cwdStub = sinon.stub(process, 'cwd').returns('/test/dir');
 
         await check.task({instance: {dir: '/'}});

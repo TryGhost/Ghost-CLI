@@ -54,7 +54,8 @@ describe('Unit: Errors', function () {
             });
 
             const errorOutput = stripAnsi(errorWithHelp.toString()).trim().split(/\n/);
-            const expected = ['Message: some error',
+            const expected = [
+                'Message: some error',
                 'Help: some help message',
                 'Suggestion: run ghost doctor of course'
             ];
@@ -144,12 +145,12 @@ describe('Unit: Errors', function () {
     });
 
     describe('SystemError', function () {
-        it('doesn\'t log to file', function () {
+        it("doesn't log to file", function () {
             const error = new errors.SystemError({message: 'some error', log: true});
             expect(error.logToFile()).to.be.false;
         });
 
-        it('doesn\'t return the stack, even in verbose', function () {
+        it("doesn't return the stack, even in verbose", function () {
             const verboseError = new errors.SystemError('some error');
 
             const errorOutput = stripAnsi(verboseError.toString(true));
@@ -159,12 +160,12 @@ describe('Unit: Errors', function () {
     });
 
     describe('ConfigError', function () {
-        it('doesn\'t log to file', function () {
+        it("doesn't log to file", function () {
             const error = new errors.ConfigError({message: 'some error', log: true});
             expect(error.logToFile()).to.be.false;
         });
 
-        it('doesn\'t return the stack, even in verbose', function () {
+        it("doesn't return the stack, even in verbose", function () {
             const verboseError = new errors.ConfigError('some error');
 
             const errorOutput = stripAnsi(verboseError.toString(true));

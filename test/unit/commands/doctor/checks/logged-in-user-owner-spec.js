@@ -12,15 +12,21 @@ describe('Unit: Doctor Checks > loggedInUserOwner', function () {
     });
 
     it('enabled works', function () {
-        expect(loggedInUserOwner.enabled({
-            system: {platform: {linux: false}}
-        }), 'false if platform is not linux').to.be.false;
+        expect(
+            loggedInUserOwner.enabled({
+                system: {platform: {linux: false}}
+            }),
+            'false if platform is not linux'
+        ).to.be.false;
     });
 
     it('skip works', function () {
-        expect(loggedInUserOwner.skip({
-            instance: {process: {name: 'local'}}
-        }), 'true if local process manager').to.be.true;
+        expect(
+            loggedInUserOwner.skip({
+                instance: {process: {name: 'local'}}
+            }),
+            'true if local process manager'
+        ).to.be.true;
     });
 
     it('rejects if current user is not owner and not in the same group as owner', function () {

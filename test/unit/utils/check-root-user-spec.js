@@ -66,7 +66,9 @@ describe('Unit: Utils > checkRootUser', function () {
             expect(processStub.calledOnce).to.be.true;
             expect(errorStub.calledOnce).to.be.true;
             expect(exitStub.calledOnce).to.be.true;
-            expect(errorStub.args[0][0]).to.match(/It looks like you're using using the DigitalOcean One-Click install./);
+            expect(errorStub.args[0][0]).to.match(
+                /It looks like you're using using the DigitalOcean One-Click install./
+            );
         }
     });
 
@@ -99,7 +101,7 @@ describe('Unit: Utils > checkRootUser', function () {
         }
     });
 
-    it('shows special message for DigitalOcean One-Click root installs, but doesn\'t exit on `stop`', function () {
+    it("shows special message for DigitalOcean One-Click root installs, but doesn't exit on `stop`", function () {
         const osStub = sinon.stub(os, 'platform').returns('linux');
         const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
         const fsStub = sinon.stub(fs, 'existsSync');
@@ -152,7 +154,7 @@ describe('Unit: Utils > checkRootUser', function () {
         }
     });
 
-    it('shows special message for root installs, but doesn\'t exit on `start`', function () {
+    it("shows special message for root installs, but doesn't exit on `start`", function () {
         const osStub = sinon.stub(os, 'platform').returns('linux');
         const cwdStub = sinon.stub(process, 'cwd').returns('/var/www/ghost');
         const fsStub = sinon.stub(fs, 'existsSync');

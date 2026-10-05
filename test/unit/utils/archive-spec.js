@@ -14,9 +14,9 @@ let archiveCount = 0;
  * dir, and returns the dir to archive along with the paths to add.
  */
 function stageContents(dir, files, root) {
-    const contents = path.join(dir, `contents-${archiveCount += 1}`);
+    const contents = path.join(dir, `contents-${(archiveCount += 1)}`);
 
-    Object.keys(files).forEach((file) => {
+    Object.keys(files).forEach(file => {
         const target = path.join(contents, root || '', file);
         fs.mkdirSync(path.dirname(target), {recursive: true});
         fs.writeFileSync(target, files[file]);
@@ -57,13 +57,13 @@ describe('Unit: Utils > archive', function () {
 
     describe('isSupported', function () {
         it('accepts every supported extension, regardless of case', function () {
-            ['ghost.tgz', 'ghost.tar.gz', 'ghost.zip', 'GHOST.TAR.GZ'].forEach((file) => {
+            ['ghost.tgz', 'ghost.tar.gz', 'ghost.zip', 'GHOST.TAR.GZ'].forEach(file => {
                 expect(archive.isSupported(file), file).to.be.true;
             });
         });
 
         it('rejects unsupported extensions', function () {
-            ['ghost.txt', 'ghost.gz', 'ghost.tar', 'ghost'].forEach((file) => {
+            ['ghost.txt', 'ghost.gz', 'ghost.tar', 'ghost'].forEach(file => {
                 expect(archive.isSupported(file), file).to.be.false;
             });
         });
@@ -106,10 +106,15 @@ describe('Unit: Utils > archive', function () {
 
         it('leaves tarballs without a wrapping dir alone', async function () {
             const env = setupTestFolder();
-            const tarball = createTarball(env.dir, 'ghost.tgz', {
-                'package.json': '{"name":"ghost"}',
-                'index.js': 'module.exports = {};'
-            }, null);
+            const tarball = createTarball(
+                env.dir,
+                'ghost.tgz',
+                {
+                    'package.json': '{"name":"ghost"}',
+                    'index.js': 'module.exports = {};'
+                },
+                null
+            );
             const destination = path.join(env.dir, 'versions/1.0.0');
 
             await archive.extract(tarball, destination);
@@ -128,10 +133,15 @@ describe('Unit: Utils > archive', function () {
 
         it('strips the wrapping dir from zip files', async function () {
             const env = setupTestFolder();
-            const zipFile = await createZip(env.dir, 'ghost.zip', {
-                'package.json': '{"name":"ghost"}',
-                'index.js': 'module.exports = {};'
-            }, 'package');
+            const zipFile = await createZip(
+                env.dir,
+                'ghost.zip',
+                {
+                    'package.json': '{"name":"ghost"}',
+                    'index.js': 'module.exports = {};'
+                },
+                'package'
+            );
             const destination = path.join(env.dir, 'versions/1.5.0');
 
             await archive.extract(zipFile, destination);
@@ -142,9 +152,14 @@ describe('Unit: Utils > archive', function () {
 
         it('strips a wrapping dir whatever it is called', async function () {
             const env = setupTestFolder();
-            const zipFile = await createZip(env.dir, 'ghost.zip', {
-                'package.json': '{"name":"ghost"}'
-            }, 'Ghost-5.0.0');
+            const zipFile = await createZip(
+                env.dir,
+                'ghost.zip',
+                {
+                    'package.json': '{"name":"ghost"}'
+                },
+                'Ghost-5.0.0'
+            );
             const destination = path.join(env.dir, 'versions/5.0.0');
 
             await archive.extract(zipFile, destination);
@@ -154,9 +169,14 @@ describe('Unit: Utils > archive', function () {
 
         it('leaves a single wrapping dir alone if it has no package.json', async function () {
             const env = setupTestFolder();
-            const tarball = createTarball(env.dir, 'ghost.tgz', {
-                'guide.txt': 'not a package'
-            }, 'content');
+            const tarball = createTarball(
+                env.dir,
+                'ghost.tgz',
+                {
+                    'guide.txt': 'not a package'
+                },
+                'content'
+            );
             const destination = path.join(env.dir, 'versions/1.0.0');
 
             await archive.extract(tarball, destination);
@@ -200,10 +220,15 @@ describe('Unit: Utils > archive', function () {
 
         it('reads package.json from a tarball without a wrapping dir', async function () {
             const env = setupTestFolder();
-            const tarball = createTarball(env.dir, 'ghost.tgz', {
-                'package.json': '{"name":"ghost","version":"1.5.0"}',
-                'index.js': 'module.exports = {};'
-            }, null);
+            const tarball = createTarball(
+                env.dir,
+                'ghost.tgz',
+                {
+                    'package.json': '{"name":"ghost","version":"1.5.0"}',
+                    'index.js': 'module.exports = {};'
+                },
+                null
+            );
 
             const pkg = await archive.readPackageJson(tarball);
             expect(pkg).to.deep.equal({name: 'ghost', version: '1.5.0'});
@@ -216,9 +241,14 @@ describe('Unit: Utils > archive', function () {
 
         it('reads package.json from a zip file with a wrapping dir', async function () {
             const env = setupTestFolder();
-            const zipFile = await createZip(env.dir, 'ghost.zip', {
-                'package.json': '{"name":"ghost","version":"1.5.0"}'
-            }, 'package');
+            const zipFile = await createZip(
+                env.dir,
+                'ghost.zip',
+                {
+                    'package.json': '{"name":"ghost","version":"1.5.0"}'
+                },
+                'package'
+            );
 
             const pkg = await archive.readPackageJson(zipFile);
             expect(pkg).to.deep.equal({name: 'ghost', version: '1.5.0'});
@@ -226,9 +256,14 @@ describe('Unit: Utils > archive', function () {
 
         it('ignores a package.json nested deeper than the wrapping dir', async function () {
             const env = setupTestFolder();
-            const tarball = createTarball(env.dir, 'ghost.tgz', {
-                'core/package.json': '{"name":"ghost-core"}'
-            }, 'package');
+            const tarball = createTarball(
+                env.dir,
+                'ghost.tgz',
+                {
+                    'core/package.json': '{"name":"ghost-core"}'
+                },
+                'package'
+            );
 
             expect(await archive.readPackageJson(tarball)).to.be.null;
         });

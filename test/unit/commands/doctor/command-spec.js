@@ -5,7 +5,7 @@ const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const modulePath = '../../../../lib/commands/doctor/index';
 
 describe('Unit: Commands > Doctor', function () {
-    it('doesn\'t do anything if there are no checks to run (with log)', function () {
+    it("doesn't do anything if there are no checks to run (with log)", function () {
         const listrStub = sinon.stub().resolves();
         const logStub = sinon.stub();
         const hookStub = sinon.stub().resolves([]);
@@ -23,7 +23,7 @@ describe('Unit: Commands > Doctor', function () {
         });
     });
 
-    it('doesn\'t do anything if there are no checks to run (with log + specific categories)', function () {
+    it("doesn't do anything if there are no checks to run (with log + specific categories)", function () {
         const listrStub = sinon.stub().resolves();
         const logStub = sinon.stub();
         const hookStub = sinon.stub().resolves([]);
@@ -41,7 +41,7 @@ describe('Unit: Commands > Doctor', function () {
         });
     });
 
-    it('doesn\'t do anything if there are no checks to run (without log)', function () {
+    it("doesn't do anything if there are no checks to run (without log)", function () {
         const listrStub = sinon.stub().resolves();
         const logStub = sinon.stub();
         const hookStub = sinon.stub().resolves([]);
@@ -63,10 +63,12 @@ describe('Unit: Commands > Doctor', function () {
         const instanceStub = {checkEnvironment: sinon.stub()};
         const system = {
             getInstance: sinon.stub().returns(instanceStub),
-            hook: sinon.stub().resolves([{
-                title: 'Extension Task 1',
-                task: 'someTask'
-            }])
+            hook: sinon.stub().resolves([
+                {
+                    title: 'Extension Task 1',
+                    task: 'someTask'
+                }
+            ])
         };
         const findValidStub = sinon.stub();
 
@@ -105,10 +107,12 @@ describe('Unit: Commands > Doctor', function () {
         const instanceStub = {checkEnvironment: sinon.stub()};
         const system = {
             getInstance: sinon.stub().returns(instanceStub),
-            hook: sinon.stub().resolves([{
-                title: 'Extension Task 1',
-                task: 'someTask'
-            }])
+            hook: sinon.stub().resolves([
+                {
+                    title: 'Extension Task 1',
+                    task: 'someTask'
+                }
+            ])
         };
         const findValidStub = sinon.stub();
 
@@ -145,10 +149,12 @@ describe('Unit: Commands > Doctor', function () {
         const instanceStub = {checkEnvironment: sinon.stub()};
         const system = {
             getInstance: sinon.stub().returns(instanceStub),
-            hook: sinon.stub().resolves([{
-                title: 'Extension Task 1',
-                task: 'someTask'
-            }])
+            hook: sinon.stub().resolves([
+                {
+                    title: 'Extension Task 1',
+                    task: 'someTask'
+                }
+            ])
         };
         const findValidStub = sinon.stub();
 
@@ -158,45 +164,51 @@ describe('Unit: Commands > Doctor', function () {
         });
         const instance = new DoctorCommand(ui, system);
 
-        return instance.run({
-            skipInstanceCheck: false,
-            local: true,
-            argv: true,
-            categories: ['install'],
-            _: ['doctor']
-        }).then(() => {
-            expect(findValidStub.called).to.be.false;
-            expect(system.hook.calledOnce).to.be.true;
-            expect(system.hook.calledWithExactly('doctor')).to.be.true;
-            expect(instanceStub.checkEnvironment.called).to.be.false;
-            expect(ui.listr.calledOnce).to.be.true;
-            expect(ui.listr.args[0][0]).to.deep.equal([{category: ['install']}]);
-            const context = ui.listr.args[0][1];
-            expect(context.argv).to.deep.equal({
+        return instance
+            .run({
                 skipInstanceCheck: false,
                 local: true,
                 argv: true,
                 categories: ['install'],
                 _: ['doctor']
+            })
+            .then(() => {
+                expect(findValidStub.called).to.be.false;
+                expect(system.hook.calledOnce).to.be.true;
+                expect(system.hook.calledWithExactly('doctor')).to.be.true;
+                expect(instanceStub.checkEnvironment.called).to.be.false;
+                expect(ui.listr.calledOnce).to.be.true;
+                expect(ui.listr.args[0][0]).to.deep.equal([{category: ['install']}]);
+                const context = ui.listr.args[0][1];
+                expect(context.argv).to.deep.equal({
+                    skipInstanceCheck: false,
+                    local: true,
+                    argv: true,
+                    categories: ['install'],
+                    _: ['doctor']
+                });
+                expect(context.system).to.equal(system);
+                expect(context.ui).to.equal(ui);
+                expect(context.local).to.be.true;
+                expect(context.isDoctorCommand).to.be.true;
             });
-            expect(context.system).to.equal(system);
-            expect(context.ui).to.equal(ui);
-            expect(context.local).to.be.true;
-            expect(context.isDoctorCommand).to.be.true;
-        });
     });
 
     describe('filters checks correctly', function () {
-        const testChecks = [{
-            title: 'Check 1',
-            category: ['install']
-        }, {
-            title: 'Check 2',
-            category: ['start']
-        }, {
-            title: 'Check 3',
-            category: ['install', 'start']
-        }];
+        const testChecks = [
+            {
+                title: 'Check 1',
+                category: ['install']
+            },
+            {
+                title: 'Check 2',
+                category: ['start']
+            },
+            {
+                title: 'Check 3',
+                category: ['install', 'start']
+            }
+        ];
         const listrStub = sinon.stub().resolves();
         const hookStub = sinon.stub().resolves([]);
         let instance;
@@ -213,7 +225,7 @@ describe('Unit: Commands > Doctor', function () {
             hookStub.resetHistory();
         });
 
-        it('doesn\'t filter if no categories passed', function () {
+        it("doesn't filter if no categories passed", function () {
             return instance.run({skipInstanceCheck: true}).then(() => {
                 expect(listrStub.calledOnce).to.be.true;
                 expect(hookStub.calledOnce).to.be.true;

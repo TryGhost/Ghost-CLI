@@ -49,13 +49,13 @@ function setupTestFolder(typeOrDefinition, dir) {
     dir = dir || tmp.dirSync({unsafeCleanup: true}).name;
 
     if (setup.dirs) {
-        setup.dirs.forEach((dirToCreate) => {
+        setup.dirs.forEach(dirToCreate => {
             fs.mkdirSync(path.join(dir, dirToCreate), {recursive: true});
         });
     }
 
     if (setup.files) {
-        setup.files.forEach((file) => {
+        setup.files.forEach(file => {
             const target = path.join(dir, file.path);
             fs.mkdirSync(path.dirname(target), {recursive: true});
             fs.writeFileSync(target, file.json ? JSON.stringify(file.content) : file.content);
@@ -63,7 +63,7 @@ function setupTestFolder(typeOrDefinition, dir) {
     }
 
     if (setup.links) {
-        setup.links.forEach((link) => {
+        setup.links.forEach(link => {
             const linkPath = path.join(dir, link[1]);
             fs.mkdirSync(path.dirname(linkPath), {recursive: true});
             fs.symlinkSync(path.join(dir, link[0]), linkPath);
@@ -83,7 +83,7 @@ function setupTestFolder(typeOrDefinition, dir) {
 }
 
 function cleanupTestFolders() {
-    Object.keys(currentTestFolders).forEach((key) => {
+    Object.keys(currentTestFolders).forEach(key => {
         currentTestFolders[key].cleanup();
     });
 }

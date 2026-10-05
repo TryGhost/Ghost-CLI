@@ -20,7 +20,7 @@ describe('Unit: Extensions > Nginx > Utils', function () {
             expect(parseResolvers('nameserver 2606:4700:4700::1111')).to.equal('[2606:4700:4700::1111]');
         });
 
-        it('ignores anything that isn\'t a valid ip', function () {
+        it("ignores anything that isn't a valid ip", function () {
             expect(parseResolvers('nameserver not-an-ip\nnameserver 10.0.0.1')).to.equal('10.0.0.1');
         });
 

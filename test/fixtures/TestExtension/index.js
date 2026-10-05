@@ -2,8 +2,6 @@
 
 const Extension = require('../../../lib/extension');
 
-class TestExtension extends Extension {
-
-}
+class TestExtension extends Extension {}
 
 module.exports = TestExtension;

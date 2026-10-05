@@ -4,7 +4,14 @@ const tmp = require('tmp');
 const fs = require('node:fs');
 
 const {SystemError} = require('../../../../lib/errors');
-const {getBaseUrl, isSetup, setup, runImport, downloadContentExport, downloadMembersExport} = require('../../../../lib/tasks/import/api');
+const {
+    getBaseUrl,
+    isSetup,
+    setup,
+    runImport,
+    downloadContentExport,
+    downloadMembersExport
+} = require('../../../../lib/tasks/import/api');
 
 const testUrl = 'http://localhost:2368';
 
@@ -84,9 +91,12 @@ describe('Unit > Tasks > Import > setup', function () {
             const clientId = 'client-id';
             const clientSecret = 'client-secret';
             const configBody = {
-                configuration: [{
-                    clientId, clientSecret
-                }]
+                configuration: [
+                    {
+                        clientId,
+                        clientSecret
+                    }
+                ]
             };
 
             const tokenRequestBody = {
@@ -101,9 +111,7 @@ describe('Unit > Tasks > Import > setup', function () {
                 access_token: 'access-token'
             };
 
-            const configScope = nock(testUrl)
-                .get('/ghost/api/v0.1/configuration/')
-                .reply(200, configBody);
+            const configScope = nock(testUrl).get('/ghost/api/v0.1/configuration/').reply(200, configBody);
 
             const tokenScope = nock(testUrl)
                 .post('/ghost/api/v0.1/authentication/token/', tokenRequestBody)
@@ -113,12 +121,19 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Authorization: 'Bearer access-token'
                 }
-            }).post('/ghost/api/v0.1/db/').reply(200, {});
+            })
+                .post('/ghost/api/v0.1/db/')
+                .reply(200, {});
 
-            await runImport('1.0.0', testUrl, {
-                username: 'test@example.com',
-                password: 'password'
-            }, path.join(__dirname, 'fixtures/0.11.x.json'));
+            await runImport(
+                '1.0.0',
+                testUrl,
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                path.join(__dirname, 'fixtures/0.11.x.json')
+            );
 
             expect(configScope.isDone()).to.be.true;
             expect(tokenScope.isDone()).to.be.true;
@@ -129,9 +144,12 @@ describe('Unit > Tasks > Import > setup', function () {
             const clientId = 'client-id';
             const clientSecret = 'client-secret';
             const configBody = {
-                configuration: [{
-                    clientId, clientSecret
-                }]
+                configuration: [
+                    {
+                        clientId,
+                        clientSecret
+                    }
+                ]
             };
 
             const tokenRequestBody = {
@@ -142,9 +160,7 @@ describe('Unit > Tasks > Import > setup', function () {
                 password: 'password'
             };
 
-            const configScope = nock(testUrl)
-                .get('/ghost/api/v0.1/configuration/')
-                .reply(200, configBody);
+            const configScope = nock(testUrl).get('/ghost/api/v0.1/configuration/').reply(200, configBody);
 
             const tokenScope = nock(testUrl)
                 .post('/ghost/api/v0.1/authentication/token/', tokenRequestBody)
@@ -154,13 +170,20 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Authorization: 'Bearer access-token'
                 }
-            }).post('/ghost/api/v0.1/db/').reply(200, {});
+            })
+                .post('/ghost/api/v0.1/db/')
+                .reply(200, {});
 
             try {
-                await runImport('1.0.0', testUrl, {
-                    username: 'test@example.com',
-                    password: 'password'
-                }, path.join(__dirname, 'fixtures/0.11.x.json'));
+                await runImport(
+                    '1.0.0',
+                    testUrl,
+                    {
+                        username: 'test@example.com',
+                        password: 'password'
+                    },
+                    path.join(__dirname, 'fixtures/0.11.x.json')
+                );
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
                 expect(error.message).to.equal('There is no user with that email address.');
@@ -178,26 +201,34 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v2/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/v2/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const importScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).post('/ghost/api/v2/admin/db/').reply(201, {});
+            })
+                .post('/ghost/api/v2/admin/db/')
+                .reply(201, {});
 
-            await runImport('2.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, path.join(__dirname, 'fixtures/2.x.json'));
+            await runImport(
+                '2.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                path.join(__dirname, 'fixtures/2.x.json')
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(importScope.isDone()).to.be.true;
@@ -208,25 +239,32 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v2/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(422, 'Error');
+            })
+                .post('/ghost/api/v2/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(422, 'Error');
 
             const importScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).post('/ghost/api/v2/admin/db/').reply(201, {});
+            })
+                .post('/ghost/api/v2/admin/db/')
+                .reply(201, {});
 
             try {
-                await runImport('2.0.0', 'http://localhost:2368', {
-                    username: 'test@example.com',
-                    password: 'password'
-                }, path.join(__dirname, 'fixtures/2.x.json'));
+                await runImport(
+                    '2.0.0',
+                    'http://localhost:2368',
+                    {
+                        username: 'test@example.com',
+                        password: 'password'
+                    },
+                    path.join(__dirname, 'fixtures/2.x.json')
+                );
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
                 expect(error.message).to.equal('Your password is incorrect.');
@@ -243,26 +281,34 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v3/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/v3/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const importScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).post('/ghost/api/v3/admin/db/').reply(201, {});
+            })
+                .post('/ghost/api/v3/admin/db/')
+                .reply(201, {});
 
-            await runImport('3.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, path.join(__dirname, 'fixtures/3.x.json'));
+            await runImport(
+                '3.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                path.join(__dirname, 'fixtures/3.x.json')
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(importScope.isDone()).to.be.true;
@@ -273,25 +319,32 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v3/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(500, 'Error');
+            })
+                .post('/ghost/api/v3/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(500, 'Error');
 
             const importScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).post('/ghost/api/v3/admin/db/').reply(201, {});
+            })
+                .post('/ghost/api/v3/admin/db/')
+                .reply(201, {});
 
             try {
-                await runImport('3.0.0', 'http://localhost:2368', {
-                    username: 'test@example.com',
-                    password: 'password'
-                }, path.join(__dirname, 'fixtures/3.x.json'));
+                await runImport(
+                    '3.0.0',
+                    'http://localhost:2368',
+                    {
+                        username: 'test@example.com',
+                        password: 'password'
+                    },
+                    path.join(__dirname, 'fixtures/3.x.json')
+                );
             } catch (error) {
                 expect(error.response).to.exist;
                 expect(error.response.status).to.equal(500);
@@ -308,26 +361,34 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v4/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/v4/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const importScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).post('/ghost/api/v4/admin/db/').reply(201, {});
+            })
+                .post('/ghost/api/v4/admin/db/')
+                .reply(201, {});
 
-            await runImport('4.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, path.join(__dirname, 'fixtures/4.x.json'));
+            await runImport(
+                '4.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                path.join(__dirname, 'fixtures/4.x.json')
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(importScope.isDone()).to.be.true;
@@ -338,33 +399,41 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const importScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl,
                     'content-type': /^multipart\/form-data; boundary=/
                 }
-            }).post('/ghost/api/admin/db/', (body) => {
-                // Ghost picks the importer from the part's filename, so it has to survive
-                expect(body).to.match(/name="importfile"/);
-                expect(body).to.match(/filename="5\.x\.json"/);
-                expect(body).to.match(/Content-Type: application\/json/i);
-                return true;
-            }).reply(201, {});
+            })
+                .post('/ghost/api/admin/db/', body => {
+                    // Ghost picks the importer from the part's filename, so it has to survive
+                    expect(body).to.match(/name="importfile"/);
+                    expect(body).to.match(/filename="5\.x\.json"/);
+                    expect(body).to.match(/Content-Type: application\/json/i);
+                    return true;
+                })
+                .reply(201, {});
 
-            await runImport('5.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, path.join(__dirname, 'fixtures/5.x.json'));
+            await runImport(
+                '5.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                path.join(__dirname, 'fixtures/5.x.json')
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(importScope.isDone()).to.be.true;
@@ -376,9 +445,12 @@ describe('Unit > Tasks > Import > setup', function () {
             const clientId = 'client-id';
             const clientSecret = 'client-secret';
             const configBody = {
-                configuration: [{
-                    clientId, clientSecret
-                }]
+                configuration: [
+                    {
+                        clientId,
+                        clientSecret
+                    }
+                ]
             };
 
             const tokenRequestBody = {
@@ -393,37 +465,44 @@ describe('Unit > Tasks > Import > setup', function () {
                 access_token: 'access-token'
             };
 
-            const configScope = nock(testUrl)
-                .get('/ghost/api/v0.1/configuration/')
-                .reply(200, configBody);
+            const configScope = nock(testUrl).get('/ghost/api/v0.1/configuration/').reply(200, configBody);
 
             const tokenScope = nock(testUrl)
                 .post('/ghost/api/v0.1/authentication/token/', tokenRequestBody)
                 .reply(201, tokenResponseBody);
 
             const exportData = {
-                db: [{
-                    meta: {
-                        version: '1.0.0'
-                    },
-                    data: {
-                        users: []
+                db: [
+                    {
+                        meta: {
+                            version: '1.0.0'
+                        },
+                        data: {
+                            users: []
+                        }
                     }
-                }]
+                ]
             };
             const exportScope = nock(testUrl, {
                 reqheaders: {
                     Authorization: 'Bearer access-token'
                 }
-            }).get('/ghost/api/v0.1/db/').reply(200, exportData);
+            })
+                .get('/ghost/api/v0.1/db/')
+                .reply(200, exportData);
 
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '1.x.json');
 
-            await downloadContentExport('1.0.0', testUrl, {
-                username: 'test@example.com',
-                password: 'password'
-            }, outputFile);
+            await downloadContentExport(
+                '1.0.0',
+                testUrl,
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                outputFile
+            );
 
             expect(configScope.isDone()).to.be.true;
             expect(tokenScope.isDone()).to.be.true;
@@ -433,9 +512,14 @@ describe('Unit > Tasks > Import > setup', function () {
 
         it('1.x with token auth', async function () {
             try {
-                await downloadContentExport('1.0.0', testUrl, {
-                    token: 'secret:token'
-                }, '/dev/null');
+                await downloadContentExport(
+                    '1.0.0',
+                    testUrl,
+                    {
+                        token: 'secret:token'
+                    },
+                    '/dev/null'
+                );
 
                 expect.fail('Expected error');
             } catch (error) {
@@ -448,39 +532,49 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v2/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/v2/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const exportData = {
-                db: [{
-                    meta: {
-                        version: '2.0.0'
-                    },
-                    data: {
-                        users: []
+                db: [
+                    {
+                        meta: {
+                            version: '2.0.0'
+                        },
+                        data: {
+                            users: []
+                        }
                     }
-                }]
+                ]
             };
             const exportScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).get('/ghost/api/v2/admin/db/').reply(200, exportData);
+            })
+                .get('/ghost/api/v2/admin/db/')
+                .reply(200, exportData);
 
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '2.x.json');
 
-            await downloadContentExport('2.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, outputFile);
+            await downloadContentExport(
+                '2.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                outputFile
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
@@ -492,39 +586,49 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v3/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/v3/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const exportData = {
-                db: [{
-                    meta: {
-                        version: '3.0.0'
-                    },
-                    data: {
-                        users: []
+                db: [
+                    {
+                        meta: {
+                            version: '3.0.0'
+                        },
+                        data: {
+                            users: []
+                        }
                     }
-                }]
+                ]
             };
             const exportScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).get('/ghost/api/v3/admin/db/').reply(200, exportData);
+            })
+                .get('/ghost/api/v3/admin/db/')
+                .reply(200, exportData);
 
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '3.x.json');
 
-            await downloadContentExport('3.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, outputFile);
+            await downloadContentExport(
+                '3.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                outputFile
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
@@ -536,39 +640,49 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/v4/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/v4/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const exportData = {
-                db: [{
-                    meta: {
-                        version: '4.0.0'
-                    },
-                    data: {
-                        users: []
+                db: [
+                    {
+                        meta: {
+                            version: '4.0.0'
+                        },
+                        data: {
+                            users: []
+                        }
                     }
-                }]
+                ]
             };
             const exportScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).get('/ghost/api/v4/admin/db/').reply(200, exportData);
+            })
+                .get('/ghost/api/v4/admin/db/')
+                .reply(200, exportData);
 
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '4.x.json');
 
-            await downloadContentExport('4.0.0', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, outputFile);
+            await downloadContentExport(
+                '4.0.0',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                outputFile
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
@@ -580,39 +694,49 @@ describe('Unit > Tasks > Import > setup', function () {
                 reqheaders: {
                     Origin: testUrl
                 }
-            }).post('/ghost/api/admin/session/', {
-                username: 'test@example.com',
-                password: 'password'
-            }).reply(201, 'Success', {
-                'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-            });
+            })
+                .post('/ghost/api/admin/session/', {
+                    username: 'test@example.com',
+                    password: 'password'
+                })
+                .reply(201, 'Success', {
+                    'Set-Cookie':
+                        'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+                });
 
             const exportData = {
-                db: [{
-                    meta: {
-                        version: '5.120.1'
-                    },
-                    data: {
-                        users: []
+                db: [
+                    {
+                        meta: {
+                            version: '5.120.1'
+                        },
+                        data: {
+                            users: []
+                        }
                     }
-                }]
+                ]
             };
             const exportScope = nock(testUrl, {
                 reqheaders: {
-                    cookie: [
-                        'ghost-admin-api-session=test-session-data'
-                    ],
+                    cookie: ['ghost-admin-api-session=test-session-data'],
                     origin: testUrl
                 }
-            }).get('/ghost/api/admin/db/').reply(200, exportData);
+            })
+                .get('/ghost/api/admin/db/')
+                .reply(200, exportData);
 
             const tmpDir = tmp.dirSync();
             const outputFile = path.join(tmpDir.name, '5.x.json');
 
-            await downloadContentExport('5.120.1', 'http://localhost:2368', {
-                username: 'test@example.com',
-                password: 'password'
-            }, outputFile);
+            await downloadContentExport(
+                '5.120.1',
+                'http://localhost:2368',
+                {
+                    username: 'test@example.com',
+                    password: 'password'
+                },
+                outputFile
+            );
 
             expect(sessionScope.isDone()).to.be.true;
             expect(exportScope.isDone()).to.be.true;
@@ -621,9 +745,14 @@ describe('Unit > Tasks > Import > setup', function () {
 
         it('Older 5.x with token auth', async function () {
             try {
-                await downloadContentExport('5.120.4', testUrl, {
-                    token: 'secret:token'
-                }, '/dev/null');
+                await downloadContentExport(
+                    '5.120.4',
+                    testUrl,
+                    {
+                        token: 'secret:token'
+                    },
+                    '/dev/null'
+                );
 
                 expect.fail('Expected error');
             } catch (error) {
@@ -633,20 +762,26 @@ describe('Unit > Tasks > Import > setup', function () {
     });
 
     describe('http error messages', function () {
-        const sessionOk = () => nock(testUrl).post('/ghost/api/admin/session/').reply(201, 'Success', {
-            'Set-Cookie': 'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
-        });
+        const sessionOk = () =>
+            nock(testUrl).post('/ghost/api/admin/session/').reply(201, 'Success', {
+                'Set-Cookie':
+                    'ghost-admin-api-session=test-session-data; Path=/ghost; HttpOnly; Secure; Expires=Tue, 31 Dec 2099 23:59:59 GMT;'
+            });
 
         const auth = {username: 'test@example.com', password: 'password'};
         const exportFile = path.join(__dirname, 'fixtures/5.x.json');
 
         it('surfaces the Ghost error from the response body', async function () {
-            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(500, {
-                errors: [{
-                    message: 'Failed to send email.',
-                    context: 'Check your mail configuration.'
-                }]
-            });
+            const scope = nock(testUrl)
+                .post('/ghost/api/admin/session/')
+                .reply(500, {
+                    errors: [
+                        {
+                            message: 'Failed to send email.',
+                            context: 'Check your mail configuration.'
+                        }
+                    ]
+                });
 
             try {
                 await runImport('5.0.0', testUrl, auth, exportFile);
@@ -678,19 +813,23 @@ describe('Unit > Tasks > Import > setup', function () {
         });
 
         it('points at Staff access tokens when 2FA is required', async function () {
-            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(403, {
-                errors: [{
-                    code: '2FA_NEW_DEVICE_DETECTED',
-                    message: 'User must verify session to login.'
-                }]
-            });
+            const scope = nock(testUrl)
+                .post('/ghost/api/admin/session/')
+                .reply(403, {
+                    errors: [
+                        {
+                            code: '2FA_NEW_DEVICE_DETECTED',
+                            message: 'User must verify session to login.'
+                        }
+                    ]
+                });
 
             try {
                 await runImport('5.129.0', testUrl, auth, exportFile);
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
                 expect(error.message).to.equal(
-                    'Two-factor authentication is required, which Ghost-CLI can\'t complete.\nUse a Staff access token instead.'
+                    "Two-factor authentication is required, which Ghost-CLI can't complete.\nUse a Staff access token instead."
                 );
                 expect(scope.isDone()).to.be.true;
                 return;
@@ -700,20 +839,24 @@ describe('Unit > Tasks > Import > setup', function () {
         });
 
         it('suggests upgrading when 2FA is required and tokens are unsupported', async function () {
-            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(403, {
-                errors: [{
-                    code: '2FA_TOKEN_REQUIRED',
-                    message: 'User must verify session to login.'
-                }]
-            });
+            const scope = nock(testUrl)
+                .post('/ghost/api/admin/session/')
+                .reply(403, {
+                    errors: [
+                        {
+                            code: '2FA_TOKEN_REQUIRED',
+                            message: 'User must verify session to login.'
+                        }
+                    ]
+                });
 
             try {
                 await runImport('5.120.0', testUrl, auth, exportFile);
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
                 expect(error.message).to.equal(
-                    'Two-factor authentication is required, which Ghost-CLI can\'t complete.\n' +
-                    'Upgrade to Ghost v5.129.0 or later to use a Staff access token instead.'
+                    "Two-factor authentication is required, which Ghost-CLI can't complete.\n" +
+                        'Upgrade to Ghost v5.129.0 or later to use a Staff access token instead.'
                 );
                 expect(scope.isDone()).to.be.true;
                 return;
@@ -723,9 +866,11 @@ describe('Unit > Tasks > Import > setup', function () {
         });
 
         it('keeps the friendly message for known auth errors', async function () {
-            const scope = nock(testUrl).post('/ghost/api/admin/session/').reply(422, {
-                errors: [{message: 'Validation error'}]
-            });
+            const scope = nock(testUrl)
+                .post('/ghost/api/admin/session/')
+                .reply(422, {
+                    errors: [{message: 'Validation error'}]
+                });
 
             try {
                 await runImport('5.0.0', testUrl, auth, exportFile);

@@ -23,11 +23,7 @@ describe('Unit: Tasks > configure', function () {
             expect(parseOptions.calledOnce).to.be.true;
             expect(getPrompts.called).to.be.false;
 
-            expect(parseOptions.args[0]).to.deep.equal([
-                {config: true},
-                'development',
-                {prompt: true}
-            ]);
+            expect(parseOptions.args[0]).to.deep.equal([{config: true}, 'development', {prompt: true}]);
         });
     });
 
@@ -38,11 +34,7 @@ describe('Unit: Tasks > configure', function () {
             expect(parseOptions.calledOnce).to.be.true;
             expect(getPrompts.called).to.be.false;
 
-            expect(parseOptions.args[0]).to.deep.equal([
-                {config: true},
-                'development',
-                {prompt: false}
-            ]);
+            expect(parseOptions.args[0]).to.deep.equal([{config: true}, 'development', {prompt: false}]);
         });
     });
 
@@ -89,9 +81,7 @@ describe('Unit: Tasks > configure', function () {
                 {prompt: true, url: 'http://ghost.test'},
                 'development'
             ]);
-            expect(prompt.args[0]).to.deep.equal([
-                [{promptA: true}, {promptB: true}]
-            ]);
+            expect(prompt.args[0]).to.deep.equal([[{promptA: true}, {promptB: true}]]);
             expect(parseOptions.args[0]).to.deep.equal([
                 {config: true},
                 'development',
@@ -120,9 +110,7 @@ describe('Unit: Tasks > configure', function () {
             expect(prompt.calledOnce).to.be.true;
 
             expect(getPrompts.args[0]).to.deep.equal([{config: true}, {prompt: true}, 'development']);
-            expect(prompt.args[0]).to.deep.equal([
-                [{promptA: true}, {promptB: true}]
-            ]);
+            expect(prompt.args[0]).to.deep.equal([[{promptA: true}, {promptB: true}]]);
             expect(parseOptions.args[0]).to.deep.equal([
                 {config: true},
                 'development',

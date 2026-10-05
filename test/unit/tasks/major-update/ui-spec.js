@@ -6,7 +6,9 @@ const configStub = require('../../../utils/config-stub');
 const {stripVTControlCharacters: stripAnsi} = require('util');
 
 describe('Unit: Tasks > Major Update > UI', function () {
-    let ui; let dataMock; let ctx;
+    let ui;
+    let dataMock;
+    let ctx;
 
     beforeEach(function () {
         ctx = {
@@ -93,7 +95,10 @@ describe('Unit: Tasks > Major Update > UI', function () {
             gscanReport: {
                 results: {
                     error: {
-                        all: [{RULE_10: {failures: [{ref: 'post.hbs'}, {ref: 'page.hbs'}]}}, {RULE_20: {failures: [{ref: 'page.hbs'}]}}],
+                        all: [
+                            {RULE_10: {failures: [{ref: 'post.hbs'}, {ref: 'page.hbs'}]}},
+                            {RULE_20: {failures: [{ref: 'page.hbs'}]}}
+                        ],
                         byFiles: {
                             'post.hbs': [{rule: '<b>This is an Error.</b>'}],
                             'page.hbs': [{rule: '<b>This is another Error.</b>'}, {rule: '<b>This is an Error.</b>'}]
@@ -137,7 +142,10 @@ describe('Unit: Tasks > Major Update > UI', function () {
                         }
                     },
                     warning: {
-                        all: [{RULE_01: {failures: [{ref: 'package.json'}]}}, {RULE_20: {failures: [{ref: 'page.hbs'}]}}],
+                        all: [
+                            {RULE_01: {failures: [{ref: 'package.json'}]}},
+                            {RULE_20: {failures: [{ref: 'page.hbs'}]}}
+                        ],
                         byFiles: {
                             'package.json': [{rule: 'This attribute is important.'}],
                             'page.hbs': [{rule: '<b>This is a warning.</b>'}]
@@ -179,7 +187,10 @@ describe('Unit: Tasks > Major Update > UI', function () {
                 results: {
                     hasFatalErrors: true,
                     error: {
-                        all: [{RULE_10: {failures: [{ref: 'post.hbs'}, {ref: 'page.hbs'}]}}, {RULE_20: {failures: [{ref: 'page.hbs'}]}}],
+                        all: [
+                            {RULE_10: {failures: [{ref: 'post.hbs'}, {ref: 'page.hbs'}]}},
+                            {RULE_20: {failures: [{ref: 'page.hbs'}]}}
+                        ],
                         byFiles: {
                             'post.hbs': [{rule: '<b>This is an Error.</b>', fatal: true}],
                             'page.hbs': [{rule: '<b>This is another Error.</b>'}, {rule: '<b>This is an Error.</b>'}]

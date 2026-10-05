@@ -28,7 +28,7 @@ describe('Unit: Tasks > ensure-structure', function () {
             'content/settings'
         ];
 
-        expectedFiles.forEach((file) => {
+        expectedFiles.forEach(file => {
             expect(fs.existsSync(path.join(env.dir, file))).to.be.true;
         });
 

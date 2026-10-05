@@ -2,8 +2,7 @@
 const Command = require('../../../lib/index').Command;
 
 class TestValidCommand extends Command {
-    static configure() {
-    }
+    static configure() {}
 }
 
 module.exports = TestValidCommand;

@@ -67,7 +67,7 @@ describe('Unit: Systemd > Extension', function () {
     });
 
     describe('setup stage', function () {
-        it('skips stage if ghost user hasn\'t been set up', function () {
+        it("skips stage if ghost user hasn't been set up", function () {
             const uidStub = sinon.stub().returns(false);
 
             const SystemdExtension = proxyquire(modulePath, {
@@ -96,7 +96,12 @@ describe('Unit: Systemd > Extension', function () {
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().resolves();
             const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new SystemdExtension(
+                {log: logStub, sudo: sudoStub},
+                {},
+                {},
+                path.join(__dirname, '..')
+            );
             const instance = {dir: '/some/dir', name: 'test', config: configStub()};
             const templateStub = sinon.stub(testInstance, 'template').resolves();
 
@@ -128,26 +133,34 @@ describe('Unit: Systemd > Extension', function () {
             const logStub = sinon.stub();
             const sudoStub = sinon.stub().rejects({stderr: 'something went wrong'});
             const skipStub = sinon.stub();
-            const testInstance = new SystemdExtension({log: logStub, sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
+            const testInstance = new SystemdExtension(
+                {log: logStub, sudo: sudoStub},
+                {},
+                {},
+                path.join(__dirname, '..')
+            );
             const templateStub = sinon.stub(testInstance, 'template').resolves();
             const instance = {dir: '/some/dir', name: 'test', config: configStub()};
 
-            return testInstance._setup({instance, ui: uiStub()}, {skip: skipStub}).then(() => {
-                expect(false, 'Promise should have rejected').to.be.true;
-            }).catch((error) => {
-                expect(error).to.exist;
-                expect(error).to.be.an.instanceof(errors.ProcessError);
-                expect(error.options.stderr).to.be.equal('something went wrong');
-                expect(uidStub.calledOnce).to.be.true;
-                expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
-                expect(readFileSyncStub.calledOnce).to.be.true;
-                expect(templateStub.calledOnce).to.be.true;
-                expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly(['systemctl', 'daemon-reload'])).to.be.true;
-                expect(logStub.called).to.be.false;
-                expect(skipStub.called).to.be.false;
-            });
+            return testInstance
+                ._setup({instance, ui: uiStub()}, {skip: skipStub})
+                .then(() => {
+                    expect(false, 'Promise should have rejected').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.exist;
+                    expect(error).to.be.an.instanceof(errors.ProcessError);
+                    expect(error.options.stderr).to.be.equal('something went wrong');
+                    expect(uidStub.calledOnce).to.be.true;
+                    expect(uidStub.calledWithExactly('/some/dir')).to.be.true;
+                    expect(readFileSyncStub.calledOnce).to.be.true;
+                    expect(templateStub.calledOnce).to.be.true;
+                    expect(templateStub.calledWith(instance, 'SOME TEMPLATE CONTENTS')).to.be.true;
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(sudoStub.calledWithExactly(['systemctl', 'daemon-reload'])).to.be.true;
+                    expect(logStub.called).to.be.false;
+                    expect(skipStub.called).to.be.false;
+                });
         });
     });
 
@@ -175,24 +188,27 @@ describe('Unit: Systemd > Extension', function () {
             });
         });
 
-        it('throws systemerror if removing /lib/systemd file doesn\'t work', function () {
+        it("throws systemerror if removing /lib/systemd file doesn't work", function () {
             existsStub.returns(true);
             const sudoStub = sinon.stub().rejects();
             const testInstance = new SystemdExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));
 
-            return testInstance.uninstall({name: 'test'}).then(() => {
-                expect(false, 'error should have been thrown').to.be.true;
-            }).catch((error) => {
-                expect(error).to.be.an.instanceof(errors.SystemError);
-                expect(error.message).to.match(/service file link could not be removed/);
-                expect(existsStub.calledOnce).to.be.true;
-                expect(existsStub.calledWithExactly('/lib/systemd/system/ghost_test.service')).to.be.true;
-                expect(sudoStub.calledOnce).to.be.true;
-                expect(sudoStub.calledWithExactly(['rm', '/lib/systemd/system/ghost_test.service'])).to.be.true;
-            });
+            return testInstance
+                .uninstall({name: 'test'})
+                .then(() => {
+                    expect(false, 'error should have been thrown').to.be.true;
+                })
+                .catch(error => {
+                    expect(error).to.be.an.instanceof(errors.SystemError);
+                    expect(error.message).to.match(/service file link could not be removed/);
+                    expect(existsStub.calledOnce).to.be.true;
+                    expect(existsStub.calledWithExactly('/lib/systemd/system/ghost_test.service')).to.be.true;
+                    expect(sudoStub.calledOnce).to.be.true;
+                    expect(sudoStub.calledWithExactly(['rm', '/lib/systemd/system/ghost_test.service'])).to.be.true;
+                });
         });
 
-        it('doesn\'t do anything if file does not exist', function () {
+        it("doesn't do anything if file does not exist", function () {
             existsStub.returns(false);
             const sudoStub = sinon.stub().resolves();
             const testInstance = new SystemdExtension({sudo: sudoStub}, {}, {}, path.join(__dirname, '..'));

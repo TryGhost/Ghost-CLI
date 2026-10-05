@@ -43,7 +43,7 @@ describe('Unit: Instance', function () {
             expect(config.get.calledOnce).to.be.true;
         });
 
-        it('looks for value in environment config if cliConfig value doesn\'t exist', function () {
+        it("looks for value in environment config if cliConfig value doesn't exist", function () {
             const cliConfigGetStub = sinon.stub().withArgs('name').returns(null);
             const configGetStub = sinon.stub().withArgs('pname').returns('testing');
             class TestInstance extends Instance {
@@ -78,14 +78,14 @@ describe('Unit: Instance', function () {
     });
 
     describe('config getter', function () {
-        it('returns cached instance if it exists and environment hasn\'t changed', function () {
+        it("returns cached instance if it exists and environment hasn't changed", function () {
             const testInstance = new Instance({}, {environment: 'testing'}, '');
-            const testConfig = testInstance._config = {
+            const testConfig = (testInstance._config = {
                 a: 'b',
                 foo: 'bar',
                 c: true,
                 environment: 'testing'
-            };
+            });
 
             const config = testInstance.config;
             expect(config).to.deep.equal(testConfig);
@@ -122,12 +122,12 @@ describe('Unit: Instance', function () {
                 }
             }
             const testInstance = new TestInstance({}, {}, '');
-            const testProcess = testInstance._process = {
+            const testProcess = (testInstance._process = {
                 name: 'local',
                 a: 'b',
                 foo: 'bar',
                 test: true
-            };
+            });
 
             const proc = testInstance.process;
             expect(proc).to.deep.equal(testProcess);
@@ -143,9 +143,13 @@ describe('Unit: Instance', function () {
                     return {get: getStub};
                 }
             }
-            const testInstance = new TestInstance({}, {
-                getProcessManager: procManagerStub
-            }, '');
+            const testInstance = new TestInstance(
+                {},
+                {
+                    getProcessManager: procManagerStub
+                },
+                ''
+            );
             testInstance._process = {name: 'systemd'};
 
             const proc = testInstance.process;
@@ -364,7 +368,7 @@ describe('Unit: Instance', function () {
             expect(testInstance.isLocal).to.be.true;
         });
 
-        it('returns false if ghost isn\'t running in either environment', async function () {
+        it("returns false if ghost isn't running in either environment", async function () {
             const configStub = createConfigStub();
             const isRunningStub = sinon.stub().returns(false);
             class TestInstance extends Instance {
@@ -374,7 +378,11 @@ describe('Unit: Instance', function () {
             }
 
             const setEnvironmentStub = sinon.stub();
-            const testInstance = new TestInstance({}, {setEnvironment: setEnvironmentStub, development: false}, '/var/www/ghost');
+            const testInstance = new TestInstance(
+                {},
+                {setEnvironment: setEnvironmentStub, development: false},
+                '/var/www/ghost'
+            );
             testInstance._cliConfig = configStub;
 
             const existsStub = sinon.stub(Config, 'exists').returns(true);
@@ -413,7 +421,7 @@ describe('Unit: Instance', function () {
             expect(testInstance.isLocal).to.be.true;
         });
 
-        it('sets running to null in cliConfig if process manager\'s isRunning method returns false', async function () {
+        it("sets running to null in cliConfig if process manager's isRunning method returns false", async function () {
             const hasStub = sinon.stub().withArgs('running').returns(true);
             const setStub = sinon.stub().withArgs('running', null).returnsThis();
             const saveStub = sinon.stub().returnsThis();
@@ -438,29 +446,37 @@ describe('Unit: Instance', function () {
     });
 
     describe('checkEnvironment', function () {
-        it('doesn\'t do anything if environment is not production', function () {
+        it("doesn't do anything if environment is not production", function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
-            const testInstance = new Instance({log: logStub}, {
-                setEnvironment: environmentStub,
-                production: false,
-                environment: 'development'
-            }, '');
+            const testInstance = new Instance(
+                {log: logStub},
+                {
+                    setEnvironment: environmentStub,
+                    production: false,
+                    environment: 'development'
+                },
+                ''
+            );
 
             testInstance.checkEnvironment();
             expect(logStub.called).to.be.false;
             expect(environmentStub.called).to.be.false;
         });
 
-        it('doesn\'t do anything if config.development.json doesn\'t exist', function () {
+        it("doesn't do anything if config.development.json doesn't exist", function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
             const existsStub = sinon.stub(Config, 'exists').withArgs('/path/config.development.json').returns(false);
-            const testInstance = new Instance({log: logStub}, {
-                setEnvironment: environmentStub,
-                production: true,
-                environment: 'production'
-            }, '/path');
+            const testInstance = new Instance(
+                {log: logStub},
+                {
+                    setEnvironment: environmentStub,
+                    production: true,
+                    environment: 'production'
+                },
+                '/path'
+            );
 
             testInstance.checkEnvironment();
             expect(logStub.called).to.be.false;
@@ -468,14 +484,18 @@ describe('Unit: Instance', function () {
             expect(existsStub.calledOnce).to.be.true;
         });
 
-        it('logs and sets environment if not production, config.dev exists, and config.production doesn\'t exist', function () {
+        it("logs and sets environment if not production, config.dev exists, and config.production doesn't exist", function () {
             const logStub = sinon.stub();
             const environmentStub = sinon.stub();
-            const testInstance = new Instance({log: logStub}, {
-                setEnvironment: environmentStub,
-                production: true,
-                environment: 'production'
-            }, '/path');
+            const testInstance = new Instance(
+                {log: logStub},
+                {
+                    setEnvironment: environmentStub,
+                    production: true,
+                    environment: 'production'
+                },
+                '/path'
+            );
 
             const existsStub = sinon.stub(Config, 'exists');
             existsStub.withArgs('/path/config.development.json').returns(true);
@@ -509,9 +529,13 @@ describe('Unit: Instance', function () {
         it('calls setEnvironment and passes through variables', function () {
             const getStub = sinon.stub().withArgs('running').returns('development');
             const envStub = sinon.stub();
-            const testInstance = new Instance({}, {
-                setEnvironment: envStub
-            }, '');
+            const testInstance = new Instance(
+                {},
+                {
+                    setEnvironment: envStub
+                },
+                ''
+            );
             testInstance._cliConfig = {get: getStub};
 
             testInstance.loadRunningEnvironment(false);
@@ -523,28 +547,33 @@ describe('Unit: Instance', function () {
 
     it('getAvailableConfigs returns available configs', async function () {
         const {dir, cleanup} = setupTestFolder({
-            files: [{
-                path: 'config.development.json',
-                content: {
-                    env: 'development'
+            files: [
+                {
+                    path: 'config.development.json',
+                    content: {
+                        env: 'development'
+                    },
+                    json: true
                 },
-                json: true
-            }, {
-                path: 'config.staging.json',
-                content: {
-                    env: 'staging'
+                {
+                    path: 'config.staging.json',
+                    content: {
+                        env: 'staging'
+                    },
+                    json: true
                 },
-                json: true
-            }, {
-                path: 'config.production.json',
-                content: {
-                    env: 'production'
+                {
+                    path: 'config.production.json',
+                    content: {
+                        env: 'production'
+                    },
+                    json: true
                 },
-                json: true
-            }, {
-                path: 'somefile.txt',
-                content: 'filecontents'
-            }]
+                {
+                    path: 'somefile.txt',
+                    content: 'filecontents'
+                }
+            ]
         });
 
         try {

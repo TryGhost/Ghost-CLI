@@ -69,7 +69,7 @@ describe('Unit: yarn', function () {
         });
     });
 
-    it('respects process.env overrides but doesn\'t mutate process.env', function () {
+    it("respects process.env overrides but doesn't mutate process.env", function () {
         const execa = sinon.stub().resolves();
         const yarn = setup({execa});
 
@@ -87,13 +87,15 @@ describe('Unit: yarn', function () {
         const execa = sinon.stub().rejects(new Error('YARN_TO_FAST'));
         const yarn = setup({execa});
 
-        return yarn().then(() => {
-            expect(false, 'Promise should have rejected').to.be.true;
-        }).catch((error) => {
-            expect(execa.calledOnce).to.be.true;
-            expect(error).to.be.ok;
-            expect(error).to.be.instanceOf(ProcessError);
-        });
+        return yarn()
+            .then(() => {
+                expect(false, 'Promise should have rejected').to.be.true;
+            })
+            .catch(error => {
+                expect(execa.calledOnce).to.be.true;
+                expect(error).to.be.ok;
+                expect(error).to.be.instanceOf(ProcessError);
+            });
     });
 
     describe('can return a readable stream', function () {
@@ -123,19 +125,24 @@ describe('Unit: yarn', function () {
             const res = yarn([], {observe: true});
             expect(isReadable(res)).to.be.true;
 
-            const error = await collect(res).then(() => null, err => err);
+            const error = await collect(res).then(
+                () => null,
+                err => err
+            );
             expect(error).to.be.an.instanceOf(ProcessError);
             expect(error.message).to.equal('test error');
             expect(execa.calledOnce).to.be.true;
         });
 
         it('passes data through', async function () {
-            const execa = sinon.stub().callsFake(() => fakeSubprocess({
-                stdout: getReadableStream(function () {
-                    this.push('test message\n');
-                    this.push(null);
+            const execa = sinon.stub().callsFake(() =>
+                fakeSubprocess({
+                    stdout: getReadableStream(function () {
+                        this.push('test message\n');
+                        this.push(null);
+                    })
                 })
-            }));
+            );
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true});
@@ -146,16 +153,18 @@ describe('Unit: yarn', function () {
         });
 
         it('passes data through with verbose', async function () {
-            const execa = sinon.stub().callsFake(() => fakeSubprocess({
-                stdout: getReadableStream(function () {
-                    this.push('test message\n');
-                    this.push(null);
-                }),
-                stderr: getReadableStream(function () {
-                    this.push('test stderr message\n');
-                    this.push(null);
+            const execa = sinon.stub().callsFake(() =>
+                fakeSubprocess({
+                    stdout: getReadableStream(function () {
+                        this.push('test message\n');
+                        this.push(null);
+                    }),
+                    stderr: getReadableStream(function () {
+                        this.push('test stderr message\n');
+                        this.push(null);
+                    })
                 })
-            }));
+            );
             const yarn = setup({execa});
 
             const res = yarn([], {observe: true, verbose: true});

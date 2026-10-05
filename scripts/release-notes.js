@@ -45,7 +45,7 @@ function extractLeadingEmoji(line) {
 }
 
 function filterAndSortByEmoji(lines) {
-    const emojiLines = lines.filter((line) => {
+    const emojiLines = lines.filter(line => {
         return USER_FACING_EMOJIS.has(extractLeadingEmoji(line));
     });
 

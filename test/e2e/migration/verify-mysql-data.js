@@ -16,7 +16,8 @@ assert.equal(manifest.kind, 'mysql-data');
 
 const NUMERIC = ['tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'decimal', 'float', 'double'];
 const pad = n => String(n).padStart(2, '0');
-const formatDate = date => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
+const formatDate = date =>
+    `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
     `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
 
 // What the source value must look like once it is in MySQL
@@ -69,20 +70,42 @@ function actual(dataType, value) {
         bigNumberStrings: true
     });
 
-    const tables = sqlite.prepare('SELECT name FROM sqlite_master WHERE type = \'table\' AND name NOT LIKE \'sqlite_%\' ORDER BY name').all().map(t => t.name);
-    assert.deepEqual(Object.keys(manifest.database.rows).sort(), tables, 'manifest row counts cover every SQLite table');
+    const tables = sqlite
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
+        .all()
+        .map(t => t.name);
+    assert.deepEqual(
+        Object.keys(manifest.database.rows).sort(),
+        tables,
+        'manifest row counts cover every SQLite table'
+    );
 
     let cells = 0;
     for (const table of tables) {
-        const columns = sqlite.prepare('SELECT name, lower(type) AS declared FROM pragma_table_info(?) ORDER BY cid').all(table);
-        const select = columns.map((c, i) => `typeof("${c.name}") AS t${i}, CASE typeof("${c.name}") WHEN 'text' THEN CAST("${c.name}" AS BLOB) ELSE "${c.name}" END AS v${i}`).join(', ');
+        const columns = sqlite
+            .prepare('SELECT name, lower(type) AS declared FROM pragma_table_info(?) ORDER BY cid')
+            .all(table);
+        const select = columns
+            .map(
+                (c, i) =>
+                    `typeof("${c.name}") AS t${i}, CASE typeof("${c.name}") WHEN 'text' THEN CAST("${c.name}" AS BLOB) ELSE "${c.name}" END AS v${i}`
+            )
+            .join(', ');
         const statement = sqlite.prepare(`SELECT ${select} FROM "${table}"`);
         statement.setReadBigInts(true);
-        const source = statement.all().map(row => JSON.stringify(columns.map((c, i) => expected(table, c, row[`t${i}`], row[`v${i}`])))).sort();
+        const source = statement
+            .all()
+            .map(row => JSON.stringify(columns.map((c, i) => expected(table, c, row[`t${i}`], row[`v${i}`]))))
+            .sort();
 
-        const [types] = await connection.query('SELECT COLUMN_NAME AS name, DATA_TYPE AS type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', [table]);
+        const [types] = await connection.query(
+            'SELECT COLUMN_NAME AS name, DATA_TYPE AS type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+            [table]
+        );
         const dataTypes = Object.fromEntries(types.map(c => [c.name, c.type]));
-        const [rows] = await connection.query(`SELECT ${columns.map(c => `\`${c.name}\``).join(', ')} FROM \`${table}\``);
+        const [rows] = await connection.query(
+            `SELECT ${columns.map(c => `\`${c.name}\``).join(', ')} FROM \`${table}\``
+        );
         const loaded = rows.map(row => JSON.stringify(columns.map(c => actual(dataTypes[c.name], row[c.name])))).sort();
 
         assert.equal(manifest.database.rows[table], source.length, `${table}: manifest row count`);
@@ -94,7 +117,7 @@ function actual(dataType, value) {
     await connection.end();
     sqlite.close();
     console.log(`Verified ${tables.length} tables, ${cells} values`);
-})().catch((error) => {
+})().catch(error => {
     console.error(error);
     process.exit(1);
 });

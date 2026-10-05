@@ -33,11 +33,9 @@ describe('Unit: Commands > ls', function () {
             port: 2370,
             process: 'local'
         });
-        const getAllInstancesStub = sinon.stub().resolves([
-            {summary: summaryStub},
-            {summary: summaryStub},
-            {summary: summaryStub}
-        ]);
+        const getAllInstancesStub = sinon
+            .stub()
+            .resolves([{summary: summaryStub}, {summary: summaryStub}, {summary: summaryStub}]);
         const tableStub = sinon.stub();
 
         const instance = new LsCommand({table: tableStub}, {getAllInstances: getAllInstancesStub});
@@ -45,8 +43,15 @@ describe('Unit: Commands > ls', function () {
         await instance.run();
         expect(summaryStub.calledThrice).to.be.true;
         expect(tableStub.calledOnce).to.be.true;
-        expect(tableStub.args[0][0]).to.deep
-            .equal(['Name', 'Location', 'Version', 'Status', 'URL', 'Port', 'Process Manager']);
+        expect(tableStub.args[0][0]).to.deep.equal([
+            'Name',
+            'Location',
+            'Version',
+            'Status',
+            'URL',
+            'Port',
+            'Process Manager'
+        ]);
         const rows = tableStub.args[0][1];
         expect(rows).to.be.an.instanceof(Array);
         expect(rows).to.have.length(3);
@@ -83,10 +88,7 @@ describe('Unit: Commands > ls', function () {
             port: 2369,
             process: 'systemd'
         });
-        const getAllInstancesStub = sinon.stub().resolves([
-            {summary: summaryStub},
-            {summary: summaryStub}
-        ]);
+        const getAllInstancesStub = sinon.stub().resolves([{summary: summaryStub}, {summary: summaryStub}]);
         const tableStub = sinon.stub();
         const outputStub = sinon.stub();
 
@@ -95,25 +97,28 @@ describe('Unit: Commands > ls', function () {
         await instance.run({json: true});
         expect(tableStub.called).to.be.false;
         expect(outputStub.calledOnce).to.be.true;
-        expect(outputStub.args[0][0]).to.deep.equal([{
-            name: 'testa',
-            dir: '/var/www/testa',
-            version: '1.5.0',
-            running: false,
-            mode: null,
-            url: null,
-            port: null,
-            process: null
-        }, {
-            name: 'testb',
-            dir: '/var/www/testb',
-            version: '1.2.0',
-            running: true,
-            mode: 'production',
-            url: 'https://testa.com',
-            port: 2369,
-            process: 'systemd'
-        }]);
+        expect(outputStub.args[0][0]).to.deep.equal([
+            {
+                name: 'testa',
+                dir: '/var/www/testa',
+                version: '1.5.0',
+                running: false,
+                mode: null,
+                url: null,
+                port: null,
+                process: null
+            },
+            {
+                name: 'testb',
+                dir: '/var/www/testb',
+                version: '1.2.0',
+                running: true,
+                mode: 'production',
+                url: 'https://testa.com',
+                port: 2369,
+                process: 'systemd'
+            }
+        ]);
     });
 
     it('outputs an empty json array when no instances exist', async function () {
@@ -127,7 +132,7 @@ describe('Unit: Commands > ls', function () {
         expect(outputStub.calledOnceWithExactly([])).to.be.true;
     });
 
-    it('Doesn\'t create a table when no instances exist', async function () {
+    it("Doesn't create a table when no instances exist", async function () {
         const getAllInstancesStub = sinon.stub().resolves([]);
         const tableStub = sinon.stub();
         const logStub = sinon.stub();

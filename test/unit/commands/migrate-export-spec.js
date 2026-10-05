@@ -26,11 +26,13 @@ function createInstance(running = true, version = '6.2.0') {
 
 function load({kind = 'mysql-dump', migrationExport, getInstance, baseCommand} = {}) {
     const stubs = {
-        '../tasks/migration-export': migrationExport || sinon.stub().resolves({
-            path: '/tmp/bundle',
-            manifest: {kind},
-            secrets: []
-        }),
+        '../tasks/migration-export':
+            migrationExport ||
+            sinon.stub().resolves({
+                path: '/tmp/bundle',
+                manifest: {kind},
+                secrets: []
+            }),
         '../tasks/migration-export/database': {databaseKind: () => kind},
         '../utils/get-instance': getInstance || sinon.stub().returns(createInstance())
     };
@@ -71,7 +73,9 @@ describe('Unit: Commands > migrate-export', function () {
 
     it('exports a running mysql instance without starting anything', async function () {
         const instance = createInstance(true);
-        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
+        const migrationExport = sinon
+            .stub()
+            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
         const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
         const ui = createUi();
         const cmd = new Command(ui, {});
@@ -83,7 +87,13 @@ describe('Unit: Commands > migrate-export', function () {
         expect(migrationExport.calledOnce).to.be.true;
         expect(migrationExport.args[0][0]).to.equal(ui);
         expect(migrationExport.args[0][1]).to.equal(instance);
-        expect(migrationExport.args[0][2]).to.deep.equal({output: '/tmp/bundle', archive: 'tgz', leaveStopped: undefined, sqliteFormat: undefined, cwd: process.cwd()});
+        expect(migrationExport.args[0][2]).to.deep.equal({
+            output: '/tmp/bundle',
+            archive: 'tgz',
+            leaveStopped: undefined,
+            sqliteFormat: undefined,
+            cwd: process.cwd()
+        });
         expect(ui.log.args.pop()[0]).to.include('/tmp/bundle');
     });
 
@@ -155,7 +165,9 @@ describe('Unit: Commands > migrate-export', function () {
 
     it('exports a Ghost 6.x prerelease', async function () {
         const instance = createInstance(true, '6.0.0-rc.1');
-        const migrationExport = sinon.stub().resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
+        const migrationExport = sinon
+            .stub()
+            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
         const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
         const cmd = new Command(createUi(), {});
 
@@ -192,9 +204,14 @@ describe('Unit: Commands > migrate-export', function () {
         const argv = yargs(['--sqlite-format', 'portable', '--force']).options(Command.options).parse();
         await new Command(createUi(), {}).run(argv);
         expect(stubs['../tasks/migration-export'].args[0][2].sqliteFormat).to.equal('portable');
-        expect(() => yargs(['--sqlite-format', 'json']).options(Command.options).fail((message) => {
-            throw new Error(message);
-        }).parse()).to.throw(/Invalid values/);
+        expect(() =>
+            yargs(['--sqlite-format', 'json'])
+                .options(Command.options)
+                .fail(message => {
+                    throw new Error(message);
+                })
+                .parse()
+        ).to.throw(/Invalid values/);
     });
     for (const output of [undefined, 'bundle']) {
         it(`preserves invocation cwd through --dir for ${output || 'default'} output`, async function () {
@@ -203,11 +220,11 @@ describe('Unit: Commands > migrate-export', function () {
             const source = path.join(caller, 'source');
             let current = caller;
             const cwd = sinon.stub(process, 'cwd').callsFake(() => current);
-            const chdir = sinon.stub(process, 'chdir').callsFake((dir) => {
+            const chdir = sinon.stub(process, 'chdir').callsFake(dir => {
                 current = dir;
             });
             const ui = createUi();
-            ui.error = (error) => {
+            ui.error = error => {
                 throw error;
             };
             const system = {setEnvironment: sinon.stub(), loadOsInfo: sinon.stub().resolves()};

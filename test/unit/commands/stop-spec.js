@@ -42,13 +42,13 @@ describe('Unit: Commands > Stop', function () {
                 await stop.run({name: 'test'});
             } catch (error) {
                 expect(error).to.be.an.instanceof(SystemError);
-                expect(error.message).to.include('\'test\' does not exist');
+                expect(error.message).to.include("'test' does not exist");
                 expect(getInstance.calledOnce).to.be.true;
                 expect(getInstance.calledWithExactly('test')).to.be.true;
             }
         });
 
-        it('logs and exits if instance isn\'t running', async function () {
+        it("logs and exits if instance isn't running", async function () {
             const log = sinon.stub();
             const isRunning = sinon.stub().resolves(false);
             const getInstance = sinon.stub().returns({isRunning});
@@ -144,9 +144,12 @@ describe('Unit: Commands > Stop', function () {
 
     // @todo: Add more tests if necessary
     it('configureOptions loops over extensions', function () {
-        const extensions = [{
-            config: {options: {stop: {test: true}}}
-        }, {}];
+        const extensions = [
+            {
+                config: {options: {stop: {test: true}}}
+            },
+            {}
+        ];
 
         const yargs = {option: sinon.stub(), epilogue: () => true};
         yargs.option.returns(yargs);

@@ -5,20 +5,21 @@ const runTask = require('../../../lib/tasks/release-notes');
 
 const releasesPath = '/repos/TryGhost/Ghost/releases';
 
-const stubbedGithubResponseWithRelevantFields = () => [{
-    tag_name: 'v4.0.1',
-    name: '4.0.1',
-    body: '4.0.1 release notes'
-}, {
-    tag_name: '3.42.2',
-    name: '3.42.2',
-    body: '3.42.2 release notes'
-}];
+const stubbedGithubResponseWithRelevantFields = () => [
+    {
+        tag_name: 'v4.0.1',
+        name: '4.0.1',
+        body: '4.0.1 release notes'
+    },
+    {
+        tag_name: '3.42.2',
+        name: '3.42.2',
+        body: '3.42.2 release notes'
+    }
+];
 
 function stubGithub() {
-    return nock('https://api.github.com')
-        .get(releasesPath)
-        .reply(200, stubbedGithubResponseWithRelevantFields());
+    return nock('https://api.github.com').get(releasesPath).reply(200, stubbedGithubResponseWithRelevantFields());
 }
 
 describe('Unit: Tasks > Release Notes', function () {

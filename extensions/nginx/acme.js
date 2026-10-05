@@ -8,7 +8,9 @@ const path = require('path');
 const {Readable} = require('node:stream');
 const {pipeline} = require('node:stream/promises');
 
-const {errors: {CliError, ProcessError, SystemError}} = require('../../lib');
+const {
+    errors: {CliError, ProcessError, SystemError}
+} = require('../../lib');
 const {errorWrapper} = require('./utils');
 
 const nginxProgramName = process.env.NGINX_PROGRAM_NAME || 'nginx';
@@ -59,11 +61,7 @@ async function install(ui) {
         // GitHub wraps the archive in a single `{user}-{repo}-{commit}` folder, strip it
         // so the acme.sh code ends up directly in acmeTmpDir. `strict` makes tar reject on
         // entry errors it would otherwise just warn about, rather than install a partial copy
-        await pipeline(
-            Readable.fromWeb(response.body),
-            tar.x({cwd: acmeTmpDir, strip: 1, strict: true}),
-            {signal}
-        );
+        await pipeline(Readable.fromWeb(response.body), tar.x({cwd: acmeTmpDir, strip: 1, strict: true}), {signal});
 
         ui.logVerbose('ssl: installing acme.sh components', 'green');
 
@@ -78,14 +76,21 @@ async function generateCert(ui, domain, webroot, email, staging) {
     const args = [
         '/etc/letsencrypt/acme.sh',
         '--issue',
-        '--home', '/etc/letsencrypt',
-        '--server', 'letsencrypt',
-        '--domain', domain,
-        '--webroot', webroot,
+        '--home',
+        '/etc/letsencrypt',
+        '--server',
+        'letsencrypt',
+        '--domain',
+        domain,
+        '--webroot',
+        webroot,
         // acme.sh runs this itself once the cert is issued, so it stays a command string
-        '--reloadcmd', `${nginxProgramName} -s reload`,
-        '--accountemail', email,
-        '--keylength', '2048'
+        '--reloadcmd',
+        `${nginxProgramName} -s reload`,
+        '--accountemail',
+        email,
+        '--keylength',
+        '2048'
     ];
 
     if (staging) {
@@ -102,7 +107,9 @@ async function generateCert(ui, domain, webroot, email, staging) {
 
         if (error.stderr.match(/Verify error:(Fetching|Invalid Response)/)) {
             // Domain verification failed
-            throw new SystemError('Your domain name is not pointing to the correct IP address of your server, check your DNS has propagated and run `ghost setup ssl` again');
+            throw new SystemError(
+                'Your domain name is not pointing to the correct IP address of your server, check your DNS has propagated and run `ghost setup ssl` again'
+            );
         }
 
         // It's not an error we expect might happen, throw a ProcessError instead.

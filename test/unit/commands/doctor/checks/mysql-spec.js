@@ -47,7 +47,8 @@ describe('Unit: Doctor Checks > mysql', function () {
             expect(mysqlCheck.enabled({argv: {db: 'sqlite3'}}), 'skips if db is sqlite3').to.be.false;
             expect(mysqlCheck.enabled({argv: {dbhost: 'localhost'}}), 'no skip if dbhost is localhost').to.be.true;
             expect(mysqlCheck.enabled({argv: {dbhost: '127.0.0.1'}}), 'no skip if dbhost is 127.0.0.1').to.be.true;
-            expect(mysqlCheck.enabled({argv: {dbhost: 'mysql.exernalhost.com'}}), 'skip if dbhost is remote').to.be.false;
+            expect(mysqlCheck.enabled({argv: {dbhost: 'mysql.exernalhost.com'}}), 'skip if dbhost is remote').to.be
+                .false;
         });
     });
 

@@ -7,7 +7,7 @@ const modulePath = '../../../lib/tasks/linux';
 
 function fakeListr(tasks, ctx) {
     expect(ctx).to.be.false;
-    return each(tasks, (task) => {
+    return each(tasks, task => {
         if (task.skip && task.skip()) {
             return;
         }
@@ -35,7 +35,7 @@ describe('Unit: Tasks > linux', function () {
         });
     });
 
-    it('creates user if user doesn\'t exist', function () {
+    it("creates user if user doesn't exist", function () {
         const shellStub = sinon.stub().throws(new Error('No such user'));
         const linux = proxyquire(modulePath, {
             execa: {execaSync: shellStub}

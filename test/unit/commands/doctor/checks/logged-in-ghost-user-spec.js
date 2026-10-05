@@ -13,15 +13,21 @@ describe('Unit: Doctor Checks > loggedInGhostUser', function () {
     });
 
     it('enabled works', function () {
-        expect(loggedInGhostUser.enabled({
-            system: {platform: {linux: false}}
-        }), 'false if platform is not linux').to.be.false;
+        expect(
+            loggedInGhostUser.enabled({
+                system: {platform: {linux: false}}
+            }),
+            'false if platform is not linux'
+        ).to.be.false;
     });
 
     it('skip works', function () {
-        expect(loggedInGhostUser.skip({
-            instance: {process: {name: 'local'}}
-        }), 'true if local process manager').to.be.true;
+        expect(
+            loggedInGhostUser.skip({
+                instance: {process: {name: 'local'}}
+            }),
+            'true if local process manager'
+        ).to.be.true;
     });
 
     it('rejects if user is logged in as ghost and ghost owns content folder', function () {
@@ -42,7 +48,7 @@ describe('Unit: Doctor Checks > loggedInGhostUser', function () {
         }
     });
 
-    it('resolves if user is logged in as ghost but ghost doesn\'t own the content folder', function () {
+    it("resolves if user is logged in as ghost but ghost doesn't own the content folder", function () {
         const uidStub = sinon.stub(process, 'getuid').returns(1002);
         const ghostUserStub = sinon.stub(ghostUser, 'getGhostUid').returns({uid: 1002, guid: 1002});
         const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 1001, gid: 1001});
@@ -53,7 +59,7 @@ describe('Unit: Doctor Checks > loggedInGhostUser', function () {
         expect(ghostUserStub.calledOnce).to.be.true;
     });
 
-    it('resolves if ghost user doesn\'t exist', function () {
+    it("resolves if ghost user doesn't exist", function () {
         const uidStub = sinon.stub(process, 'getuid').returns(1002);
         const ghostUserStub = sinon.stub(ghostUser, 'getGhostUid').returns(false);
         const fsStub = sinon.stub(fs, 'lstatSync').returns({uid: 1001, gid: 1001});

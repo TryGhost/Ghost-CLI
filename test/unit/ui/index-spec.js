@@ -88,7 +88,7 @@ describe('Unit: UI', function () {
         it('with quiet enabled, resolves a static value', function () {
             const ui = new UI();
 
-            return ui.run('foo', null, {quiet: true}).then((result) => {
+            return ui.run('foo', null, {quiet: true}).then(result => {
                 expect(result).to.equal('foo');
                 expect(oraStub.called).to.be.false;
             });
@@ -98,7 +98,7 @@ describe('Unit: UI', function () {
             const ui = new UI();
             const testFunc = sinon.stub().resolves('foo');
 
-            return ui.run(testFunc, null, {quiet: true}).then((result) => {
+            return ui.run(testFunc, null, {quiet: true}).then(result => {
                 expect(result).to.equal('foo');
                 expect(oraStub.called).to.be.false;
             });
@@ -117,7 +117,7 @@ describe('Unit: UI', function () {
             const ui = new UI({json: true});
             const testFunc = sinon.stub().resolves('foo');
 
-            return ui.run(testFunc, 'do a thing').then((result) => {
+            return ui.run(testFunc, 'do a thing').then(result => {
                 expect(result).to.equal('foo');
                 expect(testFunc.calledOnce).to.be.true;
                 expect(oraStub.called).to.be.false;
@@ -127,14 +127,16 @@ describe('Unit: UI', function () {
         it('starts spinner with options, resolves single value', function () {
             const ui = new UI({stdout: {stdout: true}});
 
-            return ui.run('foo', 'do a thing').then((result) => {
+            return ui.run('foo', 'do a thing').then(result => {
                 expect(result).to.equal('foo');
                 expect(oraStub.calledOnce).to.be.true;
-                expect(oraStub.calledWithExactly({
-                    text: 'do a thing',
-                    spinner: 'dots',
-                    stream: {stdout: true}
-                })).to.be.true;
+                expect(
+                    oraStub.calledWithExactly({
+                        text: 'do a thing',
+                        spinner: 'dots',
+                        stream: {stdout: true}
+                    })
+                ).to.be.true;
                 expect(startStub.calledOnce).to.be.true;
                 expect(spinner.succeed.calledOnce).to.be.true;
                 expect(ui.spinner, 'spinner is set to null').to.be.null;
@@ -145,15 +147,17 @@ describe('Unit: UI', function () {
             const ui = new UI({stdout: {stdout: true}});
             const testFunc = sinon.stub().resolves('foo');
 
-            return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots'}).then((result) => {
+            return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots'}).then(result => {
                 expect(result).to.equal('foo');
                 expect(testFunc.calledOnce).to.be.true;
                 expect(oraStub.calledOnce).to.be.true;
-                expect(oraStub.calledWithExactly({
-                    text: 'do a thing',
-                    spinner: 'dots',
-                    stream: {stdout: true}
-                })).to.be.true;
+                expect(
+                    oraStub.calledWithExactly({
+                        text: 'do a thing',
+                        spinner: 'dots',
+                        stream: {stdout: true}
+                    })
+                ).to.be.true;
                 expect(startStub.calledOnce).to.be.true;
                 expect(spinner.succeed.calledOnce).to.be.true;
                 expect(ui.spinner, 'spinner is set to null').to.be.null;
@@ -164,15 +168,17 @@ describe('Unit: UI', function () {
             const ui = new UI({stdout: {stdout: true}});
             const testFunc = sinon.stub().resolves('foo');
 
-            return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots', clear: true}).then((result) => {
+            return ui.run(testFunc, null, {text: 'do a thing', spinner: 'dots', clear: true}).then(result => {
                 expect(result).to.equal('foo');
                 expect(testFunc.calledOnce).to.be.true;
                 expect(oraStub.calledOnce).to.be.true;
-                expect(oraStub.calledWithExactly({
-                    text: 'do a thing',
-                    spinner: 'dots',
-                    stream: {stdout: true}
-                })).to.be.true;
+                expect(
+                    oraStub.calledWithExactly({
+                        text: 'do a thing',
+                        spinner: 'dots',
+                        stream: {stdout: true}
+                    })
+                ).to.be.true;
                 expect(startStub.calledOnce).to.be.true;
                 expect(spinner.stop.calledOnce).to.be.true;
                 expect(spinner.succeed.called).to.be.false;
@@ -187,11 +193,13 @@ describe('Unit: UI', function () {
             await expect(ui.run(testFunc, 'test')).rejects.toThrow('something went wrong!');
             expect(testFunc.calledOnce).to.be.true;
             expect(oraStub.calledOnce).to.be.true;
-            expect(oraStub.calledWithExactly({
-                text: 'test',
-                spinner: 'dots',
-                stream: {stdout: true}
-            })).to.be.true;
+            expect(
+                oraStub.calledWithExactly({
+                    text: 'test',
+                    spinner: 'dots',
+                    stream: {stdout: true}
+                })
+            ).to.be.true;
             expect(startStub.calledOnce).to.be.true;
             expect(spinner.succeed.called).to.be.false;
             expect(spinner.fail.calledOnce).to.be.true;
@@ -215,7 +223,14 @@ describe('Unit: UI', function () {
             '└───┴───┴───┘'
         ];
 
-        ui.table(['a','b','c'], [['d','e','f'], ['g','h','i'], ['j','k','l']]);
+        ui.table(
+            ['a', 'b', 'c'],
+            [
+                ['d', 'e', 'f'],
+                ['g', 'h', 'i'],
+                ['j', 'k', 'l']
+            ]
+        );
 
         expect(logStub.calledOnce).to.be.true;
 
@@ -232,11 +247,13 @@ describe('Unit: UI', function () {
             ui.allowPrompt = false;
             const noSpinStub = sinon.stub(ui, 'noSpin');
 
-            expect(() => ui.prompt({
-                name: 'test',
-                type: 'input',
-                message: 'Enter anything'
-            })).to.throw(/Prompts have been disabled/);
+            expect(() =>
+                ui.prompt({
+                    name: 'test',
+                    type: 'input',
+                    message: 'Enter anything'
+                })
+            ).to.throw(/Prompts have been disabled/);
             expect(noSpinStub.called).to.be.false;
         });
 
@@ -252,7 +269,7 @@ describe('Unit: UI', function () {
                 default: 'testing'
             };
 
-            return ui.prompt(prompt).then((results) => {
+            return ui.prompt(prompt).then(results => {
                 expect(results.test).to.equal('testing');
                 expect(noSpinStub.called).to.be.false;
             });
@@ -262,23 +279,29 @@ describe('Unit: UI', function () {
             const ui = new UI();
             ui.auto = true;
 
-            const defaultPrompts = [{
-                name: 'a',
-                default: '1'
-            }, {
-                name: 'b',
-                default: '2'
-            }];
-            const noDefaultPrompts = [{
-                name: 'c'
-            }, {
-                name: 'd'
-            }];
+            const defaultPrompts = [
+                {
+                    name: 'a',
+                    default: '1'
+                },
+                {
+                    name: 'b',
+                    default: '2'
+                }
+            ];
+            const noDefaultPrompts = [
+                {
+                    name: 'c'
+                },
+                {
+                    name: 'd'
+                }
+            ];
 
             const noSpinStub = sinon.stub(ui, 'noSpin').callsFake(fn => fn());
             const inquirerStub = sinon.stub(ui, 'inquirer').resolves({c: '3', d: '4'});
 
-            return ui.prompt([...defaultPrompts, ...noDefaultPrompts]).then((answers) => {
+            return ui.prompt([...defaultPrompts, ...noDefaultPrompts]).then(answers => {
                 expect(answers).to.deep.equal({
                     a: '1',
                     b: '2',
@@ -295,25 +318,29 @@ describe('Unit: UI', function () {
             const ui = new UI();
             ui.auto = true;
 
-            const prompts = [{
-                type: 'rawlist',
-                name: 'a',
-                choices: ['small', 'medium', 'large'],
-                default: 2
-            }, {
-                type: 'rawlist',
-                name: 'b',
-                choices: ['small', 'medium', 'large'],
-                default: 0
-            }, {
-                type: 'expand',
-                name: 'c',
-                choices: ['small', 'medium', 'large'],
-                default: 1
-            }];
+            const prompts = [
+                {
+                    type: 'rawlist',
+                    name: 'a',
+                    choices: ['small', 'medium', 'large'],
+                    default: 2
+                },
+                {
+                    type: 'rawlist',
+                    name: 'b',
+                    choices: ['small', 'medium', 'large'],
+                    default: 0
+                },
+                {
+                    type: 'expand',
+                    name: 'c',
+                    choices: ['small', 'medium', 'large'],
+                    default: 1
+                }
+            ];
 
             const noSpinStub = sinon.stub(ui, 'noSpin');
-            return ui.prompt(prompts).then((results) => {
+            return ui.prompt(prompts).then(results => {
                 expect(results).to.deep.equal({
                     a: 'large',
                     b: 'small',
@@ -351,7 +378,7 @@ describe('Unit: UI', function () {
             const promptStub = sinon.stub(ui, 'prompt').resolves({yes: true});
             ui.allowPrompt = false;
 
-            return ui.confirm('Some question', false).then((result) => {
+            return ui.confirm('Some question', false).then(result => {
                 expect(result).to.be.false;
                 expect(promptStub.called).to.be.false;
             });
@@ -362,7 +389,7 @@ describe('Unit: UI', function () {
             const promptStub = sinon.stub(ui, 'prompt').resolves({yes: true});
             ui.auto = true;
 
-            return ui.confirm('Some question', false).then((result) => {
+            return ui.confirm('Some question', false).then(result => {
                 expect(result).to.be.false;
                 expect(promptStub.called).to.be.false;
             });
@@ -390,17 +417,20 @@ describe('Unit: UI', function () {
                 prefix: undefined
             };
 
-            return ui.confirm('Is the sky blue', true).then((result) => {
-                expect(result).to.be.true;
-                expect(promptStub.calledOnce).to.be.true;
-                expect(promptStub.calledWithExactly(testA)).to.be.true;
+            return ui
+                .confirm('Is the sky blue', true)
+                .then(result => {
+                    expect(result).to.be.true;
+                    expect(promptStub.calledOnce).to.be.true;
+                    expect(promptStub.calledWithExactly(testA)).to.be.true;
 
-                return ui.confirm('Is ghost just a blogging platform');
-            }).then((result) => {
-                expect(result).to.be.false;
-                expect(promptStub.calledTwice).to.be.true;
-                expect(promptStub.calledWithExactly(testB)).to.be.true;
-            });
+                    return ui.confirm('Is ghost just a blogging platform');
+                })
+                .then(result => {
+                    expect(result).to.be.false;
+                    expect(promptStub.calledTwice).to.be.true;
+                    expect(promptStub.calledWithExactly(testB)).to.be.true;
+                });
         });
     });
 
@@ -419,23 +449,27 @@ describe('Unit: UI', function () {
                 './renderer': createRendererStub
             });
             const ui = new UI();
-            const tasks = ['test','ing','is','necessary'];
+            const tasks = ['test', 'ing', 'is', 'necessary'];
 
             return ui.listr(tasks).then(() => {
                 expect(ListrStub.calledWithNew()).to.be.true;
                 expect(createRendererStub.calledOnce).to.be.true;
-                expect(ListrStub.calledWithExactly(tasks, {
-                    renderer: {RendererClass: true},
-                    fallbackRenderer: 'verbose',
-                    collectErrors: true,
-                    registerSignalListeners: false,
-                    exitOnError: true
-                })).to.be.true;
+                expect(
+                    ListrStub.calledWithExactly(tasks, {
+                        renderer: {RendererClass: true},
+                        fallbackRenderer: 'verbose',
+                        collectErrors: true,
+                        registerSignalListeners: false,
+                        exitOnError: true
+                    })
+                ).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({
-                    ui: ui,
-                    listr: instance
-                })).to.be.true;
+                expect(
+                    runStub.calledWithExactly({
+                        ui: ui,
+                        listr: instance
+                    })
+                ).to.be.true;
             });
         });
 
@@ -447,24 +481,28 @@ describe('Unit: UI', function () {
                 './renderer': createRendererStub
             });
             const ui = new UI({verbose: true});
-            const tasks = ['test','ing','is','necessary'];
+            const tasks = ['test', 'ing', 'is', 'necessary'];
 
             return ui.listr(tasks, {something: 'foo'}, {exitOnError: false}).then(() => {
                 expect(ListrStub.calledWithNew()).to.be.true;
                 expect(createRendererStub.called).to.be.false;
-                expect(ListrStub.calledWithExactly(tasks, {
-                    renderer: 'verbose',
-                    fallbackRenderer: 'verbose',
-                    collectErrors: true,
-                    registerSignalListeners: false,
-                    exitOnError: false
-                })).to.be.true;
+                expect(
+                    ListrStub.calledWithExactly(tasks, {
+                        renderer: 'verbose',
+                        fallbackRenderer: 'verbose',
+                        collectErrors: true,
+                        registerSignalListeners: false,
+                        exitOnError: false
+                    })
+                ).to.be.true;
                 expect(runStub.calledOnce).to.be.true;
-                expect(runStub.calledWithExactly({
-                    something: 'foo',
-                    ui: ui,
-                    listr: instance
-                })).to.be.true;
+                expect(
+                    runStub.calledWithExactly({
+                        something: 'foo',
+                        ui: ui,
+                        listr: instance
+                    })
+                ).to.be.true;
             });
         });
 
@@ -472,18 +510,20 @@ describe('Unit: UI', function () {
             const {runStub, instance, ListrStub} = listrStub();
             const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
             const ui = new UI();
-            const tasks = ['test','ing','is','necessary'];
+            const tasks = ['test', 'ing', 'is', 'necessary'];
 
             const result = ui.listr(tasks, false, {renderer: 'update'});
             expect(result).to.equal(instance);
             expect(ListrStub.calledWithNew()).to.be.true;
-            expect(ListrStub.calledWithExactly(tasks, {
-                renderer: 'update',
-                fallbackRenderer: 'verbose',
-                collectErrors: true,
-                registerSignalListeners: false,
-                exitOnError: true
-            })).to.be.true;
+            expect(
+                ListrStub.calledWithExactly(tasks, {
+                    renderer: 'update',
+                    fallbackRenderer: 'verbose',
+                    collectErrors: true,
+                    registerSignalListeners: false,
+                    exitOnError: true
+                })
+            ).to.be.true;
             expect(runStub.called).to.be.false;
         });
 
@@ -497,12 +537,15 @@ describe('Unit: UI', function () {
             const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
             const ui = new UI();
 
-            const error = await ui.listr(['tasks'], false).run({}).catch(e => e);
+            const error = await ui
+                .listr(['tasks'], false)
+                .run({})
+                .catch(e => e);
             expect(error).to.be.an.instanceof(AggregateError);
             expect(error.errors).to.deep.equal(collected);
         });
 
-        it('ignores errors collected before the run (subtask lists share the parent\'s errors)', async function () {
+        it("ignores errors collected before the run (subtask lists share the parent's errors)", async function () {
             const {ListrStub} = listrStub([{error: new Error('a')}]);
             const UI = proxyquire(modulePath, {listr2: {Listr: ListrStub}});
             const ui = new UI();
@@ -535,9 +578,14 @@ describe('Unit: UI', function () {
             expect(shellStub.calledOnce).to.be.true;
             expect(shellStub.args[0][0]).to.equal('sudo');
             expect(shellStub.args[0][1]).to.deep.equal([
-                '-S', '-p', '#node-sudo-passwd#',
-                '-E', '-u', 'ghost',
-                ...process.argv.slice(0, 2), '-v'
+                '-S',
+                '-p',
+                '#node-sudo-passwd#',
+                '-E',
+                '-u',
+                'ghost',
+                ...process.argv.slice(0, 2),
+                '-v'
             ]);
             expect(shellStub.args[0][2]).to.deep.equal({cwd: '/var/foo'});
             expect(promptStub.calledOnce).to.be.true;
@@ -578,10 +626,7 @@ describe('Unit: UI', function () {
             const confFile = '/etc/nginx/sites-available/blog.example.com$(id).invalid.conf';
 
             return ui.sudo(['rm', '-f', confFile]).then(() => {
-                expect(shellStub.args[0][1]).to.deep.equal([
-                    '-S', '-p', '#node-sudo-passwd#',
-                    'rm', '-f', confFile
-                ]);
+                expect(shellStub.args[0][1]).to.deep.equal(['-S', '-p', '#node-sudo-passwd#', 'rm', '-f', confFile]);
                 expect(shellStub.args[0][2].shell).to.be.undefined;
             });
         });
@@ -621,7 +666,7 @@ describe('Unit: UI', function () {
             });
         });
 
-        it('returns a plain promise so listr doesn\'t mistake it for a stream', function () {
+        it("returns a plain promise so listr doesn't mistake it for a stream", function () {
             // execa's subprocess promise has a `pipe` method, which is what `is-stream`
             // (used by listr) checks for
             const shell = Promise.resolve('result');
@@ -636,7 +681,7 @@ describe('Unit: UI', function () {
             const result = ui.sudo(['echo']);
             expect(result.pipe).to.be.undefined;
 
-            return result.then((value) => {
+            return result.then(value => {
                 expect(value).to.equal('result');
             });
         });
@@ -773,7 +818,9 @@ describe('Unit: UI', function () {
 
             const output = await written;
             expect(output, 'output exists').to.be.ok;
-            expect(output, 'output value').to.include(chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`));
+            expect(output, 'output value').to.include(
+                chalk.white(`\nmy message: \n\n    ${chalk.yellow('testing')}\n`)
+            );
         });
     });
 
@@ -863,9 +910,12 @@ describe('Unit: UI', function () {
                 const log = sinon.stub(ui, 'log');
                 const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
 
-                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
+                const errs = [
+                    new errors.ConfigError('bananas'),
+                    new errors.CliError({message: 'Bad Stack', logToFile: true})
+                ];
 
-                errs.forEach((err) => {
+                errs.forEach(err => {
                     ui.error(err, system);
                 });
 
@@ -875,7 +925,9 @@ describe('Unit: UI', function () {
                 expect(log.args[0][0]).to.match(/Config/);
                 expect(log.args[1][0]).to.equal(errs[0].toString(true));
                 expect(log.args[2][0]).to.equal('cherries');
-                expect(stripAnsi(log.args[3][0])).to.match(/\nTry running ghost doctor to check your system for known issues./);
+                expect(stripAnsi(log.args[3][0])).to.match(
+                    /\nTry running ghost doctor to check your system for known issues./
+                );
                 expect(log.args[4][0]).to.match(/https:\/\/ghost\.org\/docs\//);
                 expect(log.args[5][0]).to.match(/Cli/);
                 expect(log.args[6][0]).to.equal(errs[1].toString(true));
@@ -889,9 +941,12 @@ describe('Unit: UI', function () {
                 const log = sinon.stub(ui, 'log');
                 const formatDebug = sinon.stub(ui, '_formatDebug').returns('cherries');
 
-                const errs = [new errors.ConfigError('bananas'), new errors.CliError({message: 'Bad Stack',logToFile: true})];
+                const errs = [
+                    new errors.ConfigError('bananas'),
+                    new errors.CliError({message: 'Bad Stack', logToFile: true})
+                ];
 
-                errs.forEach((err) => {
+                errs.forEach(err => {
                     ui.error(err, system);
                 });
 
@@ -901,7 +956,9 @@ describe('Unit: UI', function () {
                 expect(log.args[0][0]).to.match(/Config/);
                 expect(log.args[1][0]).to.equal(errs[0].toString(false));
                 expect(log.args[2][0]).to.equal('cherries');
-                expect(stripAnsi(log.args[3][0])).to.match(/\nTry running ghost doctor to check your system for known issues./);
+                expect(stripAnsi(log.args[3][0])).to.match(
+                    /\nTry running ghost doctor to check your system for known issues./
+                );
                 expect(log.args[4][0]).to.match(/https:\/\/ghost\.org\/docs\//);
                 expect(log.args[5][0]).to.match(/Cli/);
                 expect(log.args[6][0]).to.equal(errs[1].toString(false));
@@ -912,13 +969,16 @@ describe('Unit: UI', function () {
 
         describe('handles aggregated listr errors', function () {
             it('verbose without log output', function () {
-                const err = new AggregateError([
-                    new errors.SystemError('Error 1'),
-                    new errors.SystemError({
-                        message: 'Error 2',
-                        task: 'Task 2'
-                    })
-                ], 'Something happened');
+                const err = new AggregateError(
+                    [
+                        new errors.SystemError('Error 1'),
+                        new errors.SystemError({
+                            message: 'Error 2',
+                            task: 'Task 2'
+                        })
+                    ],
+                    'Something happened'
+                );
 
                 const ui = new UI({verbose: true});
                 const log = sinon.stub(ui, 'log');
@@ -937,18 +997,23 @@ describe('Unit: UI', function () {
                 expect(log.args[3][0]).to.match(/2\) Task 2/);
                 expect(stripAnsi(log.args[4][0])).to.match(/Message: Error 2/);
                 expect(log.args[5][0]).to.equal('cherries');
-                expect(stripAnsi(log.args[6][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(stripAnsi(log.args[6][0])).to.match(
+                    /Try running ghost doctor to check your system for known issues./
+                );
                 expect(log.args[7][0]).to.match(/You can always refer to https:\/\/ghost.org\/docs\//);
             });
 
             it('non-verbose with log output', function () {
-                const err = new AggregateError([
-                    new errors.ProcessError({message: 'Error 1'}),
-                    new errors.ProcessError({
-                        message: 'Error 2',
-                        task: 'Task 2'
-                    })
-                ], 'Something happened');
+                const err = new AggregateError(
+                    [
+                        new errors.ProcessError({message: 'Error 1'}),
+                        new errors.ProcessError({
+                            message: 'Error 2',
+                            task: 'Task 2'
+                        })
+                    ],
+                    'Something happened'
+                );
 
                 const ui = new UI({verbose: false});
                 const log = sinon.stub(ui, 'log');
@@ -967,7 +1032,9 @@ describe('Unit: UI', function () {
                 expect(stripAnsi(log.args[4][0])).to.match(/Message: Error 2/);
                 expect(log.args[5][0]).to.equal('cherries');
                 expect(log.args[6][0]).to.match(/Additional log info available in/);
-                expect(stripAnsi(log.args[7][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(stripAnsi(log.args[7][0])).to.match(
+                    /Try running ghost doctor to check your system for known issues./
+                );
                 expect(log.args[8][0]).to.match(/You can always refer to https:\/\/ghost.org\/docs\//);
             });
         });
@@ -988,8 +1055,12 @@ describe('Unit: UI', function () {
                 });
 
                 const expectedErrors = [
-                    `An error occurred.\nMessage: '${errs[0].message}'\n\nStack: ${errs[0].stack}\nCode: ${errs[0].code}\n`.split('\n'),
-                    `An error occurred.\nMessage: '${errs[1].message}'\n\nStack: ${errs[1].stack}\nPath: ${errs[1].path}\n`.split('\n'),
+                    `An error occurred.\nMessage: '${errs[0].message}'\n\nStack: ${errs[0].stack}\nCode: ${errs[0].code}\n`.split(
+                        '\n'
+                    ),
+                    `An error occurred.\nMessage: '${errs[1].message}'\n\nStack: ${errs[1].stack}\nPath: ${errs[1].path}\n`.split(
+                        '\n'
+                    ),
                     `An error occurred.\nMessage: '${errs[2].message}'\n\n`.split('\n'),
                     `An error occurred.\nMessage: '${errs[3].message}'\n\nStack: ${errs[3].stack}\n`.split('\n')
                 ];
@@ -998,7 +1069,9 @@ describe('Unit: UI', function () {
                 expect(system.writeErrorLog.callCount).to.equal(4);
                 expectedErrors.forEach(function (err, i) {
                     expect(log.args[i * 5 + 2][0]).to.match(/Additional log info/);
-                    expect(stripAnsi(log.args[i * 5 + 3][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                    expect(stripAnsi(log.args[i * 5 + 3][0])).to.match(
+                        /Try running ghost doctor to check your system for known issues./
+                    );
                     expect(log.args[i * 5 + 4][0]).to.match(/You can always refer to https:\/\/ghost\.org\/docs\//);
                     expect(stripAnsi(log.args[i * 5][0]).split(/\n/)).to.deep.equal(err);
                 });
@@ -1018,7 +1091,9 @@ describe('Unit: UI', function () {
                 expect(formatDebug.calledOnce).to.be.true;
                 expect(system.writeErrorLog.calledOnce).to.be.true;
                 expect(log.args[2][0]).to.match(/Additional log info/);
-                expect(stripAnsi(log.args[3][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+                expect(stripAnsi(log.args[3][0])).to.match(
+                    /Try running ghost doctor to check your system for known issues./
+                );
                 expect(log.args[4][0]).to.match(/You can always refer to https:\/\/ghost\.org\/docs\//);
                 expect(stripAnsi(log.args[0][0]).split(/\n/)).to.deep.equal(expectedError);
             });
@@ -1048,12 +1123,14 @@ describe('Unit: UI', function () {
             const ui = new UI();
             const log = sinon.stub(ui, 'log');
             const formatDebug = sinon.stub(ui, '_formatDebug');
-            ui.error('That\'s a known issue');
+            ui.error("That's a known issue");
 
             expect(formatDebug.calledOnce).to.be.true;
             expect(log.calledTwice).to.be.true;
             expect(log.args[0][0]).to.match(/error occured/);
-            expect(stripAnsi(log.args[1][0])).to.match(/Try running ghost doctor to check your system for known issues./);
+            expect(stripAnsi(log.args[1][0])).to.match(
+                /Try running ghost doctor to check your system for known issues./
+            );
             expect(log.args[0][2]).to.be.true;
         });
 
@@ -1080,7 +1157,8 @@ describe('Unit: UI', function () {
         const SPACES = '    ';
         const UI = require(modulePath);
         const ui = new UI();
-        const expected = ['Debug Information:',
+        const expected = [
+            'Debug Information:',
             `${SPACES}OS: Ubuntu, v16`,
             `${SPACES}Node Version: ${process.version}`,
             `${SPACES}Ghost-CLI Version: 0.9.1.8`,
@@ -1105,7 +1183,8 @@ describe('Unit: UI', function () {
         const SPACES = '    ';
         const UI = require(modulePath);
         const ui = new UI();
-        const expected = ['Debug Information:',
+        const expected = [
+            'Debug Information:',
             `${SPACES}OS: Ubuntu, v16`,
             `${SPACES}Node Version: ${process.version}`,
             `${SPACES}Ghost Version: 1.0.0`,
