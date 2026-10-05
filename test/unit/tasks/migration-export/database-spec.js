@@ -27,8 +27,18 @@ describe('Unit: Tasks > migration-export > database', function () {
             expect(databaseKind(fakeInstance({}, 'mysql2'))).to.equal('mysql-dump');
         });
 
-        it('returns portable only for local sqlite3', function () {
-            expect(databaseKind(fakeInstance({}, 'sqlite3'))).to.equal('portable');
+        it('returns mysql-data by default for local sqlite3, or the requested format', function () {
+            expect(databaseKind(fakeInstance({}, 'sqlite3'))).to.equal('mysql-data');
+            expect(databaseKind(fakeInstance({}, 'sqlite3'), 'mysql-data')).to.equal('mysql-data');
+            expect(databaseKind(fakeInstance({}, 'sqlite3'), 'portable')).to.equal('portable');
+            expect(() => databaseKind(fakeInstance({}, 'sqlite3'), 'json')).to.throw(SystemError, /Unsupported SQLite format/);
+        });
+
+        it('rejects a sqlite format for mysql sources', function () {
+            expect(() => databaseKind(fakeInstance({}, 'mysql'), 'portable')).to.throw(SystemError, /only applies to SQLite/);
+        });
+
+        it('supports only local sqlite3 installs', function () {
             expect(() => databaseKind(fakeInstance({}, null))).to.throw(/Unsupported migration source/);
             expect(() => databaseKind(fakeInstance({}, 'postgres'))).to.throw(/Unsupported migration source/);
             const production = fakeInstance({}, 'sqlite3');

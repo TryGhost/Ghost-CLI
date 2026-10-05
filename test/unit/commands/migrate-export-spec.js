@@ -83,7 +83,7 @@ describe('Unit: Commands > migrate-export', function () {
         expect(migrationExport.calledOnce).to.be.true;
         expect(migrationExport.args[0][0]).to.equal(ui);
         expect(migrationExport.args[0][1]).to.equal(instance);
-        expect(migrationExport.args[0][2]).to.deep.equal({output: '/tmp/bundle', archive: 'tgz', leaveStopped: undefined, cwd: process.cwd()});
+        expect(migrationExport.args[0][2]).to.deep.equal({output: '/tmp/bundle', archive: 'tgz', leaveStopped: undefined, sqliteFormat: undefined, cwd: process.cwd()});
         expect(ui.log.args.pop()[0]).to.include('/tmp/bundle');
     });
 
@@ -185,6 +185,16 @@ describe('Unit: Commands > migrate-export', function () {
         const argv = yargs(['--leave-stopped', '--force']).options(Command.options).parse();
         await new Command(createUi(), {}).run(argv);
         expect(stubs['../tasks/migration-export'].args[0][2].leaveStopped).to.be.true;
+    });
+    it('passes the parsed --sqlite-format option to the exporter', async function () {
+        const yargs = require('yargs/yargs');
+        const {Command, stubs} = load();
+        const argv = yargs(['--sqlite-format', 'portable', '--force']).options(Command.options).parse();
+        await new Command(createUi(), {}).run(argv);
+        expect(stubs['../tasks/migration-export'].args[0][2].sqliteFormat).to.equal('portable');
+        expect(() => yargs(['--sqlite-format', 'json']).options(Command.options).fail((message) => {
+            throw new Error(message);
+        }).parse()).to.throw(/Invalid values/);
     });
     for (const output of [undefined, 'bundle']) {
         it(`preserves invocation cwd through --dir for ${output || 'default'} output`, async function () {
