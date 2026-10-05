@@ -578,6 +578,35 @@ describe('Unit: Tasks > migration-export', function () {
         expect(result.manifest.database).to.deep.equal({path: 'database.sql', rows: {migrations: 354, posts: 3}});
     });
 
+    it('reads the SQLite filename from the running environment\'s config', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {client: 'sqlite3'});
+        const developmentConfig = createInstance(source.dir, {client: 'sqlite3'}).config;
+        developmentConfig.values.database.connection = {filename: 'content/data/ghost-dev.db'};
+        const productionConfig = instance.config;
+        productionConfig.values.database.connection = {filename: 'content/data/ghost.db'};
+        let environment = 'production';
+        Object.defineProperty(instance, 'config', {
+            get: () => (environment === 'production' ? productionConfig : developmentConfig)
+        });
+        instance.isRunning = sinon.stub().callsFake(async () => {
+            environment = 'development';
+            return true;
+        });
+
+        const databaseFile = sinon.stub().callsFake(({config}) => config.get('database.connection.filename'));
+        const dumpSqliteData = sinon.stub().resolves({});
+        const migrationExport = load({
+            './database': {databaseKind: () => 'mysql-data'},
+            './sqlite': {databaseFile, dumpSqliteData}
+        });
+        await migrationExport(createUi(), instance, {output});
+
+        expect(databaseFile.calledOnce).to.be.true;
+        expect(dumpSqliteData.args[0][0]).to.equal('content/data/ghost-dev.db');
+    });
+
     it('stops a running sqlite source for the mysql-data conversion and restarts it', async function () {
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
