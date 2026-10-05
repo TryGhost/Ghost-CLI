@@ -82,6 +82,27 @@ describe('Unit: Tasks > migration-export > sqlite', function () {
         expect(sql).to.include('(\'p1\', \'a\', \'post\', NULL, 0, ');
     });
 
+    it('refuses dates MySQL would reject', async function () {
+        const {file, output} = createDatabase((db) => {
+            const post = db.prepare('INSERT INTO posts (id, slug, created_at) VALUES (?, ?, ?)');
+            post.run('p1', 'a', 9e15);
+            post.run('p2', 'b', 'not-a-dateT');
+            post.run('p3', 'c', '2026-02-30 00:00:00');
+            post.run('p4', 'd', '0999-12-31 23:59:59');
+            post.run('p5', 'e', '2026-01-02 03:04:05.123');
+            post.run('p6', 'f', '2026-01-02');
+        });
+
+        const error = await dumpSqliteData(file, output).catch(err => err);
+        expect(error).to.be.instanceOf(SystemError);
+        expect(error.message).to.include('posts.created_at (id p1) is not a date MySQL accepts: 9000000000000000');
+        expect(error.message).to.include('(id p2) is not a date MySQL accepts: not-a-dateT');
+        expect(error.message).to.include('(id p3)');
+        expect(error.message).to.include('(id p4)');
+        expect(error.message).not.to.include('id p5');
+        expect(error.message).not.to.include('id p6');
+    });
+
     it('splits large tables into several inserts', async function () {
         const {file, output} = createDatabase((db) => {
             const member = db.prepare('INSERT INTO members (id, email) VALUES (?, ?)');
