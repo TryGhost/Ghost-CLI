@@ -231,7 +231,7 @@ class MySQLExtension extends Extension {
             }
 
             ctx.mysql = {
-                ...(ctx.mysql || {}),
+                ...ctx.mysql,
                 ...user,
                 host
             };

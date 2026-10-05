@@ -17,7 +17,7 @@ These instructions apply to the entire repository.
 - Use `pnpm`; this repo is configured around `pnpm-lock.yaml` and `package.json` scripts.
 - Common validation commands:
   - `pnpm test`
-  - `pnpm lint`
+  - `pnpm lint` (oxlint + `oxfmt --check`); `pnpm lint:fix` to autofix and format
   - `pnpm link` followed by `ghost <command>` for manual CLI checks
 
 ## Code Conventions

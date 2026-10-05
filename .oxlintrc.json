@@ -1,0 +1,23 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn"
+    },
+    "env": {
+        "node": true,
+        "es2024": true
+    },
+    "ignorePatterns": ["**/coverage/**", ".claude/**"],
+    "overrides": [
+        {
+            "files": ["test/**/*.js", "extensions/**/test/**/*.js"],
+            "env": {
+                "vitest": true
+            },
+            "rules": {
+                "no-unused-expressions": "off"
+            }
+        }
+    ]
+}
