@@ -133,6 +133,30 @@ jobs:
           echo "Ghost local process did not restart with a new pid"
           exit 1
 
+  migration-mysql-data:
+    runs-on: ubuntu-latest
+    name: Migration export (SQLite → MySQL)
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+        env:
+          FORCE_COLOR: 0
+      - run: pnpm install --frozen-lockfile
+      # Installs the Ghost version in the latest Ghost 6 image with this CLI, exports
+      # it, loads the dump into MySQL initialised by that image and boots it there
+      - run: ./test/e2e/migration/mysql-data.sh
+        env:
+          GHOST_IMAGE: ghost:6-alpine
+          MYSQL_IMAGE: mysql:8.0
+
   local-e2e-macos:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
@@ -797,7 +821,8 @@ jobs:
         e2e,
         e2e-mysql84,
         e2e-update,
-        e2e-import-export
+        e2e-import-export,
+        migration-mysql-data
       ]
     if: always()
     runs-on: ubuntu-latest

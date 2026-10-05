@@ -23,6 +23,8 @@ ghost migrate-export [name] --output /private/exports/final --archive tgz --leav
 - `--archive tgz|zip` appends that extension to the output path. Both the working
   directory and archive names must be unused. Prefer `tgz` for cross-host moves:
   extract with `tar -xzf bundle.tgz -C /private/target`. Tar omits source ownership.
+- `--sqlite-format mysql-data|portable` selects how a SQLite database travels
+  (default `mysql-data`). It is refused for MySQL sources.
 - `--force`/`-f` skips only the beta confirmation; required with `--no-prompt`.
 - `--leave-stopped` selects a final export for cutover. Once source lifecycle
   work begins, the command leaves Ghost stopped on success and attempts to stop
@@ -31,8 +33,8 @@ ghost migrate-export [name] --output /private/exports/final --archive tgz --leav
   portable startup leave the original state unchanged.
 
 Ordinary exports restore the original running state on success or failure.
-MySQL sources are stopped for copying and dumping, then restarted before
-compression if originally running. Portable sources need the API; the command
+MySQL and `mysql-data` sources are stopped for copying and dumping, then restarted
+before compression if originally running. Portable sources need the API; the command
 offers to start a stopped source temporarily and stops it again afterward.
 An API failure before a running source was stopped leaves that source running.
 Failed stop/start operations are reported; check `ghost ls` before proceeding.
@@ -62,9 +64,14 @@ this command does not implement them.
   changing source state. Use a separately verified TLS-aware migration procedure
   for those sources; do not remove TLS settings to bypass the check. Absent, null
   or boolean-false `ssl` settings are accepted.
-- **`portable`** supports only **local SQLite (`sqlite3`) development installs**.
-  Unknown/missing clients and production SQLite installations are rejected.
-  Content JSON, then members CSV, are downloaded using the existing
+- Only **local SQLite (`sqlite3`) development installs** are supported; unknown or
+  missing clients and production SQLite installations are rejected. They produce
+  `mysql-data` by default, or `portable` with `--sqlite-format portable`.
+- **`mysql-data`** reads every table of the SQLite database (from
+  `database.connection.filename`, resolved against the install) after Ghost is
+  stopped, so it is a consistent snapshot. No API access or staff token is needed.
+  See [mysql-data](#mysql-data) for the importer contract.
+- **`portable`**: content JSON, then members CSV, are downloaded using the existing
   [`lib/tasks/import/`](../lib/tasks/import/) API implementation; Ghost is then
   stopped and assets copied. Both API requests must succeed and both files must
   be present. Content JSON must be nonempty. A successful zero-byte members CSV
@@ -104,10 +111,11 @@ Shared manifest fixtures live in `test/fixtures/migration-bundle-v1/`.
 | `bundleVersion` | Required, `1`. |
 | `bundleCreatedAt` | Required UTC RFC 3339 timestamp of manifest creation; not an atomic snapshot time. |
 | `sourceInstallType` | Required `local` or `production`, from the actual instance's `isLocal` process classification, not NODE_ENV or database inference. |
-| `kind` | Required `mysql-dump` or `portable`. |
+| `kind` | Required `mysql-dump`, `mysql-data` or `portable`. |
 | `ghost.version` | Exact source Ghost 6.x version, including prerelease suffix. Import at this version; upgrade separately. |
 | `url` / `adminUrl` | Public URL and optional separate admin URL, preserved without rewriting. |
 | `database.path` | Relative path to SQL or content JSON. |
+| `database.rows` | Required only for `mysql-data`; rows written per table. |
 | `database.members` | Required only for portable; relative path to members CSV. |
 | `content` | `content/`, relative to bundle root. |
 | `config` | Flat map of raw string values. |
@@ -147,6 +155,42 @@ The exporter excludes `database`, `server`, `logging`, `process`, `paths`, and
 `url`. Public/admin URLs remain manifest metadata. The importer deliberately maps
 URLs into `.env` and omits container-owned keys from `ghost.env`, including the
 flattened `admin__url`. Configuration remains `.env` plus `ghost.env`.
+
+## mysql-data
+
+`mysql-data` carries every row of every SQLite table, including `migrations` and
+`migrations_lock`, as MySQL `INSERT`s in `database.sql`. IDs, staff credentials,
+members, subscriptions, history and core settings (session secrets, JWT keys,
+`site_uuid`) all travel unchanged. The manifest's `database` is:
+
+```json
+{"path": "database.sql", "rows": {"migrations": 354, "posts": 3, "users": 1}}
+```
+
+The file contains **no schema**. SQLite does not keep the MySQL column sizes,
+unsigned integers or prefix index lengths in Ghost's schema, so rebuilding DDL
+from it would produce a non-canonical database that later Ghost migrations
+assume does not exist. The importer must:
+
+1. Create an empty utf8mb4 MySQL database and start Ghost at exactly
+   `ghost.version` against it once, so Ghost creates its own schema, views and
+   fixtures. Stop it.
+2. Load `database.sql` with the `mysql` client. It disables foreign key checks,
+   uses strict SQL mode, empties each table and refills it in one transaction, so
+   a failure (for example a column the destination schema lacks) rolls back.
+3. Optionally compare `SELECT COUNT(*)` per table with `database.rows`.
+4. Start Ghost. Its migrations see the source's migration history.
+
+Dates are written as UTC `YYYY-MM-DD HH:MM:SS`; epoch-millisecond and ISO 8601
+values written outside Ghost's model layer are normalised. `migrations_lock` is
+written unlocked. Text containing NUL characters is preserved.
+
+Before the bundle is accepted the exporter reads every row and refuses values
+MySQL would reject: strings longer than their declared `varchar` length, and
+unique keys that only differ by case or accents (an approximation of MySQL's
+default utf8mb4 collation). The error lists the rows to fix in the source site.
+Plain `text` values over 64KB in columns Ghost's MySQL schema declares as `text`
+(not `mediumtext`/`longtext`) cannot be detected from SQLite and fail during load.
 
 ## Portable fidelity and losses
 
@@ -190,7 +234,17 @@ container round trip using ghost-docker's actual serializer:
 GHOST_DOCKER_DIR=/path/to/ghost-docker pnpm test
 ```
 
-This requires Docker, Compose, bash, jq, and the `alpine:3.20` probe image. The
+This requires Docker, Compose, bash, jq, and the `alpine:3.20` probe image.
+
+The `mysql-data` path has its own end-to-end check, run in CI against the latest
+`ghost:6-alpine` image and `mysql:8.0`. It installs that image's Ghost version
+locally with this CLI, seeds edge-case rows, runs `ghost migrate-export`, loads
+the dump into MySQL initialised by the image, compares every value with the
+SQLite source and boots Ghost on the result. It needs Docker, Node.js and curl:
+
+```bash
+./test/e2e/migration/mysql-data.sh
+``` The
 ordinary suite always tests real tgz creation/system-tar extraction, raw values,
 shared manifest fixtures, private permissions, collisions, quoted shell paths,
 lifecycle recovery, final exports and unsupported portable cases.

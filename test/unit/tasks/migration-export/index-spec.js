@@ -211,6 +211,7 @@ describe('Unit: Tasks > migration-export', function () {
             'Stopping Ghost',
             'Copying content files',
             'Dumping database',
+            'Converting SQLite database',
             'Restarting Ghost',
             'Writing manifest',
             'Compressing bundle'
@@ -486,16 +487,17 @@ describe('Unit: Tasks > migration-export', function () {
         expect(fs.existsSync(output)).to.be.false;
     });
 
-    for (const kind of ['mysql-dump', 'portable']) {
+    for (const kind of ['mysql-dump', 'mysql-data', 'portable']) {
         it(`matches the shared ${kind} v1 manifest fixture without draft aliases`, function () {
             sinon.useFakeTimers(new Date('2026-09-14T12:00:00.000Z'));
             const fixture = require(`../../../fixtures/migration-bundle-v1/${kind}.json`);
-            const instance = createInstance('/unused', {client: kind === 'portable' ? 'sqlite3' : 'mysql'});
+            const instance = createInstance('/unused', {client: kind === 'mysql-dump' ? 'mysql' : 'sqlite3'});
             const manifest = load().buildManifest(instance, {
                 kind,
                 config: fixture.config,
                 contentExportFile: 'content.json',
-                membersExportFile: 'members.csv'
+                membersExportFile: 'members.csv',
+                rowCounts: fixture.database.rows
             });
             expect(manifest).to.deep.equal(fixture);
         });
@@ -538,6 +540,112 @@ describe('Unit: Tasks > migration-export', function () {
         expect(fs.existsSync(path.join(output, 'content/images/production-only.jpg'))).to.be.false;
         expect(manifest.url).to.equal('http://localhost:2368');
         expect(manifest.adminUrl).to.be.undefined;
+    });
+
+    it('exports a sqlite install as a mysql-data bundle without starting Ghost', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const exportTask = sinon.stub().resolves();
+        const dumpSqliteData = sinon.stub().callsFake(async (sqliteFile, file) => {
+            await fs.promises.writeFile(file, '-- data');
+            return {migrations: 354, posts: 3};
+        });
+
+        const migrationExport = load({
+            '../import': {exportTask},
+            './database': {databaseKind: (instance, format) => format || 'mysql-data', dumpDatabase: sinon.stub().rejects()},
+            './sqlite': {databaseFile: () => path.join(source.dir, 'content/data/ghost-local.db'), dumpSqliteData}
+        });
+
+        const ui = createUi();
+        const instance = createInstance(source.dir, {client: 'sqlite3'});
+        const result = await migrationExport(ui, instance, {output});
+
+        expect(ui.confirm.called).to.be.false;
+        expect(instance.start.called).to.be.false;
+        expect(instance.stop.called).to.be.false;
+        expect(exportTask.called).to.be.false;
+        expect(dumpSqliteData.calledOnce).to.be.true;
+        expect(dumpSqliteData.args[0]).to.deep.equal([
+            path.join(source.dir, 'content/data/ghost-local.db'),
+            path.join(output, 'database.sql')
+        ]);
+        expect(fs.readFileSync(path.join(output, 'database.sql'), 'utf8')).to.equal('-- data');
+        expect((fs.statSync(path.join(output, 'database.sql')).mode & 0o777).toString(8)).to.equal('600');
+        expect(fs.existsSync(path.join(output, 'content/data/ghost-local.db'))).to.be.false;
+        expect(result.manifest.kind).to.equal('mysql-data');
+        expect(result.manifest.sourceInstallType).to.equal('local');
+        expect(result.manifest.database).to.deep.equal({path: 'database.sql', rows: {migrations: 354, posts: 3}});
+    });
+
+    it('reads the SQLite filename from the running environment\'s config', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const instance = createInstance(source.dir, {client: 'sqlite3'});
+        const developmentConfig = createInstance(source.dir, {client: 'sqlite3'}).config;
+        developmentConfig.values.database.connection = {filename: 'content/data/ghost-dev.db'};
+        const productionConfig = instance.config;
+        productionConfig.values.database.connection = {filename: 'content/data/ghost.db'};
+        let environment = 'production';
+        Object.defineProperty(instance, 'config', {
+            get: () => (environment === 'production' ? productionConfig : developmentConfig)
+        });
+        instance.isRunning = sinon.stub().callsFake(async () => {
+            environment = 'development';
+            return true;
+        });
+
+        const databaseFile = sinon.stub().callsFake(({config}) => config.get('database.connection.filename'));
+        const dumpSqliteData = sinon.stub().resolves({});
+        const migrationExport = load({
+            './database': {databaseKind: () => 'mysql-data'},
+            './sqlite': {databaseFile, dumpSqliteData}
+        });
+        await migrationExport(createUi(), instance, {output});
+
+        expect(databaseFile.calledOnce).to.be.true;
+        expect(dumpSqliteData.args[0][0]).to.equal('content/data/ghost-dev.db');
+    });
+
+    it('stops a running sqlite source for the mysql-data conversion and restarts it', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const events = [];
+        const instance = createInstance(source.dir, {client: 'sqlite3', running: true});
+        instance.stop.callsFake(async () => events.push('stop'));
+        instance.start.callsFake(async () => events.push('start'));
+
+        const migrationExport = load({
+            './database': {databaseKind: () => 'mysql-data'},
+            './sqlite': {
+                databaseFile: () => '/source.db',
+                dumpSqliteData: sinon.stub().callsFake(async () => {
+                    events.push('convert');
+                    return {};
+                })
+            }
+        });
+
+        await migrationExport(createUi(), instance, {output});
+        expect(events).to.deep.equal(['stop', 'convert', 'start']);
+    });
+
+    it('passes the sqlite format through and keeps a running source up on conversion failure', async function () {
+        const source = createSource();
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const databaseKind = sinon.stub().returns('mysql-data');
+        const instance = createInstance(source.dir, {client: 'sqlite3', running: true});
+
+        const migrationExport = load({
+            './database': {databaseKind},
+            './sqlite': {databaseFile: () => '/source.db', dumpSqliteData: sinon.stub().rejects(new Error('values MySQL would reject'))}
+        });
+
+        await expect(migrationExport(createUi(), instance, {output, sqliteFormat: 'mysql-data'})).rejects.toThrow(/MySQL would reject/);
+        expect(databaseKind.args[0][1]).to.equal('mysql-data');
+        expect(instance.stop.calledOnce).to.be.true;
+        expect(instance.start.calledOnce).to.be.true;
+        expect(fs.existsSync(output)).to.be.false;
     });
 
     it('runs the existing API exporter and preserves both responses before stopping Ghost', async function () {
