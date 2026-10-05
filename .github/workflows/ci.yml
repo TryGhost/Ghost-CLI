@@ -821,7 +821,8 @@ jobs:
         e2e,
         e2e-mysql84,
         e2e-update,
-        e2e-import-export
+        e2e-import-export,
+        migration-mysql-data
       ]
     if: always()
     runs-on: ubuntu-latest
