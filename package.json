@@ -27,7 +27,9 @@
   },
   "scripts": {
     "coverage": "vitest run --coverage",
-    "lint": "eslint .",
+    "lint": "oxlint --quiet && oxfmt --check .",
+    "lint:fix": "oxlint --fix && oxfmt .",
+    "format": "oxfmt .",
     "test": "vitest run",
     "posttest": "pnpm lint",
     "release": "node scripts/release.js",
@@ -73,14 +75,11 @@
     "yarn": "1.22.22"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.7",
-    "@eslint/js": "9.39.5",
     "@vitest/coverage-v8": "5.0.2",
-    "eslint": "9.39.5",
-    "eslint-plugin-ghost": "3.5.0",
-    "globals": "17.12.0",
     "has-ansi": "6.0.2",
     "nock": "14.0.17",
+    "oxfmt": "0.71.0",
+    "oxlint": "1.86.0",
     "proxyquire": "2.1.3",
     "sinon": "22.1.0",
     "tmp": "0.2.7",
