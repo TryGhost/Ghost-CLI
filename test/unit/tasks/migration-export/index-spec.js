@@ -500,6 +500,46 @@ describe('Unit: Tasks > migration-export', function () {
             expect(manifest).to.deep.equal(fixture);
         });
     }
+    it('reads only the running environment\'s config when both configs exist', async function () {
+        const production = createSource();
+        const development = createSource();
+        fs.writeFileSync(path.join(production.dir, 'content/images/production-only.jpg'), 'production');
+        fs.writeFileSync(path.join(development.dir, 'content/images/development-only.jpg'), 'development');
+        const output = path.join(setupTestFolder().dir, 'bundle');
+
+        // Mirrors Instance: `config` follows the CLI's current environment, which
+        // isRunning() switches to whichever environment is running
+        const instance = createInstance(production.dir);
+        const developmentConfig = createInstance(production.dir).config;
+        Object.assign(developmentConfig.values, {
+            url: 'http://localhost:2368',
+            admin: undefined,
+            paths: {contentPath: path.join(development.dir, 'content')},
+            database: {client: 'mysql', connection: {database: 'ghost_dev'}}
+        });
+        const productionConfig = instance.config;
+        let environment = 'production';
+        Object.defineProperty(instance, 'config', {
+            get: () => (environment === 'production' ? productionConfig : developmentConfig)
+        });
+        instance.isRunning = sinon.stub().callsFake(async () => {
+            environment = 'development';
+            return true;
+        });
+
+        const databaseKind = sinon.stub().returns('mysql-dump');
+        const dumpDatabase = sinon.stub().callsFake((source, file) => fs.promises.writeFile(file, '-- dump'));
+        const migrationExport = load({'./database': {databaseKind, dumpDatabase}});
+        const {manifest} = await migrationExport(createUi(), instance, {output});
+
+        expect(databaseKind.args[0][0].config.get('database.connection.database')).to.equal('ghost_dev');
+        expect(dumpDatabase.args[0][0].config.get('database.connection.database')).to.equal('ghost_dev');
+        expect(fs.existsSync(path.join(output, 'content/images/development-only.jpg'))).to.be.true;
+        expect(fs.existsSync(path.join(output, 'content/images/production-only.jpg'))).to.be.false;
+        expect(manifest.url).to.equal('http://localhost:2368');
+        expect(manifest.adminUrl).to.be.undefined;
+    });
+
     it('runs the existing API exporter and preserves both responses before stopping Ghost', async function () {
         const nock = require('nock');
         const {exportTask} = require('../../../../lib/tasks/import');
@@ -612,7 +652,8 @@ describe('Unit: Tasks > migration-export', function () {
                 expect(error.message).not.to.include('sensitive-key-fixture');
                 expect(error.message).not.to.include('sensitive-ca-fixture');
             }
-            expect(instance.isRunning.called).to.be.false;
+            // Checking the running state only settles which environment to read
+            expect(instance.isRunning.calledOnce).to.be.true;
             expect(instance.start.called).to.be.false;
             expect(instance.stop.called).to.be.false;
             expect(fs.existsSync(output)).to.be.false;
