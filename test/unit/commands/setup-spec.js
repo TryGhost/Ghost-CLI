@@ -214,8 +214,9 @@ describe('Unit: Commands > Setup', function () {
                 expect(config.get.called).to.be.false;
                 expect(system.addInstance.calledOnceWithExactly(instance)).to.be.true;
                 expect(config.has.calledOnceWithExactly('paths.contentPath')).to.be.true;
-                expect(config.set.calledOnceWithExactly('paths.contentPath', '/var/www/ghosttest/content')).to.be.true;
-                expect(config.save.calledOnce).to.be.true;
+                expect(config.set.calledWithExactly('paths.contentPath', '/var/www/ghosttest/content')).to.be.true;
+                expect(config.set.calledWithExactly('createInDevelopmentTables', false)).to.be.true;
+                expect(config.save.calledTwice).to.be.true;
 
                 config.has.returns(true);
                 config.has.resetHistory();
@@ -228,8 +229,8 @@ describe('Unit: Commands > Setup', function () {
                 expect(config.get.calledOnceWithExactly('url')).to.be.true;
                 expect(system.addInstance.calledOnceWithExactly(instance)).to.be.true;
                 expect(config.has.calledOnceWithExactly('paths.contentPath')).to.be.true;
-                expect(config.set.called).to.be.false;
-                expect(config.save.called).to.be.false;
+                expect(config.set.calledOnceWithExactly('createInDevelopmentTables', false)).to.be.true;
+                expect(config.save.calledOnce).to.be.true;
             });
 
             it('linux-user', function () {
