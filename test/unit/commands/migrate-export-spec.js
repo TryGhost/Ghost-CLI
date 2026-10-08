@@ -31,7 +31,8 @@ function load({kind = 'mysql-dump', migrationExport, getInstance, baseCommand} =
             sinon.stub().resolves({
                 path: '/tmp/bundle',
                 manifest: {kind},
-                secrets: []
+                secrets: [],
+                linkedThemes: []
             }),
         '../tasks/migration-export/database': {databaseKind: () => kind},
         '../utils/get-instance': getInstance || sinon.stub().returns(createInstance())
@@ -75,7 +76,7 @@ describe('Unit: Commands > migrate-export', function () {
         const instance = createInstance(true);
         const migrationExport = sinon
             .stub()
-            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
+            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: [], linkedThemes: []});
         const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
         const ui = createUi();
         const cmd = new Command(ui, {});
@@ -167,7 +168,7 @@ describe('Unit: Commands > migrate-export', function () {
         const instance = createInstance(true, '6.0.0-rc.1');
         const migrationExport = sinon
             .stub()
-            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: []});
+            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: [], linkedThemes: []});
         const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
         const cmd = new Command(createUi(), {});
 
@@ -180,7 +181,8 @@ describe('Unit: Commands > migrate-export', function () {
         const migrationExport = sinon.stub().resolves({
             path: '/tmp/bundle',
             manifest: {kind: 'mysql-dump'},
-            secrets: ['mail__options__auth__pass']
+            secrets: ['mail__options__auth__pass'],
+            linkedThemes: []
         });
         const {Command} = load({migrationExport});
         const ui = createUi();
@@ -190,6 +192,24 @@ describe('Unit: Commands > migrate-export', function () {
 
         const messages = ui.log.args.map(([message]) => message);
         expect(messages.some(message => message.includes('mail__options__auth__pass'))).to.be.true;
+    });
+    it('warns once for each linked theme', async function () {
+        const migrationExport = sinon.stub().resolves({
+            path: '/tmp/bundle',
+            manifest: {kind: 'mysql-dump'},
+            secrets: [],
+            linkedThemes: [{name: 'my-theme', source: '/home/dev/my-theme'}]
+        });
+        const {Command} = load({migrationExport});
+        const ui = createUi();
+        const cmd = new Command(ui, {});
+
+        await cmd.run({force: true});
+
+        const warnings = ui.log.args.map(([message]) => message).filter(message => message.includes('my-theme'));
+        expect(warnings).to.have.length(1);
+        expect(warnings[0]).to.include('/home/dev/my-theme');
+        expect(warnings[0]).to.include('compose.override.yml');
     });
     it('passes the parsed --leave-stopped option to the exporter', async function () {
         const yargs = require('yargs/yargs');

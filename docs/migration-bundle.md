@@ -139,7 +139,9 @@ including hidden files and default themes, except each theme's top-level
 files do not. Individual theme directory links under `content/themes/` (including
 CLI default themes linked through `current`, and external development themes)
 are resolved and copied as regular directories. The bundle contains their files,
-not links back to the source. Output must also be outside all resolved theme targets.
+not links back to the source. `ghost migrate-export` warns about each theme linked
+to a folder outside the install, since edits there won't reach the imported site.
+Output must also be outside all resolved theme targets.
 Broken/cyclic theme links, links to non-directories, nested theme links, other
 content links and special files are rejected. Custom adapters and external object
 storage are not bundled.

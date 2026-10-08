@@ -150,6 +150,7 @@ describe('Unit: Tasks > migration-export', function () {
         });
         expect(result.manifest).to.deep.equal(manifest);
         expect(result.secrets).to.deep.equal([]);
+        expect(result.linkedThemes).to.deep.equal([]);
     });
 
     it('exports a sqlite install as a portable bundle', async function () {
@@ -850,8 +851,21 @@ describe('Unit: Tasks > migration-export', function () {
             expect(fs.readFileSync(path.join(theme, '.hidden'), 'utf8')).to.equal('theme asset');
             expect(fs.statSync(path.join(theme, '.hidden')).mode & 0o777).to.equal(0o600);
             expect(fs.lstatSync(themeLink).isSymbolicLink()).to.be.true;
+            expect(result.linkedThemes).to.deep.equal([]);
         });
     }
+    it('reports themes linked to folders outside the install', async function () {
+        const source = createSource();
+        const external = setupTestFolder({files: [{path: 'package.json', content: '{"name":"my-theme"}'}]});
+        const externalDir = fs.realpathSync(external.dir);
+        fs.symlinkSync(external.dir, path.join(source.dir, 'content/themes/my-theme'));
+        const output = path.join(setupTestFolder().dir, 'bundle');
+        const result = await load()(createUi(), createInstance(source.dir), {output});
+
+        expect(result.linkedThemes).to.deep.equal([{name: 'my-theme', source: externalDir}]);
+        const copied = path.join(output, 'content/themes/my-theme');
+        expect(fs.lstatSync(copied).isSymbolicLink()).to.be.false;
+    });
     for (const useSudo of [false, true]) {
         it(`skips node_modules inside theme folders (sudo=${useSudo})`, async function () {
             const {execFileSync} = require('node:child_process');
