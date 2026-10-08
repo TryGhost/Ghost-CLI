@@ -234,9 +234,11 @@ describe('Unit: Commands > migrate-export', function () {
             expect(message).to.include('install --import /tmp/bundle.tgz --port 2369');
         });
 
-        it('skips the command when server.port is not an integer', async function () {
-            expect(await run({kind: 'mysql-data', sourceInstallType: 'local'}, '/tmp/bundle', '2368; echo hi')).to.be
-                .undefined;
+        it('skips the command when server.port is not a positive integer', async function () {
+            for (const port of ['2368; echo hi', '', null]) {
+                expect(await run({kind: 'mysql-data', sourceInstallType: 'local'}, '/tmp/bundle', port)).to.be
+                    .undefined;
+            }
         });
 
         it('skips portable and production bundles', async function () {
