@@ -230,6 +230,12 @@ describe('Unit: Commands > Setup', function () {
                 expect(config.has.calledOnceWithExactly('paths.contentPath')).to.be.true;
                 expect(config.set.called).to.be.false;
                 expect(config.save.called).to.be.false;
+
+                config.set.resetHistory();
+                config.save.resetHistory();
+                instanceTask.task({instance, argv: {local: true, pname: 'ghost-local'}});
+                expect(config.set.calledOnceWithExactly('createInDevelopmentTables', false)).to.be.true;
+                expect(config.save.calledOnce).to.be.true;
             });
 
             it('linux-user', function () {
