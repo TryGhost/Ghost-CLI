@@ -211,6 +211,29 @@ describe('Unit: Commands > migrate-export', function () {
         expect(warnings[0]).to.include('/home/dev/my-theme');
         expect(warnings[0]).to.include('compose.override.yml');
     });
+    describe('docker next steps', function () {
+        async function run(manifest, bundlePath = '/tmp/my blog bundle') {
+            const instance = createInstance();
+            instance.config = {get: sinon.stub().withArgs('server.port').returns(2369)};
+            const migrationExport = sinon.stub().resolves({path: bundlePath, manifest, secrets: [], linkedThemes: []});
+            const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
+            const ui = createUi();
+            await new Command(ui, {}).run({force: true});
+            return ui.log.args.map(([message]) => message).find(message => message.includes('docker.ghost.org'));
+        }
+
+        it('prints the import command for a local bundle', async function () {
+            const message = await run({kind: 'mysql-data', sourceInstallType: 'local'});
+            expect(message).to.include('ghost stop');
+            expect(message).to.include("install --import '/tmp/my blog bundle' --port 2369");
+        });
+
+        it('skips portable and production bundles', async function () {
+            expect(await run({kind: 'portable', sourceInstallType: 'local'})).to.be.undefined;
+            expect(await run({kind: 'mysql-dump', sourceInstallType: 'production'})).to.be.undefined;
+        });
+    });
+
     it('passes the parsed --leave-stopped option to the exporter', async function () {
         const yargs = require('yargs/yargs');
         const {Command, stubs} = load();
