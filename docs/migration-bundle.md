@@ -2,7 +2,12 @@
 
 `ghost migrate-export` exports a Ghost-CLI installation for a separate importer.
 The command is **in beta**: keep a backup, and confirm the warning (or explicitly
-use `--force`). Only Ghost **6.x** is supported. Bundle v1 is unpublished; there
+use `--force`). Only Ghost **6.61.0** or a later 6.x release is supported:
+6.61.0 is the first release published as a `-next` `ghost` Docker image (amd64
+and arm64), and imports run at the exact exported version. Older sources are
+refused before Ghost is stopped or any output is written. Update the source with
+`ghost update`, check the site works, then export; ordinary `ghost export` is
+unaffected. Bundle v1 is unpublished; there
 are no aliases or fallback decoding for earlier drafts.
 
 ## Usage and source state
@@ -112,7 +117,7 @@ Shared manifest fixtures live in `test/fixtures/migration-bundle-v1/`.
 | `bundleCreatedAt` | Required UTC RFC 3339 timestamp of manifest creation; not an atomic snapshot time. |
 | `sourceInstallType` | Required `local` or `production`, from the actual instance's `isLocal` process classification, not NODE_ENV or database inference. |
 | `kind` | Required `mysql-dump`, `mysql-data` or `portable`. |
-| `ghost.version` | Exact source Ghost 6.x version, including prerelease suffix. Import at this version; upgrade separately. |
+| `ghost.version` | Exact source Ghost version (6.61.0 or later 6.x), including prerelease suffix. Import at this version; upgrade separately. |
 | `url` / `adminUrl` | Public URL and optional separate admin URL, preserved without rewriting. |
 | `database.path` | Relative path to SQL or content JSON. |
 | `database.rows` | Required only for `mysql-data`; rows written per table. |
