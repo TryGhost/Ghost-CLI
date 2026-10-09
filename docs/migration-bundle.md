@@ -102,7 +102,7 @@ Shared manifest fixtures live in `test/fixtures/migration-bundle-v1/`.
   "bundleCreatedAt": "2026-09-14T12:00:00.000Z",
   "sourceInstallType": "production",
   "kind": "mysql-dump",
-  "ghost": {"version": "6.2.0"},
+  "ghost": {"version": "6.61.0"},
   "url": "https://example.com",
   "adminUrl": "https://admin.example.com",
   "database": {"path": "database.sql"},
@@ -129,8 +129,8 @@ For portable bundles, `database` instead contains:
 
 ```json
 {
-  "path": "content/data/content-from-v6.2.0-on-2026-09-14-12-00-00.json",
-  "members": "content/data/members-from-v6.2.0-on-2026-09-14-12-00-00.csv"
+  "path": "content/data/content-from-v6.61.0-on-2026-09-14-12-00-00.json",
+  "members": "content/data/members-from-v6.61.0-on-2026-09-14-12-00-00.csv"
 }
 ```
 
