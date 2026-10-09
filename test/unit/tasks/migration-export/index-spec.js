@@ -508,7 +508,10 @@ describe('Unit: Tasks > migration-export', function () {
 
     for (const kind of ['mysql-dump', 'mysql-data', 'portable']) {
         it(`matches the shared ${kind} v1 manifest fixture without draft aliases`, function () {
-            sinon.useFakeTimers(new Date('2026-09-14T12:00:00.000Z'));
+            // Fake only Date: sinon's defaults also fake process.nextTick, and vitest's
+            // worker RPC can restore that fake after sinon.restore(), hanging every
+            // later stream pipeline in this file
+            sinon.useFakeTimers({now: new Date('2026-09-14T12:00:00.000Z'), toFake: ['Date']});
             const fixture = require(`../../../fixtures/migration-bundle-v1/${kind}.json`);
             const instance = createInstance('/unused', {client: kind === 'mysql-dump' ? 'mysql' : 'sqlite3'});
             const manifest = load().buildManifest(instance, {
