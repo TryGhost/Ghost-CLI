@@ -109,10 +109,13 @@ describe('Unit: Tasks > migration-export > sqlite', function () {
 
     it('splits large tables into several inserts', async function () {
         const {file, output} = createDatabase(db => {
+            // One transaction, so the setup isn't 2500 separately synced commits
             const member = db.prepare('INSERT INTO members (id, email) VALUES (?, ?)');
+            db.exec('BEGIN');
             for (let i = 0; i < 2500; i += 1) {
                 member.run(`m${i}`, `m${i}@example.com`);
             }
+            db.exec('COMMIT');
         });
 
         const rows = await dumpSqliteData(file, output);
