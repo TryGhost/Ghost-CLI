@@ -16,6 +16,9 @@ permissions:
 jobs:
   unit:
     runs-on: ubuntu-latest
+    # A normal run takes about a minute; a hung vitest worker otherwise holds the
+    # job open until GitHub's 6 hour default
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
