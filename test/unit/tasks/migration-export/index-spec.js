@@ -47,7 +47,7 @@ function createInstance(dir, {client = 'mysql', running = false} = {}) {
         dir,
         isLocal: client === 'sqlite3',
         name: 'example-com',
-        version: '6.2.0',
+        version: '6.61.0',
         system: {environment: 'production'},
         config: {
             values,
@@ -137,7 +137,7 @@ describe('Unit: Tasks > migration-export', function () {
             bundleCreatedAt: manifest.bundleCreatedAt,
             sourceInstallType: 'production',
             kind: 'mysql-dump',
-            ghost: {version: '6.2.0'},
+            ghost: {version: '6.61.0'},
             url: 'https://example.com',
             adminUrl: 'https://admin.example.com',
             database: {path: 'database.sql'},
@@ -180,8 +180,8 @@ describe('Unit: Tasks > migration-export', function () {
 
         const manifest = JSON.parse(fs.readFileSync(path.join(output, 'manifest.json'), 'utf8'));
         expect(manifest.kind).to.equal('portable');
-        expect(manifest.database.path).to.match(/^content\/data\/content-from-v6\.2\.0-on-[\d-]+\.json$/);
-        expect(manifest.database.members).to.match(/^content\/data\/members-from-v6\.2\.0-on-[\d-]+\.csv$/);
+        expect(manifest.database.path).to.match(/^content\/data\/content-from-v6\.61\.0-on-[\d-]+\.json$/);
+        expect(manifest.database.members).to.match(/^content\/data\/members-from-v6\.61\.0-on-[\d-]+\.csv$/);
         expect(fs.existsSync(path.join(output, manifest.database.path))).to.be.true;
         expect(fs.existsSync(path.join(output, manifest.database.members))).to.be.true;
         expect(result.manifest.database).to.deep.equal(manifest.database);
@@ -391,7 +391,7 @@ describe('Unit: Tasks > migration-export', function () {
                     } else {
                         const {manifest} = await promise;
                         expect(manifest.sourceInstallType).to.equal('local');
-                        expect(manifest.ghost).to.deep.equal({version: '6.2.0'});
+                        expect(manifest.ghost).to.deep.equal({version: '6.61.0'});
                         expect(manifest.bundleCreatedAt).to.match(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/);
                     }
                     expect(instance.start.callCount).to.equal(running ? (leaveStopped || fails ? 0 : 1) : 1);
@@ -687,7 +687,7 @@ describe('Unit: Tasks > migration-export', function () {
         const content = JSON.stringify({
             db: [
                 {
-                    meta: {version: '6.2.0'},
+                    meta: {version: '6.61.0'},
                     data: {
                         posts: [{id: 'post1', title: 'Fixture'}],
                         users: [{id: 'author1'}],
@@ -772,7 +772,7 @@ describe('Unit: Tasks > migration-export', function () {
                 .get('/ghost/api/admin/authentication/setup/')
                 .reply(200, {setup: [{status: true}]})
                 .get('/ghost/api/admin/db/')
-                .reply(200, {db: [{meta: {version: '6.2.0'}, data: {posts: []}}]})
+                .reply(200, {db: [{meta: {version: '6.61.0'}, data: {posts: []}}]})
                 .get('/ghost/api/admin/members/upload/?limit=all')
                 .reply(status, '');
             const ui = createUi();
@@ -830,10 +830,10 @@ describe('Unit: Tasks > migration-export', function () {
             const source = setupTestFolder({
                 dirs: ['content/themes'],
                 files: [
-                    {path: 'versions/6.2.0/content/themes/casper/package.json', content: '{"name":"casper"}'},
-                    {path: 'versions/6.2.0/content/themes/casper/.hidden', content: 'theme asset'}
+                    {path: 'versions/6.61.0/content/themes/casper/package.json', content: '{"name":"casper"}'},
+                    {path: 'versions/6.61.0/content/themes/casper/.hidden', content: 'theme asset'}
                 ],
-                links: [['versions/6.2.0', 'current']]
+                links: [['versions/6.61.0', 'current']]
             });
             const themeLink = path.join(source.dir, 'content/themes/casper');
             const target = useSudo
