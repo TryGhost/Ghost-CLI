@@ -37,7 +37,7 @@ jobs:
           cache: pnpm
         env:
           FORCE_COLOR: 0
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       # `pnpm coverage` runs the same specs as `pnpm test`, minus the posttest
       # lint that's already run above
