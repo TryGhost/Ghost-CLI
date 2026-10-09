@@ -54,6 +54,7 @@ jobs:
 
   local-e2e-linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: Local E2E (ubuntu-latest)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -138,6 +139,7 @@ jobs:
 
   migration-mysql-data:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: Migration export (SQLite → MySQL)
     env:
       FORCE_COLOR: 1
@@ -163,6 +165,7 @@ jobs:
   local-e2e-macos:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
+    timeout-minutes: 20
     name: Local E2E (macos-latest)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -248,6 +251,7 @@ jobs:
   local-e2e-windows:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: windows-latest
+    timeout-minutes: 20
     name: Local E2E (windows-latest)
     defaults:
       run:
@@ -335,6 +339,7 @@ jobs:
 
   e2e:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     name: E2E (${{ matrix.os }})
     strategy:
       fail-fast: false
@@ -459,6 +464,7 @@ jobs:
 
   e2e-mysql84:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: E2E (MySQL 8.4)
     steps:
       - name: Start nginx
@@ -523,6 +529,7 @@ jobs:
 
   e2e-update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: E2E (Update)
     env:
       UPDATE_ARCHIVE_DIR: /tmp/ghost-archives
@@ -675,6 +682,7 @@ jobs:
 
   e2e-import-export:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     name: E2E (Import/Export from v${{ matrix.source_major }})
     strategy:
       fail-fast: false
