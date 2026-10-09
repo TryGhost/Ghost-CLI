@@ -14,7 +14,7 @@ function createUi(overrides = {}) {
     };
 }
 
-function createInstance(running = true, version = '6.2.0') {
+function createInstance(running = true, version = '6.61.0') {
     return {
         name: 'example-com',
         version,
@@ -138,7 +138,7 @@ describe('Unit: Commands > migrate-export', function () {
             await cmd.run({force: true});
         } catch (error) {
             expect(error).to.be.an.instanceof(SystemError);
-            expect(error.message).to.include('only supports Ghost 6.x');
+            expect(error.message).to.include('requires Ghost 6.61.0');
             expect(error.message).to.include('5.87.1');
             expect(migrationExport.called).to.be.false;
             return;
@@ -165,8 +165,60 @@ describe('Unit: Commands > migrate-export', function () {
         expect.fail('run should have errored');
     });
 
-    it('exports a Ghost 6.x prerelease', async function () {
-        const instance = createInstance(true, '6.0.0-rc.1');
+    it('refuses to export a Ghost 6.x instance older than 6.61.0', async function () {
+        const instance = createInstance(true, '6.60.9');
+        const migrationExport = sinon.stub().resolves();
+        const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
+        const cmd = new Command(createUi(), {});
+
+        try {
+            await cmd.run({force: true});
+        } catch (error) {
+            expect(error).to.be.an.instanceof(SystemError);
+            expect(error.message).to.include('requires Ghost 6.61.0');
+            expect(error.message).to.include('6.60.9');
+            expect(error.options.help).to.include('ghost update');
+            expect(instance.isRunning.called).to.be.false;
+            expect(migrationExport.called).to.be.false;
+            return;
+        }
+
+        expect.fail('run should have errored');
+    });
+
+    it('refuses to export a Ghost 7.x instance', async function () {
+        const instance = createInstance(true, '7.0.0');
+        const migrationExport = sinon.stub().resolves();
+        const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
+        const cmd = new Command(createUi(), {});
+
+        try {
+            await cmd.run({force: true});
+        } catch (error) {
+            expect(error).to.be.an.instanceof(SystemError);
+            expect(error.message).to.include('7.0.0');
+            expect(migrationExport.called).to.be.false;
+            return;
+        }
+
+        expect.fail('run should have errored');
+    });
+
+    it('exports a Ghost 6.61.0 instance', async function () {
+        const instance = createInstance(true, '6.61.0');
+        const migrationExport = sinon
+            .stub()
+            .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: [], linkedThemes: []});
+        const {Command} = load({migrationExport, getInstance: sinon.stub().returns(instance)});
+        const cmd = new Command(createUi(), {});
+
+        await cmd.run({force: true});
+
+        expect(migrationExport.calledOnce).to.be.true;
+    });
+
+    it('exports a Ghost 6.x prerelease after 6.61.0', async function () {
+        const instance = createInstance(true, '6.62.0-rc.1');
         const migrationExport = sinon
             .stub()
             .resolves({path: '/tmp/bundle', manifest: {kind: 'mysql-dump'}, secrets: [], linkedThemes: []});
