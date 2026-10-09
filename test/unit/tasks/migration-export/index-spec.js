@@ -28,7 +28,12 @@ function createUi() {
     return {
         run: sinon.stub().callsFake(fn => fn()),
         listr: sinon.stub().callsFake(runTasks),
-        sudo: sinon.stub().resolves(),
+        // ui.sudo takes an array of arguments and refuses anything else (lib/ui).
+        sudo: sinon.stub().callsFake(async command => {
+            if (!Array.isArray(command)) {
+                throw new Error('ui.sudo expects an array of arguments');
+            }
+        }),
         log: sinon.stub(),
         confirm: sinon.stub().resolves(true)
     };
@@ -283,8 +288,12 @@ describe('Unit: Tasks > migration-export', function () {
         await migrationExport(ui, createInstance(source.dir), {output});
 
         const commands = ui.sudo.args.map(([command]) => command);
-        expect(commands.some(command => command.startsWith('cp ') && command.includes('content/images'))).to.be.true;
-        expect(commands.some(command => command.startsWith('chown '))).to.be.true;
+        expect(
+            commands.some(
+                ([program, flag, from]) => program === 'cp' && flag === '-R' && from.includes('content/images')
+            )
+        ).to.be.true;
+        expect(commands.some(([program]) => program === 'chown')).to.be.true;
     });
 
     it('zips the bundle when asked for --archive zip', async function () {
@@ -461,15 +470,15 @@ describe('Unit: Tasks > migration-export', function () {
         expect(fs.existsSync(archive)).to.be.false;
     });
 
-    it('uses literal shell arguments for sudo copies with spaces and metacharacters', async function () {
+    it('passes sudo copies paths with spaces and metacharacters as literal arguments', async function () {
         const {execFileSync} = require('node:child_process');
         const source = createSource();
         const name = "hidden ' $(touch INJECTED); $file";
         fs.writeFileSync(path.join(source.dir, 'content/images', name), 'literal');
         const output = path.join(setupTestFolder().dir, 'bundle');
         const ui = createUi();
-        // Execute the exact shell commands as this user, without needing sudo.
-        ui.sudo.callsFake(command => execFileSync('/bin/sh', ['-c', command]));
+        // Run the exact arguments as this user, without sudo, and like ui.sudo, without a shell.
+        ui.sudo.callsFake(([program, ...args]) => execFileSync(program, args));
         const migrationExport = load({'../../utils/use-ghost-user': {shouldUseGhostUser: () => true}});
         await migrationExport(ui, createInstance(source.dir), {output});
         expect(fs.readFileSync(path.join(output, 'content/images', name), 'utf8')).to.equal('literal');
@@ -842,7 +851,7 @@ describe('Unit: Tasks > migration-export', function () {
             fs.symlinkSync(target, themeLink);
             const output = path.join(setupTestFolder().dir, 'bundle');
             const ui = createUi();
-            ui.sudo.callsFake(command => execFileSync('/bin/sh', ['-c', command]));
+            ui.sudo.callsFake(([program, ...args]) => execFileSync(program, args));
             const migrationExport = load({'../../utils/use-ghost-user': {shouldUseGhostUser: () => useSudo}});
             const result = await migrationExport(ui, createInstance(source.dir), {output, archive: 'tgz'});
             const extracted = setupTestFolder().dir;
@@ -881,7 +890,7 @@ describe('Unit: Tasks > migration-export', function () {
             fs.writeFileSync(path.join(theme, 'assets/main.css'), 'css');
             const output = path.join(setupTestFolder().dir, 'bundle');
             const ui = createUi();
-            ui.sudo.callsFake(command => execFileSync('/bin/sh', ['-c', command]));
+            ui.sudo.callsFake(([program, ...args]) => execFileSync(program, args));
             const migrationExport = load({'../../utils/use-ghost-user': {shouldUseGhostUser: () => useSudo}});
             await migrationExport(ui, createInstance(source.dir), {output});
 
