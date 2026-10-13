@@ -144,7 +144,7 @@ class NginxExtension extends Extension {
             resolvers: this.getResolvers()
         });
 
-        await this.template(instance, generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`);
+        await this.template(generatedConfig, 'nginx config', confFile, `${nginxConfigPath}/sites-available`);
         await this.ui.sudo([
             'ln',
             '-sf',
@@ -257,7 +257,6 @@ class NginxExtension extends Extension {
                         });
 
                         await this.template(
-                            instance,
                             generatedSslConfig,
                             'ssl config',
                             confFile,

@@ -251,10 +251,10 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             ]);
 
             expect(ext.template.calledTwice).to.be.true;
-            expect(ext.template.args[0][1]).to.equal(migratedConf);
-            expect(ext.template.args[0][3]).to.equal('ghost.org.conf');
-            expect(ext.template.args[0][4]).to.equal('/etc/nginx/sites-available');
-            expect(ext.template.args[1][3]).to.equal('ghost.org-ssl.conf');
+            expect(ext.template.args[0][0]).to.equal(migratedConf);
+            expect(ext.template.args[0][2]).to.equal('ghost.org.conf');
+            expect(ext.template.args[0][3]).to.equal('/etc/nginx/sites-available');
+            expect(ext.template.args[1][2]).to.equal('ghost.org-ssl.conf');
 
             expect(ext.ui.sudo.calledOnceWithExactly(['nginx', '-t'])).to.be.true;
             expect(ext.restartNginx.calledOnce).to.be.true;
@@ -272,7 +272,7 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             await migrate.migrateActivityPubDns.call(ext, context, {skip: sinon.stub()});
 
             expect(ext.template.calledOnce).to.be.true;
-            expect(ext.template.args[0][3]).to.equal('ghost.org.conf');
+            expect(ext.template.args[0][2]).to.equal('ghost.org.conf');
         });
 
         it('restores the original config if nginx rejects the new one', async function () {
@@ -294,8 +294,8 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             }
 
             expect(ext.template.calledTwice).to.be.true;
-            expect(ext.template.args[0][1]).to.equal(migratedConf);
-            expect(ext.template.args[1][1]).to.equal(legacyConf);
+            expect(ext.template.args[0][0]).to.equal(migratedConf);
+            expect(ext.template.args[1][0]).to.equal(legacyConf);
             expect(ext.restartNginx.called).to.be.false;
         });
 
@@ -317,13 +317,12 @@ describe('Unit: Extensions > Nginx > Migrations', function () {
             // both configs get rolled back, even though only the first one was written
             expect(ext.template.callCount).to.equal(4);
             expect(ext.template.args[2]).to.deep.equal([
-                context.instance,
                 legacyConf,
                 'nginx config',
                 'ghost.org.conf',
                 '/etc/nginx/sites-available'
             ]);
-            expect(ext.template.args[3][1]).to.equal(legacyConf);
+            expect(ext.template.args[3][0]).to.equal(legacyConf);
             expect(ext.ui.sudo.called).to.be.false;
             expect(ext.restartNginx.called).to.be.false;
         });

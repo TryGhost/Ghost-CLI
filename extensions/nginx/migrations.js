@@ -118,7 +118,7 @@ async function migrateActivityPubDns(ctx, migrateTask) {
     }
 
     const resolvers = this.getResolvers();
-    const write = ({file, contents}) => this.template(ctx.instance, contents, 'nginx config', file, sitesAvailable);
+    const write = ({file, contents}) => this.template(contents, 'nginx config', file, sitesAvailable);
 
     try {
         for (const {file, contents} of configs) {
