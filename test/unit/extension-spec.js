@@ -54,7 +54,8 @@ describe('Unit: Extension', function () {
         });
 
         it('skips log if verbose is false', async function () {
-            const mkdir = sinon.stub(fs, 'mkdir').resolves();
+            const mkdtemp = sinon.stub(fs, 'mkdtemp').resolves('/tmp/ghost-cli-abc123');
+            const rm = sinon.stub(fs, 'rm').resolves();
             const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
             const writeFile = sinon.stub(fs, 'writeFile').resolves();
             const sudo = sinon.stub().resolves();
@@ -62,19 +63,21 @@ describe('Unit: Extension', function () {
             const log = sinon.stub();
 
             const ext = new Extension({sudo, confirm, log, verbose: false});
-            const instance = {name: 'test'};
 
-            await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
+            await ext.template('test file contents', 'test file', 'test.txt', '/etc/mysql');
             expect(confirm.called).to.be.false;
             expect(log.called).to.be.false;
             expect(tmpdir.calledOnce).to.be.true;
-            expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
-            expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
-            expect(sudo.calledOnceWithExactly(['mv', '/tmp/test/test.txt', '/etc/mysql/test.txt'])).to.be.true;
+            expect(mkdtemp.calledOnceWithExactly('/tmp/ghost-cli-')).to.be.true;
+            expect(writeFile.calledOnceWithExactly('/tmp/ghost-cli-abc123/test.txt', 'test file contents')).to.be.true;
+            expect(sudo.calledOnceWithExactly(['mv', '/tmp/ghost-cli-abc123/test.txt', '/etc/mysql/test.txt'])).to.be
+                .true;
+            expect(rm.calledOnceWithExactly('/tmp/ghost-cli-abc123', {recursive: true, force: true})).to.be.true;
         });
 
         it('skips log if confirm returns false', async function () {
-            const mkdir = sinon.stub(fs, 'mkdir').resolves();
+            const mkdtemp = sinon.stub(fs, 'mkdtemp').resolves('/tmp/ghost-cli-abc123');
+            const rm = sinon.stub(fs, 'rm').resolves();
             const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
             const writeFile = sinon.stub(fs, 'writeFile').resolves();
             const sudo = sinon.stub().resolves();
@@ -82,19 +85,21 @@ describe('Unit: Extension', function () {
             const log = sinon.stub();
 
             const ext = new Extension({sudo, confirm, log, verbose: true});
-            const instance = {name: 'test'};
 
-            await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
+            await ext.template('test file contents', 'test file', 'test.txt', '/etc/mysql');
             expect(confirm.calledOnceWithExactly('Would you like to view the test file file?', false)).to.be.true;
             expect(log.called).to.be.false;
             expect(tmpdir.calledOnce).to.be.true;
-            expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
-            expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
-            expect(sudo.calledOnceWithExactly(['mv', '/tmp/test/test.txt', '/etc/mysql/test.txt'])).to.be.true;
+            expect(mkdtemp.calledOnceWithExactly('/tmp/ghost-cli-')).to.be.true;
+            expect(writeFile.calledOnceWithExactly('/tmp/ghost-cli-abc123/test.txt', 'test file contents')).to.be.true;
+            expect(sudo.calledOnceWithExactly(['mv', '/tmp/ghost-cli-abc123/test.txt', '/etc/mysql/test.txt'])).to.be
+                .true;
+            expect(rm.calledOnceWithExactly('/tmp/ghost-cli-abc123', {recursive: true, force: true})).to.be.true;
         });
 
         it('logs contents if confirm returns true', async function () {
-            const mkdir = sinon.stub(fs, 'mkdir').resolves();
+            const mkdtemp = sinon.stub(fs, 'mkdtemp').resolves('/tmp/ghost-cli-abc123');
+            const rm = sinon.stub(fs, 'rm').resolves();
             const tmpdir = sinon.stub(os, 'tmpdir').returns('/tmp');
             const writeFile = sinon.stub(fs, 'writeFile').resolves();
             const sudo = sinon.stub().resolves();
@@ -102,15 +107,29 @@ describe('Unit: Extension', function () {
             const log = sinon.stub();
 
             const ext = new Extension({sudo, confirm, log, verbose: true});
-            const instance = {name: 'test'};
 
-            await ext.template(instance, 'test file contents', 'test file', 'test.txt', '/etc/mysql');
+            await ext.template('test file contents', 'test file', 'test.txt', '/etc/mysql');
             expect(confirm.calledOnceWithExactly('Would you like to view the test file file?', false)).to.be.true;
             expect(log.calledOnceWithExactly('test file contents')).to.be.true;
             expect(tmpdir.calledOnce).to.be.true;
-            expect(mkdir.calledOnceWithExactly('/tmp/test', {recursive: true})).to.be.true;
-            expect(writeFile.calledOnceWithExactly('/tmp/test/test.txt', 'test file contents')).to.be.true;
-            expect(sudo.calledOnceWithExactly(['mv', '/tmp/test/test.txt', '/etc/mysql/test.txt'])).to.be.true;
+            expect(mkdtemp.calledOnceWithExactly('/tmp/ghost-cli-')).to.be.true;
+            expect(writeFile.calledOnceWithExactly('/tmp/ghost-cli-abc123/test.txt', 'test file contents')).to.be.true;
+            expect(sudo.calledOnceWithExactly(['mv', '/tmp/ghost-cli-abc123/test.txt', '/etc/mysql/test.txt'])).to.be
+                .true;
+            expect(rm.calledOnceWithExactly('/tmp/ghost-cli-abc123', {recursive: true, force: true})).to.be.true;
+        });
+
+        it('cleans up the temp directory if the move fails', async function () {
+            sinon.stub(fs, 'mkdtemp').resolves('/tmp/ghost-cli-abc123');
+            const rm = sinon.stub(fs, 'rm').resolves();
+            sinon.stub(os, 'tmpdir').returns('/tmp');
+            sinon.stub(fs, 'writeFile').resolves();
+            const sudo = sinon.stub().rejects(new Error('mv failed'));
+
+            const ext = new Extension({sudo, verbose: false});
+
+            await expect(ext.template('contents', 'test file', 'test.txt', '/etc/mysql')).rejects.toThrow('mv failed');
+            expect(rm.calledOnceWithExactly('/tmp/ghost-cli-abc123', {recursive: true, force: true})).to.be.true;
         });
     });
 

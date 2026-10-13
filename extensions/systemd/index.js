@@ -61,7 +61,7 @@ class SystemdExtension extends Extension {
             ghost_exec_path: process.argv.slice(0, 2).join(' ')
         });
 
-        return this.template(instance, contents, 'systemd service', serviceFilename, '/lib/systemd/system')
+        return this.template(contents, 'systemd service', serviceFilename, '/lib/systemd/system')
             .then(() => this.ui.sudo(['systemctl', 'daemon-reload']))
             .catch(error => {
                 throw new ProcessError(error);
