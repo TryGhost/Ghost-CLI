@@ -3,8 +3,13 @@ const path = require('path');
 const {DatabaseSync} = require('node:sqlite');
 
 const {setupTestFolder, cleanupTestFolders} = require('../../../utils/test-folder');
-const {SystemError} = require('../../../../lib/errors');
-const {databaseFile, dumpSqliteData, collationKey} = require('../../../../lib/tasks/migration-export/sqlite');
+const {ProcessError, SystemError} = require('../../../../lib/errors');
+const {
+    databaseFile,
+    dumpSqliteData,
+    inDevelopmentTables,
+    collationKey
+} = require('../../../../lib/tasks/migration-export/sqlite');
 
 // The table definitions knex writes for Ghost's SQLite schema
 const SCHEMA = `
@@ -69,6 +74,20 @@ describe('Unit: Tasks > migration-export > sqlite', function () {
         // The destination must be able to run its own migrations
         expect(sql).to.include("INSERT INTO `migrations_lock` (`lock_key`, `locked`) VALUES\n('km01', 0);");
         expect(sql).to.include("INSERT INTO `migrations` (`id`, `name`) VALUES\n(1, '1-create-tables.js');");
+    });
+
+    it('leaves skipped tables out of the dump', async function () {
+        const {file, output} = createDatabase(db => {
+            db.prepare('INSERT INTO members (id, email) VALUES (?, ?)').run('m1', 'a@example.com');
+            db.prepare('INSERT INTO brute (key, lifetime) VALUES (?, ?)').run('k', 1);
+        });
+
+        const rows = await dumpSqliteData(file, output, ['members', 'missing']);
+        const sql = fs.readFileSync(output, 'utf8');
+
+        expect(rows).to.deep.equal({brute: 1, migrations: 0, migrations_lock: 0, posts: 0});
+        expect(sql).not.to.include('`members`');
+        expect(sql).to.include('DELETE FROM `brute`;');
     });
 
     it("normalises dates written outside Ghost's model layer", async function () {
@@ -182,6 +201,29 @@ describe('Unit: Tasks > migration-export > sqlite', function () {
         expect(collationKey('ÉCOLE')).to.equal('ecole');
         expect(collationKey('a')).not.to.equal(collationKey('b'));
         expect(collationKey(1)).to.equal('1');
+    });
+
+    describe('inDevelopmentTables', function () {
+        const schemaFile = 'current/core/server/data/schema/in-development.js';
+
+        it("reads the list from the installed Ghost's schema", async function () {
+            const {dir} = setupTestFolder({
+                files: [{path: schemaFile, content: "exports.IN_DEVELOPMENT_TABLES = ['app_installations'];"}]
+            });
+            expect(await inDevelopmentTables({dir, version: '6.69.0'})).to.deep.equal(['app_installations']);
+        });
+
+        it('skips versions released before the list had any tables', async function () {
+            const {dir} = setupTestFolder();
+            expect(await inDevelopmentTables({dir, version: '6.68.0'})).to.deep.equal([]);
+        });
+
+        it("fails when the installed Ghost can't be read", async function () {
+            const {dir} = setupTestFolder();
+            const error = await inDevelopmentTables({dir, version: '6.70.0'}).catch(error => error);
+            expect(error).to.be.an.instanceof(ProcessError);
+            expect(error.message).to.match(/^Could not read Ghost's in-development tables: /);
+        });
     });
 
     describe('databaseFile', function () {
