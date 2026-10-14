@@ -220,7 +220,9 @@ describe('Unit: Tasks > migration-export > sqlite', function () {
 
         it("fails when the installed Ghost can't be read", async function () {
             const {dir} = setupTestFolder();
-            await expect(inDevelopmentTables({dir, version: '6.70.0'})).rejects.toThrow(ProcessError);
+            const error = await inDevelopmentTables({dir, version: '6.70.0'}).catch(error => error);
+            expect(error).to.be.an.instanceof(ProcessError);
+            expect(error.message).to.match(/^Could not read Ghost's in-development tables: /);
         });
     });
 
