@@ -581,6 +581,7 @@ describe('Unit: Tasks > migration-export', function () {
             await fs.promises.writeFile(file, '-- data');
             return {migrations: 354, posts: 3};
         });
+        const inDevelopmentTables = sinon.stub().resolves(['app_installations']);
 
         const migrationExport = load({
             '../import': {exportTask},
@@ -588,7 +589,11 @@ describe('Unit: Tasks > migration-export', function () {
                 databaseKind: (instance, format) => format || 'mysql-data',
                 dumpDatabase: sinon.stub().rejects()
             },
-            './sqlite': {databaseFile: () => path.join(source.dir, 'content/data/ghost-local.db'), dumpSqliteData}
+            './sqlite': {
+                databaseFile: () => path.join(source.dir, 'content/data/ghost-local.db'),
+                dumpSqliteData,
+                inDevelopmentTables
+            }
         });
 
         const ui = createUi();
@@ -602,8 +607,11 @@ describe('Unit: Tasks > migration-export', function () {
         expect(dumpSqliteData.calledOnce).to.be.true;
         expect(dumpSqliteData.args[0]).to.deep.equal([
             path.join(source.dir, 'content/data/ghost-local.db'),
-            path.join(output, 'database.sql')
+            path.join(output, 'database.sql'),
+            ['app_installations']
         ]);
+        expect(inDevelopmentTables.calledOnce).to.be.true;
+        expect(inDevelopmentTables.args[0][0]).to.include({dir: source.dir, version: instance.version});
         expect(fs.readFileSync(path.join(output, 'database.sql'), 'utf8')).to.equal('-- data');
         expect((fs.statSync(path.join(output, 'database.sql')).mode & 0o777).toString(8)).to.equal('600');
         expect(fs.existsSync(path.join(output, 'content/data/ghost-local.db'))).to.be.false;
@@ -633,7 +641,7 @@ describe('Unit: Tasks > migration-export', function () {
         const dumpSqliteData = sinon.stub().resolves({});
         const migrationExport = load({
             './database': {databaseKind: () => 'mysql-data'},
-            './sqlite': {databaseFile, dumpSqliteData}
+            './sqlite': {databaseFile, dumpSqliteData, inDevelopmentTables: async () => []}
         });
         await migrationExport(createUi(), instance, {output});
 
@@ -653,6 +661,7 @@ describe('Unit: Tasks > migration-export', function () {
             './database': {databaseKind: () => 'mysql-data'},
             './sqlite': {
                 databaseFile: () => '/source.db',
+                inDevelopmentTables: async () => [],
                 dumpSqliteData: sinon.stub().callsFake(async () => {
                     events.push('convert');
                     return {};
@@ -674,6 +683,7 @@ describe('Unit: Tasks > migration-export', function () {
             './database': {databaseKind},
             './sqlite': {
                 databaseFile: () => '/source.db',
+                inDevelopmentTables: async () => [],
                 dumpSqliteData: sinon.stub().rejects(new Error('values MySQL would reject'))
             }
         });
