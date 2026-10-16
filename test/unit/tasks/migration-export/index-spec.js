@@ -89,6 +89,7 @@ function load(stubs = {}) {
         '../import': {exportTask: sinon.stub().resolves()},
         './database': {databaseKind: () => 'mysql-dump', dumpDatabase: sinon.stub().resolves()},
         '../../utils/use-ghost-user': {shouldUseGhostUser: () => false},
+        '../migrator': {health: sinon.stub().resolves()},
         ...stubs
     });
 }
@@ -468,6 +469,50 @@ describe('Unit: Tasks > migration-export', function () {
         expect(fs.readFileSync(path.join(existing, 'sentinel'), 'utf8')).to.equal('keep');
         expect(fs.readFileSync(`${archive}.tgz`, 'utf8')).to.equal('keep archive');
         expect(fs.existsSync(archive)).to.be.false;
+    });
+
+    it('refuses a database its Ghost has not migrated before touching Ghost or the output', async function () {
+        for (const running of [false, true]) {
+            const source = createSource();
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const health = sinon.stub().rejects(new Error('The database has not been migrated'));
+            const instance = createInstance(source.dir, {running});
+            const ui = createUi();
+
+            await expect(load({'../migrator': {health}})(ui, instance, {output})).rejects.toThrow(
+                'The database has not been migrated'
+            );
+            expect(health.calledOnceWithExactly({instance, ui})).to.be.true;
+            expect(instance.start.called).to.be.false;
+            expect(instance.stop.called).to.be.false;
+            expect(fs.existsSync(output)).to.be.false;
+        }
+    });
+
+    it('checks migrations for database dumps only, since a portable export goes through Ghost', async function () {
+        for (const kind of ['mysql-dump', 'mysql-data', 'portable']) {
+            const source = createSource();
+            const output = path.join(setupTestFolder().dir, 'bundle');
+            const health = sinon.stub().resolves();
+            const exportTask = sinon
+                .stub()
+                .callsFake((ui, instance, contentFile, membersFile) =>
+                    Promise.all([fs.promises.writeFile(contentFile, '{}'), fs.promises.writeFile(membersFile, '')])
+                );
+            const migrationExport = load({
+                '../import': {exportTask},
+                '../migrator': {health},
+                './database': {databaseKind: () => kind, dumpDatabase: sinon.stub().resolves()},
+                './sqlite': {
+                    databaseFile: () => path.join(source.dir, 'content/data/ghost-local.db'),
+                    dumpSqliteData: sinon.stub().resolves({}),
+                    inDevelopmentTables: sinon.stub().resolves([])
+                }
+            });
+
+            await migrationExport(createUi(), createInstance(source.dir, {running: true}), {output});
+            expect(health.called).to.equal(kind !== 'portable');
+        }
     });
 
     it('passes sudo copies paths with spaces and metacharacters as literal arguments', async function () {

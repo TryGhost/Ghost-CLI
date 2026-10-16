@@ -176,6 +176,78 @@ describe('Unit: Tasks > Migrator', function () {
         });
     });
 
+    describe('health', function () {
+        const instance = {dir: '/some-dir', version: '6.71.0', system: {environment: 'development'}};
+
+        function load(execaStub, useGhostUser = false) {
+            return proxyquire(migratePath, {
+                execa: {execa: execaStub},
+                '../utils/use-ghost-user': {shouldUseGhostUser: sinon.stub().returns(useGhostUser)}
+            });
+        }
+
+        it('runs knex-migrator-health from the install, in its environment', async function () {
+            const execaStub = sinon.stub().resolves();
+            const sudoStub = sinon.stub().resolves();
+
+            await load(execaStub).health({instance, ui: {sudo: sudoStub}});
+
+            expect(sudoStub.called).to.be.false;
+            expect(execaStub.calledOnce).to.be.true;
+            const [command, args, options] = execaStub.args[0];
+            expect(command).to.equal('knex-migrator-health');
+            expect(args).to.deep.equal(['--mgpath', '/some-dir/current']);
+            expect(options).to.include({cwd: '/some-dir', preferLocal: true, localDir: '/some-dir/current'});
+            expect(options.env).to.deep.equal({NODE_ENV: 'development'});
+        });
+
+        it('runs as the ghost user when it owns the content', async function () {
+            const execaStub = sinon.stub().resolves();
+            const sudoStub = sinon.stub().resolves();
+
+            await load(execaStub, true).health({instance, ui: {sudo: sudoStub}});
+
+            expect(execaStub.called).to.be.false;
+            expect(sudoStub.calledOnce).to.be.true;
+            const [command, options] = sudoStub.args[0];
+            expect(command).to.deep.equal([
+                '/some-dir/current/node_modules/.bin/knex-migrator-health',
+                '--mgpath',
+                '/some-dir/current'
+            ]);
+            expect(options).to.deep.include({sudoArgs: ['-E', '-u', 'ghost'], cwd: '/some-dir'});
+        });
+
+        it('explains missing migrations: Ghost was updated but not started', async function () {
+            const execaStub = sinon.stub().rejects({
+                stdout: '[2026-10-16 12:00:00] ERROR Migrations are missing. Please run `pnpm knex-migrator migrate`.'
+            });
+
+            const error = await load(execaStub)
+                .health({instance, ui: {}})
+                .then(
+                    () => null,
+                    e => e
+                );
+            expect(error).to.be.an.instanceof(errors.SystemError);
+            expect(error.message).to.match(/not been migrated to Ghost 6\.71\.0/);
+            expect(error.options.help).to.match(/ghost start/);
+        });
+
+        it('reports any other failure as a process error', async function () {
+            const execaStub = sinon.stub().rejects({stderr: 'Migrations are locked'});
+
+            const error = await load(execaStub)
+                .health({instance, ui: {}})
+                .then(
+                    () => null,
+                    e => e
+                );
+            expect(error).to.be.an.instanceof(errors.ProcessError);
+            expect(error.options.stderr).to.equal('Migrations are locked');
+        });
+    });
+
     describe('rollback', function () {
         it('runs direct command if useGhostUser returns false', function () {
             const config = configStub();
