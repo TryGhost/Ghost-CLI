@@ -177,14 +177,40 @@ describe('Unit: Tasks > Migrator', function () {
     });
 
     describe('health', function () {
-        const instance = {dir: '/some-dir', version: '6.71.0', system: {environment: 'development'}};
+        const instance = {
+            dir: '/some-dir',
+            version: '6.71.0',
+            system: {environment: 'development'},
+            config: {get: (key, defaultValue) => defaultValue}
+        };
 
         function load(execaStub, useGhostUser = false) {
             return proxyquire(migratePath, {
                 execa: {execa: execaStub},
-                '../utils/use-ghost-user': {shouldUseGhostUser: sinon.stub().returns(useGhostUser)}
+                '../utils/use-ghost-user': {
+                    shouldUseGhostUser: typeof useGhostUser === 'function' ? useGhostUser : () => useGhostUser
+                }
             });
         }
+
+        it('checks ownership of the configured content directory', async function () {
+            const config = {
+                get: (key, defaultValue) => (key === 'paths.contentPath' ? '/var/ghost-content' : defaultValue)
+            };
+            const useGhostUser = sinon.stub().returns(false);
+
+            await load(sinon.stub().resolves(), useGhostUser).health({instance: {...instance, config}, ui: {}});
+
+            expect(useGhostUser.calledOnceWithExactly('/var/ghost-content')).to.be.true;
+        });
+
+        it('checks ownership of the default content directory otherwise', async function () {
+            const useGhostUser = sinon.stub().returns(false);
+
+            await load(sinon.stub().resolves(), useGhostUser).health({instance, ui: {}});
+
+            expect(useGhostUser.calledOnceWithExactly('/some-dir/content')).to.be.true;
+        });
 
         it('runs knex-migrator-health from the install, in its environment', async function () {
             const execaStub = sinon.stub().resolves();
