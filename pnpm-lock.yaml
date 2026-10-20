@@ -209,8 +209,8 @@ importers:
         specifier: 1.14.3
         version: 1.14.3
       listr2:
-        specifier: 11.2.0
-        version: 11.2.0
+        specifier: 11.3.0
+        version: 11.3.0
       lodash:
         specifier: 4.18.1
         version: 4.18.1
@@ -1480,8 +1480,8 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
-  listr2@11.2.0:
-    resolution: {integrity: sha512-+H/hEo9EA7tyLY0ZihpDg76jHWolc0nCjbjnXFguSm4Epk+WYtL1w1tYs1kjEo229NmhgLmUrncyn81K1vBoRw==}
+  listr2@11.3.0:
+    resolution: {integrity: sha512-QsZAxWEFhl/SIkDsY53F7K33RvSj46TbmJ3b69JCpCtQbfMSPJzCwdwF2rRvEY//sPBI2deOLOzOhzMiUIK7pQ==}
     engines: {node: '>=22.13.0'}
 
   load-json-file@4.0.0:
@@ -3155,7 +3155,7 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
 
-  listr2@11.2.0:
+  listr2@11.3.0:
     dependencies:
       cli-truncate: 6.1.1
       log-update: 8.0.0
