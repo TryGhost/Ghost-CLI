@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
+const nock = require('nock');
 
 const {SystemError} = require('../../../lib/errors');
 
@@ -45,7 +46,25 @@ function load({kind = 'mysql-dump', migrationExport, getInstance, baseCommand} =
     return {Command: proxyquire(modulePath, stubs), stubs};
 }
 
+const tagsPath = /^\/v2\/namespaces\/library\/repositories\/ghost\/tags\//;
+
 describe('Unit: Commands > migrate-export', function () {
+    beforeAll(function () {
+        nock.disableNetConnect();
+    });
+
+    afterAll(function () {
+        nock.enableNetConnect();
+    });
+
+    beforeEach(function () {
+        nock('https://hub.docker.com').persist().head(tagsPath).reply(200);
+    });
+
+    afterEach(function () {
+        nock.cleanAll();
+    });
+
     it('warns about beta and does nothing unless confirmed', async function () {
         const {Command, stubs} = load();
         const ui = createUi({confirm: sinon.stub().resolves(false)});
@@ -228,6 +247,51 @@ describe('Unit: Commands > migrate-export', function () {
         await cmd.run({force: true});
 
         expect(migrationExport.calledOnce).to.be.true;
+    });
+
+    describe('docker image check', function () {
+        it('checks for the -next image of the instance version', async function () {
+            nock.cleanAll();
+            const scope = nock('https://hub.docker.com')
+                .head('/v2/namespaces/library/repositories/ghost/tags/6.61.0-next')
+                .reply(200);
+            const {Command, stubs} = load();
+
+            await new Command(createUi(), {}).run({force: true});
+
+            expect(scope.isDone()).to.be.true;
+            expect(stubs['../tasks/migration-export'].calledOnce).to.be.true;
+        });
+
+        it('refuses to export when the image is not published', async function () {
+            nock.cleanAll();
+            nock('https://hub.docker.com').head(tagsPath).reply(404);
+            const {Command, stubs} = load();
+
+            try {
+                await new Command(createUi(), {}).run({force: true});
+            } catch (error) {
+                expect(error).to.be.an.instanceof(SystemError);
+                expect(error.message).to.include('ghost:6.61.0-next');
+                expect(stubs['../tasks/migration-export'].called).to.be.false;
+                return;
+            }
+
+            expect.fail('run should have errored');
+        });
+
+        it('warns and continues when Docker Hub is unreachable', async function () {
+            nock.cleanAll();
+            nock('https://hub.docker.com').persist().head(tagsPath).replyWithError('getaddrinfo ENOTFOUND');
+            const {Command, stubs} = load();
+            const ui = createUi();
+
+            await new Command(ui, {}).run({force: true});
+
+            const messages = ui.log.args.map(([message]) => message);
+            expect(messages.some(message => message.includes('Unable to check Docker Hub'))).to.be.true;
+            expect(stubs['../tasks/migration-export'].calledOnce).to.be.true;
+        });
     });
 
     it('warns when the bundle config holds secrets', async function () {
