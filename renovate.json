@@ -24,6 +24,16 @@
       "matchPackageNames": ["debug", "lodash", "semver", "yarn"],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "Node.js versions are managed manually",
+      "matchPackageNames": ["node"],
+      "enabled": false
+    },
+    {
+      "description": "Keep ky on v1, other dependencies also rely on v1",
+      "matchPackageNames": ["ky"],
+      "allowedVersions": "1.x"
     }
   ]
 }
