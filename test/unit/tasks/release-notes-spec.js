@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const nock = require('nock');
+const nock = require('nock').default;
 
 const runTask = require('../../../lib/tasks/release-notes');
 
