@@ -27,7 +27,7 @@
     },
     {
       "description": "Node.js versions are managed manually",
-      "matchPackageNames": ["node"],
+      "matchPackageNames": ["node", "actions/node-versions"],
       "enabled": false
     },
     {
