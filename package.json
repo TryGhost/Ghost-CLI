@@ -77,7 +77,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "5.0.5",
     "has-ansi": "6.0.2",
-    "nock": "14.0.17",
+    "nock": "15.0.5",
     "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
     "proxyquire": "2.1.3",

@@ -1,4 +1,4 @@
-const nock = require('nock');
+const nock = require('nock').default;
 const path = require('path');
 const tmp = require('tmp');
 const fs = require('node:fs');

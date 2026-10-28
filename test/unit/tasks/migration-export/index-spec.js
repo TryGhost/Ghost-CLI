@@ -743,7 +743,7 @@ describe('Unit: Tasks > migration-export', function () {
     });
 
     it('runs the existing API exporter and preserves both responses before stopping Ghost', async function () {
-        const nock = require('nock');
+        const nock = require('nock').default;
         const {exportTask} = require('../../../../lib/tasks/import');
         const source = createSource();
         const output = path.join(setupTestFolder().dir, 'bundle');
@@ -827,7 +827,7 @@ describe('Unit: Tasks > migration-export', function () {
     });
     for (const status of [200, 404, 403]) {
         it(`handles an empty members response with HTTP ${status}`, async function () {
-            const nock = require('nock');
+            const nock = require('nock').default;
             const {exportTask} = require('../../../../lib/tasks/import');
             const source = createSource();
             const output = path.join(setupTestFolder().dir, 'bundle');

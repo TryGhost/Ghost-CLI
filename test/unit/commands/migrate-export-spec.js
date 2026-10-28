@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const proxyquire = require('proxyquire').noCallThru();
-const nock = require('nock');
+const nock = require('nock').default;
 
 const {SystemError} = require('../../../lib/errors');
 
