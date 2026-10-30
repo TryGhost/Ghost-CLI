@@ -51,7 +51,7 @@
     "fkill": "10.0.3",
     "global-modules": "2.0.0",
     "ini": "7.0.0",
-    "inquirer": "14.2.4",
+    "inquirer": "14.2.5",
     "jsonwebtoken": "9.0.3",
     "ky": "1.14.3",
     "listr2": "11.4.0",
