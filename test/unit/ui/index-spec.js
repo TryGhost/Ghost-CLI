@@ -648,6 +648,34 @@ describe('Unit: UI', function () {
             expect(execaStub.called).to.be.false;
         });
 
+        it('sets env variables with env, since sudo-rs ignores -E', function () {
+            const shell = Promise.resolve();
+            shell.stderr = {on: () => true};
+
+            const shellStub = sinon.stub().returns(shell);
+            const UI = setupUI(shellStub);
+            const ui = new UI();
+
+            sinon.stub(ui, 'log').returns(true);
+
+            return ui
+                .sudo(['knex-migrator-health'], {sudoArgs: ['-E', '-u', 'ghost'], env: {NODE_ENV: 'production'}})
+                .then(() => {
+                    expect(shellStub.args[0][1]).to.deep.equal([
+                        '-S',
+                        '-p',
+                        '#node-sudo-passwd#',
+                        '-E',
+                        '-u',
+                        'ghost',
+                        'env',
+                        'NODE_ENV=production',
+                        'knex-migrator-health'
+                    ]);
+                    expect(shellStub.args[0][2]).to.deep.equal({env: {NODE_ENV: 'production'}});
+                });
+        });
+
         it('can handle defaults', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};
