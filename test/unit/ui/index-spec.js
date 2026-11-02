@@ -648,6 +648,48 @@ describe('Unit: UI', function () {
             expect(execaStub.called).to.be.false;
         });
 
+        it('only sets NODE_ENV with env, since sudo-rs ignores -E', function () {
+            const shell = Promise.resolve();
+            shell.stderr = {on: () => true};
+
+            const shellStub = sinon.stub().returns(shell);
+            const UI = setupUI(shellStub);
+            const ui = new UI();
+
+            sinon.stub(ui, 'log').returns(true);
+
+            const env = {NODE_ENV: 'production', MYSQL_PWD: 'secret'};
+            return ui.sudo(['knex-migrator-health'], {sudoArgs: ['-E', '-u', 'ghost'], env}).then(() => {
+                expect(shellStub.args[0][1]).to.deep.equal([
+                    '-S',
+                    '-p',
+                    '#node-sudo-passwd#',
+                    '-E',
+                    '-u',
+                    'ghost',
+                    'env',
+                    'NODE_ENV=production',
+                    'knex-migrator-health'
+                ]);
+                expect(shellStub.args[0][2]).to.deep.equal({env});
+            });
+        });
+
+        it('skips env when NODE_ENV is unset', function () {
+            const shell = Promise.resolve();
+            shell.stderr = {on: () => true};
+
+            const shellStub = sinon.stub().returns(shell);
+            const UI = setupUI(shellStub);
+            const ui = new UI();
+
+            sinon.stub(ui, 'log').returns(true);
+
+            return ui.sudo(['echo'], {env: {NODE_ENV: undefined}}).then(() => {
+                expect(shellStub.args[0][1]).to.deep.equal(['-S', '-p', '#node-sudo-passwd#', 'echo']);
+            });
+        });
+
         it('can handle defaults', function () {
             const shell = Promise.resolve();
             shell.stderr = {on: () => true};

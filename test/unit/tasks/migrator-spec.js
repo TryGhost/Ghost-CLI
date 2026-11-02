@@ -41,11 +41,16 @@ describe('Unit: Tasks > Migrator', function () {
 
             const sudoStub = sinon.stub().resolves();
 
-            return migrator.migrate({instance: {config, dir: '/some-dir'}, ui: {sudo: sudoStub}}).then(() => {
+            const instance = {config, dir: '/some-dir', system: {environment: 'production'}};
+            return migrator.migrate({instance, ui: {sudo: sudoStub}}).then(() => {
                 expect(useGhostUserStub.calledOnce).to.be.true;
                 expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
                 expect(execaStub.calledOnce).to.be.false;
                 expect(sudoStub.called).to.be.true;
+                expect(sudoStub.args[0][1]).to.deep.equal({
+                    sudoArgs: ['-E', '-u', 'ghost'],
+                    env: {NODE_ENV: 'production'}
+                });
             });
         });
 
@@ -242,6 +247,7 @@ describe('Unit: Tasks > Migrator', function () {
                 '/some-dir/current'
             ]);
             expect(options).to.deep.include({sudoArgs: ['-E', '-u', 'ghost'], cwd: '/some-dir'});
+            expect(options.env).to.deep.equal({NODE_ENV: 'development'});
         });
 
         it('explains missing migrations: Ghost was updated but not started', async function () {
@@ -338,14 +344,17 @@ describe('Unit: Tasks > Migrator', function () {
 
             const sudoStub = sinon.stub().resolves();
 
-            return migrator
-                .rollback({instance: {config, version: '1.25.3', dir: '/some-dir'}, ui: {sudo: sudoStub}})
-                .then(() => {
-                    expect(useGhostUserStub.calledOnce).to.be.true;
-                    expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
-                    expect(execaStub.calledOnce).to.be.false;
-                    expect(sudoStub.called).to.be.true;
+            const instance = {config, version: '1.25.3', dir: '/some-dir', system: {environment: 'production'}};
+            return migrator.rollback({instance, ui: {sudo: sudoStub}}).then(() => {
+                expect(useGhostUserStub.calledOnce).to.be.true;
+                expect(useGhostUserStub.args[0][0]).to.equal('/some-dir/content');
+                expect(execaStub.calledOnce).to.be.false;
+                expect(sudoStub.called).to.be.true;
+                expect(sudoStub.args[0][1]).to.deep.equal({
+                    sudoArgs: ['-E', '-u', 'ghost'],
+                    env: {NODE_ENV: 'production'}
                 });
+            });
         });
 
         it('throws config error with db host if database not found', function () {
