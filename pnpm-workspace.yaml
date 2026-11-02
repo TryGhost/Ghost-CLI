@@ -5,3 +5,5 @@ minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAg
 blockExoticSubdeps: true
 minimumReleaseAgeExclude:
   - '@tryghost/*'
+overrides:
+  minimatch@<11.0.1: ^11.0.1
