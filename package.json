@@ -59,7 +59,7 @@
     "log-symbols": "7.0.1",
     "mysql2": "3.24.6",
     "node-stream-zip": "1.16.0",
-    "ora": "9.4.1",
+    "ora": "10.0.0",
     "package-json": "10.0.1",
     "portfinder": "1.0.38",
     "prettyjson": "1.2.5",
