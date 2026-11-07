@@ -75,7 +75,7 @@
     "yarn": "1.22.22"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "5.0.5",
+    "@vitest/coverage-v8": "5.1.0",
     "has-ansi": "6.0.2",
     "nock": "15.0.5",
     "oxfmt": "0.75.0",
@@ -83,7 +83,7 @@
     "proxyquire": "2.1.3",
     "sinon": "22.1.0",
     "tmp": "0.2.7",
-    "vitest": "5.0.5"
+    "vitest": "5.1.0"
   },
   "packageManager": "pnpm@12.17.0+sha512.b8d223ebec04b580a89ed206daa71d1bccb6a1ee1d52efa95cc3b0db75271561df8f0d8e2c43add39c5ec08018af7a8a95108e7090f95a29f88727b7a40fd53d"
 }
