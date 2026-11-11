@@ -170,8 +170,8 @@ importers:
   .:
     dependencies:
       '@tryghost/zip':
-        specifier: 4.0.1
-        version: 4.0.1(bare-buffer@3.7.1)
+        specifier: 4.0.2
+        version: 4.0.2(bare-buffer@3.7.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -852,11 +852,11 @@ packages:
   '@sinonjs/samsam@10.0.2':
     resolution: {integrity: sha512-8lVwD1Df1BmzoaOLhMcGGcz/Jyr5QY2KSB75/YK1QgKzoabTeLdIVyhXNZK9ojfSKSdirbXqdbsXXqP9/Ve8+A==}
 
-  '@tryghost/errors@3.4.6':
-    resolution: {integrity: sha512-ASkzjp0gZrJ0KBEDdzFwU2CMiNjVv35gDhMjPHrE3HM+tOPLjCGKVyJTAESd+5dGg4oVnvbLa0JMy0GlcS3GGQ==}
+  '@tryghost/errors@3.4.7':
+    resolution: {integrity: sha512-z8s9WXE/aun0arvza/Sl7MpZItxFOgaoDqSdEgiJW+rWidqEELmBp4+K0x6ZB7Gw9/7uGl/TQi0vGeB2Ub2jgg==}
 
-  '@tryghost/zip@4.0.1':
-    resolution: {integrity: sha512-xj+r/pEchwAK8YZzJvSn977S03J2RoiXGQn6qmZakWAd7VOEncUvvTlsp6k+QVYgmhHoE+AvhpItcuYBuduTvg==}
+  '@tryghost/zip@4.0.2':
+    resolution: {integrity: sha512-VZX+4sSagaabMSnKuZSr8VcaL01Qzar+pTIae1rkvihPAOD9dtnE07rRJruXbUT/FQxUyvSa1ETxK2YRwD0rLA==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2544,11 +2544,11 @@ snapshots:
       '@sinonjs/commons': 3.0.1
       type-detect: 4.1.0
 
-  '@tryghost/errors@3.4.6': {}
+  '@tryghost/errors@3.4.7': {}
 
-  '@tryghost/zip@4.0.1(bare-buffer@3.7.1)':
+  '@tryghost/zip@4.0.2(bare-buffer@3.7.1)':
     dependencies:
-      '@tryghost/errors': 3.4.6
+      '@tryghost/errors': 3.4.7
       archiver: 8.0.0(bare-buffer@3.7.1)
       yauzl: 3.4.0
     transitivePeerDependencies:
