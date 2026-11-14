@@ -34,6 +34,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
           cache: pnpm
         env:
           FORCE_COLOR: 0
@@ -67,6 +68,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
       - name: Prepare CLI
@@ -151,6 +153,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
         env:
           FORCE_COLOR: 0
@@ -178,6 +181,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
       - name: Prepare CLI
@@ -267,6 +271,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
       - name: Prepare CLI
@@ -362,6 +367,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
         env:
@@ -494,6 +500,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
         env:
@@ -552,6 +559,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
         env:
@@ -722,6 +730,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22.x
+          check-latest: true
           cache: pnpm
           cache-dependency-path: cli/pnpm-lock.yaml
         env:
