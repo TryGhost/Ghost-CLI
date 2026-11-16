@@ -179,8 +179,8 @@ importers:
   .:
     dependencies:
       '@tryghost/zip':
-        specifier: 4.0.3
-        version: 4.0.3(bare-buffer@3.7.1)
+        specifier: 4.1.0
+        version: 4.1.0(bare-buffer@3.7.1)
       abbrev:
         specifier: 5.0.0
         version: 5.0.0
@@ -864,8 +864,8 @@ packages:
   '@tryghost/errors@3.4.8':
     resolution: {integrity: sha512-wRQPjb0TuTW6ROexYKEevbePGHQTY443pTJO3/3EDZlxzWLizdP64EkL0pVh+9Y9E/wfRdyqIjzECc5+rxhTDQ==}
 
-  '@tryghost/zip@4.0.3':
-    resolution: {integrity: sha512-BeDDlOgG+XJmHC2NzxBE8cNnVT2fCE0z5WLaXS8zJspIsHlO6iW35NU5vViBFmoUrZPftRPLmL0RamYRxVGHbQ==}
+  '@tryghost/zip@4.1.0':
+    resolution: {integrity: sha512-i+Vhe4Ay2LSziyZxx8Pj4X/J55XBzCU2A17/y5Vcq6jp2j+34ug/8VBitpsdndVI6Rd8cjfwwMv7owFqhGXhXw==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2555,7 +2555,7 @@ snapshots:
 
   '@tryghost/errors@3.4.8': {}
 
-  '@tryghost/zip@4.0.3(bare-buffer@3.7.1)':
+  '@tryghost/zip@4.1.0(bare-buffer@3.7.1)':
     dependencies:
       '@tryghost/errors': 3.4.8
       archiver: 8.0.0(bare-buffer@3.7.1)
