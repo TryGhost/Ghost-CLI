@@ -39,6 +39,12 @@ class NginxExtension extends Extension {
                 title: 'Updating X-Forwarded-For header in nginx config',
                 skip: () => !this.system.platform.linux,
                 task: migrations.migrateXForwardedFor.bind(this)
+            },
+            {
+                before: '1.35.0',
+                title: 'Adding the Bluesky handle route to nginx config',
+                skip: () => !this.system.platform.linux,
+                task: migrations.migrateAtprotoDidRoute.bind(this)
             }
         ];
     }
