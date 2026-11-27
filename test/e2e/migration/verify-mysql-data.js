@@ -44,6 +44,15 @@ function expected(table, column, type, value) {
     return type === 'integer' ? BigInt(value).toString() : String(Number(value));
 }
 
+// MySQL prints a DATETIME(n) column with exactly n fractional digits
+function atPrecision(value, precision) {
+    if (value === null || !precision) {
+        return value;
+    }
+    const [seconds, fraction = ''] = value.split('.');
+    return `${seconds}.${fraction.padEnd(precision, '0').slice(0, precision)}`;
+}
+
 function actual(dataType, value) {
     if (value === null) {
         return null;
@@ -91,18 +100,26 @@ function actual(dataType, value) {
                     `typeof("${c.name}") AS t${i}, CASE typeof("${c.name}") WHEN 'text' THEN CAST("${c.name}" AS BLOB) ELSE "${c.name}" END AS v${i}`
             )
             .join(', ');
+        const [types] = await connection.query(
+            'SELECT COLUMN_NAME AS name, DATA_TYPE AS type, DATETIME_PRECISION AS datetimePrecision FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+            [table]
+        );
+        const dataTypes = Object.fromEntries(types.map(c => [c.name, c.type]));
+        const datetimePrecisions = Object.fromEntries(types.map(c => [c.name, Number(c.datetimePrecision)]));
+
         const statement = sqlite.prepare(`SELECT ${select} FROM "${table}"`);
         statement.setReadBigInts(true);
         const source = statement
             .all()
-            .map(row => JSON.stringify(columns.map((c, i) => expected(table, c, row[`t${i}`], row[`v${i}`]))))
+            .map(row =>
+                JSON.stringify(
+                    columns.map((c, i) =>
+                        atPrecision(expected(table, c, row[`t${i}`], row[`v${i}`]), datetimePrecisions[c.name])
+                    )
+                )
+            )
             .sort();
 
-        const [types] = await connection.query(
-            'SELECT COLUMN_NAME AS name, DATA_TYPE AS type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
-            [table]
-        );
-        const dataTypes = Object.fromEntries(types.map(c => [c.name, c.type]));
         const [rows] = await connection.query(
             `SELECT ${columns.map(c => `\`${c.name}\``).join(', ')} FROM \`${table}\``
         );
